@@ -1,0 +1,2 @@
+com.yanzu.framework.security.config.MazongjianSecurityAutoConfiguration
+com.yanzu.framework.security.config.MazongjianWebSecurityConfigurerAdapter

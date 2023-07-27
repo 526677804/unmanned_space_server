@@ -1,0 +1,2 @@
+com.yanzu.framework.redis.config.MazongjianRedisAutoConfiguration
+com.yanzu.framework.redis.config.MazongjianCacheAutoConfiguration

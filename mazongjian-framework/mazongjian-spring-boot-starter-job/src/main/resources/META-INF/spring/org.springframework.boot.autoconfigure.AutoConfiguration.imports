@@ -1,0 +1,2 @@
+com.yanzu.framework.quartz.config.MazongjianQuartzAutoConfiguration
+com.yanzu.framework.quartz.config.MazongjianAsyncAutoConfiguration

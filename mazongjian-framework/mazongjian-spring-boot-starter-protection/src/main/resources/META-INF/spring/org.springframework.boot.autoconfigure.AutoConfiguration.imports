@@ -1,0 +1,2 @@
+com.yanzu.framework.idempotent.config.MazongjianIdempotentConfiguration
+com.yanzu.framework.lock4j.config.MazongjianLock4jConfiguration

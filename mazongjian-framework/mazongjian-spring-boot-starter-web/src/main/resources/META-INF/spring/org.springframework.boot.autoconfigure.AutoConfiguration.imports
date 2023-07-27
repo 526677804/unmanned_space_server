@@ -1,0 +1,6 @@
+com.yanzu.framework.apilog.config.MazongjianApiLogAutoConfiguration
+com.yanzu.framework.jackson.config.MazongjianJacksonAutoConfiguration
+com.github.xiaoymin.knife4j.spring.configuration.Knife4jAutoConfiguration
+com.yanzu.framework.swagger.config.MazongjianSwaggerAutoConfiguration
+com.yanzu.framework.web.config.MazongjianWebAutoConfiguration
+com.yanzu.framework.xss.config.MazongjianXssAutoConfiguration

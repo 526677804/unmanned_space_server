@@ -1,0 +1,2 @@
+com.yanzu.framework.datasource.config.MazongjianDataSourceAutoConfiguration
+com.yanzu.framework.mybatis.config.MazongjianMybatisAutoConfiguration

@@ -1,0 +1,25 @@
+package com.yanzu.module.member.controller.app.index.vo;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * @PACKAGE_NAME: com.yanzu.module.member.controller.app.index.vo
+ * @DESCRIPTION:
+ * @USER: MrGuan  mrguan@aliyun.com
+ * @DATE: 2023/7/26 17:01
+ */
+@Schema(description = "miniapp - 首页 获取门店列表 VO")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class AppStorePageReqVO {
+
+    @Schema(description = "城市名称")
+    private String city;
+
+}
