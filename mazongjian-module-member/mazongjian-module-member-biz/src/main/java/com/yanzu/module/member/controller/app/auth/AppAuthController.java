@@ -64,11 +64,11 @@ public class AppAuthController {
 
     // ========== 短信登录相关 ==========
 
-    @PostMapping("/sms-login")
-    @Operation(summary = "使用手机 + 验证码登录")
-    public CommonResult<AppAuthLoginRespVO> smsLogin(@RequestBody @Valid AppAuthSmsLoginReqVO reqVO) {
-        return success(authService.smsLogin(reqVO));
-    }
+//    @PostMapping("/sms-login")
+//    @Operation(summary = "使用手机 + 验证码登录")
+//    public CommonResult<AppAuthLoginRespVO> smsLogin(@RequestBody @Valid AppAuthSmsLoginReqVO reqVO) {
+//        return success(authService.smsLogin(reqVO));
+//    }
 
     @PostMapping("/send-sms-code")
     @Operation(summary = "发送手机验证码")
@@ -77,21 +77,21 @@ public class AppAuthController {
         return success(true);
     }
 
-    @PostMapping("/reset-password")
-    @Operation(summary = "重置密码", description = "用户忘记密码时使用")
-    @PreAuthenticated
-    public CommonResult<Boolean> resetPassword(@RequestBody @Valid AppAuthResetPasswordReqVO reqVO) {
-        authService.resetPassword(reqVO);
-        return success(true);
-    }
-
-    @PostMapping("/update-password")
-    @Operation(summary = "修改用户密码", description = "用户修改密码时使用")
-    @PreAuthenticated
-    public CommonResult<Boolean> updatePassword(@RequestBody @Valid AppAuthUpdatePasswordReqVO reqVO) {
-        authService.updatePassword(getLoginUserId(), reqVO);
-        return success(true);
-    }
+//    @PostMapping("/reset-password")
+//    @Operation(summary = "重置密码", description = "用户忘记密码时使用")
+//    @PreAuthenticated
+//    public CommonResult<Boolean> resetPassword(@RequestBody @Valid AppAuthResetPasswordReqVO reqVO) {
+//        authService.resetPassword(reqVO);
+//        return success(true);
+//    }
+//
+//    @PostMapping("/update-password")
+//    @Operation(summary = "修改用户密码", description = "用户修改密码时使用")
+//    @PreAuthenticated
+//    public CommonResult<Boolean> updatePassword(@RequestBody @Valid AppAuthUpdatePasswordReqVO reqVO) {
+//        authService.updatePassword(getLoginUserId(), reqVO);
+//        return success(true);
+//    }
 
     // ========== 社交登录相关 ==========
 

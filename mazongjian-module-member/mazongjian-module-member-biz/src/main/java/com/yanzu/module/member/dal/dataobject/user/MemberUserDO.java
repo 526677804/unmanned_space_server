@@ -52,7 +52,15 @@ public class MemberUserDO extends TenantBaseDO {
      */
     private String mobile;
     /**
-     * 余额
+     * 收入（非余额）
+     */
+    private BigDecimal money;
+    /**
+     * 提现金额
+     */
+    private BigDecimal withdrawalMoney;
+    /**
+     * 账户余额
      */
     private BigDecimal balance;
     /**
