@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Schema(description = "miniapp - 房间信息 Response VO")
 @Data
@@ -39,10 +39,10 @@ public class AppRoomInfoRespVO  {
     private Integer sortId;
 
     @Schema(description = "禁用开始时间")
-    private LocalDateTime banTimeStart;
+    private Date banTimeStart;
 
     @Schema(description = "禁用结束时间")
-    private LocalDateTime banTimeEnd;
+    private Date banTimeEnd;
 
     @Schema(description = "总完成订单数")
     private Integer totalOrderNum;
@@ -54,6 +54,6 @@ public class AppRoomInfoRespVO  {
     private Integer status;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 
 }

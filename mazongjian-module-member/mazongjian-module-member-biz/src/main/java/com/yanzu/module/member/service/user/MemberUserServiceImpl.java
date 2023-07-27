@@ -2,11 +2,21 @@ package com.yanzu.module.member.service.user;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.IdUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
+import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.mybatis.core.util.MyBatisUtils;
 import com.yanzu.module.infra.api.file.FileApi;
-import com.yanzu.module.member.controller.app.user.vo.AppUserUpdateMobileReqVO;
+import com.yanzu.module.member.controller.app.user.vo.*;
+import com.yanzu.module.member.convert.user.UserConvert;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
+import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
+import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
+import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.system.api.sms.SmsCodeApi;
 import com.yanzu.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
 import com.yanzu.module.system.enums.sms.SmsSceneEnum;
@@ -26,6 +36,7 @@ import java.time.LocalDateTime;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.util.servlet.ServletUtils.getClientIP;
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.USER_NOT_EXISTS;
 
 /**
@@ -49,6 +60,14 @@ public class MemberUserServiceImpl implements MemberUserService {
     @Resource
     private PasswordEncoder passwordEncoder;
 
+    @Resource
+    private StoreUserMapper storeUserMapper;
+
+    @Resource
+    private CouponInfoMapper couponInfoMapper;
+
+    @Resource
+    private UserMoneyBillMapper userMoneyBillMapper;
     @Override
     public MemberUserDO getUserByMobile(String mobile) {
         return memberUserMapper.selectByMobile(mobile);
@@ -103,7 +122,7 @@ public class MemberUserServiceImpl implements MemberUserService {
     public void updateUserNickname(Long userId, String nickname) {
         MemberUserDO user = this.checkUserExists(userId);
         // 仅当新昵称不等于旧昵称时进行修改
-        if (nickname.equals(user.getNickname())){
+        if (nickname.equals(user.getNickname())) {
             return;
         }
         MemberUserDO userDO = new MemberUserDO();
@@ -145,6 +164,58 @@ public class MemberUserServiceImpl implements MemberUserService {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
+    @Override
+    public AppUserInfoRespVO getUserInfo(Long loginUserId) {
+        MemberUserDO memberUserDO = memberUserMapper.selectById(loginUserId);
+        AppUserInfoRespVO respVO = UserConvert.INSTANCE.convert(memberUserDO);
+        //查询赠送余额
+        respVO.setGiftBalance(storeUserMapper.getGiftBalanceByUserId(loginUserId));
+        //查询可用优惠券数量
+        respVO.setCouponCount(couponInfoMapper.countByUserId(loginUserId));
+        return respVO;
+    }
+
+    @Override
+    public PageResult<AppUserMoneyBillRespVO> getOrderPage(AppUserMoneyBillPageReqVO reqVO) {
+        PageHelper.startPage(reqVO);
+        List<AppUserMoneyBillRespVO> list=userMoneyBillMapper.getOrderPage(reqVO);
+        PageInfo<AppUserMoneyBillRespVO> page = new PageInfo<>(list);
+        return new PageResult<>(page.getList(),page.getTotal());
+//        // 构建分页对象
+//        IPage<AppUserMoneyBillRespVO> page = new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+//        // 调用查询方法
+//        IPage<AppUserMoneyBillRespVO> roadSectionIPage = userMoneyBillMapper.selectPage(page, reqVO);
+//        // 从分页对象中取出查询结果
+//        List<RoadSectionVO> records = roadSectionIPage.getRecords();
+
+//        return null;
+    }
+
+    @Override
+    public AppGiftBalanceListRespVO getGiftBalanceList() {
+        return null;
+    }
+
+    @Override
+    public void eechargeBalance(AppRechargeBalanceReqVO reqVO) {
+
+    }
+
+    @Override
+    public AppFranchiseInfoRespVO getFranchiseInfo() {
+        return null;
+    }
+
+    @Override
+    public void saveFranchiseInfo(AppFranchiseInfoReqVO reqVO) {
+
+    }
+
+    @Override
+    public PageResult<AppCouponPageRespVO> getCouponPage(AppCouponPageReqVO reqVO) {
+        return null;
+    }
+
     /**
      * 对密码进行加密
      *
@@ -166,5 +237,6 @@ public class MemberUserServiceImpl implements MemberUserService {
         }
         return user;
     }
+
 
 }

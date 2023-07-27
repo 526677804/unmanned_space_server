@@ -5,7 +5,8 @@ import lombok.Data;
 import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
+
+import java.util.Date;
 
 import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY;
 
@@ -26,11 +27,11 @@ public class AppChartDataReqVO {
 
     @Schema(description = "开始时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
-    private LocalDateTime startTime;
+    private Date startTime;
 
     @Schema(description = "截止时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
-    private LocalDateTime endTime;
+    private Date endTime;
 
 
 }

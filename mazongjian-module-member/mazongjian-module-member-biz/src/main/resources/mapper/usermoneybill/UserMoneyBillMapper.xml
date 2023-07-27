@@ -9,4 +9,18 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getOrderPage"
+            resultType="com.yanzu.module.member.controller.app.user.vo.AppUserMoneyBillRespVO">
+        select *
+        from member_user_money_bill
+        where
+        deleted =0
+        <if test="null != startTime and startTime != ''">
+            and DATE_FORMAT(create_time, '%Y%m%d')>=DATE_FORMAT(#{startTime}, '%Y%m%d')
+        </if>
+        <if test="null != endTime and endTime != ''">
+            and DATE_FORMAT(create_time, '%Y%m%d')&lt;=DATE_FORMAT(#{startTime}, '%Y%m%d')
+        </if>
+
+    </select>
 </mapper>

@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Schema(description = "miniapp - 组局信息 Response VO")
@@ -44,7 +44,7 @@ public class AppGameInfoRespVO {
     private String ruleDesc;
 
     @Schema(description = "开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime startTime;
+    private Date startTime;
 
     @Schema(description = "用户id", requiredMode = Schema.RequiredMode.REQUIRED, example = "26195")
     private Long userId;
@@ -56,6 +56,6 @@ public class AppGameInfoRespVO {
     private List<AppGameUserListRespVO> playUserList;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 
 }

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Schema(description = "miniapp - 门店信息保存 Response VO")
 @Data
@@ -48,7 +48,7 @@ public class AppStoreInfoReqVO {
     private Integer workDiscount;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 
 
 }

@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -48,10 +48,10 @@ public class AppRoomInfoListRespVO {
     private Integer sortId;
 
     @Schema(description = "订单/预约开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime startTime;
+    private Date startTime;
 
     @Schema(description = "订单/预约结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime endTime;
+    private Date endTime;
 
     @Schema(description = "状态 值见字典", example = "2")
     private Integer status;
@@ -60,5 +60,5 @@ public class AppRoomInfoListRespVO {
     private List<TimeSlotVO> disabledTimeSlot;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 }

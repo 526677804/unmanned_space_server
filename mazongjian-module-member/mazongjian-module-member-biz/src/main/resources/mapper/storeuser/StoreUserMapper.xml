@@ -9,4 +9,11 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getGiftBalanceByUserId" resultType="java.math.BigDecimal">
+        select ifnull(sum(gift_balance), 0)
+        from member_store_user
+        where user_id = #{userId}
+          ANd deleted = 0
+
+    </select>
 </mapper>

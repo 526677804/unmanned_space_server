@@ -2,7 +2,7 @@ package com.yanzu.module.member.controller.app.order.vo;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order.vo
@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @Data
 public class TimeSlotVO {
 
-    private LocalDateTime startTime;
+    private Date startTime;
 
-    private LocalDateTime endTime;
+    private Date endTime;
 
 }

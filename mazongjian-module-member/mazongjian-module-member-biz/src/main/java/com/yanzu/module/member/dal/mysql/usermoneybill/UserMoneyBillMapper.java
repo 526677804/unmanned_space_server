@@ -5,6 +5,8 @@ import java.util.*;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.user.vo.AppUserMoneyBillPageReqVO;
+import com.yanzu.module.member.controller.app.user.vo.AppUserMoneyBillRespVO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.yanzu.module.member.controller.admin.usermoneybill.vo.*;
@@ -42,5 +44,7 @@ public interface UserMoneyBillMapper extends BaseMapperX<UserMoneyBillDO> {
                 .betweenIfPresent(UserMoneyBillDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(UserMoneyBillDO::getId));
     }
+
+    List<AppUserMoneyBillRespVO> getOrderPage(AppUserMoneyBillPageReqVO reqVO);
 
 }

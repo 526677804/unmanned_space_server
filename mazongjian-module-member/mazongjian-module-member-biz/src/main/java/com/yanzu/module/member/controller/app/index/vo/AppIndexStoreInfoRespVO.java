@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Schema(description = "管理后台 - 门店管理 Response VO")
 @Data
@@ -54,6 +54,6 @@ public class AppIndexStoreInfoRespVO extends StoreInfoBaseVO {
     private Integer workDiscount;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 
 }

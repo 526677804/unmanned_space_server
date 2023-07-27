@@ -66,36 +66,36 @@ public class AppUserController {
     @Operation(summary = "获得基本信息")
     @PreAuthenticated
     public CommonResult<AppUserInfoRespVO> getUserInfo() {
-        MemberUserDO user = userService.getUser(getLoginUserId());
-        return success(UserConvert.INSTANCE.convert(user));
+        return success(userService.getUserInfo(getLoginUserId()));
     }
 
     @PostMapping("/getBalancePage")
     @Operation(summary = "获取用户账单明细分页列表")
     @PreAuthenticated
     public CommonResult<PageResult<AppUserMoneyBillRespVO>> getOrderPage(@RequestBody @Valid AppUserMoneyBillPageReqVO reqVO) {
-        return null;
+        return success(userService.getOrderPage(reqVO));
     }
 
     @GetMapping("/getGiftBalanceList")
     @Operation(summary = "获取赠送余额列表")
     @PreAuthenticated
     public CommonResult<AppGiftBalanceListRespVO> getGiftBalanceList() {
-        return null;
+        return success(userService.getGiftBalanceList());
     }
 
     @PostMapping("/rechargeBalance")
     @Operation(summary = "用户余额充值")
     @PreAuthenticated
     public CommonResult<Boolean> eechargeBalance(@RequestBody @Valid AppRechargeBalanceReqVO reqVO) {
-        return null;
+        userService.eechargeBalance(reqVO);
+        return success(true);
     }
 
     @GetMapping("/getFranchiseInfo")
     @Operation(summary = "获取加盟信息")
     @PreAuthenticated
     public CommonResult<AppFranchiseInfoRespVO> getFranchiseInfo() {
-        return null;
+        return success(userService.getFranchiseInfo());
     }
 
 
@@ -103,7 +103,8 @@ public class AppUserController {
     @Operation(summary = "提交加盟信息")
     @PreAuthenticated
     public CommonResult<Boolean> saveFranchiseInfo(@RequestBody @Valid AppFranchiseInfoReqVO reqVO) {
-        return null;
+        userService.saveFranchiseInfo(reqVO);
+        return success(true);
     }
 
 
@@ -111,9 +112,8 @@ public class AppUserController {
     @Operation(summary = "获取用户优惠券分页列表")
     @PreAuthenticated
     public CommonResult<PageResult<AppCouponPageRespVO>> getCouponPage(@RequestBody @Valid AppCouponPageReqVO reqVO) {
-        return null;
+        return success(userService.getCouponPage(reqVO));
     }
-
 
 
 }

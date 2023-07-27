@@ -8,7 +8,7 @@ import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY;
 
@@ -20,10 +20,10 @@ public class AppUserMoneyBillPageReqVO extends PageParam {
 
     @Schema(description = "开始时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
-    private LocalDateTime startTime;
+    private Date startTime;
 
     @Schema(description = "结束时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
-    private LocalDateTime endTime;
+    private Date endTime;
 
 }

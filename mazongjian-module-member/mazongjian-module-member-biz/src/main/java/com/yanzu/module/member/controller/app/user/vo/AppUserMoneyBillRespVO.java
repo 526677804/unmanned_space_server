@@ -1,5 +1,7 @@
 package com.yanzu.module.member.controller.app.user.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.controller.admin.usermoneybill.vo.UserMoneyBillBaseVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -7,7 +9,8 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Date;
 
 @Schema(description = "miniapp - 用户账单明细 Response VO")
 @Data
@@ -39,6 +42,7 @@ public class AppUserMoneyBillRespVO  {
     private String remark;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    private Date createTime;
 
 }

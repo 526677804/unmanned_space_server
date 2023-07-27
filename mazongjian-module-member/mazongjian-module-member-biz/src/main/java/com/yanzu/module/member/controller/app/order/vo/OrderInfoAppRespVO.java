@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Schema(description = "miniapp - 订单管理 Response VO")
 @Data
@@ -42,10 +42,10 @@ public class OrderInfoAppRespVO  {
     private Long userId;
 
     @Schema(description = "订单开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime startTime;
+    private Date startTime;
 
     @Schema(description = "订单结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime endTime;
+    private Date endTime;
 
     @Schema(description = "订单价格", requiredMode = Schema.RequiredMode.REQUIRED, example = "1698")
     private BigDecimal price;
@@ -75,6 +75,6 @@ public class OrderInfoAppRespVO  {
     private Integer status;
 
     @Schema(description = "创建时间/下单时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 
 }

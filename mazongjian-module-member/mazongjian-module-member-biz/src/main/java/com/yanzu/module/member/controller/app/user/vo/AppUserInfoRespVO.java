@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Schema(description = "用户 APP - 用户个人信息 Response VO")
 @Data
@@ -33,6 +33,6 @@ public class AppUserInfoRespVO {
     private Integer couponCount;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 
 }

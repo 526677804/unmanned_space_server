@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Schema(description = "miniapp - 保洁信息 Response VO")
 @Data
@@ -34,19 +34,19 @@ public class AppClearPageRespVO {
     private Integer roomType;
 
     @Schema(description = "订单结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime orderEndTime;
+    private Date orderEndTime;
 
     @Schema(description = "开始时间")
-    private LocalDateTime startTime;
+    private Date startTime;
 
     @Schema(description = "完成时间")
-    private LocalDateTime finishTime;
+    private Date finishTime;
 
     @Schema(description = "状态 值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private String status;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 
 
 }

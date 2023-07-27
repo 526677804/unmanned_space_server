@@ -8,7 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
 
@@ -27,7 +27,7 @@ public class AppCouponPageRespVO {
     private Long couponId;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 
     @Schema(description = "持有用户", example = "13545")
     private String userId;
@@ -35,7 +35,7 @@ public class AppCouponPageRespVO {
     @Schema(description = "过期时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "过期时间不能为空")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime expriceTime;
+    private Date expriceTime;
 
     @Schema(description = "优惠券名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "新人福利满50-10")
     @NotNull(message = "优惠券名称不能为空")

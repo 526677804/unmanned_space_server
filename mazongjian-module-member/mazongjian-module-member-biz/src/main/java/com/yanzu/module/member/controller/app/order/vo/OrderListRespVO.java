@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order.vo
@@ -42,10 +42,10 @@ public class OrderListRespVO {
     private String nickname;
 
     @Schema(description = "订单开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime startTime;
+    private Date startTime;
 
     @Schema(description = "订单结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime endTime;
+    private Date endTime;
 
     @Schema(description = "实际支付价格", example = "6888")
     private BigDecimal payPrice;
@@ -57,6 +57,6 @@ public class OrderListRespVO {
     private Integer status;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Schema(description = "miniapp - 保洁账单信息的  Req VO")
 @Data

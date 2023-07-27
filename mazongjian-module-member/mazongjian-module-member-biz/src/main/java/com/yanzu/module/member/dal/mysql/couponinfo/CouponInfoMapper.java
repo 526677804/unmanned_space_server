@@ -47,4 +47,5 @@ public interface CouponInfoMapper extends BaseMapperX<CouponInfoDO> {
 //                .orderByDesc(CouponInfoDO::getId))
     }
 
+    Integer countByUserId(Long userId);
 }

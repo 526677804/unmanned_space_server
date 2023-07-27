@@ -1,5 +1,6 @@
 package com.yanzu.module.member.dal.mysql.storeuser;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import com.yanzu.framework.common.pojo.PageResult;
@@ -36,5 +37,7 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
                 .eqIfPresent(StoreUserDO::getStatus, reqVO.getStatus())
                 .orderByDesc(StoreUserDO::getId));
     }
+
+    BigDecimal getGiftBalanceByUserId(Long userId);
 
 }

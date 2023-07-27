@@ -6,7 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.Date;
+
 
 @Schema(description = "用户 APP - 登录 Response VO")
 @Data
@@ -25,6 +26,6 @@ public class AppAuthLoginRespVO {
     private String refreshToken;
 
     @Schema(description = "过期时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime expiresTime;
+    private Date expiresTime;
 
 }

@@ -64,11 +64,11 @@ public class AppAuthController {
 
     // ========== 短信登录相关 ==========
 
-//    @PostMapping("/sms-login")
-//    @Operation(summary = "使用手机 + 验证码登录")
-//    public CommonResult<AppAuthLoginRespVO> smsLogin(@RequestBody @Valid AppAuthSmsLoginReqVO reqVO) {
-//        return success(authService.smsLogin(reqVO));
-//    }
+    @PostMapping("/sms-login")
+    @Operation(summary = "使用手机 + 验证码登录")
+    public CommonResult<AppAuthLoginRespVO> smsLogin(@RequestBody @Valid AppAuthSmsLoginReqVO reqVO) {
+        return success(authService.smsLogin(reqVO));
+    }
 
     @PostMapping("/send-sms-code")
     @Operation(summary = "发送手机验证码")

@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Schema(description = "miniapp - 用户会员分页列表 Resp VO")
 @Data
@@ -31,9 +31,9 @@ public class AppMemberPageRespVO {
     private Integer orderCount;
 
     @Schema(description = "最近下单时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime orderTime;
+    private Date orderTime;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime createTime;
+    private Date createTime;
 
 }
