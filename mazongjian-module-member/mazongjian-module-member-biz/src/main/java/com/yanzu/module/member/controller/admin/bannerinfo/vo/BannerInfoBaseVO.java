@@ -28,7 +28,8 @@ public class BannerInfoBaseVO {
     @NotNull(message = "排序不能为空")
     private Integer sortId;
 
-    @Schema(description = "广告类型", example = "2")
+    @Schema(description = "广告类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
+    @NotNull(message = "广告类型不能为空")
     private Byte type;
 
 

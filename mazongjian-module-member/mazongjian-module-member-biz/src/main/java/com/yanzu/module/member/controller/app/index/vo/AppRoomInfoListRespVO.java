@@ -1,5 +1,7 @@
 package com.yanzu.module.member.controller.app.index.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.controller.app.order.vo.TimeSlotVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -48,21 +50,23 @@ public class AppRoomInfoListRespVO {
     private Integer sortId;
 
     @Schema(description = "每日禁用开始时间")
-    private Date banTimeStart;
+    private String banTimeStart;
 
     @Schema(description = "每日禁用结束时间")
-    private Date banTimeEnd;
+    private String banTimeEnd;
 
     @Schema(description = "订单/预约开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date startTime;
 
     @Schema(description = "订单/预约结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date endTime;
 
     @Schema(description = "状态 值见字典", example = "2")
     private Integer status;
 
-    @Schema(description = "不可用的时间段,为空则表示未来5天都可以使用")
+    @Schema(description = "不可用的时间段,为空则表示未来5天除每日禁用时间外都可以使用")
     private List<TimeSlotVO> disabledTimeSlot;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)

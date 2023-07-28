@@ -29,10 +29,10 @@ public class AppRoomListRespVO {
     private String label;
 
     @Schema(description = "禁用开始时间")
-    private Date banTimeStart;
+    private String banTimeStart;
 
     @Schema(description = "禁用结束时间")
-    private Date banTimeEnd;
+    private String banTimeEnd;
 
     @Schema(description = "总完成订单数")
     private Integer totalOrderNum;

@@ -32,10 +32,13 @@ public class AppStorePageRespVO {
     private String headImg;
 
     @Schema(description = "纬度")
-     private Double lat;
+    private Double lat;
 
     @Schema(description = "经度")
-     private Double lon;
+    private Double lon;
+
+    @Schema(description = "距离")
+    private Double distance;
 
     @Schema(description = "详细地址")
     private String address;

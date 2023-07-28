@@ -17,7 +17,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
-    List<OrderInfoDO> getByRoomIds(List<Long> roomIds);
+    List<OrderInfoDO> getByRoomIds(@Param("roomIds") List<Long> roomIds);
 
     OrderInfoDO getByUserAndStatus(@Param("userId") Long userId, @Param("status") Integer status);
 }

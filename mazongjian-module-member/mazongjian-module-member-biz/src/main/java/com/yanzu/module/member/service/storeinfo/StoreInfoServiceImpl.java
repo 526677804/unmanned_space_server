@@ -27,8 +27,7 @@ import java.util.List;
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.AUTH_PROMISSION_ERROR;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.OPRATION_ERROR;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
  * 门店管理 Service 实现类
@@ -133,6 +132,15 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //修改 只有所有者才可以修改
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
             checkStorePromission(roomInfoDO.getStoreId(), getLoginUserId(), "1");
+            roomInfoDO.setRoomName(reqVO.getRoomName());
+            roomInfoDO.setType(reqVO.getType());
+            roomInfoDO.setPrice(reqVO.getPrice());
+            roomInfoDO.setLabel(reqVO.getLabel());
+            roomInfoDO.setImageUrls(reqVO.getImageUrls());
+            roomInfoDO.setStoreId(reqVO.getStoreId());
+            roomInfoDO.setBanTimeStart(reqVO.getBanTimeStart());
+            roomInfoDO.setBanTimeEnd(reqVO.getBanTimeEnd());
+            roomInfoMapper.updateById(roomInfoDO);
         }
 
     }
@@ -174,9 +182,24 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Transactional
     public void saveDiscountRuleDetail(AppDiscountRulesDetailReqVO reqVO) {
         //检查修改的权限 只有创建者才可以修改充值优惠规则
-        DiscountRulesDO discountRulesDO = discountRulesMapper.selectById(reqVO.getId());
+//        DiscountRulesDO discountRulesDO = discountRulesMapper.selectById(reqVO.getId());
         checkStorePromission(reqVO.getStoreId(), getLoginUserId(), "1");
-        discountRulesMapper.updateById(DiscountRulesConvert.INSTANCE.convert2(reqVO));
+        //如果已有相同的充值支付金额，则不允许再添加
+        int count = discountRulesMapper.countByStoreIdAndPayMoney(reqVO.getStoreId(), reqVO.getPayMoney());
+        if (count > 0) {
+            throw exception(DISCOUNTRULE_REPETITION_ERROR);
+        }
+        if (ObjectUtils.isEmpty(reqVO.getDiscountId())) {
+            //新增
+            DiscountRulesDO discountRulesDO = DiscountRulesConvert.INSTANCE.convert2(reqVO);
+            discountRulesMapper.insert(discountRulesDO);
+        } else {
+            DiscountRulesDO discountRulesDO = DiscountRulesConvert.INSTANCE.convert2(reqVO);
+            discountRulesDO.setStoreId(reqVO.getStoreId());
+            discountRulesDO.setPayMoney(reqVO.getPayMoney());
+            discountRulesDO.setGiftMoney(reqVO.getGiftMoney());
+            discountRulesMapper.updateById(discountRulesDO);
+        }
     }
 
 }

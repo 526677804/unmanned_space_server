@@ -10,11 +10,10 @@
      -->
 
     <select id="getRoomList" resultType="com.yanzu.framework.common.core.KeyValue">
-
-        select room_name key,room_id value
+        select room_name `key`,room_id `value`
         from member_room_info
         where deleted=0 and store_id=#{storeId}
-        order by id asc
+        order by sort_id asc
     </select>
     <select id="getRoomInfoList"
             resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO">
@@ -22,7 +21,7 @@
         from member_room_info
         where deleted = 0
           and store_id = #{storeId}
-        order sort_id
+        order by sort_id
 
     </select>
 </mapper>

@@ -111,19 +111,19 @@ public class AppStoreController {
         return success(storeInfoService.getDiscountRulesPage(reqVO));
     }
 
-    @PutMapping("/changeDiscountRulesStatus/{id}")
+    @PutMapping("/changeDiscountRulesStatus/{discountId}")
     @Operation(summary = "修改门店充值优惠信息状态（启用/禁用）")
     @PreAuthenticated
-    public CommonResult<Boolean> changeDiscountRulesStatus(@PathVariable("id") Long id) {
-        storeInfoService.changeDiscountRulesStatus(id);
+    public CommonResult<Boolean> changeDiscountRulesStatus(@PathVariable("discountId") Long discountId) {
+        storeInfoService.changeDiscountRulesStatus(discountId);
         return success(true);
     }
 
-    @GetMapping("/getDiscountRuleDetail/{id}")
+    @GetMapping("/getDiscountRuleDetail/{discountId}")
     @Operation(summary = "获取门店充值优惠信息详情")
     @PreAuthenticated
-    public CommonResult<AppDiscountRulesDetailRespVO> getDiscountRuleDetail(@PathVariable("id") Long id) {
-        return success(storeInfoService.getDiscountRuleDetail(id));
+    public CommonResult<AppDiscountRulesDetailRespVO> getDiscountRuleDetail(@PathVariable("discountId") Long discountId) {
+        return success(storeInfoService.getDiscountRuleDetail(discountId));
     }
 
     @PostMapping("/saveDiscountRuleDetail")

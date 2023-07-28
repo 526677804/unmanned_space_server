@@ -64,11 +64,11 @@ public class RoomInfoDO extends BaseDO {
     /**
      * 禁用开始时间
      */
-    private LocalDateTime banTimeStart;
+    private String banTimeStart;
     /**
      * 禁用结束时间
      */
-    private LocalDateTime banTimeEnd;
+    private String banTimeEnd;
     /**
      * 总完成订单数
      */

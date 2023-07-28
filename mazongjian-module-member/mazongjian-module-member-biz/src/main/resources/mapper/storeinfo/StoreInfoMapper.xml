@@ -17,10 +17,11 @@
         <result column="lon" property="lon"/>
         <result column="address" property="address"/>
         <result column="status" property="status"/>
-        <collection property="discountRules" column="store_id" javaType="ArrayList" ofType="String"
+        <result column="distance" property="distance"/>
+        <collection property="discountRules" column="store_id" ofType="String"
                     select="getDiscountRules"/>
     </resultMap>
-    <select id="discountRules" parameterType="Long">
+    <select id="getDiscountRules" resultType="java.lang.String">
         select concat('优惠：充值', pay_money, '元,赠送', gift_money, '元！')
         from member_discount_rules
         where deleted = 0
@@ -39,33 +40,46 @@
     <select id="getStorePageList"
             resultMap="StorePageList">
         select s.store_id,s.store_name,s.city_name,s.head_img,s.lat,s.lon,s.address,s.status
+        <if test=" null!=lat and null!=lon">
+            ,(
+            6371 * ACOS(
+            COS(RADIANS(#{lat})) *
+            COS(RADIANS(lat)) *
+            COS(RADIANS(lon) - RADIANS(#{lon})) +
+            SIN(RADIANS(#{lat})) * SIN(RADIANS(lat))
+            )
+            ) AS distance
+        </if>
         from member_store_info s
         <where>
             s.deleted=0 and s.status=0
             <if test=" null!=cityName and cityName!=''">
                 and s.city_name=#{cityName}
             </if>
-        </where>
 
+        </where>
+        <if test=" null!=lat and null!=lon">
+            order by distance asc
+        </if>
     </select>
     <select id="getStoreInfo"
             resultType="com.yanzu.module.member.controller.app.index.vo.AppIndexStoreInfoRespVO">
         select *
         from member_store_info
         where deleted = 0
-          and s.status = 0
-          and id = #{storeId}
+          and status = 0
+          and store_id = #{storeId}
 
     </select>
     <select id="getStoreList" resultType="com.yanzu.framework.common.core.KeyValue">
-        select store_name key,store_id value
+        select store_name `key`,store_id `value`
         from member_store_info
         where deleted = 0
-        and s.status = 0
+        and status = 0
         <if test=" null!=name and name!=''">
             and locate(#{name},store_name)>0
         </if>
-        order by id asc
+        order by store_id asc
 
     </select>
     <select id="getRoomInfoList"
@@ -82,7 +96,8 @@
         s.*,
         ( SELECT count( 1 ) FROM member_room_info WHERE deleted = 0 AND store_id = s.store_id ) roomNum,
         ( SELECT count( 1 ) FROM member_device_info WHERE deleted = 0 AND store_id = s.store_id ) deviceNum,
-        ( SELECT count( 1 ) FROM member_device_info WHERE deleted = 0 AND STATUS = 1 AND room_id = s.store_id ) deviceOnlineNum
+        ( SELECT count( 1 ) FROM member_device_info WHERE deleted = 0 AND STATUS = 1 AND room_id = s.store_id )
+        deviceOnlineNum
         FROM
         member_store_info s
         WHERE

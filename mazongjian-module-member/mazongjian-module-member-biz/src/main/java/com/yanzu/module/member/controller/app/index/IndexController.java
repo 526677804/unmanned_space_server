@@ -66,7 +66,7 @@ public class IndexController {
     @GetMapping("/getStoreList")
     @Operation(summary = "获取门店下拉选择列表")
     @PreAuthenticated
-    public CommonResult<List<KeyValue<String, Long>>> getStoreList(@RequestParam("name")String name) {
+    public CommonResult<List<KeyValue<String, Long>>> getStoreList(@RequestParam(value = "name",required = false)String name) {
         return success(indexService.getStoreList(name));
     }
 

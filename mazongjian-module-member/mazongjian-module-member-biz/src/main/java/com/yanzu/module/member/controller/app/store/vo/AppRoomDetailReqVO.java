@@ -6,7 +6,6 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.Date;
 
 @Schema(description = "miniapp - 房间详情 Req VO")
 @Data
@@ -41,10 +40,10 @@ public class AppRoomDetailReqVO {
     @Schema(description = "排序位置", example = "0")
     private Integer sortId;
 
-    @Schema(description = "禁用开始时间")
-    private Date banTimeStart;
+    @Schema(description = "禁用开始时间 HH:mm:ss")
+    private String banTimeStart;
 
-    @Schema(description = "禁用结束时间")
-    private Date banTimeEnd;
+    @Schema(description = "禁用结束时间 HH:mm:ss")
+    private String banTimeEnd;
 
 }

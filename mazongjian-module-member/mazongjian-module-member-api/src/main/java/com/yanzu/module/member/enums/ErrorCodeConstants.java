@@ -25,6 +25,7 @@ public interface ErrorCodeConstants {
     ErrorCode NOT_START_ORDER = new ErrorCode(1004004001, "没有进行中的订单！");
     ErrorCode DEVICE_OPRATION_ERROR = new ErrorCode(1004004002, "设备操作失败！");
     ErrorCode ORDER_STATUS_NOT_START_ERROR = new ErrorCode(1004004003, "请先开始订单，再操作开门！");
+    ErrorCode DISCOUNTRULE_REPETITION_ERROR = new ErrorCode(1004004024, "该充值金额已存在其他规则中，不允许重复添加！");
 
 
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");

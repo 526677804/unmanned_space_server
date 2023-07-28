@@ -38,7 +38,12 @@
     <!-- 列表 -->
     <el-table v-loading="loading" :data="list">
       <el-table-column label="编号" align="center" prop="id" />
-      <el-table-column label="图片地址" align="center" prop="imgUrl" />
+      <!-- <el-table-column label="图片地址" align="center" prop="imgUrl" /> -->
+      <el-table-column label="图片" align="center" prop="imgUrl" max-width="150px" max-height="150px">
+        <template v-slot="scope">
+          <img :src="scope.row.imgUrl" width="150px" height="50px"/>
+        </template>
+      </el-table-column>
       <el-table-column label="标题" align="center" prop="title" />
       <el-table-column label="跳转地址/页面路径" align="center" prop="jumpUrl" />
       <el-table-column label="排序" align="center" prop="sortId" />
@@ -68,8 +73,8 @@
     <!-- 对话框(添加 / 修改) -->
     <el-dialog :title="title" :visible.sync="open" width="500px" v-dialogDrag append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="图片地址">
-          <imageUpload v-model="form.imgUrl"/>
+        <el-form-item label="图片">
+          <imageUpload v-model="form.imgUrl" limit=1 />
         </el-form-item>
         <el-form-item label="标题" prop="title">
           <el-input v-model="form.title" placeholder="请输入标题" />
@@ -83,7 +88,7 @@
         <el-form-item label="广告类型" prop="type">
           <el-select v-model="form.type" placeholder="请选择广告类型">
             <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_BANNER_TYPE)"
-                       :key="dict.value" :label="dict.label" :value="dict.value" />
+                       :key="dict.value" :label="dict.label" :value="parseInt(dict.value)" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -132,8 +137,9 @@ export default {
       form: {},
       // 表单校验
       rules: {
-        imgUrl: [{ required: true, message: "图片地址不能为空", trigger: "blur" }],
+        imgUrl: [{ required: true, message: "图片不能为空", trigger: "blur" }],
         sortId: [{ required: true, message: "排序不能为空", trigger: "blur" }],
+        type: [{ required: true, message: "广告类型不能为空", trigger: "blur" }],
       }
     };
   },

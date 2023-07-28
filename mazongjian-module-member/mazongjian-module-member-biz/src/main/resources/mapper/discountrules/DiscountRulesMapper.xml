@@ -5,7 +5,7 @@
         update
             member_discount_rules
         set status=#{status}
-        where id = #{id}
+        where discount_id = #{id}
     </update>
 
     <!--
@@ -26,5 +26,13 @@
         </if>
         order by pay_money
 
+    </select>
+    <select id="countByStoreIdAndPayMoney" resultType="java.lang.Integer">
+
+        select count(1)
+        from member_discount_rules
+        where deleted = 0
+          AND store_id = #{storeId}
+          and pay_money = #{payMoney}
     </select>
 </mapper>

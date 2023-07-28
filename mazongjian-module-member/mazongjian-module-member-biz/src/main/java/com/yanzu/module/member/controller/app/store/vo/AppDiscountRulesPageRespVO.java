@@ -18,7 +18,7 @@ import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_D
 public class AppDiscountRulesPageRespVO {
 
     @Schema(description = "Id")
-    private Long id;
+    private Long discountId;
 
     @Schema(description = "门店Id")
     private Long storeId;

@@ -233,6 +233,7 @@ public class AppUserServiceImpl implements AppUserService {
         FranchiseInfoDO franchiseInfoDO = franchiseInfoMapper.getByUserId(getLoginUserId());
         if (ObjectUtils.isEmpty(franchiseInfoDO)) {
             FranchiseInfoDO newfranchiseInfoDO = FranchiseInfoConvert.INSTANCE.convert2(reqVO);
+            newfranchiseInfoDO.setUserId(getLoginUserId());
             franchiseInfoMapper.insert(newfranchiseInfoDO);
         }
     }

@@ -32,11 +32,11 @@ public class AppRoomDetailRespVO {
     @Schema(description = "排序位置", example = "0")
     private Integer sortId;
 
-    @Schema(description = "禁用开始时间")
-    private Date banTimeStart;
+    @Schema(description = "禁用开始时间  HH:mm:ss")
+    private String banTimeStart;
 
-    @Schema(description = "禁用结束时间")
-    private Date banTimeEnd;
+    @Schema(description = "禁用结束时间  HH:mm:ss")
+    private String banTimeEnd;
 
     @Schema(description = "状态", example = "2")
     private Integer status;

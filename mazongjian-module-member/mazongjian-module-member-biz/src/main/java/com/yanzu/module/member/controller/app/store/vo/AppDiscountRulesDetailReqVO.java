@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.app.store.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yanzu.framework.common.pojo.PageParam;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -18,7 +19,7 @@ import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_D
 public class AppDiscountRulesDetailReqVO {
 
     @Schema(description = "Id")
-    private Long id;
+    private Long discountId;
 
     @Schema(description = "门店Id")
     @NotNull(message = "门店不能为空")
@@ -35,9 +36,8 @@ public class AppDiscountRulesDetailReqVO {
     @Schema(description = "过期时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "过期时间不能为空")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date expriceTime;
 
-    @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Date createTime;
 
 }
