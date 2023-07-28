@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.app.index.vo;
 
+import com.yanzu.framework.common.pojo.PageParam;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,9 +18,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AppStorePageReqVO {
+public class AppStorePageReqVO extends PageParam {
 
     @Schema(description = "城市名称")
-    private String city;
+    private String cityName;
 
 }

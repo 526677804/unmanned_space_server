@@ -4,9 +4,10 @@ import java.util.*;
 
 import com.yanzu.framework.common.pojo.PageResult;
 
+import com.yanzu.module.member.controller.app.store.vo.AppStoreInfoReqVO;
+import com.yanzu.module.member.controller.app.store.vo.AppStoreInfoRespVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 
 /**
@@ -19,16 +20,9 @@ public interface StoreInfoConvert {
 
     StoreInfoConvert INSTANCE = Mappers.getMapper(StoreInfoConvert.class);
 
-    StoreInfoDO convert(StoreInfoCreateReqVO bean);
 
-    StoreInfoDO convert(StoreInfoUpdateReqVO bean);
+    StoreInfoDO convert(AppStoreInfoReqVO bean);
 
-    StoreInfoRespVO convert(StoreInfoDO bean);
 
-    List<StoreInfoRespVO> convertList(List<StoreInfoDO> list);
-
-    PageResult<StoreInfoRespVO> convertPage(PageResult<StoreInfoDO> page);
-
-    List<StoreInfoExcelVO> convertList02(List<StoreInfoDO> list);
-
+    AppStoreInfoRespVO convert2(StoreInfoDO storeInfoDO);
 }

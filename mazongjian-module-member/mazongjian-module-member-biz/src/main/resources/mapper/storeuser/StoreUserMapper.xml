@@ -26,4 +26,13 @@
           and s.deleted = 0
         order by su.gift_balance desc
     </select>
+    <select id="checkStorePromission" resultType="java.lang.Long">
+        select id
+        from member_store_user
+        where deleted = 0
+          and type in (#{type})
+          and store_id = #{storeId}
+          and user_id = #{userId}
+    </select>
+
 </mapper>

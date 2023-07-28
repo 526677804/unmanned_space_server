@@ -4,9 +4,10 @@ import java.util.*;
 
 import com.yanzu.framework.common.pojo.PageResult;
 
+import com.yanzu.module.member.controller.app.store.vo.AppDiscountRulesDetailReqVO;
+import com.yanzu.module.member.controller.app.store.vo.AppDiscountRulesDetailRespVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import com.yanzu.module.member.controller.admin.discountrules.vo.*;
 import com.yanzu.module.member.dal.dataobject.discountrules.DiscountRulesDO;
 
 /**
@@ -19,16 +20,8 @@ public interface DiscountRulesConvert {
 
     DiscountRulesConvert INSTANCE = Mappers.getMapper(DiscountRulesConvert.class);
 
-    DiscountRulesDO convert(DiscountRulesCreateReqVO bean);
+    AppDiscountRulesDetailRespVO convert2(DiscountRulesDO bean);
+    DiscountRulesDO convert2(AppDiscountRulesDetailReqVO bean);
 
-    DiscountRulesDO convert(DiscountRulesUpdateReqVO bean);
-
-    DiscountRulesRespVO convert(DiscountRulesDO bean);
-
-    List<DiscountRulesRespVO> convertList(List<DiscountRulesDO> list);
-
-    PageResult<DiscountRulesRespVO> convertPage(PageResult<DiscountRulesDO> page);
-
-    List<DiscountRulesExcelVO> convertList02(List<DiscountRulesDO> list);
 
 }

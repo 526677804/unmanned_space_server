@@ -23,6 +23,9 @@ public class AppDiscountRulesPageRespVO {
     @Schema(description = "门店Id")
     private Long storeId;
 
+    @Schema(description = "门店名称")
+    private String storeName;
+
     @Schema(description = "支付金额", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "支付金额不能为空")
     private BigDecimal payMoney;

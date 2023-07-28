@@ -27,6 +27,15 @@ public interface IotClient {
 
 
     /**
+     * 调用门禁
+     *
+     * @param reqVO
+     * @return
+     */
+    @Post(url = "https://www.wmj.com.cn/api/oplock")
+    IotApiBaseRespVO runDoorV1(@Body IotApiBaseReqVO reqVO);
+
+    /**
      * 调用空开
      *
      * @param reqVO

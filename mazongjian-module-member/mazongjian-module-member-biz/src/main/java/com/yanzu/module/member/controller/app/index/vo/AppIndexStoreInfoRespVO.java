@@ -1,6 +1,5 @@
 package com.yanzu.module.member.controller.app.index.vo;
 
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoBaseVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,11 +7,10 @@ import lombok.ToString;
 
 import java.util.Date;
 
-@Schema(description = "管理后台 - 门店管理 Response VO")
+@Schema(description = "miapp - 门店管理 Response VO")
 @Data
-@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class AppIndexStoreInfoRespVO extends StoreInfoBaseVO {
+public class AppIndexStoreInfoRespVO  {
 
     @Schema(description = "门店ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "13809")
     private Long storeId;
@@ -29,7 +27,7 @@ public class AppIndexStoreInfoRespVO extends StoreInfoBaseVO {
     @Schema(description = "缩略图url")
     private String headImg;
 
-    @Schema(description = "门店环境/门店风采照片url")
+    @Schema(description = "门店环境/门店风采照片url 逗号分隔")
     private String storeEnvImg;
 
     @Schema(description = "门店公告")

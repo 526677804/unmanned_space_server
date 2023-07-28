@@ -1,7 +1,6 @@
 package com.yanzu.framework.web.core.util;
 
 import cn.hutool.core.util.NumberUtil;
-import cn.hutool.core.util.StrUtil;
 import com.yanzu.framework.common.enums.UserTypeEnum;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.web.config.WebProperties;
@@ -92,9 +91,10 @@ public class WebFrameworkUtils {
         if (request.getRequestURI().startsWith(properties.getAdminApi().getPrefix())) {
             return UserTypeEnum.ADMIN.getValue();
         }
-        if (request.getRequestURI().startsWith(properties.getAppApi().getPrefix())) {
-            return UserTypeEnum.MEMBER.getValue();
-        }
+        //
+//        if (request.getRequestURI().startsWith(properties.getAppApi().getPrefix())) {
+//            return UserTypeEnum.MEMBER.getValue();
+//        }
         return null;
     }
 

@@ -1,9 +1,7 @@
 package com.yanzu.module.member.controller.app.index.vo;
 
-import com.yanzu.module.member.controller.admin.roominfo.vo.RoomInfoBaseVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.math.BigDecimal;
@@ -12,7 +10,7 @@ import java.util.Date;
 @Schema(description = "miniapp - 房间信息 Response VO")
 @Data
 @ToString(callSuper = true)
-public class AppRoomInfoRespVO  {
+public class AppRoomInfoRespVO {
 
     @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "16599")
     private Long roomId;

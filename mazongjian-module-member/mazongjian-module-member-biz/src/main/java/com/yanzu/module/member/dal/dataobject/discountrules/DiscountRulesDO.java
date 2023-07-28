@@ -45,7 +45,7 @@ public class DiscountRulesDO extends BaseDO {
     /**
      * 适用门店id
      */
-    private String storeIds;
+    private Long storeId;
     /**
      * 状态
      *

@@ -17,4 +17,7 @@ public class AppStoreAdminReqVO  extends PageParam {
     @Schema(description = "查询关键字")
     private String name;
 
+    @Schema(description = "城市名称")
+    private String cityName;
+
 }

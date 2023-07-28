@@ -40,14 +40,28 @@ export const DICT_TYPE = {
   INFRA_CODEGEN_SCENE: 'infra_codegen_scene',
   INFRA_FILE_STORAGE: 'infra_file_storage',
 
-  // ========== BPM 模块 ==========
-  BPM_MODEL_CATEGORY: 'bpm_model_category',
-  BPM_MODEL_FORM_TYPE: 'bpm_model_form_type',
-  BPM_TASK_ASSIGN_RULE_TYPE: 'bpm_task_assign_rule_type',
-  BPM_PROCESS_INSTANCE_STATUS: 'bpm_process_instance_status',
-  BPM_PROCESS_INSTANCE_RESULT: 'bpm_process_instance_result',
-  BPM_TASK_ASSIGN_SCRIPT: 'bpm_task_assign_script',
-  BPM_OA_LEAVE_TYPE: 'bpm_oa_leave_type',
+  // ========== MEMBER 模块 ==========
+  
+  MEMBER_BANNER_TYPE:'member_banner_type',//miniapp广告类型
+  MEMBER_CLEAR_INFO_STATUS:'member_clear_info_status',//miniapp保洁信息状态
+  MEMBER_COUPON_STATUS:'member_coupon_status',//miniapp优惠券状态
+  MEMBER_COUPON_TYPE:'member_coupon_type',//miniapp优惠券类型
+  MEMBER_DEVICE_TYPE:'member_device_type',//miniapp设备类型
+  MEMBER_DISCOUNT_RULES_STATUS:'member_discount_rules_status',//miniapp充值优惠规则状态
+  MEMBER_FRANCHISE_STATUS:'member_franchise_status',//miniapp用户加盟信息状态
+  MEMBER_GAME_STATUS:'member_game_status',//miniapp在线组局状态
+  MEMBER_ORDER_PAY_TYPE:'member_order_pay_type',//miniapp订单支付方式
+  MEMBER_ORDER_STATUS:'member_order_status',//miniapp订单支付状态
+  MEMBER_POINT_BIZ_TYPE:'member_point_biz_type',//积分业务类型
+  MEMBER_POINT_STATUS:'member_point_status',//积分订单状态
+  MEMBER_ROOM_LABEL:'member_room_label',//miniapp房间标签
+  MEMBER_ROOM_STATUS:'member_room_status',//miniapp房间使用状态
+  MEMBER_ROOM_TYPE:'member_room_type',//miniapp房间类型
+  MEMBER_STORE_USER_TYPE:'member_store_user_type',//miniapp门店用户类型
+  MEMBER_USER_MONEY_BILL_TYPE:'member_user_money_bill_type',//miniapp用户账单明细类型
+  MEMBER_USER_MONEY_TYPE:'member_user_money_type',//miniapp用户账单金额类型
+  MEMBER_USER_TYPE:'member_user_type',//miniapp用户类型
+  MEMBER_USER_WITHDRAWAL:'member_user_withdrawal',//miniapp用户提现记录状态
 
   // ========== PAY 模块 ==========
   PAY_CHANNEL_WECHAT_VERSION: 'pay_channel_wechat_version', // 微信渠道版本

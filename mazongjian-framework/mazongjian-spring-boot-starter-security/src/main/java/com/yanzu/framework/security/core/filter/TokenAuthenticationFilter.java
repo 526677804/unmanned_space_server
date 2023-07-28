@@ -1,6 +1,5 @@
 package com.yanzu.framework.security.core.filter;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yanzu.framework.common.exception.ServiceException;
 import com.yanzu.framework.common.pojo.CommonResult;
@@ -13,7 +12,6 @@ import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.system.api.oauth2.OAuth2TokenApi;
 import com.yanzu.module.system.api.oauth2.dto.OAuth2AccessTokenCheckRespDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -43,14 +41,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String token = SecurityFrameworkUtils.obtainAuthorization(request, securityProperties.getTokenHeader());
         if (StrUtil.isNotEmpty(token)) {
-            Integer userType = WebFrameworkUtils.getLoginUserType(request);
+//            Integer userType = WebFrameworkUtils.getLoginUserType(request);
             try {
                 // 1.1 基于 token 构建登录用户
-                LoginUser loginUser = buildLoginUserByToken(token, userType);
+                LoginUser loginUser = buildLoginUserByToken(token);
                 // 1.2 模拟 Login 功能，方便日常开发调试
-                if (loginUser == null) {
-                    loginUser = mockLoginUser(request, token, userType);
-                }
+//                if (loginUser == null) {
+//                    loginUser = mockLoginUser(request, token);
+//                }
 
                 // 2. 设置当前用户
                 if (loginUser != null) {
@@ -67,16 +65,16 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    private LoginUser buildLoginUserByToken(String token, Integer userType) {
+    private LoginUser buildLoginUserByToken(String token) {
         try {
             OAuth2AccessTokenCheckRespDTO accessToken = oauth2TokenApi.checkAccessToken(token);
             if (accessToken == null) {
                 return null;
             }
             // 用户类型不匹配，无权限
-            if (ObjectUtil.notEqual(accessToken.getUserType(), userType)) {
-                throw new AccessDeniedException("错误的用户类型");
-            }
+//            if (ObjectUtil.notEqual(accessToken.getUserType(), userType)) {
+//                throw new AccessDeniedException("错误的用户类型");
+//            }
             // 构建登录用户
             return new LoginUser().setId(accessToken.getUserId()).setUserType(accessToken.getUserType())
                     .setTenantId(accessToken.getTenantId()).setScopes(accessToken.getScopes());
@@ -88,15 +86,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * 模拟登录用户，方便日常开发调试
-     *
+     * <p>
      * 注意，在线上环境下，一定要关闭该功能！！！
      *
-     * @param request 请求
-     * @param token 模拟的 token，格式为 {@link SecurityProperties#getMockSecret()} + 用户编号
-     * @param userType 用户类型
+     * @param request  请求
+     * @param token    模拟的 token，格式为 {@link SecurityProperties#getMockSecret()} + 用户编号
      * @return 模拟的 LoginUser
      */
-    private LoginUser mockLoginUser(HttpServletRequest request, String token, Integer userType) {
+    private LoginUser mockLoginUser(HttpServletRequest request, String token) {
         if (!securityProperties.getMockEnable()) {
             return null;
         }
@@ -106,7 +103,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         }
         // 构建模拟用户
         Long userId = Long.valueOf(token.substring(securityProperties.getMockSecret().length()));
-        return new LoginUser().setId(userId).setUserType(userType)
+        return new LoginUser().setId(userId).setUserType(2)
                 .setTenantId(WebFrameworkUtils.getTenantId(request));
     }
 

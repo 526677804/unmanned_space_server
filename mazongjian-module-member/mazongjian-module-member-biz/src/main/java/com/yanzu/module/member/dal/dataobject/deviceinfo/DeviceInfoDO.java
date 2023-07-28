@@ -1,11 +1,10 @@
 package com.yanzu.module.member.dal.dataobject.deviceinfo;
 
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import lombok.*;
 
 /**
  * 设备管理 DO
@@ -34,12 +33,12 @@ public class DeviceInfoDO extends BaseDO {
     /**
      * 设备类型
      *
-     * 枚举 {@link TODO member_device_type 对应的类}
      */
     private Integer type;
     /**
      * 房间id
      */
+    private Long storeId;
     private Long roomId;
     /**
      * 状态

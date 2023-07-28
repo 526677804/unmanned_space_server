@@ -9,4 +9,20 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getRoomList" resultType="com.yanzu.framework.common.core.KeyValue">
+
+        select room_name key,room_id value
+        from member_room_info
+        where deleted=0 and store_id=#{storeId}
+        order by id asc
+    </select>
+    <select id="getRoomInfoList"
+            resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO">
+        select *
+        from member_room_info
+        where deleted = 0
+          and store_id = #{storeId}
+        order sort_id
+
+    </select>
 </mapper>

@@ -1,15 +1,10 @@
 package com.yanzu.module.member.controller.app.user;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
-import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
-import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
-import com.yanzu.module.member.convert.user.UserConvert;
-import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
-import com.yanzu.module.member.service.user.MemberUserService;
+import com.yanzu.module.member.service.user.AppUserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +31,7 @@ import static com.yanzu.module.infra.enums.ErrorCodeConstants.FILE_IS_EMPTY;
 public class AppUserController {
 
     @Resource
-    private MemberUserService userService;
+    private AppUserService userService;
 
     @PutMapping("/updateNickname")
     @Operation(summary = "修改用户昵称")

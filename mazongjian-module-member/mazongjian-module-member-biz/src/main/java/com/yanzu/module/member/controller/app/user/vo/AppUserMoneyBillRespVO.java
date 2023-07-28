@@ -2,7 +2,6 @@ package com.yanzu.module.member.controller.app.user.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yanzu.framework.common.util.date.DateUtils;
-import com.yanzu.module.member.controller.admin.usermoneybill.vo.UserMoneyBillBaseVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

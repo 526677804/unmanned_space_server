@@ -1,9 +1,7 @@
 package com.yanzu.module.member.controller.app.order.vo;
 
-import com.yanzu.module.member.controller.admin.orderinfo.vo.OrderInfoBaseVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.math.BigDecimal;
@@ -12,7 +10,7 @@ import java.util.Date;
 @Schema(description = "miniapp - 订单管理 Response VO")
 @Data
 @ToString(callSuper = true)
-public class OrderInfoAppRespVO  {
+public class OrderInfoAppRespVO {
 
     @Schema(description = "订单id", requiredMode = Schema.RequiredMode.REQUIRED, example = "2248")
     private Long orderId;
@@ -30,10 +28,10 @@ public class OrderInfoAppRespVO  {
     private String storeName;
 
     @Schema(description = "纬度")
-     private Double lat;
+    private Double lat;
 
     @Schema(description = "经度")
-     private Double lon;
+    private Double lon;
 
     @Schema(description = "详细地址")
     private String address;

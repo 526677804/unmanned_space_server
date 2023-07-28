@@ -1,21 +1,22 @@
 package com.yanzu.module.member.controller.app.store;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
-import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
-import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
+import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import oracle.jdbc.proxy.annotation.Post;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
+
+import static com.yanzu.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "miniapp - 门店管理 （管理员）")
 @RestController
@@ -24,11 +25,17 @@ import java.util.List;
 @Slf4j
 public class AppStoreController {
 
+    @Resource
+    private StoreInfoService storeInfoService;
+
+    @Resource
+    private DeviceService deviceService;
+
     @PostMapping("/getPageList")
     @Operation(summary = "获取门店列表")
     @PreAuthenticated
-    public CommonResult<PageResult<AppStoreAdminRespVO>> getOrderPage(@RequestBody @Valid AppStoreAdminReqVO reqVO) {
-        return null;
+    public CommonResult<PageResult<AppStoreAdminRespVO>> getPageList(@RequestBody @Valid AppStoreAdminReqVO reqVO) {
+        return success(storeInfoService.getPageList(reqVO));
     }
 
 
@@ -36,7 +43,7 @@ public class AppStoreController {
     @Operation(summary = "获取门店详情")
     @PreAuthenticated
     public CommonResult<AppStoreInfoRespVO> getDetail(@PathVariable("storeId") Long storeId) {
-        return null;
+        return success(storeInfoService.getDetail(storeId));
     }
 
 
@@ -44,43 +51,56 @@ public class AppStoreController {
     @Operation(summary = "保存门店详情")
     @PreAuthenticated
     public CommonResult<Boolean> save(@RequestBody @Valid AppStoreInfoReqVO reqVO) {
-        return null;
+        storeInfoService.save(reqVO);
+        return success(true);
+    }
+    @PutMapping("/openStoreDoor/{storeId}")
+    @Operation(summary = "开门店的大门", description = "门店管理使用")
+    @PreAuthenticated
+    public CommonResult<Boolean> openStoreDoor(@PathVariable("storeId") Long storeId) {
+        //1用户开门 2管理员开门 3保洁开门
+        deviceService.openStoreDoor(storeId, null, 2);
+        return success(true);
     }
 
-
-    @GetMapping("/getRoomList/{storeId}")
+    @GetMapping("/getRoomInfoList/{storeId}")
     @Operation(summary = "获取门店的房间列表")
     @PreAuthenticated
-    public CommonResult<List<AppRoomListRespVO>> getRoomList(@PathVariable("storeId") Long storeId) {
-        return null;
+    public CommonResult<List<AppRoomListRespVO>> getRoomInfoList(@PathVariable("storeId") Long storeId) {
+        return success(storeInfoService.getRoomInfoList(storeId));
     }
 
     @GetMapping("/getRoomDetail/{roomId}")
     @Operation(summary = "获取房间详情")
     @PreAuthenticated
     public CommonResult<AppRoomDetailRespVO> getRoomDetail(@PathVariable("roomId") Long roomId) {
-        return null;
+        return success(storeInfoService.getRoomDetail(roomId));
     }
 
     @PostMapping("/saveRoomDetail")
     @Operation(summary = "保存房间详情")
     @PreAuthenticated
-    public CommonResult<Boolean> getRoomDetail(@RequestBody @Valid AppRoomDetailReqVO reqVO) {
-        return null;
+    public CommonResult<Boolean> saveRoomDetail(@RequestBody @Valid AppRoomDetailReqVO reqVO) {
+        storeInfoService.saveRoomDetail(reqVO);
+        return success(true);
     }
 
     @PutMapping("/openRoomDoor/{roomId}")
     @Operation(summary = "开房间的大门", description = "房间管理使用")
     @PreAuthenticated
     public CommonResult<Boolean> openRoomDoor(@PathVariable("roomId") Long roomId) {
-        return null;
+        //1用户开门 2管理员开门 3保洁开门
+        deviceService.openRoomDoor(roomId, null, 2);
+        return success(true);
     }
 
     @PutMapping("/closeRoomDoor/{roomId}")
     @Operation(summary = "关房间的大门", description = "房间管理使用")
     @PreAuthenticated
     public CommonResult<Boolean> closeRoomDoor(@PathVariable("roomId") Long roomId) {
-        return null;
+        //1用户关门 2管理员关门 3保洁关门
+        deviceService.closeRoomDoor(roomId, null, 2);
+        return success(true);
     }
 
 
@@ -88,28 +108,30 @@ public class AppStoreController {
     @Operation(summary = "获取门店充值优惠信息分页列表")
     @PreAuthenticated
     public CommonResult<PageResult<AppDiscountRulesPageRespVO>> getDiscountRulesPage(@RequestBody @Valid AppDiscountRulesPageReqVO reqVO) {
-        return null;
+        return success(storeInfoService.getDiscountRulesPage(reqVO));
     }
 
     @PutMapping("/changeDiscountRulesStatus/{id}")
     @Operation(summary = "修改门店充值优惠信息状态（启用/禁用）")
     @PreAuthenticated
     public CommonResult<Boolean> changeDiscountRulesStatus(@PathVariable("id") Long id) {
-        return null;
+        storeInfoService.changeDiscountRulesStatus(id);
+        return success(true);
     }
 
-    @GetMapping("/getDiscountRulesStatus/{id}")
+    @GetMapping("/getDiscountRuleDetail/{id}")
     @Operation(summary = "获取门店充值优惠信息详情")
     @PreAuthenticated
-    public CommonResult<AppDiscountRulesDetailRespVO> getDiscountRulesStatus(@PathVariable("id") Long id) {
-        return null;
+    public CommonResult<AppDiscountRulesDetailRespVO> getDiscountRuleDetail(@PathVariable("id") Long id) {
+        return success(storeInfoService.getDiscountRuleDetail(id));
     }
 
-    @PostMapping("/saveDiscountRulesStatus")
+    @PostMapping("/saveDiscountRuleDetail")
     @Operation(summary = "保存门店充值优惠信息")
     @PreAuthenticated
-    public CommonResult<Boolean> saveDiscountRulesStatus(@RequestBody @Valid AppDiscountRulesDetailReqVO reqVO) {
-        return null;
+    public CommonResult<Boolean> saveDiscountRuleDetail(@RequestBody @Valid AppDiscountRulesDetailReqVO reqVO) {
+        storeInfoService.saveDiscountRuleDetail(reqVO);
+        return success(true);
     }
 
 

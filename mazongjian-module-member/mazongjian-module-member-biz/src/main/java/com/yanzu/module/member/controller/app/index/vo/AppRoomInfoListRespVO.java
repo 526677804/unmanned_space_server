@@ -47,6 +47,12 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "排序位置", example = "5068")
     private Integer sortId;
 
+    @Schema(description = "每日禁用开始时间")
+    private Date banTimeStart;
+
+    @Schema(description = "每日禁用结束时间")
+    private Date banTimeEnd;
+
     @Schema(description = "订单/预约开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private Date startTime;
 

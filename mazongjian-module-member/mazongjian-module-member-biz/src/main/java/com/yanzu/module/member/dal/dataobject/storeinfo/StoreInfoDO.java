@@ -1,13 +1,12 @@
 package com.yanzu.module.member.dal.dataobject.storeinfo;
 
-import lombok.*;
-import java.util.*;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 /**
  * 门店管理 DO
@@ -85,10 +84,7 @@ public class StoreInfoDO extends BaseDO {
      * 客服电话
      */
     private String kefuPhone;
-    /**
-     * 大门门禁sn
-     */
-    private String gateDeviceSn;
+
     /**
      * 大众点评key
      */

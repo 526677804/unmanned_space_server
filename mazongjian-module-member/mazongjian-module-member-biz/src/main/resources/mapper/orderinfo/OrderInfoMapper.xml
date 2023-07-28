@@ -9,4 +9,24 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getByRoomIds" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
+        select *
+        from member_order_info
+        where deleted = 0
+        and status!=3
+        and end_time>now()
+        and room_id in
+        <foreach collection="roomIds" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+
+    </select>
+    <select id="getByUserAndStatus" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
+        select *
+        from member_order_info
+        where deleted = 0
+          and user_id = #{userId}
+          and status = #{status}
+
+    </select>
 </mapper>

@@ -3,7 +3,7 @@ package com.yanzu.module.member.api.user;
 import com.yanzu.module.member.api.user.dto.MemberUserRespDTO;
 import com.yanzu.module.member.convert.user.UserConvert;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
-import com.yanzu.module.member.service.user.MemberUserService;
+import com.yanzu.module.member.service.user.AppUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -21,7 +21,7 @@ import java.util.List;
 public class MemberUserApiImpl implements MemberUserApi {
 
     @Resource
-    private MemberUserService userService;
+    private AppUserService userService;
 
     @Override
     public MemberUserRespDTO getUser(Long id) {

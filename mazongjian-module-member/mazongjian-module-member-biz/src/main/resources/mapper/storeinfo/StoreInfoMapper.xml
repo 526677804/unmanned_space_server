@@ -8,5 +8,91 @@
         代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
+    <resultMap id="StorePageList" type="com.yanzu.module.member.controller.app.index.vo.AppStorePageRespVO">
+        <id column="store_id" property="storeId"></id>
+        <result column="store_name" property="storeName"/>
+        <result column="city_name" property="cityName"/>
+        <result column="head_img" property="headImg"/>
+        <result column="lat" property="lat"/>
+        <result column="lon" property="lon"/>
+        <result column="address" property="address"/>
+        <result column="status" property="status"/>
+        <collection property="discountRules" column="store_id" javaType="ArrayList" ofType="String"
+                    select="getDiscountRules"/>
+    </resultMap>
+    <select id="discountRules" parameterType="Long">
+        select concat('优惠：充值', pay_money, '元,赠送', gift_money, '元！')
+        from member_discount_rules
+        where deleted = 0
+          and store_id = #{store_id}
+          and status = 1
+          and exprice_time > now()
+        order by pay_money asc
+    </select>
+    <select id="getCityList" resultType="java.lang.String">
+        select distinct city_name
+        from member_store_info
+        where deleted = 0
+          and status = 0
+        order by create_time asc
+    </select>
+    <select id="getStorePageList"
+            resultMap="StorePageList">
+        select s.store_id,s.store_name,s.city_name,s.head_img,s.lat,s.lon,s.address,s.status
+        from member_store_info s
+        <where>
+            s.deleted=0 and s.status=0
+            <if test=" null!=cityName and cityName!=''">
+                and s.city_name=#{cityName}
+            </if>
+        </where>
+
+    </select>
+    <select id="getStoreInfo"
+            resultType="com.yanzu.module.member.controller.app.index.vo.AppIndexStoreInfoRespVO">
+        select *
+        from member_store_info
+        where deleted = 0
+          and s.status = 0
+          and id = #{storeId}
+
+    </select>
+    <select id="getStoreList" resultType="com.yanzu.framework.common.core.KeyValue">
+        select store_name key,store_id value
+        from member_store_info
+        where deleted = 0
+        and s.status = 0
+        <if test=" null!=name and name!=''">
+            and locate(#{name},store_name)>0
+        </if>
+        order by id asc
+
+    </select>
+    <select id="getRoomInfoList"
+            resultType="com.yanzu.module.member.controller.app.index.vo.AppRoomInfoListRespVO">
+        select *
+        from member_room_info
+        where deleted = 0
+          and store_id = #{storeId}
+        order by sort_id asc
+
+    </select>
+    <select id="getPageList" resultType="com.yanzu.module.member.controller.app.store.vo.AppStoreAdminRespVO">
+        SELECT
+        s.*,
+        ( SELECT count( 1 ) FROM member_room_info WHERE deleted = 0 AND store_id = s.store_id ) roomNum,
+        ( SELECT count( 1 ) FROM member_device_info WHERE deleted = 0 AND store_id = s.store_id ) deviceNum,
+        ( SELECT count( 1 ) FROM member_device_info WHERE deleted = 0 AND STATUS = 1 AND room_id = s.store_id ) deviceOnlineNum
+        FROM
+        member_store_info s
+        WHERE
+        s.deleted = 0
+        <if test="null!=name and name!=''">
+            and locate(#{name},s.store_name)>0
+        </if>
+        <if test="null!=cityName and cityName!=''">
+            and s.city_name=#{cityName}
+        </if>
+    </select>
 
 </mapper>

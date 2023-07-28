@@ -12,7 +12,7 @@ import com.yanzu.module.member.controller.app.auth.vo.*;
 import com.yanzu.module.member.convert.auth.AuthConvert;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
-import com.yanzu.module.member.service.user.MemberUserService;
+import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.system.api.logger.LoginLogApi;
 import com.yanzu.module.system.api.logger.dto.LoginLogCreateReqDTO;
 import com.yanzu.module.system.api.oauth2.OAuth2TokenApi;
@@ -49,7 +49,7 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 public class MemberAuthServiceImpl implements MemberAuthService {
 
     @Resource
-    private MemberUserService userService;
+    private AppUserService userService;
     @Resource
     private SmsCodeApi smsCodeApi;
     @Resource
@@ -74,7 +74,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         // 如果 socialType 非空，说明需要绑定社交用户
         if (reqVO.getSocialType() != null) {
-            socialUserApi.bindSocialUser(new SocialUserBindReqDTO(user.getId(), getUserType().getValue(),
+            socialUserApi.bindSocialUser(new SocialUserBindReqDTO(user.getId(), user.getUserType(),
                     reqVO.getSocialType(), reqVO.getSocialCode(), reqVO.getSocialState()));
         }
 
@@ -95,7 +95,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         // 如果 socialType 非空，说明需要绑定社交用户
         if (reqVO.getSocialType() != null) {
-            socialUserApi.bindSocialUser(new SocialUserBindReqDTO(user.getId(), getUserType().getValue(),
+            socialUserApi.bindSocialUser(new SocialUserBindReqDTO(user.getId(), user.getUserType(),
                     reqVO.getSocialType(), reqVO.getSocialCode(), reqVO.getSocialState()));
         }
 
@@ -136,7 +136,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         Assert.notNull(user, "获取用户失败，结果为空");
 
         // 绑定社交用户
-        socialUserApi.bindSocialUser(new SocialUserBindReqDTO(user.getId(), getUserType().getValue(),
+        socialUserApi.bindSocialUser(new SocialUserBindReqDTO(user.getId(), user.getUserType(),
                 SocialTypeEnum.WECHAT_MINI_APP.getType(), reqVO.getLoginCode(), ""));
 
         // 创建 Token 令牌，记录登录日志
@@ -148,7 +148,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         createLoginLog(user.getId(), mobile, logType, LoginResultEnum.SUCCESS);
         // 创建 Token 令牌
         OAuth2AccessTokenRespDTO accessTokenRespDTO = oauth2TokenApi.createAccessToken(new OAuth2AccessTokenCreateReqDTO()
-                .setUserId(user.getId()).setUserType(getUserType().getValue())
+                .setUserId(user.getId()).setUserType(user.getUserType())
                 .setClientId(OAuth2ClientConstants.CLIENT_ID_DEFAULT));
         // 构建返回结果
         return AuthConvert.INSTANCE.convert(accessTokenRespDTO);
@@ -185,7 +185,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         reqDTO.setLogType(logType.getType());
         reqDTO.setTraceId(TracerUtils.getTraceId());
         reqDTO.setUserId(userId);
-        reqDTO.setUserType(getUserType().getValue());
+        reqDTO.setUserType(2);
         reqDTO.setUsername(mobile);
         reqDTO.setUserAgent(ServletUtils.getUserAgent());
         reqDTO.setUserIp(getClientIP());
@@ -259,7 +259,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
             throw exception(USER_NOT_EXISTS);
         }
         // 参数：未加密密码，编码后的密码
-        if (!passwordEncoder.matches(oldPassword,user.getPassword())) {
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw exception(USER_PASSWORD_FAILED);
         }
         return user;
@@ -278,7 +278,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         reqDTO.setLogType(LoginLogTypeEnum.LOGOUT_SELF.getType());
         reqDTO.setTraceId(TracerUtils.getTraceId());
         reqDTO.setUserId(userId);
-        reqDTO.setUserType(getUserType().getValue());
+        reqDTO.setUserType(2);
         reqDTO.setUsername(getMobile(userId));
         reqDTO.setUserAgent(ServletUtils.getUserAgent());
         reqDTO.setUserIp(getClientIP());
@@ -294,8 +294,6 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         return user != null ? user.getMobile() : null;
     }
 
-    private UserTypeEnum getUserType() {
-        return UserTypeEnum.MEMBER;
-    }
+
 
 }

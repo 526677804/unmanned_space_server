@@ -36,6 +36,13 @@ public class IotService {
 
     }
 
+    public boolean runDoorV1(String sn) {
+        IotApiBaseReqVO vo=new IotApiBaseReqVO();
+        vo.setSn(sn);
+        IotApiBaseRespVO respVO = iotClient.runDoorV1(vo);
+        return respVO.getState_code() == 0;
+    }
+
 
     public boolean runKongkai(String sn, String cmd) {
         IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
