@@ -6,9 +6,11 @@ import java.util.*;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.user.vo.AppGiftBalanceListRespVO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.yanzu.module.member.controller.admin.storeuser.vo.*;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * 门店用户管理 Mapper
@@ -40,4 +42,5 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
 
     BigDecimal getGiftBalanceByUserId(Long userId);
 
+    List<AppGiftBalanceListRespVO> getGiftBalanceList(Long userId);
 }

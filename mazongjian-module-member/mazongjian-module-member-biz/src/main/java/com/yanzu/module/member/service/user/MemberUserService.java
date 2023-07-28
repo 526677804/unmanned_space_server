@@ -5,6 +5,7 @@ import com.yanzu.framework.common.validation.Mobile;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
@@ -104,11 +105,11 @@ public interface MemberUserService {
 
     PageResult<AppUserMoneyBillRespVO> getOrderPage(AppUserMoneyBillPageReqVO reqVO);
 
-    AppGiftBalanceListRespVO getGiftBalanceList();
+    List<AppGiftBalanceListRespVO> getGiftBalanceList();
 
     void eechargeBalance(AppRechargeBalanceReqVO reqVO);
 
-    AppFranchiseInfoRespVO getFranchiseInfo();
+    AppFranchiseInfoRespVO getFranchiseInfo(HttpServletRequest request);
 
     void saveFranchiseInfo(AppFranchiseInfoReqVO reqVO);
 

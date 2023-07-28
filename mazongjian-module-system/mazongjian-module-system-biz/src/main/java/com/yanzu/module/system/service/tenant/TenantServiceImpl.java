@@ -95,6 +95,11 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
+    public String getAdminPhone(Long id) {
+        return tenantMapper.selectById(id).getContactMobile();
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createTenant(TenantCreateReqVO createReqVO) {
         // 校验租户名称是否重复

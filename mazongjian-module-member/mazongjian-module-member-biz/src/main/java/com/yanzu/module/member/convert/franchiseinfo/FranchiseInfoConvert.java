@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.yanzu.framework.common.pojo.PageResult;
 
+import com.yanzu.module.member.controller.app.user.vo.AppFranchiseInfoReqVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import com.yanzu.module.member.controller.admin.franchiseinfo.vo.*;
@@ -31,4 +32,5 @@ public interface FranchiseInfoConvert {
 
     List<FranchiseInfoExcelVO> convertList02(List<FranchiseInfoDO> list);
 
+    FranchiseInfoDO convert2(AppFranchiseInfoReqVO reqVO);
 }

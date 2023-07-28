@@ -23,4 +23,5 @@ public interface TenantApi {
      */
     void validateTenant(Long id);
 
+    String getAdminPhone(Long id);
 }

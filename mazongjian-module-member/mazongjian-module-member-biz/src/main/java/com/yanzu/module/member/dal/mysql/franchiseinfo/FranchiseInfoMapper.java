@@ -37,4 +37,5 @@ public interface FranchiseInfoMapper extends BaseMapperX<FranchiseInfoDO> {
                 .orderByDesc(FranchiseInfoDO::getId));
     }
 
+    FranchiseInfoDO getByUserId(Long userId);
 }

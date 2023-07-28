@@ -13,6 +13,25 @@
         select count(1)
         from member_coupon_info
         where user_id = #{userId}
-          and status = 0 ANd deleted=0
+          and status = 0
+          ANd deleted = 0
+    </select>
+    <select id="getCouponPage" resultType="com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO">
+        SELECT
+        c.*,( SELECT group_concat( s.store_name ) FROM member_store_info s WHERE s.store_id IN ( c.store_ids ) )
+        AS storeName
+        FROM
+        member_coupon_info c
+        WHERE
+        c.deleted =0
+        <if test="null != status and status != null">
+            and c.status=#{status}
+        </if>
+        <if test="null != roomType and roomType != null">
+            and c.room_type=#{roomType}
+        </if>
+        <if test="null != storeId and storeId != null">
+            and #{roomType} in (c.store_ids)
+        </if>
     </select>
 </mapper>

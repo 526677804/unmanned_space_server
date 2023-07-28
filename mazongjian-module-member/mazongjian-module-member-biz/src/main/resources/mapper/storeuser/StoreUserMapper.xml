@@ -16,4 +16,14 @@
           ANd deleted = 0
 
     </select>
+    <select id="getGiftBalanceList"
+            resultType="com.yanzu.module.member.controller.app.user.vo.AppGiftBalanceListRespVO">
+        select s.store_name, su.gift_balance
+        from member_store_user su
+                 left join member_store_info s on s.store_id = su.store_id
+        where su.user_id = #{userId}
+          and su.deleted = 0
+          and s.deleted = 0
+        order by su.gift_balance desc
+    </select>
 </mapper>

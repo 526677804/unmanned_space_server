@@ -2,6 +2,7 @@ package com.yanzu.module.member.service.user;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.pagehelper.PageHelper;
@@ -11,22 +12,29 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.util.MyBatisUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.app.user.vo.*;
+import com.yanzu.module.member.convert.franchiseinfo.FranchiseInfoConvert;
 import com.yanzu.module.member.convert.user.UserConvert;
+import com.yanzu.module.member.dal.dataobject.franchiseinfo.FranchiseInfoDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
+import com.yanzu.module.member.dal.mysql.franchiseinfo.FranchiseInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.system.api.sms.SmsCodeApi;
 import com.yanzu.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
+import com.yanzu.module.system.api.tenant.TenantApi;
 import com.yanzu.module.system.enums.sms.SmsSceneEnum;
 import com.google.common.annotations.VisibleForTesting;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.InputStream;
 import java.util.Collection;
@@ -37,6 +45,7 @@ import java.time.LocalDateTime;
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.util.servlet.ServletUtils.getClientIP;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getTenantId;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.USER_NOT_EXISTS;
 
 /**
@@ -68,6 +77,14 @@ public class MemberUserServiceImpl implements MemberUserService {
 
     @Resource
     private UserMoneyBillMapper userMoneyBillMapper;
+
+    @Resource
+    private TenantApi tenantApi;
+
+    @Resource
+    private FranchiseInfoMapper franchiseInfoMapper;
+
+
     @Override
     public MemberUserDO getUserByMobile(String mobile) {
         return memberUserMapper.selectByMobile(mobile);
@@ -178,9 +195,9 @@ public class MemberUserServiceImpl implements MemberUserService {
     @Override
     public PageResult<AppUserMoneyBillRespVO> getOrderPage(AppUserMoneyBillPageReqVO reqVO) {
         PageHelper.startPage(reqVO);
-        List<AppUserMoneyBillRespVO> list=userMoneyBillMapper.getOrderPage(reqVO);
+        List<AppUserMoneyBillRespVO> list = userMoneyBillMapper.getOrderPage(reqVO);
         PageInfo<AppUserMoneyBillRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(),page.getTotal());
+        return new PageResult<>(page.getList(), page.getTotal());
 //        // 构建分页对象
 //        IPage<AppUserMoneyBillRespVO> page = new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
 //        // 调用查询方法
@@ -192,28 +209,46 @@ public class MemberUserServiceImpl implements MemberUserService {
     }
 
     @Override
-    public AppGiftBalanceListRespVO getGiftBalanceList() {
-        return null;
+    public List<AppGiftBalanceListRespVO> getGiftBalanceList() {
+        return storeUserMapper.getGiftBalanceList(getLoginUserId());
     }
 
     @Override
+    @Transactional
     public void eechargeBalance(AppRechargeBalanceReqVO reqVO) {
+        if(ObjectUtils.isEmpty(reqVO.getUserId())){
+            reqVO.setUserId(getLoginUserId());
+        }
 
     }
 
     @Override
-    public AppFranchiseInfoRespVO getFranchiseInfo() {
-        return null;
+    public AppFranchiseInfoRespVO getFranchiseInfo(HttpServletRequest request) {
+        Long tenantId = getTenantId(request);
+        String adminPhone = tenantApi.getAdminPhone(tenantId);
+        FranchiseInfoDO franchiseInfoDO = franchiseInfoMapper.getByUserId(getLoginUserId());
+        AppFranchiseInfoRespVO respVO = new AppFranchiseInfoRespVO();
+        respVO.setFranchise(adminPhone);
+        respVO.setIsCommit(!ObjectUtils.isEmpty(franchiseInfoDO));
+        return respVO;
     }
 
     @Override
+    @Transactional
     public void saveFranchiseInfo(AppFranchiseInfoReqVO reqVO) {
-
+        FranchiseInfoDO franchiseInfoDO = franchiseInfoMapper.getByUserId(getLoginUserId());
+        if (ObjectUtils.isEmpty(franchiseInfoDO)) {
+            FranchiseInfoDO newfranchiseInfoDO = FranchiseInfoConvert.INSTANCE.convert2(reqVO);
+            franchiseInfoMapper.insert(newfranchiseInfoDO);
+        }
     }
 
     @Override
     public PageResult<AppCouponPageRespVO> getCouponPage(AppCouponPageReqVO reqVO) {
-        return null;
+        PageHelper.startPage(reqVO);
+        List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
+        PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
+        return new PageResult<>(page.getList(), page.getTotal());
     }
 
     /**

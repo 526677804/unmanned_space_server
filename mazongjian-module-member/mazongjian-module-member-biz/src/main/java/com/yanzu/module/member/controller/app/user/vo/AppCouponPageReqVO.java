@@ -21,4 +21,11 @@ public class AppCouponPageReqVO extends PageParam {
     @Schema(description = "状态 值见字典")
     @NotNull(message = "状态不能为空")
     private Integer status;
+
+    @Schema(description = "房间类型 值见字典")
+    private Integer roomType;
+
+    @Schema(description = "门店Id")
+    private Long storeId;
+
 }

@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+
+import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.pojo.CommonResult.success;
@@ -79,7 +82,7 @@ public class AppUserController {
     @GetMapping("/getGiftBalanceList")
     @Operation(summary = "获取赠送余额列表")
     @PreAuthenticated
-    public CommonResult<AppGiftBalanceListRespVO> getGiftBalanceList() {
+    public CommonResult<List<AppGiftBalanceListRespVO>> getGiftBalanceList() {
         return success(userService.getGiftBalanceList());
     }
 
@@ -94,8 +97,8 @@ public class AppUserController {
     @GetMapping("/getFranchiseInfo")
     @Operation(summary = "获取加盟信息")
     @PreAuthenticated
-    public CommonResult<AppFranchiseInfoRespVO> getFranchiseInfo() {
-        return success(userService.getFranchiseInfo());
+    public CommonResult<AppFranchiseInfoRespVO> getFranchiseInfo(HttpServletRequest request) {
+        return success(userService.getFranchiseInfo(request));
     }
 
 

@@ -27,4 +27,9 @@ public class TenantApiImpl implements TenantApi {
         tenantService.validTenant(id);
     }
 
+    @Override
+    public String getAdminPhone(Long id) {
+        return tenantService.getAdminPhone(id);
+    }
+
 }

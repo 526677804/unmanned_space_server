@@ -128,4 +128,6 @@ public interface TenantService {
      * @param id 租户编号
      */
     void validTenant(Long id);
+
+    String getAdminPhone(Long id);
 }

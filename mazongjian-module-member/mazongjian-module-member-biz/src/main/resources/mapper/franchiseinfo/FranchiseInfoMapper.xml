@@ -9,4 +9,10 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getByUserId" resultType="com.yanzu.module.member.dal.dataobject.franchiseinfo.FranchiseInfoDO">
+        select *
+        from member_franchise_info
+        where user_id = #{userId}
+          and deleted = 0
+    </select>
 </mapper>
