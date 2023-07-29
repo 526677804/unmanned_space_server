@@ -1,8 +1,11 @@
 package com.yanzu.module.member.controller.app.game.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.List;
@@ -18,6 +21,9 @@ public class AppGameInfoRespVO {
     @Schema(description = "门店ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "32343")
     private Long storeId;
 
+    @Schema(description = "门店名称", example = "32343")
+    private String storeName;
+
     @Schema(description = "纬度")
      private Double lat;
 
@@ -26,8 +32,6 @@ public class AppGameInfoRespVO {
 
     @Schema(description = "详细地址")
     private String address;
-    @Schema(description = "门店名称", example = "32343")
-    private String storeName;
 
     @Schema(description = "房间ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Long roomId;
@@ -42,7 +46,12 @@ public class AppGameInfoRespVO {
     private String ruleDesc;
 
     @Schema(description = "开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date startTime;
+
+    @Schema(description = "结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    private Date endTime;
 
     @Schema(description = "用户id", requiredMode = Schema.RequiredMode.REQUIRED, example = "26195")
     private Long userId;
@@ -54,6 +63,7 @@ public class AppGameInfoRespVO {
     private List<AppGameUserListRespVO> playUserList;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date createTime;
 
 }

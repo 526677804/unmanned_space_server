@@ -189,11 +189,14 @@ public class AppEnum {
         //已组局	1
         //已支付	2
         //已失效	3
+        //房主解散	4
 
         PROGRESS(0),
         SUCCESS(1),
         PAY(2),
-        EXPIRED(3);
+        EXPIRED(3),
+        CANCEL(4)
+        ;
 
 
         private final Integer value;

@@ -28,4 +28,7 @@ public class AppGamePageReqVO extends PageParam {
 
     @Schema(description = "状态 值见枚举")
     private Integer status;
+
+    @Schema(hidden = true)
+    private Long currentUserId;
 }

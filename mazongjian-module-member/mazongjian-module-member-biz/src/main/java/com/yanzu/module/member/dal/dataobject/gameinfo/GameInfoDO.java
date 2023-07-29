@@ -1,10 +1,12 @@
 package com.yanzu.module.member.dal.dataobject.gameinfo;
 
 import lombok.*;
+
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
+
 import com.baomidou.mybatisplus.annotation.*;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 
@@ -43,18 +45,22 @@ public class GameInfoDO extends BaseDO {
     /**
      * 开始时间
      */
-    private LocalDateTime startTime;
+    private Date startTime;
+
+    private Date endTime;
     /**
      * 用户id
      */
     private Long userId;
+
+    private Integer userNum;
     /**
      * 玩家ids
      */
     private String playUserIds;
     /**
      * 状态
-     *
+     * <p>
      * 枚举 {@link TODO member_game_status 对应的类}
      */
     private Integer status;

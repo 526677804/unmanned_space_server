@@ -5,6 +5,8 @@ import java.util.*;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.game.vo.AppGameInfoRespVO;
+import com.yanzu.module.member.controller.app.game.vo.AppGamePageReqVO;
 import com.yanzu.module.member.dal.dataobject.gameinfo.GameInfoDO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -16,4 +18,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface GameInfoMapper extends BaseMapperX<GameInfoDO> {
 
+    int countDayByUserId(Long userId);
+
+    List<AppGameInfoRespVO> getOrderPage(AppGamePageReqVO reqVO);
 }

@@ -9,4 +9,43 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="countDayByUserId" resultType="java.lang.Integer">
+        select count(1)
+        from member_game_info
+        where deleted = 0
+          and user_id = #{userId}
+          and to_days(create_time) = to_days(now())
+
+    </select>
+    <select id="getOrderPage" resultType="com.yanzu.module.member.controller.app.game.vo.AppGameInfoRespVO">
+        select g.*, s.store_name, s.lat, s.lon, s.address, r.room_name, r.type
+        from member_game_info g
+        left join member_store_info s ON g.store_id = s.store_id
+        left join member_room_info r ON g.room_id = r.room_id
+        where g.deleted = 0
+        and g.start_time > now()
+        and g.store_id=#{storeId}
+        <if test="null!=status">
+            <choose>
+                <when test="status==0">
+                    and g.status=0
+                </when>
+                <when test="status==1">
+                    and g.status=1 and #{currentUserId} in (g.play_user_ids)
+                </when>
+                <when test="status==2">
+                    and g.status=2 and #{currentUserId} in (g.play_user_ids)
+                </when>
+                <when test="status==3">
+                    and g.status=3 and #{currentUserId} in (g.play_user_ids)
+                </when>
+                <when test="status==4">
+                    and g.status=4 and #{currentUserId} in (g.play_user_ids)
+                </when>
+            </choose>
+        </if>
+        order by g.start_time asc
+
+
+    </select>
 </mapper>

@@ -97,6 +97,10 @@
             <artifactId>forest-jaxb</artifactId>
             <version>1.5.32</version>
         </dependency>
+        <dependency>
+            <groupId>com.yanzu</groupId>
+            <artifactId>mazongjian-spring-boot-starter-protection</artifactId>
+        </dependency>
         <!-- 工具类相关 -->
     </dependencies>
 

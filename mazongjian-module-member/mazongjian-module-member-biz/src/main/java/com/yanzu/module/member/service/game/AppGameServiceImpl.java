@@ -1,0 +1,152 @@
+package com.yanzu.module.member.service.game;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.idempotent.core.annotation.Idempotent;
+import com.yanzu.module.member.controller.app.game.vo.AppGameInfoReqVO;
+import com.yanzu.module.member.controller.app.game.vo.AppGameInfoRespVO;
+import com.yanzu.module.member.controller.app.game.vo.AppGamePageReqVO;
+import com.yanzu.module.member.dal.dataobject.gameinfo.GameInfoDO;
+import com.yanzu.module.member.dal.mysql.gameinfo.GameInfoMapper;
+import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
+import com.yanzu.module.member.enums.AppEnum;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+
+import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
+
+@Service
+@Validated
+public class AppGameServiceImpl implements AppGameService {
+
+    @Resource
+    private GameInfoMapper gameInfoMapper;
+
+    @Resource
+    private OrderInfoMapper orderInfoMapper;
+
+    @Override
+    @Transactional
+
+    public void save(AppGameInfoReqVO reqVO) {
+        Long loginUserId = getLoginUserId();
+        //检查限制  普通用户一天最多发5场  管理员不受限制
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) == 0
+                || getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) == 0) {
+            //管理员 暂时不做限制
+        } else {
+            //普通用户
+            int count = gameInfoMapper.countDayByUserId(loginUserId);
+            if (count >= 5) {
+                throw exception(GAME_CREATE_NUM_MAX_ERROR);
+            }
+        }
+        //这里只有新增  暂时不检查选的时间与订单冲突的问题 todo..
+        GameInfoDO gameInfoDO = new GameInfoDO();
+        BeanUtils.copyProperties(reqVO, gameInfoDO);
+        gameInfoDO.setUserId(loginUserId);
+        gameInfoDO.setPlayUserIds(String.valueOf(loginUserId));
+        gameInfoMapper.insert(gameInfoDO);
+    }
+
+    @Override
+    public PageResult<AppGameInfoRespVO> getOrderPage(AppGamePageReqVO reqVO) {
+        reqVO.setCurrentUserId(getLoginUserId());
+        PageHelper.startPage(reqVO);
+        List<AppGameInfoRespVO> list = gameInfoMapper.getOrderPage(reqVO);
+        PageInfo<AppGameInfoRespVO> page = new PageInfo(list);
+        return new PageResult<>(page.getList(), page.getTotal());
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Long gameId, Long userId) {
+        GameInfoDO gameInfoDO = gameInfoMapper.selectById(gameId);
+        //房主才能踢出用户
+        if (gameInfoDO.getUserId().compareTo(getLoginUserId()) == 0) {
+            //不能踢出自己
+            if (userId.compareTo(getLoginUserId()) == 0) {
+                throw exception(GAME_DELETE_ME_ERROR);
+            }
+            //只有组局中和已组局的状态（未支付）才能踢出
+            if (gameInfoDO.getStatus().compareTo(AppEnum.game_status.PROGRESS.getValue()) == 0
+                    || gameInfoDO.getStatus().compareTo(AppEnum.game_status.SUCCESS.getValue()) == 0) {
+                List<String> strings = Arrays.asList(gameInfoDO.getPlayUserIds().split(","));
+                if (strings.contains(String.valueOf(userId))) {
+                    strings.remove(String.valueOf(userId));
+                    gameInfoDO.setPlayUserIds(strings.stream().collect(Collectors.joining(",")));
+                    //如果人本来是满的，那就把状态改回组局中
+                    if (gameInfoDO.getStatus().compareTo(AppEnum.game_status.SUCCESS.getValue()) == 0) {
+                        gameInfoDO.setStatus(AppEnum.game_status.PROGRESS.getValue());
+                    }
+                    gameInfoMapper.updateById(gameInfoDO);
+                    //todo发送微信通知
+                }
+            } else {
+                throw exception(GAME_DELETE_USER_ERROR);
+            }
+        } else {
+            throw exception(OPRATION_ERROR);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void join(Long gameId) {
+        Long loginUserId = getLoginUserId();
+        GameInfoDO gameInfoDO = gameInfoMapper.selectById(gameId);
+        List<String> strings = Arrays.asList(gameInfoDO.getPlayUserIds().split(","));
+        //只有组局中和已组局的状态（未支付）才能加入或退出
+        if (gameInfoDO.getStatus().compareTo(AppEnum.game_status.PROGRESS.getValue()) == 0
+                || gameInfoDO.getStatus().compareTo(AppEnum.game_status.SUCCESS.getValue()) == 0) {
+            //判断在不在对局里面存在
+            if (strings.contains(String.valueOf(loginUserId))) {
+                //已存在对局中  那么需要执行的是退出操作  判断是不是房主
+                if (gameInfoDO.getUserId().compareTo(loginUserId) == 0) {
+                    //是房主 直接解散该对局
+                    gameInfoDO.setStatus(AppEnum.game_status.CANCEL.getValue());
+                    gameInfoMapper.updateById(gameInfoDO);
+                    //todo发送微信通知
+                } else {
+                    //不是房主  直接退出
+                    strings.remove(String.valueOf(loginUserId));
+                    gameInfoDO.setPlayUserIds(strings.stream().collect(Collectors.joining(",")));
+                    //如果人本来是满的，那就把状态改回组局中
+                    if (gameInfoDO.getStatus().compareTo(AppEnum.game_status.SUCCESS.getValue()) == 0) {
+                        gameInfoDO.setStatus(AppEnum.game_status.PROGRESS.getValue());
+                    }
+                    gameInfoMapper.updateById(gameInfoDO);
+                    //todo发送微信通知
+                }
+            } else {
+                //不存在对局中 执行的是加入操作 判断人数有没有满
+                if (gameInfoDO.getUserNum().intValue() > strings.size()) {
+                    strings.add(String.valueOf(loginUserId));
+                    gameInfoDO.setPlayUserIds(strings.stream().collect(Collectors.joining(",")));
+                    //加入后如果人满了，那就把状态改回组局完成
+                    if (gameInfoDO.getUserNum().intValue() == strings.size()) {
+                        gameInfoDO.setStatus(AppEnum.game_status.SUCCESS.getValue());
+                    }
+                    gameInfoMapper.updateById(gameInfoDO);
+                    //todo发送微信通知
+                } else {
+                    throw exception(GAME_MAX_USER_ERROR);
+                }
+            }
+        } else {
+            throw exception(GAME_JOIN_USER_ERROR);
+        }
+    }
+}
