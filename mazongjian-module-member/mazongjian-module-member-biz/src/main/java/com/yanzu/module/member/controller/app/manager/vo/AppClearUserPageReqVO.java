@@ -18,8 +18,9 @@ import java.math.BigDecimal;
 @ToString(callSuper = true)
 public class AppClearUserPageReqVO extends PageParam {
 
-    @Schema(description = "查询关键字")
-    private String name;
+    @Schema(description = "门店id")
+    private Long storeId;
+
 
 
 }

@@ -32,6 +32,8 @@ public class StoreUserDO extends BaseDO {
      */
     @TableId
     private Long id;
+
+    private String name;
     /**
      * 门店id
      */

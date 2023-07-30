@@ -36,37 +36,41 @@ public class IndexController {
 
     @GetMapping("/getCityList")
     @Operation(summary = "获取城市列表", description = "首页使用")
-    @PreAuthenticated
     public CommonResult<List<String>> getCityList() {
         return success(indexService.getCityList());
     }
 
     @GetMapping("/getBannerList")
     @Operation(summary = "获取首页顶部banner图片", description = "首页使用")
-    @PreAuthenticated
     public CommonResult<List<AppBannerInfoRespVO>> getBannerList() {
         return success(indexService.getBannerList());
     }
 
     @PostMapping("/getStoreList")
-    @Operation(summary = "获取门店列表", description = "首页使用")
-    @PreAuthenticated
+    @Operation(summary = "首页获取门店列表", description = "首页使用")
     public CommonResult<PageResult<AppStorePageRespVO>> getStorePageList(@RequestBody AppStorePageReqVO reqVO) {
         return success(indexService.getStorePageList(reqVO));
     }
 
 
     @GetMapping("/getStoreInfo/{storeId}")
-    @Operation(summary = "获取门店信息详情")
-    @PreAuthenticated
+    @Operation(summary = "首页获取门店信息详情")
     public CommonResult<AppIndexStoreInfoRespVO> getStoreInfo(@PathVariable("storeId") Long storeId) {
         return success(indexService.getStoreInfo(storeId));
     }
 
+
+    @PostMapping("/getRoomInfoList/{storeId}")
+    @Operation(summary = "首页获取房间信息列表")
+    public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList(@PathVariable("storeId") Long storeId) {
+        return success(indexService.getRoomInfoList(storeId));
+    }
+
+
     @GetMapping("/getStoreList")
     @Operation(summary = "获取门店下拉选择列表")
     @PreAuthenticated
-    public CommonResult<List<KeyValue<String, Long>>> getStoreList(@RequestParam(value = "name",required = false)String name) {
+    public CommonResult<List<KeyValue<String, Long>>> getStoreList(@RequestParam(value = "name", required = false) String name) {
         return success(indexService.getStoreList(name));
     }
 
@@ -76,14 +80,5 @@ public class IndexController {
     public CommonResult<List<KeyValue<String, Long>>> getRoomList(@PathVariable("storeId") Long storeId) {
         return success(indexService.getRoomList(storeId));
     }
-
-
-    @PostMapping("/getRoomInfoList/{storeId}")
-    @Operation(summary = "获取房间信息列表")
-    @PreAuthenticated
-    public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList(@PathVariable("storeId") Long storeId) {
-        return success(indexService.getRoomInfoList(storeId));
-    }
-
 
 }

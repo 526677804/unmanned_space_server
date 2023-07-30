@@ -9,6 +9,8 @@ import com.yanzu.module.member.controller.app.user.vo.AppUserMoneyBillPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppUserMoneyBillRespVO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
 /**
  * 用户账单明细 Mapper
  *
@@ -19,5 +21,7 @@ public interface UserMoneyBillMapper extends BaseMapperX<UserMoneyBillDO> {
 
 
     List<AppUserMoneyBillRespVO> getOrderPage(AppUserMoneyBillPageReqVO reqVO);
+
+    List<UserMoneyBillDO> getPayByOrderNo(@Param("orderNo") String orderNo, @Param("userId") Long userId);
 
 }

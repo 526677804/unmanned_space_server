@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -19,41 +18,30 @@ import java.util.Date;
  * @USER: MrGuan  mrguan@aliyun.com
  * @DATE: 2023/7/26 18:25
  */
-@Schema(description = "miniapp - 提交订单Req VO")
+@Schema(description = "miniapp - 预下单订单Req VO")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderSaveReqVO {
+public class OrderPreReqVO {
 
-    @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "2319")
+    @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     @NotNull(message = "房间id不能为空")
     private Long roomId;
 
-    @Schema(description = "订单开始时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "优惠券Id", example = "1")
+    private Long couponId;
+
+    @Schema(description = "订单开始时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED,example = "2023-07-30 11:11:11")
     @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE)
     @NotNull(message = "订单开始时间不能为空")
     private Date startTime;
 
-    @Schema(description = "订单结束时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "订单结束时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED,example = "2023-07-30 18:11:11")
     @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE)
     @NotNull(message = "订单结束时间不能为空")
     private Date endTime;
-
-    @Schema(description = "支付方式 1微信 2余额", example = "1")
-    @NotNull(message = "支付方式不能为空")
-    private Integer payType;
-
-    @Schema(description = "微信支付订单号，选择微信支付时必填")
-    private String weixinOrderNo;
-
-    @Schema(description = "团购券码 填了团购券时，其他支付方式均不生效")
-    private String groupPayNo;
-
-    @Schema(description = "优惠券Id", example = "31071")
-    private Long couponId;
-
 
 }

@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper">
+    <update id="deleteClearUser">
+        update member_store_user
+        set deleted=1 where user_id=#{userId} and store_id in
+        <foreach collection="storeIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+
+    </update>
+    <update id="deleteClearUserAndStoreId">
+        update member_store_user
+        set deleted=1
+        where user_id = #{userId}
+          and store_id = #{storeId}
+
+    </update>
 
     <!--
         一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
@@ -33,6 +48,67 @@
           and type in (#{type})
           and store_id = #{storeId}
           and user_id = #{userId}
+    </select>
+    <select id="getByUserIdAndType" resultType="com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO">
+        select *
+        from member_store_user
+        where deleted = 0
+          and user_id = #{userId} and type=#{type}
+    </select>
+    <select id="getByUserId" resultType="com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO">
+        select *
+        from member_store_user
+        where deleted = 0
+          and user_id = #{userId}
+
+    </select>
+    <select id="getByIdsUserId" resultType="java.lang.Long">
+        select store_id
+        from member_store_user
+        where deleted = 0
+          and user_id = #{userId}
+    </select>
+    <select id="getClearUserPage"
+            resultType="com.yanzu.module.member.controller.app.manager.vo.AppClearUserPageRespVO">
+        select su.id
+             , su.user_id
+             , su.store_id
+             , m.nickname
+             , su.name
+             , m.mobile
+             , su.status
+             , (select isnull(SUM(money), 0)
+                from member_clear_bill
+                where user_id = su.user_id
+                  and store_id = #{storeId}) as money
+             , (select count(1)
+                from member_clear_info
+                where status = 3
+                  and user_id = su.user_id
+                  and store_id = #{storeId}) as finishCount
+             , (select count(1)
+                from member_clear_info
+                where status = 7
+                  and user_id = su.user_id
+                  and store_id = #{storeId}) as settlementCount
+        from member_store_user su
+                 left join member_user m
+                           ON su.user_id = m.id
+                 left join member_clear_bill cb ON cb.user_id = su.user_id
+        where su.store_id = #{storeId}
+          and su.deleted = 0
+          and su.type = 14
+
+
+    </select>
+    <select id="getByUserIdAndStoreId"
+            resultType="com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO">
+        select *
+        from member_store_user
+        where deleted = 0
+          and user_id = #{userId}
+          and store_id = #{storeId}
+
     </select>
 
 </mapper>

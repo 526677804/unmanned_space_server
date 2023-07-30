@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.app.clear.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yanzu.framework.common.pojo.PageParam;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -15,17 +16,22 @@ import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_D
 @ToString(callSuper = true)
 public class AppClearPageReqVO extends PageParam {
 
+    @Schema(description = "用户id")
+    private Long userId;
+
     @Schema(description = "门店Id")
     private Long storeId;
 
     @Schema(description = "状态 值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
-    private String status;
+    private Integer status;
 
     @Schema(description = "开始时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private Date startTime;
 
     @Schema(description = "截止时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private Date endTime;
 }

@@ -1,11 +1,13 @@
 package com.yanzu.module.member.dal.dataobject.clearinfo;
 
 import lombok.*;
+
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
+
 import com.baomidou.mybatisplus.annotation.*;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 
@@ -33,6 +35,7 @@ public class ClearInfoDO extends BaseDO {
      * 订单id
      */
     private Long orderId;
+    private Long storeId;
     /**
      * 订单编号
      */
@@ -59,9 +62,9 @@ public class ClearInfoDO extends BaseDO {
     private LocalDateTime settlementTime;
     /**
      * 状态
-     *
+     * <p>
      * 枚举 {@link TODO member_clear_info_status 对应的类}
      */
-    private String status;
+    private Integer status;
 
 }

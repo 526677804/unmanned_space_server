@@ -34,4 +34,13 @@
             and #{roomType} in (c.store_ids)
         </if>
     </select>
+    <select id="getByUserIdAndCouponId"
+            resultType="com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO">
+        select *
+        from member_coupon_info
+        where deleted = 0
+          and user_id = #{userId}
+          and coupon_id = #{couponId}
+
+    </select>
 </mapper>

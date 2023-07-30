@@ -85,6 +85,12 @@ public class DeviceServiceImpl implements DeviceService {
         }
     }
 
+    /**
+     *
+     * @param storeId
+     * @param orderId
+     * @param type 1用户开门 2管理员开门 3保洁开门
+     */
     @Override
     @Transactional
     public void cloudStoreDoor(Long storeId, Long orderId, int type) {

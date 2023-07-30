@@ -3,9 +3,12 @@ package com.yanzu.module.member.controller.app.order;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.LoginUser;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.*;
+import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.order.AppOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -13,9 +16,13 @@ import oracle.jdbc.proxy.annotation.Post;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import static com.yanzu.framework.common.pojo.CommonResult.success;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUser;
 import static redis.clients.jedis.util.JedisURIHelper.getUser;
 
@@ -25,26 +32,42 @@ import static redis.clients.jedis.util.JedisURIHelper.getUser;
  * @USER: MrGuan  mrguan@aliyun.com
  * @DATE: 2023/7/26 14:25
  */
-@Tag(name = "miniapp - 我的订单")
+@Tag(name = "miniapp - 我的订单/下单/续费")
 @RestController
 @RequestMapping("/member/order")
 @Validated
 @Slf4j
 public class OrderController {
 
+    @Resource
+    private AppOrderService appOrderService;
+
+    @Resource
+    private DeviceService deviceService;
+
+    @PostMapping("/preOrder")
+    @Operation(summary = "预下单,调用此接口用于判断当前是否能提交订单或者续费,如果可以下单会返回订单应付价格", description = "下单使用")
+    @PreAuthenticated
+    public CommonResult<BigDecimal> preOrder(@RequestBody @Valid OrderPreReqVO reqVO) {
+        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(),null));
+    }
 
     @PostMapping("/save")
     @Operation(summary = "提交订单", description = "下单使用")
     @PreAuthenticated
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> save(@RequestBody @Valid OrderSaveReqVO reqVO) {
-        return null;
+        appOrderService.save(reqVO);
+        return success(true);
     }
 
     @PostMapping("/renew")
     @Operation(summary = "订单续费", description = "订单详情/订单管理使用")
     @PreAuthenticated
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> renew(@RequestBody @Valid OrderRenewalReqVO reqVO) {
-        return null;
+        appOrderService.renew(reqVO);
+        return success(true);
     }
 
 
@@ -52,57 +75,73 @@ public class OrderController {
     @Operation(summary = "获取订单列表分页", description = "我的订单使用")
     @PreAuthenticated
     public CommonResult<PageResult<OrderListRespVO>> getOrderPage(@RequestBody @Valid OrderPageReqVO reqVO) {
-        return null;
+        return success(appOrderService.getOrderPage(reqVO));
     }
 
     @GetMapping("/getOrderInfo/{orderId}")
     @Operation(summary = "获取订单详情", description = "我的订单使用")
     @PreAuthenticated
     public CommonResult<OrderInfoAppRespVO> getOrderInfo(@PathVariable("orderId") Long orderId) {
-        return null;
+        return success(appOrderService.getOrderInfo(orderId));
     }
 
-    @PostMapping("/changeStatus")
-    @Operation(summary = "修改订单状态", description = "我的订单使用")
+    @PutMapping("/startOrder")
+    @Operation(summary = "开始订单", description = "我的订单使用")
     @PreAuthenticated
-    public CommonResult<Boolean> changeStatus(@RequestBody @Valid OrderPageReqVO reqVO) {
-        return null;
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    public CommonResult<Boolean> startOrder(@PathVariable("orderId") Long orderId) {
+        appOrderService.startOrder(orderId);
+        return success(true);
     }
 
+    @PutMapping("/cancelOrder")
+    @Operation(summary = "取消订单 ", description = "我的订单使用")
+    @PreAuthenticated
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    public CommonResult<Boolean> cancelOrder(@PathVariable("orderId") Long orderId) {
+        appOrderService.cancelOrder(orderId);
+        return success(true);
+    }
 
     @PutMapping("/openStoreDoor/{orderId}")
     @Operation(summary = "(开关)门店的大门", description = "我的订单使用")
     @PreAuthenticated
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> openStoreDoor(@PathVariable("orderId") Long orderId) {
-        return null;
+        deviceService.openStoreDoor(null, orderId, 1);
+        return success(true);
     }
 
     @PutMapping("/openRoomDoor/{orderId}")
     @Operation(summary = "(开关)房间的大门", description = "我的订单使用")
     @PreAuthenticated
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> openRoomDoor(@PathVariable("orderId") Long orderId) {
-        return null;
+        deviceService.openRoomDoor(null, orderId, 1);
+        return success(true);
     }
 
     @GetMapping("/getRoomImgs/{roomId}")
     @Operation(summary = "获取房间的图片组", description = "我的订单使用")
     @PreAuthenticated
     public CommonResult<List<String>> getRoomImgs(@PathVariable("roomId") Long roomId) {
-        return null;
+        return success(appOrderService.getRoomImgs(roomId));
     }
 
-    @GetMapping("/getRoomList/{orderId}")
-    @Operation(summary = "更换房间-获取房间列表", description = "我的订单使用")
+    @GetMapping("/getChangeRoomList/{orderId}")
+    @Operation(summary = "更换房间-获取可更换的房间列表", description = "我的订单使用")
     @PreAuthenticated
-    public CommonResult<OrderRoomListRespVO> orderRenewal(@PathVariable("orderId") Long orderId) {
-        return null;
+    public CommonResult<List<OrderRoomListRespVO>> getChangeRoomList(@PathVariable("orderId") Long orderId) {
+        return success(appOrderService.getChangeRoomList(orderId));
     }
 
-    @PostMapping("/changeRoom/{orderId}/{roomId}")
+    @PutMapping("/changeRoom/{orderId}/{roomId}")
     @Operation(summary = "更换房间 - 提交更换", description = "我的订单使用")
     @PreAuthenticated
-    public CommonResult<OrderRoomListRespVO> orderRenewal(@PathVariable("orderId") Long orderId, @PathVariable("roomId") Long roomId) {
-        return null;
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    public CommonResult<Boolean> changeRoom(@PathVariable("orderId") Long orderId, @PathVariable("roomId") Long roomId) {
+        appOrderService.changeRoom(orderId, roomId);
+        return success(true);
     }
 
 

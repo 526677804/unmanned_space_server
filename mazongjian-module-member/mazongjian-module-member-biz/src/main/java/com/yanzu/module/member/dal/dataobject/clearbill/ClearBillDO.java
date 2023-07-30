@@ -28,6 +28,8 @@ public class ClearBillDO extends BaseDO {
      */
     @TableId
     private Long id;
+
+    private Long storeId;
     /**
      * 用户id
      */

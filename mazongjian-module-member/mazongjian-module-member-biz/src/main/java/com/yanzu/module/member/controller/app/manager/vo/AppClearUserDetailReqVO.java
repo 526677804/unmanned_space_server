@@ -17,18 +17,22 @@ import javax.validation.constraints.NotNull;
 @ToString(callSuper = true)
 public class AppClearUserDetailReqVO {
 
-    @Schema(description = "id 数据的id,不是userId")
-    private Long id;
+//    @Schema(description = "数据的id,不是userId,编辑的时候传", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
+//    private Long id;
 
-    @Schema(description = "userId",requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "用户id必填")
-    private Long userId;
+    @Schema(description = "门店id", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
+    @NotNull(message = "门店不能为空")
+    private Long storeId;
 
     @Schema(description = "真实姓名", requiredMode = Schema.RequiredMode.REQUIRED, example = "芋艿")
+    @NotNull(message = "真实姓名不能为空")
     private String name;
 
     @Schema(description = "用户手机号", requiredMode = Schema.RequiredMode.REQUIRED, example = "15601691300")
+    @NotNull(message = "手机号不能为空")
     private String mobile;
+
+
 
 
 }

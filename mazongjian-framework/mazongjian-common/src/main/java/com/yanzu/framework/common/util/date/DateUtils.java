@@ -3,6 +3,7 @@ package com.yanzu.framework.common.util.date;
 import cn.hutool.core.date.LocalDateTimeUtil;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -24,9 +25,23 @@ public class DateUtils {
     public static final long SECOND_MILLIS = 1000;
 
     public static final String FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND = "yyyy-MM-dd HH:mm:ss";
+    public static final String FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE = "yyyy-MM-dd HH:mm";
     public static final String FORMAT_YEAR_MONTH_DAY = "yyyy-MM-dd";
 
     public static final String FORMAT_HOUR_MINUTE_SECOND = "HH:mm:ss";
+
+    public static String dateToStr(Date date, String patt) {
+        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(patt);
+        return localDate.format(formatter);
+    }
+
+    public static Date strToDate(String dateString, String patt) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(patt);
+        LocalDate localDate = LocalDate.parse(dateString, formatter);
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
 
     /**
      * 将 LocalDateTime 转换成 Date

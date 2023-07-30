@@ -23,4 +23,14 @@
         </if>
 
     </select>
+    <select id="getPayByOrderNo"
+            resultType="com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO">
+        select *
+        from member_user_money_bill
+        where deleted = 0
+          and user_id = #{userId}
+          and locate(#{orderNo}, `remark`) > 0
+          and type = 3
+
+    </select>
 </mapper>

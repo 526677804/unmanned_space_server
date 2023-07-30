@@ -1,8 +1,11 @@
 package com.yanzu.module.member.controller.app.order.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -40,16 +43,20 @@ public class OrderInfoAppRespVO {
     private Long userId;
 
     @Schema(description = "订单开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date startTime;
 
     @Schema(description = "订单结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date endTime;
 
     @Schema(description = "订单价格", requiredMode = Schema.RequiredMode.REQUIRED, example = "1698")
     private BigDecimal price;
 
-    @Schema(description = "工作日折扣", example = "2948")
-    private Integer workDiscount;
+//    @Schema(description = "工作日折扣", example = "2948")
+//    private Integer workDiscount;
 
     @Schema(description = "实际支付价格", example = "6888")
     private BigDecimal payPrice;
@@ -73,6 +80,8 @@ public class OrderInfoAppRespVO {
     private Integer status;
 
     @Schema(description = "创建时间/下单时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date createTime;
 
 }

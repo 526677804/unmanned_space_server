@@ -22,6 +22,10 @@ public class AppSettlementClearUserReqVO {
     @NotNull(message = "保洁员id不能为空")
     private Long userId;
 
+    @Schema(description = "门店id")
+    @NotNull(message = "门店id不能为空")
+    private Long storeId;
+
     @Schema(description = "结算金额")
     @NotNull(message = "结算金额不能为空")
     private BigDecimal money;

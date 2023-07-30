@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
+
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.index
  * @DESCRIPTION:
@@ -71,12 +73,12 @@ public class IndexServiceImpl implements IndexService {
 
     @Override
     public List<KeyValue<String, Long>> getStoreList(String name) {
-        return storeInfoMapper.getStoreList(name);
+        return storeInfoMapper.getStoreList(name,getLoginUserId());
     }
 
     @Override
     public List<KeyValue<String, Long>> getRoomList(Long storeId) {
-        return roomInfoMapper.getRoomList(storeId);
+        return roomInfoMapper.getRoomList(storeId,getLoginUserId());
     }
 
     @Override

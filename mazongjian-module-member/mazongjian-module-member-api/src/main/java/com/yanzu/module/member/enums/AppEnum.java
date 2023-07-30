@@ -195,8 +195,7 @@ public class AppEnum {
         SUCCESS(1),
         PAY(2),
         EXPIRED(3),
-        CANCEL(4)
-        ;
+        CANCEL(4);
 
 
         private final Integer value;
@@ -256,10 +255,8 @@ public class AppEnum {
     @AllArgsConstructor
     public enum coupon_type {
 
-
-        INDEX(1),
-        USER_CENTER(2);
-
+        DIKOU(1),
+        MANJIAN(2);
 
         private final Integer value;
     }
@@ -269,10 +266,15 @@ public class AppEnum {
     @Getter
     @AllArgsConstructor
     public enum clear_info_status {
+//        状态 0待接单 1已接单 2已开始 3已完成 4已取消 5被投诉 6已结算
 
-
-        INDEX(1),
-        USER_CENTER(2);
+        DEFAULT(0),
+        JIEDAN(1),
+        START(2),
+        FINISH(3),
+        CANCEL(4),
+        TOUSU(5),
+        JIESUAN(6);
 
 
         private final Integer value;

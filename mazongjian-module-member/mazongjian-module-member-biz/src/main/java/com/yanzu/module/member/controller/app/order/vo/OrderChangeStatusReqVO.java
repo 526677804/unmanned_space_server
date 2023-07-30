@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotEmpty;
+
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.index.vo
  * @DESCRIPTION:
@@ -18,13 +20,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderChangeStatusReqVO extends PageParam {
+public class OrderChangeStatusReqVO  {
 
-    @Schema(description = "状态 0未开始 1进行中 2已完成 3已取消")
-    private Integer status;
+    @Schema(description = "状态 0未开始 1进行中 3已取消", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotEmpty(message = "状态不能为空")
+    private Long status;
 
 
     @Schema(description = "订单id", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotEmpty(message = "订单不能为空")
     private Long orderId;
 
 }

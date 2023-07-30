@@ -9,13 +9,17 @@ import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
+import com.yanzu.module.member.service.manager.AppMangerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
+
+import static com.yanzu.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "miniapp - 管理员角色使用（订单、会员、优惠券、保洁管理）相关接口")
 @RestController
@@ -24,32 +28,36 @@ import javax.validation.Valid;
 @Slf4j
 public class AppManagerController {
 
+    @Resource
+    private AppMangerService appMangerService;
+
+
     @PostMapping("/getOrderPage")
-    @Operation(summary = "获取订单列表分页", description = "我的订单使用")
+    @Operation(summary = "获取订单列表分页", description = "管理员订单管理使用")
     @PreAuthenticated
     public CommonResult<PageResult<OrderListRespVO>> getOrderPage(@RequestBody @Valid OrderPageReqVO reqVO) {
-        return null;
+        return success(appMangerService.getOrderPage(reqVO));
     }
 
     @PostMapping("/getMemberPage")
     @Operation(summary = "获取会员分页列表")
     @PreAuthenticated
     public CommonResult<PageResult<AppMemberPageRespVO>> getMemberPage(@RequestBody @Valid AppMemberPageReqVO reqVO) {
-        return null;
+        return success(appMangerService.getMemberPage(reqVO));
     }
 
     @PostMapping("/getPresentCouponPage")
     @Operation(summary = "获取赠送优惠券分页列表")
     @PreAuthenticated
     public CommonResult<PageResult<AppCouponPageRespVO>> getPresentCouponPage(@RequestBody @Valid AppPresentCouponPageReqVO reqVO) {
-        return null;
+        return success(appMangerService.getPresentCouponPage(reqVO));
     }
 
     @PostMapping("/getCouponPage")
     @Operation(summary = "管理员获取优惠券分页列表")
     @PreAuthenticated
     public CommonResult<PageResult<AppCouponPageRespVO>> getCouponPage(@RequestBody @Valid AppManagerCouponPageReqVO reqVO) {
-        return null;
+        return success(appMangerService.getCouponPage(reqVO));
     }
 
 
@@ -57,7 +65,7 @@ public class AppManagerController {
     @Operation(summary = "管理员获取优惠券详情")
     @PreAuthenticated
     public CommonResult<AppCouponDetailRespVO> getCouponDetail(@PathVariable("couponId") Long couponId) {
-        return null;
+        return success(appMangerService.getCouponDetail(couponId));
     }
 
 
@@ -65,7 +73,8 @@ public class AppManagerController {
     @Operation(summary = "管理员保存优惠券详情")
     @PreAuthenticated
     public CommonResult<Boolean> saveCouponDetail(@RequestBody @Valid AppCouponDetailReqVO reqVO) {
-        return null;
+        appMangerService.saveCouponDetail(reqVO);
+        return success(true);
     }
 
 
@@ -73,28 +82,31 @@ public class AppManagerController {
     @Operation(summary = "管理员获取保洁员分页列表")
     @PreAuthenticated
     public CommonResult<PageResult<AppClearUserPageRespVO>> getClearUserPage(@RequestBody @Valid AppClearUserPageReqVO reqVO) {
-        return null;
+        return success(appMangerService.getClearUserPage(reqVO));
     }
 
-    @PostMapping("/changeClearUserStatus/{userId}")
-    @Operation(summary = "管理员修改保洁员状态 启用/禁用")
+    @PostMapping("/deleteClearUser/{storeId}/{userId}")
+    @Operation(summary = "管理员删除保洁员")
     @PreAuthenticated
-    public CommonResult<Boolean> changeClearUserStatus(@PathVariable("userId") Long userId) {
-        return null;
+    public CommonResult<Boolean> deleteClearUser(@PathVariable("storeId") Long storeId, @PathVariable("userId") Long userId) {
+        appMangerService.deleteClearUser(storeId, userId);
+        return success(true);
     }
 
     @PostMapping("/saveClearUser")
     @Operation(summary = "管理员保存保洁员信息")
     @PreAuthenticated
     public CommonResult<Boolean> saveClearUser(@RequestBody @Valid AppClearUserDetailReqVO reqVO) {
-        return null;
+        appMangerService.saveClearUser(reqVO);
+        return success(true);
     }
 
     @PostMapping("/settlementClearUser")
     @Operation(summary = "管理员结算保洁员费用")
     @PreAuthenticated
     public CommonResult<Boolean> settlementClearUser(@RequestBody @Valid AppSettlementClearUserReqVO reqVO) {
-        return null;
+        appMangerService.settlementClearUser(reqVO);
+        return success(true);
     }
 
 
@@ -102,7 +114,8 @@ public class AppManagerController {
     @Operation(summary = "管理员驳回/撤销驳回保洁员订单")
     @PreAuthenticated
     public CommonResult<Boolean> complaintClearInfo(@RequestBody @Valid AppComplaintClearInfoReqVO reqVO) {
-        return null;
+        appMangerService.complaintClearInfo(reqVO);
+        return success(true);
     }
 
 }

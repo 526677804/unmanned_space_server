@@ -56,10 +56,10 @@ public class AppStoreInfoReqVO {
     @NotNull(message = "客服电话不能为空")
     private String kefuPhone;
 
-    @Schema(description = "工作日折扣", example = "25916")
-    @Max(value = 100, message = "工作日折扣不能大于100")
-    @Min(value = 1, message = "工作日折扣不能小于1")
-    private Integer workDiscount;
+//    @Schema(description = "工作日折扣", example = "25916")
+//    @Max(value = 100, message = "工作日折扣不能大于100")
+//    @Min(value = 1, message = "工作日折扣不能小于1")
+//    private Integer workDiscount;
 
 
 }

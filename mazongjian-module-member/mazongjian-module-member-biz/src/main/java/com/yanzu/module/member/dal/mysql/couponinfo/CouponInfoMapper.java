@@ -9,6 +9,7 @@ import com.yanzu.module.member.controller.app.user.vo.AppCouponPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 优惠券管理 Mapper
@@ -23,4 +24,5 @@ public interface CouponInfoMapper extends BaseMapperX<CouponInfoDO> {
 
     List<AppCouponPageRespVO> getCouponPage(AppCouponPageReqVO reqVO);
 
+    CouponInfoDO getByUserIdAndCouponId(@Param("userId") Long userId, @Param("couponId") Long couponId);
 }

@@ -17,6 +17,7 @@ import com.yanzu.module.member.dal.mysql.franchiseinfo.FranchiseInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
+import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.system.api.sms.SmsCodeApi;
 import com.yanzu.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
 import com.yanzu.module.system.api.tenant.TenantApi;
@@ -109,6 +110,7 @@ public class AppUserServiceImpl implements AppUserService {
         user.setStatus(CommonStatusEnum.ENABLE.getStatus()); // 默认开启
         user.setPassword(encodePassword(password)); // 加密密码
         user.setRegisterIp(registerIp);
+        user.setUserType(AppEnum.member_user_type.MEMBER.getValue());//默认都是用户
         memberUserMapper.insert(user);
         return user;
     }
@@ -210,7 +212,7 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     @Transactional
     public void eechargeBalance(AppRechargeBalanceReqVO reqVO) {
-        if(ObjectUtils.isEmpty(reqVO.getUserId())){
+        if (ObjectUtils.isEmpty(reqVO.getUserId())) {
             reqVO.setUserId(getLoginUserId());
         }
 

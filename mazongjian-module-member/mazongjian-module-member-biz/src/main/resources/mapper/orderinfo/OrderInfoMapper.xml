@@ -13,7 +13,7 @@
         select *
         from member_order_info
         where deleted = 0
-        and status!=3
+        and status in (0,1)
         and end_time>now()
         and room_id in
         <foreach collection="roomIds" index="index" item="item" open="(" separator="," close=")">
@@ -28,5 +28,106 @@
           and user_id = #{userId}
           and status = #{status}
 
+    </select>
+    <select id="getClearPage" resultType="com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO">
+        select o.order_id,
+        o.order_no,
+        o.store_id,
+        s.store_name,
+        o.room_id,
+        r.room_name,
+        r.type roomType,
+        o.end_time orderEndTime,
+        o.status,
+        c.start_time,
+        c.finish_time
+        from member_clear_info c
+        left join member_store_info s ON s.store_id = c.store_id
+        left join member_order_info o ON c.order_id = o.order_id
+        left join member_room_info r ON r.room_id = o.room_id
+        where o.deleted = 0 and o.status in(1,2)
+        <if test="null!=storeId and storeId!=''">
+            and o.store_id=#{storeId}
+        </if>
+        <if test="null!=userId and userId!=''">
+            and c.user_id=#{userId}
+        </if>
+        <if test="null!=status and status!=''">
+            and c.status=#{status}
+        </if>
+
+    </select>
+    <select id="getByRoomId" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
+        select *
+        from member_order_info
+        where deleted = 0
+        and room_id = #{roomId}
+        and status in (0, 1)
+        and end_time>now()
+        <if test="null!=ignoreOrderId and ignoreOrderId!=''">
+            and order_id!=#{ignoreOrderId}
+        </if>
+    </select>
+    <select id="getOrderPage" resultType="com.yanzu.module.member.controller.app.order.vo.OrderListRespVO">
+        select o.order_id
+        , o.order_no
+        , s.store_id
+        , s.store_name
+        , r.room_id
+        , r.type roomType
+        , r.room_name
+        , o.user_id
+        , m.nickname
+        , o.start_time
+        , o.end_time
+        , o.pay_price
+        , o.refund_price
+        , o.status
+        , o.create_time
+        from member_order_info o
+        left join member_store_info s ON o.store_id = s.store_id
+        left join member_room_info r ON r.room_id = o.room_id
+        left join member_user m ON m.id = o.user_id
+        where o.deleted = 0
+        <if test="null!=status and status!=''">
+            and o.status=#{status}
+        </if>
+        <if test="null!=orderColumn and orderColumn!=''">
+            order by o.#{orderColumn} desc
+        </if>
+        <if test="null!=orderColumn or orderColumn=''">
+            order by o.id desc
+        </if>
+
+
+    </select>
+    <select id="getOrderInfo" resultType="com.yanzu.module.member.controller.app.order.vo.OrderInfoAppRespVO">
+        select o.order_id
+             , o.order_no
+             , r.room_name
+             , r.type roomType
+             , s.store_name
+             , s.lat
+             , s.lon
+             , s.address
+             , o.user_id
+             , o.start_time
+             , o.end_time
+             , o.price
+             , o.pay_price
+             , o.refund_price
+             , o.pay_type
+             , s.wifi_info
+             , s.kefu_phone
+             , c.coupon_name
+             , o.status
+             , o.create_time
+        from member_order_info o
+                 left join member_store_info s ON o.store_id = s.store_id
+                 left join member_room_info r ON r.room_id = o.room_id
+                 left join member_user m ON m.id = o.user_id
+                 left join member_coupon_info c ON o.coupon_id=c.coupon_id
+        where o.deleted = 0
+            and o.order_id=#{orderId}
     </select>
 </mapper>

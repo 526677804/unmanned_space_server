@@ -10,9 +10,13 @@
      -->
 
     <select id="getRoomList" resultType="com.yanzu.framework.common.core.KeyValue">
-        select room_name `key`,room_id `value`
-        from member_room_info
-        where deleted=0 and store_id=#{storeId}
+        select r.room_name `key`, r.room_id `value`
+        from member_room_info r
+                 left join member_store_user su ON su.store_id = r.store_id
+        where r.deleted = 0
+          and r.store_id = #{storeId}
+          and su.deleted = 0
+          and su.user_id = #{userId}
         order by sort_id asc
     </select>
     <select id="getRoomInfoList"

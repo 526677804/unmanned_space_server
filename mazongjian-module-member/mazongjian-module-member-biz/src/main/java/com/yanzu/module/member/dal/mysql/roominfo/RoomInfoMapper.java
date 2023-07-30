@@ -5,6 +5,7 @@ import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
 public interface RoomInfoMapper extends BaseMapperX<RoomInfoDO> {
 
 
-    List<KeyValue<String, Long>> getRoomList(Long storeId);
+    List<KeyValue<String, Long>> getRoomList(@Param("storeId") Long storeId, @Param("userId") Long userId);
 
     List<AppRoomListRespVO> getRoomInfoList(Long storeId);
 }

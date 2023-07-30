@@ -10,6 +10,7 @@ import com.yanzu.module.member.controller.app.store.vo.AppStoreAdminReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppStoreAdminRespVO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
 
     AppIndexStoreInfoRespVO getStoreInfo(Long storeId);
 
-    List<KeyValue<String, Long>> getStoreList(String name);
+    List<KeyValue<String, Long>> getStoreList(@Param("name") String name, @Param("userId") Long userId);
 
     List<AppRoomInfoListRespVO> getRoomInfoList(Long storeId);
 
