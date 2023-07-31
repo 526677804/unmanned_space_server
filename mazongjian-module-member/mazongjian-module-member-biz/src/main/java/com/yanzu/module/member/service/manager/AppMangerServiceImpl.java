@@ -35,6 +35,8 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -287,15 +289,20 @@ public class AppMangerServiceImpl implements AppMangerService {
             throw exception(AUTH_PROMISSION_ERROR);
         }
         reqVO.setUserId(getLoginUserId());
-        List<KeyValue<String, Double>> roomUseStatistics = orderInfoMapper.getRoomUseStatistics(reqVO);
+        List<KeyValue<String, Long>> roomUseStatistics = orderInfoMapper.getRoomUseStatistics(reqVO);
+        List<KeyValue<String, Double>> resultList = new ArrayList<>();
         //再查一下总共的房间数量，算出使用率
         if (!CollectionUtils.isEmpty(roomUseStatistics)) {
-            int count = roomInfoMapper.countByStoreIdAndUserId(reqVO.getStoreId(), reqVO.getUserId());
-            for (KeyValue<String, Double> vo : roomUseStatistics) {
-                vo.setValue(vo.getValue() / (count * 1.0));
+            Integer count = roomInfoMapper.countByStoreIdAndUserId(reqVO.getStoreId(), reqVO.getUserId());
+            for (KeyValue<String, Long> vo : roomUseStatistics) {
+//                vo.setValue(vo.getValue() / (count * 1.0));
+                KeyValue<String, Double> kv = new KeyValue();
+                kv.setKey(vo.getKey());
+                kv.setValue(vo.getValue().doubleValue()/count);
+                resultList.add(kv);
             }
         }
-        return roomUseStatistics;
+        return resultList;
     }
 
     @Override

@@ -26,5 +26,5 @@ public interface RoomInfoMapper extends BaseMapperX<RoomInfoDO> {
 
     String getRoomImgs(Long roomId);
 
-    int countByStoreIdAndUserId(@Param("storeId") Long storeId, @Param("userId") Long userId);
+    Integer countByStoreIdAndUserId(@Param("storeId") Long storeId, @Param("userId") Long userId);
 }

@@ -217,7 +217,7 @@
 
     </select>
     <select id="getRoomUseHourStatistics" resultType="com.yanzu.framework.common.core.KeyValue">
-        select DATE_FORMAT(create_time, '%Y-%m-%d') `key`,sum(TIMESTAMPDIFF('MINUTE',end_time,start_time))/60 `value`
+        select DATE_FORMAT(create_time, '%Y-%m-%d') `key`,sum(TIMESTAMPDIFF(MINUTE,start_time,end_time))/60.0 `value`
         from member_order_info
         where deleted = 0
         and status in ( 1, 2)
