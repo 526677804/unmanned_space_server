@@ -1,10 +1,9 @@
 package com.yanzu.module.member.dal.mysql.orderinfo;
 
-import java.util.*;
-
-import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
+import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderInfoAppRespVO;
@@ -13,6 +12,9 @@ import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 订单管理 Mapper
@@ -34,4 +36,17 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     OrderInfoAppRespVO getOrderInfo(Long orderId);
 
+    AppBusinessStatisticsRespVO getBusinessStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, BigDecimal>> getRevenueStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, Integer>> getOrderStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, Integer>> getMemberStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, Integer>> getNewMemberStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, Double>> getRoomUseStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, Double>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
 }

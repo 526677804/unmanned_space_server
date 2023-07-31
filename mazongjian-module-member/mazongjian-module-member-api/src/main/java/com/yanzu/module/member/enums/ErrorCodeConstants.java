@@ -33,7 +33,7 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_TIME_CHECK_ERROR = new ErrorCode(1004004008, "当前选择的订单时间不可用，请检查后提交！");
     ErrorCode TIME_UNIT_ERROR = new ErrorCode(1004004009, "时间单位错误，必须以0.5小时/30分钟为一个单位！");
     ErrorCode PAY_TYPE_ERROR = new ErrorCode(1004004010, "支付方式选择错误！");
-    ErrorCode ORDER_TIME_MIN_ERROR = new ErrorCode(1004004011, "预定的时间不能小于4个小时！");
+    ErrorCode ORDER_TIME_MIN_ERROR = new ErrorCode(1004004011, "选择的时长不能低于4个小时！");
     ErrorCode COUPON_NOT_FOUND_ERROR = new ErrorCode(1004004012, "选择的优惠券不存在！");
     ErrorCode COUPON_MIN_USER_PRICE_ERROR = new ErrorCode(1004004013, "选择的优惠券未达到使用门槛！");
     ErrorCode MEMBER_BALANCE_MIN_ERROR = new ErrorCode(1004004014, "账户余额不足，请充值后重试！");
@@ -43,13 +43,17 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_START_OPRATION_ERROR = new ErrorCode(1004004018, "无法开始消费当前订单！");
     ErrorCode ORDER_CANCEL_OPRATION_ERROR = new ErrorCode(1004004019, "无法取消当前订单！");
     ErrorCode ORDER_CANCEL_TIMEOUT_ERROR = new ErrorCode(1004004020, "距离预定开始时间不足30分钟，无法取消订单！特殊情况请联系客服");
+    ErrorCode ORDER_START_TIME_GT_NOW_ERROR = new ErrorCode(1004004021, "您选择的开始时间已经超过当前时间5分钟，请重新选择开始时间！");
+    ErrorCode ORDER_MAX_END_TIME_ERROR = new ErrorCode(1004004022, "订单总时长不能超过24小时，请重新选择预订时间！");
     ErrorCode DISCOUNTRULE_REPETITION_ERROR = new ErrorCode(1004004024, "该充值金额已存在其他规则中，不允许重复添加！");
+    ErrorCode USER_NO_MONEY_WITHDRAWAL_ERROR = new ErrorCode(1004004028, "您当前没有可提现的收入！");
     ErrorCode GAME_CREATE_NUM_MAX_ERROR = new ErrorCode(1004004030, "每日允许创建5条组局信息，请明天再试！");
     ErrorCode GAME_DELETE_USER_ERROR = new ErrorCode(1004004031, "只有组队中或未支付的对局才可以踢出玩家！");
     ErrorCode GAME_JOIN_USER_ERROR = new ErrorCode(1004004032, "只有组队中或已加入的对局才能操作！");
     ErrorCode GAME_MAX_USER_ERROR = new ErrorCode(1004004033, "对局人数已满！");
     ErrorCode GAME_DELETE_ME_ERROR = new ErrorCode(1004004034, "不能踢出自己！");
     ErrorCode GAME_START_TIME_ERROR = new ErrorCode(1004004035, "开始时间不能小于当前时间！");
+    ErrorCode ORDER_CHANGE_ROOM_ERROR = new ErrorCode(1004004036, "只能更换到等于或小于当前房间级别的房间！");
     ErrorCode CLEAR_ORDER_NOT_JIEDAN = new ErrorCode(1004004040, "订单已经被其他人抢走！");
     ErrorCode CLEAR_ORDER_STATUS_ERROR = new ErrorCode(1004004041, "订单当前状态不允许进行此操作！");
 

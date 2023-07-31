@@ -1,12 +1,10 @@
 package com.yanzu.module.member.service.order;
 
-import cn.hutool.core.date.DateUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
-import com.yanzu.framework.common.util.date.LocalDateTimeUtils;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
@@ -15,6 +13,7 @@ import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
+import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
@@ -24,7 +23,6 @@ import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +36,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getCommonResult;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
@@ -69,6 +66,9 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Resource
     private UserMoneyBillMapper userMoneyBillMapper;
 
+    @Resource
+    private ClearInfoMapper clearInfoMapper;
+
     /**
      * @param roomId        房间id
      * @param startTime     开始时间
@@ -82,7 +82,11 @@ public class AppOrderServiceImpl implements AppOrderService {
         Date now = new Date();
         //参数校验
         if (startTime.before(now)) {
-            throw exception(ORDER_START_TIME_ERROR);
+            //开始时间在当前之前，不能超过5分钟  不然间隔太久了
+            long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
+            if (l > 6) {
+                throw exception(ORDER_START_TIME_GT_NOW_ERROR);
+            }
         }
         if (startTime.after(endTime)) {
             throw exception(ORDER_START_TIME_GT_END_ERROR);
@@ -91,6 +95,10 @@ public class AppOrderServiceImpl implements AppOrderService {
         long l = (endTime.getTime() - startTime.getTime()) / 1000 / 60;
         if (l % 30 != 0) {
             throw exception(TIME_UNIT_ERROR);
+        }
+        //订单不能超过24小时  不然间隔太久了
+        if (l / 30 > 48) {
+            throw exception(ORDER_MAX_END_TIME_ERROR);
         }
         //检查时间有没有超过提前5天的范围
         Instant instant1 = startTime.toInstant();
@@ -281,7 +289,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //生成订单，并修改房间状态
         OrderInfoDO orderInfoDO = new OrderInfoDO();
         orderInfoDO.setOrderNo(orderNo);
-        orderInfoDO.setOrderId(roomInfoDO.getStoreId());
+        orderInfoDO.setStoreId(roomInfoDO.getStoreId());
         orderInfoDO.setRoomId(roomInfoDO.getRoomId());
         orderInfoDO.setUserId(userId);
         orderInfoDO.setStartTime(reqVO.getStartTime());
@@ -426,18 +434,49 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
-    public List<String> getRoomImgs(Long roomId) {
-        return null;
+    public String getRoomImgs(Long roomId) {
+        return roomInfoMapper.getRoomImgs(roomId);
     }
 
     @Override
-    public List<OrderRoomListRespVO> getChangeRoomList(Long orderId) {
-        return null;
-    }
-
-    @Override
+    @Transactional
     public void changeRoom(Long orderId, Long roomId) {
-
+        //取出当前订单信息
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
+        Long loginUserId = getLoginUserId();
+        //只能操作自己的订单
+        if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
+            throw exception(OPRATION_ERROR);
+        }
+        //只有未开始的订单才能更换房间
+        if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
+            //只能更换到小于等于当前房间级别的
+            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+            RoomInfoDO roomInfoDO1 = roomInfoMapper.selectById(orderInfoDO.getRoomId());
+            if (roomInfoDO.getType() > roomInfoDO1.getType()) {
+                throw exception(ORDER_CHANGE_ROOM_ERROR);
+            } else {
+                //检查是否可用
+                preOrder(roomId, orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), null, null);
+                //开始更换
+                orderInfoDO.setRoomId(roomId);
+                orderInfoMapper.updateById(orderInfoDO);
+                //改新房间的状态  如果房间是空闲，则改成已预订
+                if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.ENABLE.getValue()) == 0) {
+                    roomInfoDO.setStatus(AppEnum.room_status.PENDDING.getValue());
+                }
+                //改旧房间的状态  如果房间是已预订，并且没有其他订单，则改回空闲
+                if (roomInfoDO1.getStatus().compareTo(AppEnum.room_status.PENDDING.getValue()) == 0) {
+                    List<OrderInfoDO> orderInfoDOList = orderInfoMapper.getByRoomId(roomInfoDO1.getRoomId(), null);
+                    if (!CollectionUtils.isAnyEmpty(orderInfoDOList)) {
+                        roomInfoDO1.setStatus(AppEnum.room_status.ENABLE.getValue());
+                        roomInfoMapper.updateById(roomInfoDO1);
+                    }
+                }
+            }
+        } else {
+            throw exception(CLEAR_ORDER_STATUS_ERROR);
+        }
     }
 
     @Override
@@ -503,6 +542,11 @@ public class AppOrderServiceImpl implements AppOrderService {
                     }
                 }
             }
+            //取消后  如果后面没有预约了，把房间状态改回空闲
+            List<OrderInfoDO> orderInfoDOList = orderInfoMapper.getByRoomId(orderInfoDO.getRoomId(), null);
+            if (org.springframework.util.CollectionUtils.isEmpty(orderInfoDOList)) {
+                roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), orderInfoDO.getRoomId());
+            }
         } else {
             throw exception(ORDER_CANCEL_OPRATION_ERROR);
         }
@@ -513,6 +557,9 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Transactional
     public void startOrder(Long orderId) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
+        if (ObjectUtils.isEmpty(orderInfoDO)) {
+            throw exception(DATA_NOT_EXISTS);
+        }
         Long loginUserId = getLoginUserId();
         //只能操作自己的订单
         if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
@@ -536,12 +583,14 @@ public class AppOrderServiceImpl implements AppOrderService {
             //开始订单
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
             orderInfoMapper.updateById(orderInfoDO);
+            //房间改为进行中
+            roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
             //新增保洁订单
             ClearInfoDO clearInfoDO = new ClearInfoDO();
             clearInfoDO.setOrderId(orderId);
             clearInfoDO.setStoreId(orderInfoDO.getStoreId());
             clearInfoDO.setOrderNo(orderInfoDO.getOrderNo());
-
+            clearInfoMapper.insert(clearInfoDO);
         } else {
             throw exception(ORDER_START_OPRATION_ERROR);
         }

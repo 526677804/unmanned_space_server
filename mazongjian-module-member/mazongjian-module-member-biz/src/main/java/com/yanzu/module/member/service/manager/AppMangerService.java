@@ -1,12 +1,19 @@
 package com.yanzu.module.member.service.manager;
 
+import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
+import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
+import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 public interface AppMangerService {
     PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO);
@@ -30,4 +37,22 @@ public interface AppMangerService {
     void settlementClearUser(AppSettlementClearUserReqVO reqVO);
 
     void complaintClearInfo(AppComplaintClearInfoReqVO reqVO);
+
+    void applyWithdrawal();
+
+    PageResult<AppWithdrawalPageRespVO> getWithdrawalPage(AppWithdrawalPageReqVO reqVO);
+
+    AppRevenueChartRespVO getRevenueChart();
+
+    AppBusinessStatisticsRespVO getBusinessStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, BigDecimal>> getRevenueStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, Integer>> getOrderStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, Integer>> getMemberStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, Double>> getRoomUseStatistics(AppChartDataReqVO reqVO);
+
+    List<KeyValue<String, Double>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
 }

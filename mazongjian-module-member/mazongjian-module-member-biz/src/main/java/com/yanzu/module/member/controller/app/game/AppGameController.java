@@ -9,6 +9,7 @@ import com.yanzu.module.member.controller.app.game.vo.AppGameInfoRespVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGamePageReqVO;
 import com.yanzu.module.member.service.game.AppGameService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -57,6 +58,8 @@ public class AppGameController {
     @DeleteMapping("/deleteUser/{gameId}/{userId}")
     @Operation(summary = "踢出对局的用户", description = "线上组局使用")
     @PreAuthenticated
+    @Parameter(name = "gameId")
+    @Parameter(name = "userId")
     public CommonResult<Boolean> deleteUser(@PathVariable("gameId") Long gameId, @PathVariable("userId") Long userId) {
         appGameService.deleteUser(gameId, userId);
         return success(true);
@@ -65,6 +68,7 @@ public class AppGameController {
     @DeleteMapping("/join/{gameId}")
     @Operation(summary = "加入或退出对局", description = "线上组局使用")
     @PreAuthenticated
+    @Parameter(name = "gameId")
     @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> join(@PathVariable("gameId") Long gameId) {
         appGameService.join(gameId);

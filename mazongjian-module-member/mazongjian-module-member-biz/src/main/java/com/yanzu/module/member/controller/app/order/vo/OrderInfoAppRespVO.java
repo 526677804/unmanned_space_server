@@ -10,6 +10,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
+
 @Schema(description = "miniapp - 订单管理 Response VO")
 @Data
 @ToString(callSuper = true)
@@ -43,12 +45,12 @@ public class OrderInfoAppRespVO {
     private Long userId;
 
     @Schema(description = "订单开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date startTime;
 
     @Schema(description = "订单结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date endTime;
 
@@ -80,7 +82,7 @@ public class OrderInfoAppRespVO {
     private Integer status;
 
     @Schema(description = "创建时间/下单时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date createTime;
 

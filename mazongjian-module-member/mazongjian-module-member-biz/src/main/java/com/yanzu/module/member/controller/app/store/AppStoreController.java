@@ -7,16 +7,20 @@ import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
 
+import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.pojo.CommonResult.success;
+import static com.yanzu.module.infra.enums.ErrorCodeConstants.FILE_IS_EMPTY;
 
 @Tag(name = "miniapp - 门店管理 （管理员）")
 @RestController
@@ -42,6 +46,7 @@ public class AppStoreController {
     @GetMapping("/getDetail/{storeId}")
     @Operation(summary = "获取门店详情")
     @PreAuthenticated
+    @Parameter(name = "storeId")
     public CommonResult<AppStoreInfoRespVO> getDetail(@PathVariable("storeId") Long storeId) {
         return success(storeInfoService.getDetail(storeId));
     }
@@ -57,6 +62,7 @@ public class AppStoreController {
     @PutMapping("/openStoreDoor/{storeId}")
     @Operation(summary = "开门店的大门", description = "门店管理使用")
     @PreAuthenticated
+    @Parameter(name = "storeId")
     public CommonResult<Boolean> openStoreDoor(@PathVariable("storeId") Long storeId) {
         //1用户开门 2管理员开门 3保洁开门
         deviceService.openStoreDoor(storeId, null, 2);
@@ -66,6 +72,7 @@ public class AppStoreController {
     @GetMapping("/getRoomInfoList/{storeId}")
     @Operation(summary = "获取门店的房间列表")
     @PreAuthenticated
+    @Parameter(name = "storeId")
     public CommonResult<List<AppRoomListRespVO>> getRoomInfoList(@PathVariable("storeId") Long storeId) {
         return success(storeInfoService.getRoomInfoList(storeId));
     }
@@ -73,6 +80,7 @@ public class AppStoreController {
     @GetMapping("/getRoomDetail/{roomId}")
     @Operation(summary = "获取房间详情")
     @PreAuthenticated
+    @Parameter(name = "roomId")
     public CommonResult<AppRoomDetailRespVO> getRoomDetail(@PathVariable("roomId") Long roomId) {
         return success(storeInfoService.getRoomDetail(roomId));
     }
@@ -88,6 +96,7 @@ public class AppStoreController {
     @PutMapping("/openRoomDoor/{roomId}")
     @Operation(summary = "开房间的大门", description = "房间管理使用")
     @PreAuthenticated
+    @Parameter(name = "roomId")
     public CommonResult<Boolean> openRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户开门 2管理员开门 3保洁开门
         deviceService.openRoomDoor(roomId, null, 2);
@@ -97,6 +106,7 @@ public class AppStoreController {
     @PutMapping("/closeRoomDoor/{roomId}")
     @Operation(summary = "关房间的大门", description = "房间管理使用")
     @PreAuthenticated
+    @Parameter(name = "roomId")
     public CommonResult<Boolean> closeRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户关门 2管理员关门 3保洁关门
         deviceService.closeRoomDoor(roomId, null, 2);
@@ -114,6 +124,7 @@ public class AppStoreController {
     @PutMapping("/changeDiscountRulesStatus/{discountId}")
     @Operation(summary = "修改门店充值优惠信息状态（启用/禁用）")
     @PreAuthenticated
+    @Parameter(name = "discountId")
     public CommonResult<Boolean> changeDiscountRulesStatus(@PathVariable("discountId") Long discountId) {
         storeInfoService.changeDiscountRulesStatus(discountId);
         return success(true);
@@ -122,6 +133,7 @@ public class AppStoreController {
     @GetMapping("/getDiscountRuleDetail/{discountId}")
     @Operation(summary = "获取门店充值优惠信息详情")
     @PreAuthenticated
+    @Parameter(name = "discountId")
     public CommonResult<AppDiscountRulesDetailRespVO> getDiscountRuleDetail(@PathVariable("discountId") Long discountId) {
         return success(storeInfoService.getDiscountRuleDetail(discountId));
     }
@@ -135,4 +147,14 @@ public class AppStoreController {
     }
 
 
+    @PostMapping("/uploadImg")
+    @Operation(summary = "上传图片，并返回图片访问地址")
+    @PreAuthenticated
+    public CommonResult<String> uploadImg(@RequestParam("file") MultipartFile file) throws Exception {
+        if (file.isEmpty()) {
+            throw exception(FILE_IS_EMPTY);
+        }
+        String avatar = storeInfoService.uploadImg(file.getInputStream());
+        return success(avatar);
+    }
 }

@@ -1,7 +1,6 @@
 package com.yanzu.module.member.controller.app.order.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.yanzu.framework.common.pojo.PageParam;
 import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -11,6 +10,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
+import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order.vo
@@ -51,12 +52,12 @@ public class OrderListRespVO {
     private String nickname;
 
     @Schema(description = "订单开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date startTime;
 
     @Schema(description = "订单结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date endTime;
 
@@ -70,7 +71,7 @@ public class OrderListRespVO {
     private Integer status;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date createTime;
 

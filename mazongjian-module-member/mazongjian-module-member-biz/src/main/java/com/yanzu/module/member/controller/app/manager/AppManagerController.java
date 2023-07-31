@@ -11,6 +11,7 @@ import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
 import com.yanzu.module.member.service.manager.AppMangerService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -64,6 +65,7 @@ public class AppManagerController {
     @GetMapping("/getCouponDetail/{couponId}")
     @Operation(summary = "管理员获取优惠券详情")
     @PreAuthenticated
+    @Parameter(name = "couponId")
     public CommonResult<AppCouponDetailRespVO> getCouponDetail(@PathVariable("couponId") Long couponId) {
         return success(appMangerService.getCouponDetail(couponId));
     }
@@ -88,6 +90,8 @@ public class AppManagerController {
     @PostMapping("/deleteClearUser/{storeId}/{userId}")
     @Operation(summary = "管理员删除保洁员")
     @PreAuthenticated
+    @Parameter(name = "storeId")
+    @Parameter(name = "userId")
     public CommonResult<Boolean> deleteClearUser(@PathVariable("storeId") Long storeId, @PathVariable("userId") Long userId) {
         appMangerService.deleteClearUser(storeId, userId);
         return success(true);
@@ -117,5 +121,21 @@ public class AppManagerController {
         appMangerService.complaintClearInfo(reqVO);
         return success(true);
     }
+
+    @PutMapping("/applyWithdrawal")
+    @Operation(summary = "申请提现")
+    @PreAuthenticated
+    public CommonResult<Boolean> applyWithdrawal() {
+        appMangerService.applyWithdrawal();
+        return success(true);
+    }
+
+    @PutMapping("/getWithdrawalPage")
+    @Operation(summary = "获取提现记录分页")
+    @PreAuthenticated
+    public CommonResult<PageResult<AppWithdrawalPageRespVO>> getWithdrawalPage(@RequestBody @Validated AppWithdrawalPageReqVO reqVO) {
+        return success(appMangerService.getWithdrawalPage(reqVO));
+    }
+
 
 }

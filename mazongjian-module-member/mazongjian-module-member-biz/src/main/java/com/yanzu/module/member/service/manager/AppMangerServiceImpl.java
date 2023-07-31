@@ -2,7 +2,11 @@ package com.yanzu.module.member.service.manager;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
+import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
+import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
@@ -12,9 +16,14 @@ import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
+import com.yanzu.module.member.dal.dataobject.userwithdrawal.UserWithdrawalDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
+import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
+import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
+import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
+import com.yanzu.module.member.dal.mysql.userwithdrawal.UserWithdrawalMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +32,11 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-
-import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Random;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
@@ -46,6 +55,18 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Resource
     private MemberUserMapper memberUserMapper;
+
+    @Resource
+    private UserWithdrawalMapper withdrawalMapper;
+
+    @Resource
+    private OrderInfoMapper orderInfoMapper;
+
+    @Resource
+    private UserMoneyBillMapper userMoneyBillMapper;
+
+    @Resource
+    private RoomInfoMapper roomInfoMapper;
 
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
@@ -143,5 +164,148 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public void complaintClearInfo(AppComplaintClearInfoReqVO reqVO) {
 
+    }
+
+    private String getWithdrawalNo() {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        String currentDate = currentDateTime.format(dateFormatter);
+        Random random = new Random();
+        int randomNum = random.nextInt(1000000);
+        String randomNumString = String.format("%04d", randomNum);
+        return currentDate + randomNumString;
+    }
+
+    @Override
+    @Transactional
+    public void applyWithdrawal() {
+        //仅创建者使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        //判断当前用户的收入还有没有可以提现的
+        Long loginUserId = getLoginUserId();
+        MemberUserDO memberUserDO = memberUserMapper.selectById(loginUserId);
+        BigDecimal subtract = memberUserDO.getMoney().subtract(memberUserDO.getWithdrawalMoney());
+        if (subtract.compareTo(BigDecimal.ZERO) > 0) {
+            //可以提现
+            //增加提现记录
+            UserWithdrawalDO userWithdrawalDO = new UserWithdrawalDO();
+            userWithdrawalDO.setUserId(loginUserId);
+            userWithdrawalDO.setMoney(memberUserDO.getMoney());
+            userWithdrawalDO.setNo(getWithdrawalNo());
+            userWithdrawalDO.setStatus(AppEnum.user_withdrawal.COMMIT.getValue());
+            withdrawalMapper.insert(userWithdrawalDO);
+            //增加累积提现金额  并扣掉收入
+            memberUserDO.setWithdrawalMoney(memberUserDO.getWithdrawalMoney().add(memberUserDO.getMoney()));
+            memberUserDO.setMoney(BigDecimal.ZERO);
+            memberUserMapper.updateById(memberUserDO);
+        } else {
+            //没有可提现的收入
+            throw exception(USER_NO_MONEY_WITHDRAWAL_ERROR);
+        }
+    }
+
+    @Override
+    public PageResult<AppWithdrawalPageRespVO> getWithdrawalPage(AppWithdrawalPageReqVO reqVO) {
+        //仅创建者使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        reqVO.setUserId(getLoginUserId());
+        PageHelper.startPage(reqVO);
+        List<AppWithdrawalPageRespVO> list = withdrawalMapper.getWithdrawalPage(reqVO);
+        PageInfo<AppWithdrawalPageRespVO> page = new PageInfo<>(list);
+        return new PageResult<>(page.getList(), page.getTotal());
+    }
+
+    @Override
+    public AppRevenueChartRespVO getRevenueChart() {
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        MemberUserDO memberUserDO = memberUserMapper.selectById(getLoginUserId());
+        AppRevenueChartRespVO respVO = new AppRevenueChartRespVO();
+        respVO.setMoney(memberUserDO.getMoney());
+        respVO.setWithdrawalMoney(memberUserDO.getWithdrawalMoney());
+        respVO.setTotalMoney(memberUserDO.getMoney().add(memberUserDO.getWithdrawalMoney()));
+        return respVO;
+    }
+
+    @Override
+    public AppBusinessStatisticsRespVO getBusinessStatistics(AppChartDataReqVO reqVO) {
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        reqVO.setUserId(getLoginUserId());
+        return orderInfoMapper.getBusinessStatistics(reqVO);
+    }
+
+    @Override
+    public List<KeyValue<String, BigDecimal>> getRevenueStatistics(AppChartDataReqVO reqVO) {
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        reqVO.setUserId(getLoginUserId());
+        return orderInfoMapper.getRevenueStatistics(reqVO);
+    }
+
+    @Override
+    public List<KeyValue<String, Integer>> getOrderStatistics(AppChartDataReqVO reqVO) {
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        reqVO.setUserId(getLoginUserId());
+        return orderInfoMapper.getOrderStatistics(reqVO);
+    }
+
+    @Override
+    public List<KeyValue<String, Integer>> getMemberStatistics(AppChartDataReqVO reqVO) {
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        reqVO.setUserId(getLoginUserId());
+        return orderInfoMapper.getMemberStatistics(reqVO);
+    }
+
+
+    @Override
+    public List<KeyValue<String, Double>> getRoomUseStatistics(AppChartDataReqVO reqVO) {
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        reqVO.setUserId(getLoginUserId());
+        List<KeyValue<String, Double>> roomUseStatistics = orderInfoMapper.getRoomUseStatistics(reqVO);
+        //再查一下总共的房间数量，算出使用率
+        if (!CollectionUtils.isEmpty(roomUseStatistics)) {
+            int count = roomInfoMapper.countByStoreIdAndUserId(reqVO.getStoreId(), reqVO.getUserId());
+            for (KeyValue<String, Double> vo : roomUseStatistics) {
+                vo.setValue(vo.getValue() / (count * 1.0));
+            }
+        }
+        return roomUseStatistics;
+    }
+
+    @Override
+    public List<KeyValue<String, Double>> getRoomUseHourStatistics(AppChartDataReqVO reqVO) {
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        reqVO.setUserId(getLoginUserId());
+        return orderInfoMapper.getRoomUseHourStatistics(reqVO);
     }
 }

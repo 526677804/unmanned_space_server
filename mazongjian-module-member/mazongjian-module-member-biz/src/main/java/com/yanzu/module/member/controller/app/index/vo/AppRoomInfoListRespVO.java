@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
+
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.index.vo
  * @DESCRIPTION:
@@ -56,11 +58,11 @@ public class AppRoomInfoListRespVO {
     private String banTimeEnd;
 
     @Schema(description = "订单/预约开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date startTime;
 
     @Schema(description = "订单/预约结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date endTime;
 
     @Schema(description = "状态 值见字典", example = "2")

@@ -3,7 +3,6 @@ package com.yanzu.module.member.service.game;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.module.member.controller.app.game.vo.AppGameInfoReqVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGameInfoRespVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGamePageReqVO;
@@ -12,7 +11,6 @@ import com.yanzu.module.member.dal.dataobject.gameinfo.GameInfoDO;
 import com.yanzu.module.member.dal.mysql.gameinfo.GameInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
-import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -21,9 +19,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import java.lang.reflect.Member;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -50,8 +46,7 @@ public class AppGameServiceImpl implements AppGameService {
     public void save(AppGameInfoReqVO reqVO) {
         Long loginUserId = getLoginUserId();
         //检查限制  普通用户一天最多发5场  管理员不受限制
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) == 0
-                || getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) == 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) == 0 || getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) == 0) {
             //管理员 暂时不做限制
         } else {
             //普通用户
@@ -63,6 +58,11 @@ public class AppGameServiceImpl implements AppGameService {
         //开始的时间不能小于当前的时间
         if (reqVO.getStartTime().before(new Date())) {
             throw exception(GAME_START_TIME_ERROR);
+        }
+        //开始的时间与结束时间必须大于4小时
+        long l = (reqVO.getEndTime().getTime() - reqVO.getStartTime().getTime()) / 1000 / 60;
+        if (l < 240) {
+            throw exception(ORDER_TIME_MIN_ERROR);
         }
         //这里只有新增  暂时不检查选的时间与订单冲突的问题 todo..
         GameInfoDO gameInfoDO = new GameInfoDO();
@@ -110,8 +110,7 @@ public class AppGameServiceImpl implements AppGameService {
                 throw exception(GAME_DELETE_ME_ERROR);
             }
             //只有组局中和已组局的状态（未支付）才能踢出
-            if (gameInfoDO.getStatus().compareTo(AppEnum.game_status.PROGRESS.getValue()) == 0
-                    || gameInfoDO.getStatus().compareTo(AppEnum.game_status.SUCCESS.getValue()) == 0) {
+            if (gameInfoDO.getStatus().compareTo(AppEnum.game_status.PROGRESS.getValue()) == 0 || gameInfoDO.getStatus().compareTo(AppEnum.game_status.SUCCESS.getValue()) == 0) {
                 List<String> strings = Arrays.asList(gameInfoDO.getPlayUserIds().split(","));
                 if (strings.contains(String.valueOf(userId))) {
                     strings.remove(String.valueOf(userId));
@@ -138,8 +137,7 @@ public class AppGameServiceImpl implements AppGameService {
         GameInfoDO gameInfoDO = gameInfoMapper.selectById(gameId);
         List<String> strings = Arrays.asList(gameInfoDO.getPlayUserIds().split(","));
         //只有组局中和已组局的状态（未支付）才能加入或退出
-        if (gameInfoDO.getStatus().compareTo(AppEnum.game_status.PROGRESS.getValue()) == 0
-                || gameInfoDO.getStatus().compareTo(AppEnum.game_status.SUCCESS.getValue()) == 0) {
+        if (gameInfoDO.getStatus().compareTo(AppEnum.game_status.PROGRESS.getValue()) == 0 || gameInfoDO.getStatus().compareTo(AppEnum.game_status.SUCCESS.getValue()) == 0) {
             //判断在不在对局里面存在
             if (strings.contains(String.valueOf(loginUserId))) {
                 //已存在对局中  那么需要执行的是退出操作  判断是不是房主

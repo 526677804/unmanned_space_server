@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Date;
+
+import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 
 @Schema(description = "miniapp - 用户账单明细 Response VO")
 @Data
@@ -41,7 +41,7 @@ public class AppUserMoneyBillRespVO  {
     private String remark;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date createTime;
 
 }

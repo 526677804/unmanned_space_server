@@ -7,6 +7,7 @@ import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.index.vo.*;
 import com.yanzu.module.member.service.index.IndexService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -55,6 +56,7 @@ public class IndexController {
 
     @GetMapping("/getStoreInfo/{storeId}")
     @Operation(summary = "首页获取门店信息详情")
+    @Parameter(name = "storeId")
     public CommonResult<AppIndexStoreInfoRespVO> getStoreInfo(@PathVariable("storeId") Long storeId) {
         return success(indexService.getStoreInfo(storeId));
     }
@@ -62,6 +64,7 @@ public class IndexController {
 
     @PostMapping("/getRoomInfoList/{storeId}")
     @Operation(summary = "首页获取房间信息列表")
+    @Parameter(name = "storeId")
     public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList(@PathVariable("storeId") Long storeId) {
         return success(indexService.getRoomInfoList(storeId));
     }
@@ -78,6 +81,7 @@ public class IndexController {
     @GetMapping("/getRoomList/{storeId}")
     @Operation(summary = "获取房间下拉选择列表")
     @PreAuthenticated
+    @Parameter(name = "storeId")
     public CommonResult<List<KeyValue<String, Long>>> getRoomList(@PathVariable("storeId") Long storeId) {
         return success(indexService.getRoomList(storeId));
     }

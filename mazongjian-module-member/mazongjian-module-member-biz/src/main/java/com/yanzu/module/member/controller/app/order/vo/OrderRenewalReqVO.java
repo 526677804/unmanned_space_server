@@ -5,9 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.checkerframework.checker.units.qual.N;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -24,15 +22,15 @@ import javax.validation.constraints.NotNull;
 public class OrderRenewalReqVO {
 
     @Schema(description = "订单id", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "订单不能为空")
+    @NotNull(message = "订单不能为空")
     private Long orderId;
 
     @Schema(description = "续费时长  以分钟为单位，0.5小时=30分钟", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "续费时长不能为空")
+    @NotNull(message = "续费时长不能为空")
     private Integer minutes;
 
     @Schema(description = "支付方式 值见字典", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "支付方式不能为空")
+    @NotNull(message = "支付方式不能为空")
     private Integer payType;
 
     @Schema(description = "微信支付订单的Id 微信支付时传", requiredMode = Schema.RequiredMode.REQUIRED, example = "20231123123123123123")

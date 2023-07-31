@@ -12,6 +12,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
+import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
+
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order.vo
  * @DESCRIPTION:
@@ -33,13 +35,13 @@ public class OrderPreReqVO {
     private Long couponId;
 
     @Schema(description = "订单开始时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED,example = "2023-07-30 11:11:11")
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE)
     @NotNull(message = "订单开始时间不能为空")
     private Date startTime;
 
     @Schema(description = "订单结束时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED,example = "2023-07-30 18:11:11")
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE)
     @NotNull(message = "订单结束时间不能为空")
     private Date endTime;

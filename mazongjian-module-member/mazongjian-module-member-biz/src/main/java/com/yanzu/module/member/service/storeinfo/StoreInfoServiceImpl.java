@@ -1,8 +1,10 @@
 package com.yanzu.module.member.service.storeinfo;
 
+import cn.hutool.core.io.IoUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
 import com.yanzu.module.member.convert.roominfo.RoomInfoConvert;
@@ -22,6 +24,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.io.InputStream;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -49,7 +52,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Resource
     private DiscountRulesMapper discountRulesMapper;
-
+    @Resource
+    private FileApi fileApi;
     @Override
     public PageResult<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO) {
         PageHelper.startPage(reqVO);
@@ -200,6 +204,12 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             discountRulesDO.setGiftMoney(reqVO.getGiftMoney());
             discountRulesMapper.updateById(discountRulesDO);
         }
+    }
+
+    @Override
+    public String uploadImg(InputStream inputStream) {
+        // 创建文件
+        return fileApi.createFile(IoUtil.readBytes(inputStream));
     }
 
 }

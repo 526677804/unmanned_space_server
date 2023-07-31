@@ -17,10 +17,10 @@ import java.math.BigDecimal;
 @ToString(callSuper = true)
 public class AppRevenueChartRespVO {
 
-    @Schema(description = "总收入")
+    @Schema(description = "可提现")
     private BigDecimal money;
-    @Schema(description = "待提现")
-    private BigDecimal pendinWithdrawalMoney;
+    @Schema(description = "可提现")
+    private BigDecimal totalMoney;
     @Schema(description = "已提现")
     private BigDecimal withdrawalMoney;
 

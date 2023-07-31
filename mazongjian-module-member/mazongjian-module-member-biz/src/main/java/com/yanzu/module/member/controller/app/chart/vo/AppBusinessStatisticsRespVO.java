@@ -22,7 +22,7 @@ public class AppBusinessStatisticsRespVO {
     @Schema(description = "累积订单数")
     private Integer orderCount;
 
-    @Schema(description = "新增会员数")
+    @Schema(description = "下单会员数")
     private Integer memberCount;
 
 }

@@ -1,11 +1,10 @@
 package com.yanzu.module.member.service.storeinfo;
 
-import java.util.*;
-import javax.validation.*;
-
-import com.yanzu.module.member.controller.app.store.vo.*;
-import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.member.controller.app.store.vo.*;
+
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * 门店管理 Service 接口
@@ -36,5 +35,5 @@ public interface StoreInfoService {
     void saveDiscountRuleDetail(AppDiscountRulesDetailReqVO reqVO);
 
 
-
+    String uploadImg(InputStream inputStream);
 }

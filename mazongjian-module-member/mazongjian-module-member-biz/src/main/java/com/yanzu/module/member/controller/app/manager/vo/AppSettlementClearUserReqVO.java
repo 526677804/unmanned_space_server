@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  * @USER: MrGuan  mrguan@aliyun.com
  * @DATE: 2023/7/27 10:20
  */
-@Schema(description = "miniapp - 管路员结算保洁员费用 Req VO")
+@Schema(description = "miniapp - 管理员结算保洁员费用 Req VO")
 @Data
 @ToString(callSuper = true)
 public class AppSettlementClearUserReqVO {

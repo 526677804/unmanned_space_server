@@ -1,13 +1,13 @@
 package com.yanzu.module.member.dal.dataobject.userwithdrawal;
 
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 import lombok.*;
-import java.util.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
-import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 
 /**
  * 用户提现 DO
@@ -47,9 +47,9 @@ public class UserWithdrawalDO extends BaseDO {
     private LocalDateTime finishTime;
     /**
      * 状态
-     *
+     * <p>
      * 枚举 {@link TODO member_user_withdrawal 对应的类}
      */
-    private Boolean status;
+    private Integer status;
 
 }

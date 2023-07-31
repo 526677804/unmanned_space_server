@@ -12,6 +12,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
+import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
+
 @Schema(description = "miniapp - 保存组局信息 Response VO")
 @Data
 @ToString(callSuper = true)
@@ -37,13 +39,13 @@ public class AppGameInfoReqVO {
     private Integer userNum;
 
     @Schema(description = "开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     @NotNull(message = "开始时间不能为空")
     private Date startTime;
 
     @Schema(description = "结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     @NotNull(message = "结束时间不能为空")
     private Date endTime;

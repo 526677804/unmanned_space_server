@@ -10,6 +10,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 import java.util.List;
 
+import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
+
 @Schema(description = "miniapp - 组局信息 Response VO")
 @Data
 @ToString(callSuper = true)
@@ -47,12 +49,12 @@ public class AppGameInfoRespVO {
 
     @Schema(description = "开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date startTime;
 
     @Schema(description = "结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date endTime;
 
     @Schema(description = "用户id", requiredMode = Schema.RequiredMode.REQUIRED, example = "26195")
@@ -69,7 +71,7 @@ public class AppGameInfoRespVO {
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date createTime;
 
 }

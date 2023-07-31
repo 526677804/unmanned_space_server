@@ -1,30 +1,25 @@
 package com.yanzu.module.member.controller.app.order;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
-import com.yanzu.framework.security.core.LoginUser;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.order.AppOrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import oracle.jdbc.proxy.annotation.Post;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
-import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUser;
-import static redis.clients.jedis.util.JedisURIHelper.getUser;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order
@@ -49,7 +44,7 @@ public class OrderController {
     @Operation(summary = "预下单,调用此接口用于判断当前是否能提交订单或者续费,如果可以下单会返回订单应付价格", description = "下单使用")
     @PreAuthenticated
     public CommonResult<BigDecimal> preOrder(@RequestBody @Valid OrderPreReqVO reqVO) {
-        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(),null));
+        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(), null));
     }
 
     @PostMapping("/save")
@@ -81,22 +76,25 @@ public class OrderController {
     @GetMapping("/getOrderInfo/{orderId}")
     @Operation(summary = "获取订单详情", description = "我的订单使用")
     @PreAuthenticated
+    @Parameter(name = "orderId")
     public CommonResult<OrderInfoAppRespVO> getOrderInfo(@PathVariable("orderId") Long orderId) {
         return success(appOrderService.getOrderInfo(orderId));
     }
 
-    @PutMapping("/startOrder")
+    @PutMapping("/startOrder/{orderId}")
     @Operation(summary = "开始订单", description = "我的订单使用")
     @PreAuthenticated
+    @Parameter(name = "orderId")
     @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> startOrder(@PathVariable("orderId") Long orderId) {
         appOrderService.startOrder(orderId);
         return success(true);
     }
 
-    @PutMapping("/cancelOrder")
+    @PutMapping("/cancelOrder/{orderId}")
     @Operation(summary = "取消订单 ", description = "我的订单使用")
     @PreAuthenticated
+    @Parameter(name = "orderId")
     @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> cancelOrder(@PathVariable("orderId") Long orderId) {
         appOrderService.cancelOrder(orderId);
@@ -106,6 +104,7 @@ public class OrderController {
     @PutMapping("/openStoreDoor/{orderId}")
     @Operation(summary = "(开关)门店的大门", description = "我的订单使用")
     @PreAuthenticated
+    @Parameter(name = "orderId")
     @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> openStoreDoor(@PathVariable("orderId") Long orderId) {
         deviceService.openStoreDoor(null, orderId, 1);
@@ -115,6 +114,7 @@ public class OrderController {
     @PutMapping("/openRoomDoor/{orderId}")
     @Operation(summary = "(开关)房间的大门", description = "我的订单使用")
     @PreAuthenticated
+    @Parameter(name = "orderId")
     @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> openRoomDoor(@PathVariable("orderId") Long orderId) {
         deviceService.openRoomDoor(null, orderId, 1);
@@ -122,22 +122,18 @@ public class OrderController {
     }
 
     @GetMapping("/getRoomImgs/{roomId}")
-    @Operation(summary = "获取房间的图片组", description = "我的订单使用")
+    @Operation(summary = "获取房间的图片组 逗号分隔", description = "我的订单使用")
     @PreAuthenticated
-    public CommonResult<List<String>> getRoomImgs(@PathVariable("roomId") Long roomId) {
+    @Parameter(name = "roomId")
+    public CommonResult<String> getRoomImgs(@PathVariable("roomId") Long roomId) {
         return success(appOrderService.getRoomImgs(roomId));
-    }
-
-    @GetMapping("/getChangeRoomList/{orderId}")
-    @Operation(summary = "更换房间-获取可更换的房间列表", description = "我的订单使用")
-    @PreAuthenticated
-    public CommonResult<List<OrderRoomListRespVO>> getChangeRoomList(@PathVariable("orderId") Long orderId) {
-        return success(appOrderService.getChangeRoomList(orderId));
     }
 
     @PutMapping("/changeRoom/{orderId}/{roomId}")
     @Operation(summary = "更换房间 - 提交更换", description = "我的订单使用")
     @PreAuthenticated
+    @Parameter(name = "orderId")
+    @Parameter(name = "roomId")
     @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> changeRoom(@PathVariable("orderId") Long orderId, @PathVariable("roomId") Long roomId) {
         appOrderService.changeRoom(orderId, roomId);

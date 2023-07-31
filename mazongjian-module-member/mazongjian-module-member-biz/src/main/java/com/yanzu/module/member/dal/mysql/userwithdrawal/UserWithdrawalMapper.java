@@ -1,12 +1,12 @@
 package com.yanzu.module.member.dal.mysql.userwithdrawal;
 
-import java.util.*;
-
-import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.manager.vo.AppWithdrawalPageReqVO;
+import com.yanzu.module.member.controller.app.manager.vo.AppWithdrawalPageRespVO;
 import com.yanzu.module.member.dal.dataobject.userwithdrawal.UserWithdrawalDO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * 用户提现 Mapper
@@ -15,7 +15,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface UserWithdrawalMapper extends BaseMapperX<UserWithdrawalDO> {
-
-
+    List<AppWithdrawalPageRespVO> getWithdrawalPage(AppWithdrawalPageReqVO reqVO);
 
 }
