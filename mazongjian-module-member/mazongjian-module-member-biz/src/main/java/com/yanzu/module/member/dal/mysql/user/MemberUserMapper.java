@@ -2,6 +2,7 @@ package com.yanzu.module.member.dal.mysql.user;
 
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.yanzu.module.member.controller.app.game.vo.AppGameUserListRespVO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -23,5 +24,7 @@ public interface MemberUserMapper extends BaseMapperX<MemberUserDO> {
         return selectList(new LambdaQueryWrapperX<MemberUserDO>()
                 .likeIfPresent(MemberUserDO::getNickname, nickname));
     }
+
+
 
 }

@@ -70,8 +70,9 @@ public class IndexController {
     @GetMapping("/getStoreList")
     @Operation(summary = "获取门店下拉选择列表")
     @PreAuthenticated
-    public CommonResult<List<KeyValue<String, Long>>> getStoreList(@RequestParam(value = "name", required = false) String name) {
-        return success(indexService.getStoreList(name));
+    public CommonResult<List<KeyValue<String, Long>>> getStoreList(@RequestParam(value = "name", required = false) String name
+            , @RequestParam(value = "cityName", required = false) String cityName) {
+        return success(indexService.getStoreList(name,cityName));
     }
 
     @GetMapping("/getRoomList/{storeId}")

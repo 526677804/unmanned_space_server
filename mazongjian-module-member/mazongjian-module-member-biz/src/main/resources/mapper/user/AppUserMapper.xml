@@ -9,4 +9,12 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getInfoByUserIds"
+            resultType="com.yanzu.module.member.controller.app.game.vo.AppGameUserListRespVO">
+
+        select id userId, nickname, avatar
+        from member_user
+        where deleted = 0
+          and id in (#{playUserIds})
+    </select>
 </mapper>

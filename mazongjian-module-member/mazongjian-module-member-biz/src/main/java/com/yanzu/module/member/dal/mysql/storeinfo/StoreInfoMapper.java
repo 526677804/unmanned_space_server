@@ -30,10 +30,11 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
 
     AppIndexStoreInfoRespVO getStoreInfo(Long storeId);
 
-    List<KeyValue<String, Long>> getStoreList(@Param("name") String name, @Param("userId") Long userId);
+    List<KeyValue<String, Long>> getStoreList(@Param("name") String name,@Param("cityName") String cityName, @Param("userId") Long userId);
 
     List<AppRoomInfoListRespVO> getRoomInfoList(Long storeId);
 
     List<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO);
 
+    List<KeyValue<String, Long>> getStoreListByMember(@Param("name") String name, @Param("cityName") String cityName);
 }

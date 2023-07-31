@@ -7,19 +7,24 @@ import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.module.member.controller.app.game.vo.AppGameInfoReqVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGameInfoRespVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGamePageReqVO;
+import com.yanzu.module.member.controller.app.game.vo.AppGameUserListRespVO;
 import com.yanzu.module.member.dal.dataobject.gameinfo.GameInfoDO;
 import com.yanzu.module.member.dal.mysql.gameinfo.GameInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
+import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
+import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.List;
+import java.lang.reflect.Member;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -35,11 +40,13 @@ public class AppGameServiceImpl implements AppGameService {
     private GameInfoMapper gameInfoMapper;
 
     @Resource
+    private AppUserMapper appUserMapper;
+
+    @Resource
     private OrderInfoMapper orderInfoMapper;
 
     @Override
     @Transactional
-
     public void save(AppGameInfoReqVO reqVO) {
         Long loginUserId = getLoginUserId();
         //检查限制  普通用户一天最多发5场  管理员不受限制
@@ -52,6 +59,10 @@ public class AppGameServiceImpl implements AppGameService {
             if (count >= 5) {
                 throw exception(GAME_CREATE_NUM_MAX_ERROR);
             }
+        }
+        //开始的时间不能小于当前的时间
+        if (reqVO.getStartTime().before(new Date())) {
+            throw exception(GAME_START_TIME_ERROR);
         }
         //这里只有新增  暂时不检查选的时间与订单冲突的问题 todo..
         GameInfoDO gameInfoDO = new GameInfoDO();
@@ -66,6 +77,24 @@ public class AppGameServiceImpl implements AppGameService {
         reqVO.setCurrentUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
         List<AppGameInfoRespVO> list = gameInfoMapper.getOrderPage(reqVO);
+        if (!CollectionUtils.isEmpty(list)) {
+            //取出所有玩家
+            String playUserIds = list.stream().map(x -> x.getPlayUserIds()).collect(Collectors.joining(","));
+            //查询出这些人的信息
+            List<AppGameUserListRespVO> userListRespVOList = appUserMapper.getInfoByUserIds(playUserIds);
+            //转map
+            Map<String, AppGameUserListRespVO> userMap = userListRespVOList.stream().collect(Collectors.toMap(x -> String.valueOf(x.getUserId()), Function.identity()));
+            //填充数据
+            for (AppGameInfoRespVO appGameInfoRespVO : list) {
+                List<AppGameUserListRespVO> playUserList = new ArrayList<>(4);
+                String[] split = appGameInfoRespVO.getPlayUserIds().split(",");
+                for (String s : split) {
+                    playUserList.add(userMap.get(s));
+                }
+                appGameInfoRespVO.setPlayUserList(playUserList);
+            }
+        }
+
         PageInfo<AppGameInfoRespVO> page = new PageInfo(list);
         return new PageResult<>(page.getList(), page.getTotal());
     }

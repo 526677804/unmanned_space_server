@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.user.vo
@@ -23,12 +24,12 @@ public class AppRechargeBalanceReqVO {
 
 
     @Schema(description = "门店Id 必传", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
-    @NotEmpty(message = "门店不能为空")
+    @NotNull(message = "门店不能为空")
     private Long storeId;
 
 
-    @Schema(description = "支付订单Id 必传", requiredMode = Schema.RequiredMode.REQUIRED, example = "20231123123123123123")
-    @NotEmpty(message = "支付id不能为空")
+    @Schema(description = "微信支付订单Id 必传", requiredMode = Schema.RequiredMode.REQUIRED, example = "20231123123123123123")
+    @NotNull(message = "微信支付id不能为空")
     private String payOrderId;
 
 

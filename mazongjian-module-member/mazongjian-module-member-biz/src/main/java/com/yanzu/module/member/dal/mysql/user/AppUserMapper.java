@@ -5,6 +5,7 @@ import java.util.*;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.game.vo.AppGameUserListRespVO;
 import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.yanzu.module.member.controller.admin.user.vo.*;
@@ -45,4 +46,5 @@ public interface AppUserMapper extends BaseMapperX<AppUserDO> {
                 .orderByDesc(AppUserDO::getId));
     }
 
+    List<AppGameUserListRespVO> getInfoByUserIds(String playUserIds);
 }

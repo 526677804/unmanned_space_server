@@ -15,6 +15,7 @@ import com.yanzu.module.member.dal.mysql.bannerinfo.BannerInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.enums.AppEnum;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.index
@@ -72,13 +74,18 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public List<KeyValue<String, Long>> getStoreList(String name) {
-        return storeInfoMapper.getStoreList(name,getLoginUserId());
+    public List<KeyValue<String, Long>> getStoreList(String name, String cityName) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.MEMBER.getValue()) == 0) {
+            //返回全部
+            return storeInfoMapper.getStoreListByMember(name, cityName);
+        } else {
+            return storeInfoMapper.getStoreList(name, cityName, getLoginUserId());
+        }
     }
 
     @Override
     public List<KeyValue<String, Long>> getRoomList(Long storeId) {
-        return roomInfoMapper.getRoomList(storeId,getLoginUserId());
+        return roomInfoMapper.getRoomList(storeId, getLoginUserId());
     }
 
     @Override

@@ -18,7 +18,7 @@
 
     </select>
     <select id="getOrderPage" resultType="com.yanzu.module.member.controller.app.game.vo.AppGameInfoRespVO">
-        select g.*, s.store_name, s.lat, s.lon, s.address, r.room_name, r.type
+        select g.*, s.store_name, s.lat, s.lon, s.address, r.room_name,g.play_user_ids,r.type
         from member_game_info g
         left join member_store_info s ON g.store_id = s.store_id
         left join member_room_info r ON g.room_id = r.room_id

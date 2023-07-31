@@ -16,7 +16,7 @@ public interface IndexService {
 
     AppIndexStoreInfoRespVO getStoreInfo(Long storeId);
 
-    List<KeyValue<String, Long>> getStoreList(String name);
+    List<KeyValue<String, Long>> getStoreList(String name,String cityName);
 
     List<KeyValue<String, Long>> getRoomList(Long storeId);
 
