@@ -23,7 +23,7 @@
         FROM
         member_coupon_info c
         WHERE
-        c.deleted =0
+        c.deleted =0 and c.user_id=#{userId}
         <if test="null != status and status != null">
             and c.status=#{status}
         </if>
@@ -31,7 +31,7 @@
             and c.room_type=#{roomType}
         </if>
         <if test="null != storeId and storeId != null">
-            and #{roomType} in (c.store_ids)
+            and #{storeId} in (c.store_ids)
         </if>
     </select>
     <select id="getByUserIdAndCouponId"
@@ -41,6 +41,36 @@
         where deleted = 0
           and user_id = #{userId}
           and coupon_id = #{couponId}
+
+    </select>
+    <select id="getCouponPageByAdmin"
+            resultType="com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO">
+        SELECT
+        c.*,( SELECT group_concat( s.store_name ) FROM member_store_info s WHERE s.store_id IN ( c.store_ids ) )
+        AS storeName
+        FROM
+        member_coupon_info c
+        WHERE
+        c.deleted =0 and c.user_id is null
+          and CONCAT(',', c.store_ids, ',') REGEXP #{storeIds}
+        <if test="null != reqVO">
+            <if test="null != reqVO.type and reqVO.type != ''">
+                and c.type=#{reqVO.type}
+            </if>
+            <if test="null != reqVO.storeId and reqVO.storeId != ''">
+                and #{reqVO.storeId} in (c.store_ids)
+            </if>
+        </if>
+        order by c.price asc
+    </select>
+    <select id="getCouponDetail"
+            resultType="com.yanzu.module.member.controller.app.manager.vo.AppCouponDetailRespVO">
+        SELECT c.*,
+               (SELECT group_concat(s.store_name) FROM member_store_info s WHERE s.store_id IN (c.store_ids))
+                   AS storeName
+        FROM member_coupon_info c
+        WHERE c.deleted = 0
+          and c.coupon_id = #{couponId}
 
     </select>
 </mapper>

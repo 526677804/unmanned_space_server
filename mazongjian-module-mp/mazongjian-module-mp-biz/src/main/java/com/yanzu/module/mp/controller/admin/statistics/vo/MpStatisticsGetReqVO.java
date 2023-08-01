@@ -18,7 +18,7 @@ public class MpStatisticsGetReqVO {
     private Long accountId;
 
     @Schema(description = "查询时间范围")
-    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     @NotNull(message = "查询时间范围不能为空")
     private LocalDateTime[] date;
 

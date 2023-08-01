@@ -62,7 +62,7 @@
           and user_id = #{userId}
 
     </select>
-    <select id="getByIdsUserId" resultType="java.lang.Long">
+    <select id="getIdsByUserId" resultType="java.lang.String">
         select store_id
         from member_store_user
         where deleted = 0

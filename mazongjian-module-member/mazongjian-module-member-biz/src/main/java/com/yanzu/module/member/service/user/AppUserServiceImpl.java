@@ -242,6 +242,7 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Override
     public PageResult<AppCouponPageRespVO> getCouponPage(AppCouponPageReqVO reqVO) {
+        reqVO.setUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
         List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
         PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);

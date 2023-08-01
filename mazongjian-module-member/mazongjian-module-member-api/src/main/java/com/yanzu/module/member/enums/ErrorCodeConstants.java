@@ -56,6 +56,7 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_CHANGE_ROOM_ERROR = new ErrorCode(1004004036, "只能更换到等于或小于当前房间级别的房间！");
     ErrorCode CLEAR_ORDER_NOT_JIEDAN = new ErrorCode(1004004040, "订单已经被其他人抢走！");
     ErrorCode CLEAR_ORDER_STATUS_ERROR = new ErrorCode(1004004041, "订单当前状态不允许进行此操作！");
+    ErrorCode CHECK_STORE_PROMISSION_ERROR = new ErrorCode(1004004050, "选择的门店中包含未授权的门店！");
 
 
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");

@@ -1,6 +1,6 @@
 package com.yanzu.module.member.controller.app.store.vo;
 
-import com.yanzu.framework.common.pojo.PageParam;
+import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
@@ -9,8 +9,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
-
-import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
 
 @Schema(description = "miniapp - 门店充值优惠规则 Response VO")
 @Data
@@ -36,7 +34,7 @@ public class AppDiscountRulesPageRespVO {
 
     @Schema(description = "过期时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "过期时间不能为空")
-    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date expriceTime;
 
     @Schema(description = "状态 值见字典", example = "1")

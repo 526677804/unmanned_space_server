@@ -47,12 +47,6 @@ public class AppManagerController {
         return success(appMangerService.getMemberPage(reqVO));
     }
 
-    @PostMapping("/getPresentCouponPage")
-    @Operation(summary = "获取赠送优惠券分页列表")
-    @PreAuthenticated
-    public CommonResult<PageResult<AppCouponPageRespVO>> getPresentCouponPage(@RequestBody @Valid AppPresentCouponPageReqVO reqVO) {
-        return success(appMangerService.getPresentCouponPage(reqVO));
-    }
 
     @PostMapping("/getCouponPage")
     @Operation(summary = "管理员获取优惠券分页列表")

@@ -14,13 +14,16 @@ import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
+import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.userwithdrawal.UserWithdrawalDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
+import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
+import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.dal.mysql.userwithdrawal.UserWithdrawalMapper;
@@ -36,9 +39,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
@@ -70,34 +73,96 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Resource
     private RoomInfoMapper roomInfoMapper;
 
+    @Resource
+    private CouponInfoMapper couponInfoMapper;
+
+    @Resource
+    private AppUserMapper appUserMapper;
+
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
         return null;
     }
 
     @Override
     public PageResult<AppMemberPageRespVO> getMemberPage(AppMemberPageReqVO reqVO) {
-        return null;
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        PageHelper.startPage(reqVO);
+        List<AppMemberPageRespVO> list = appUserMapper.getMemberPage(reqVO);
+        PageInfo<AppMemberPageRespVO> page = new PageInfo<>(list);
+        return new PageResult<>(page.getList(), page.getTotal());
     }
 
     @Override
     public PageResult<AppCouponPageRespVO> getPresentCouponPage(AppPresentCouponPageReqVO reqVO) {
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
         return null;
     }
 
     @Override
     public PageResult<AppCouponPageRespVO> getCouponPage(AppManagerCouponPageReqVO reqVO) {
-        return null;
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
+                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        //仅限查看当前用户所在门店的优惠券列表
+        String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining("|"));
+        PageHelper.startPage(reqVO.getPageNo(), reqVO.getPageSize());
+        List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPageByAdmin(reqVO, "," + storeIds + ",");
+        PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
+        return new PageResult<>(page.getList(), page.getTotal());
     }
 
     @Override
     public AppCouponDetailRespVO getCouponDetail(Long couponId) {
-        return null;
+        return couponInfoMapper.getCouponDetail(couponId);
     }
 
     @Override
+    @Transactional
     public void saveCouponDetail(AppCouponDetailReqVO reqVO) {
-
+        //仅创建者使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        Long loginUserId = getLoginUserId();
+        //检查包间权限
+        List<String> storeIds = storeUserMapper.getIdsByUserId(loginUserId);
+        if (ObjectUtils.isEmpty(reqVO.getStoreIds())) {
+            reqVO.setStoreIds(storeIds.stream().collect(Collectors.joining(",")));
+        } else {
+            String[] split = reqVO.getStoreIds().split(",");
+            for (String s : split) {
+                if (!storeIds.contains(s)) {
+                    throw exception(CHECK_STORE_PROMISSION_ERROR);
+                }
+            }
+        }
+        //保存进去
+        CouponInfoDO couponInfoDO = new CouponInfoDO();
+        couponInfoDO.setCouponName(reqVO.getCouponName());
+        couponInfoDO.setType(reqVO.getType());
+        couponInfoDO.setCreateUserId(loginUserId);
+        couponInfoDO.setPrice(reqVO.getPrice());
+        couponInfoDO.setMinUsePrice(reqVO.getMinUsePrice());
+        couponInfoDO.setStoreIds(reqVO.getStoreIds());
+        couponInfoDO.setExpriceTime(reqVO.getExpriceTime());
+        couponInfoDO.setRoomType(reqVO.getRoomType());
+        couponInfoMapper.insert(couponInfoDO);
     }
 
     @Override
@@ -298,7 +363,7 @@ public class AppMangerServiceImpl implements AppMangerService {
 //                vo.setValue(vo.getValue() / (count * 1.0));
                 KeyValue<String, Double> kv = new KeyValue();
                 kv.setKey(vo.getKey());
-                kv.setValue(vo.getValue().doubleValue()/count);
+                kv.setValue(vo.getValue().doubleValue() / count);
                 resultList.add(kv);
             }
         }

@@ -1,5 +1,7 @@
 package com.yanzu.module.member.controller.app.user.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
@@ -11,6 +13,9 @@ import java.util.Date;
 @Data
 @ToString(callSuper = true)
 public class AppMemberPageRespVO {
+
+    @Schema(description = "用户id", requiredMode = Schema.RequiredMode.REQUIRED, example = "芋艿")
+    private Long id;
 
     @Schema(description = "用户昵称", requiredMode = Schema.RequiredMode.REQUIRED, example = "芋艿")
     private String nickname;
@@ -31,9 +36,11 @@ public class AppMemberPageRespVO {
     private Integer orderCount;
 
     @Schema(description = "最近下单时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND,timezone = DateUtils.TIME_ZONE_DEFAULT)
     private Date orderTime;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND,timezone = DateUtils.TIME_ZONE_DEFAULT)
     private Date createTime;
 
 }

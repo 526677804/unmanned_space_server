@@ -1,6 +1,7 @@
 package com.yanzu.module.member.controller.app.user.vo;
 
-import com.yanzu.framework.common.pojo.PageParam;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
@@ -9,8 +10,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
-
-import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.user.vo
@@ -34,7 +33,8 @@ public class AppCouponPageRespVO {
 
     @Schema(description = "过期时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "过期时间不能为空")
-    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = DateUtils.TIME_ZONE_DEFAULT)
     private Date expriceTime;
 
     @Schema(description = "优惠券名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "新人福利满50-10")

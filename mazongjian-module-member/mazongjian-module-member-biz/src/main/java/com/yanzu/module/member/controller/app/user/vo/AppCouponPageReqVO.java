@@ -28,4 +28,7 @@ public class AppCouponPageReqVO extends PageParam {
     @Schema(description = "门店Id")
     private Long storeId;
 
+    @Schema(description = "用户id",hidden = true)
+    private Long userId;
+
 }

@@ -1,14 +1,13 @@
 package com.yanzu.module.member.dal.dataobject.couponinfo;
 
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 优惠券管理 DO
@@ -33,15 +32,15 @@ public class CouponInfoDO extends BaseDO {
     /**
      * 持有用户
      */
-    private String userId;
+    private Long userId;
     /**
      * 创建用户
      */
-    private String createUserId;
+    private Long createUserId;
     /**
      * 过期时间
      */
-    private LocalDateTime expriceTime;
+    private Date expriceTime;
     /**
      * 优惠券名称
      */
@@ -59,18 +58,18 @@ public class CouponInfoDO extends BaseDO {
      */
     private String storeIds;
     /**
-     * 使用房间Ids
+     * 使用房间类型
      */
-    private String roomIds;
+    private Integer roomType;
     /**
      * 优惠券类型
-     *
+     * <p>
      * 枚举 {member_coupon_type 对应的类}
      */
     private Integer type;
     /**
      * 状态
-     *
+     * <p>
      * 枚举 {  member_coupon_status 对应的类}
      */
     private Integer status;

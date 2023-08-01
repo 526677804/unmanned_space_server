@@ -28,7 +28,7 @@ public class MpMessagePageReqVO extends PageParam {
     @Schema(description = "公众号粉丝标识", example = "o6_bmjrPTlm6_2sgVt7hMZOPfL2M")
     private String openid;
 
-    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     @Schema(description = "创建时间")
     private LocalDateTime[] createTime;
 

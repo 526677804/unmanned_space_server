@@ -1,14 +1,17 @@
 package com.yanzu.module.member.dal.mysql.user;
 
-import java.util.*;
-
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.yanzu.module.member.controller.admin.user.vo.AppUserExportReqVO;
+import com.yanzu.module.member.controller.admin.user.vo.AppUserPageReqVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGameUserListRespVO;
+import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
+import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
 import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
 import org.apache.ibatis.annotations.Mapper;
-import com.yanzu.module.member.controller.admin.user.vo.*;
+
+import java.util.List;
 
 /**
  * 用户管理 Mapper
@@ -47,4 +50,6 @@ public interface AppUserMapper extends BaseMapperX<AppUserDO> {
     }
 
     List<AppGameUserListRespVO> getInfoByUserIds(String playUserIds);
+
+    List<AppMemberPageRespVO> getMemberPage(AppMemberPageReqVO reqVO);
 }
