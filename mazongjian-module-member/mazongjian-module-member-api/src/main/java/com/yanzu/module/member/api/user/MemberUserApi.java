@@ -57,4 +57,6 @@ public interface MemberUserApi {
      */
     MemberUserRespDTO getUserByMobile(String mobile);
 
+   void executeOrderJob();
+
 }

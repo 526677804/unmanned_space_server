@@ -9,11 +9,19 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
-    <select id="getDateSnByStoreId" resultType="java.lang.String">
+    <select id="getSnByStoreId" resultType="java.lang.String">
         select device_sn from member_device_info
         where deleted=0
           AND type=1 AND room_id is null
           AND store_id=#{storeId}
+
+    </select>
+    <select id="getSnByRoomIdAndType" resultType="java.lang.String">
+        select device_sn
+        from member_device_info
+        where deleted = 0
+          AND type = #{type}
+          AND room_id = #{roomId}
 
     </select>
 </mapper>

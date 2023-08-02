@@ -5,6 +5,10 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.infra.api.file.FileApi;
+import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoCreateReqVO;
+import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoExportReqVO;
+import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoPageReqVO;
+import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoUpdateReqVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
 import com.yanzu.module.member.convert.roominfo.RoomInfoConvert;
@@ -25,6 +29,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -54,6 +59,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     private DiscountRulesMapper discountRulesMapper;
     @Resource
     private FileApi fileApi;
+
     @Override
     public PageResult<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO) {
         PageHelper.startPage(reqVO);
@@ -77,7 +83,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         }
         if (ObjectUtils.isEmpty(reqVO.getStoreId())) {
             //新增
-            StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert(reqVO);
+            StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
             storeInfoDO.setStatus(1);
             storeInfoMapper.insert(storeInfoDO);
             //还要保存一个门店关系
@@ -90,7 +96,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //修改
             //检查修改的权限 只有创建者才可以修改
             checkStorePromission(reqVO.getStoreId(), getLoginUserId(), "1");
-            StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert(reqVO);
+            StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
             storeInfoMapper.updateById(storeInfoDO);
         }
     }
@@ -130,8 +136,12 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     public void saveRoomDetail(AppRoomDetailReqVO reqVO) {
         if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //新增
-            RoomInfoDO roomInfoDO = RoomInfoConvert.INSTANCE.convert(reqVO);
+            RoomInfoDO roomInfoDO = RoomInfoConvert.INSTANCE.convert3(reqVO);
             roomInfoMapper.insert(roomInfoDO);
+            //门店的房间数量+1
+            StoreInfoDO storeInfoDO = storeInfoMapper.selectById(reqVO.getStoreId());
+            storeInfoDO.setRoomNum(storeInfoDO.getRoomNum() + 1);
+            storeInfoMapper.updateById(storeInfoDO);
         } else {
             //修改 只有所有者才可以修改
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
@@ -210,6 +220,58 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     public String uploadImg(InputStream inputStream) {
         // 创建文件
         return fileApi.createFile(IoUtil.readBytes(inputStream));
+    }
+
+    @Override
+    public Long createStoreInfo(StoreInfoCreateReqVO createReqVO) {
+        // 插入
+        StoreInfoDO storeInfo = StoreInfoConvert.INSTANCE.convert(createReqVO);
+        storeInfoMapper.insert(storeInfo);
+        // 返回
+        return storeInfo.getStoreId();
+    }
+
+    @Override
+    public void updateStoreInfo(StoreInfoUpdateReqVO updateReqVO) {
+        // 校验存在
+        validateStoreInfoExists(updateReqVO.getStoreId());
+        // 更新
+        StoreInfoDO updateObj = StoreInfoConvert.INSTANCE.convert(updateReqVO);
+        storeInfoMapper.updateById(updateObj);
+    }
+
+    @Override
+    public void deleteStoreInfo(Long id) {
+        // 校验存在
+        validateStoreInfoExists(id);
+        // 删除
+        storeInfoMapper.deleteById(id);
+    }
+
+    private void validateStoreInfoExists(Long id) {
+        if (storeInfoMapper.selectById(id) == null) {
+            throw exception(DATA_NOT_EXISTS);
+        }
+    }
+
+    @Override
+    public StoreInfoDO getStoreInfo(Long id) {
+        return storeInfoMapper.selectById(id);
+    }
+
+    @Override
+    public List<StoreInfoDO> getStoreInfoList(Collection<Long> ids) {
+        return storeInfoMapper.selectBatchIds(ids);
+    }
+
+    @Override
+    public PageResult<StoreInfoDO> getStoreInfoPage(StoreInfoPageReqVO pageReqVO) {
+        return storeInfoMapper.selectPage(pageReqVO);
+    }
+
+    @Override
+    public List<StoreInfoDO> getStoreInfoList(StoreInfoExportReqVO exportReqVO) {
+        return storeInfoMapper.selectList(exportReqVO);
     }
 
 }

@@ -49,4 +49,6 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
     List<KeyValue<String, Long>> getRoomUseStatistics(AppChartDataReqVO reqVO);
 
     List<KeyValue<String, Double>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
+
+    List<OrderInfoDO> getByStatus(Integer status);
 }

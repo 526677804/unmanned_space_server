@@ -1,7 +1,11 @@
 package com.yanzu.module.member.dal.mysql.storeinfo;
 
 import com.yanzu.framework.common.core.KeyValue;
+import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoExportReqVO;
+import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoPageReqVO;
 import com.yanzu.module.member.controller.app.index.vo.AppIndexStoreInfoRespVO;
 import com.yanzu.module.member.controller.app.index.vo.AppRoomInfoListRespVO;
 import com.yanzu.module.member.controller.app.index.vo.AppStorePageReqVO;
@@ -22,7 +26,25 @@ import java.util.List;
  */
 @Mapper
 public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
+    default PageResult<StoreInfoDO> selectPage(StoreInfoPageReqVO reqVO) {
+        return selectPage(reqVO, new LambdaQueryWrapperX<StoreInfoDO>()
+                .likeIfPresent(StoreInfoDO::getStoreName, reqVO.getStoreName())
+                .likeIfPresent(StoreInfoDO::getCityName, reqVO.getCityName())
+                .likeIfPresent(StoreInfoDO::getAddress, reqVO.getAddress())
+                .eqIfPresent(StoreInfoDO::getStatus, reqVO.getStatus())
+                .betweenIfPresent(StoreInfoDO::getCreateTime, reqVO.getCreateTime())
+                .orderByDesc(StoreInfoDO::getStoreId));
+    }
 
+    default List<StoreInfoDO> selectList(StoreInfoExportReqVO reqVO) {
+        return selectList(new LambdaQueryWrapperX<StoreInfoDO>()
+                .likeIfPresent(StoreInfoDO::getStoreName, reqVO.getStoreName())
+                .likeIfPresent(StoreInfoDO::getCityName, reqVO.getCityName())
+                .likeIfPresent(StoreInfoDO::getAddress, reqVO.getAddress())
+                .eqIfPresent(StoreInfoDO::getStatus, reqVO.getStatus())
+                .betweenIfPresent(StoreInfoDO::getCreateTime, reqVO.getCreateTime())
+                .orderByDesc(StoreInfoDO::getStoreId));
+    }
     List<String> getCityList();
 
 

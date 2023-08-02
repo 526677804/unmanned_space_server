@@ -1,15 +1,12 @@
 package com.yanzu.module.member.dal.dataobject.clearinfo;
 
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 import lombok.*;
 
-import java.util.*;
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-
-import com.baomidou.mybatisplus.annotation.*;
-import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 
 /**
  * 保洁信息管理 DO
@@ -36,6 +33,7 @@ public class ClearInfoDO extends BaseDO {
      */
     private Long orderId;
     private Long storeId;
+    private Long roomId;
     /**
      * 订单编号
      */
@@ -52,10 +50,13 @@ public class ClearInfoDO extends BaseDO {
      * 投诉的照片
      */
     private String complaintImgs;
+
+    private String complaintDesc;
     /**
      * 开始时间
      */
     private LocalDateTime startTime;
+    private LocalDateTime finishTime;
     /**
      * 结算时间
      */

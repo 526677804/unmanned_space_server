@@ -23,7 +23,14 @@ public class OrderPageReqVO extends PageParam {
     @Schema(description = "状态 0未开始 1进行中 2已完成 3已取消")
     private Integer status;
 
-    @Schema(description = "排序字段 传start_time 或 create_time")
+    @Schema(description = "排序字段 传startTime 或 createTime")
     private String orderColumn;
+
+    @Schema(hidden = true)
+    private Long userId;
+
+    @Schema(hidden = true)
+    private String storeIds;
+
 
 }

@@ -1,12 +1,12 @@
 package com.yanzu.module.member.dal.dataobject.storeuser;
 
-import lombok.*;
-import java.util.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 /**
  * 门店用户管理 DO
@@ -23,10 +23,6 @@ import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 @AllArgsConstructor
 public class StoreUserDO extends BaseDO {
 
-    /**
-     * 收入
-     */
-    private BigDecimal money;
     /**
      * ID
      */

@@ -1,12 +1,13 @@
 package com.yanzu.module.member.dal.mysql.clearbill;
 
-import java.util.*;
-
-import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.clear.vo.AppClearBillReqVO;
+import com.yanzu.module.member.controller.app.clear.vo.AppClearBillRespVO;
 import com.yanzu.module.member.dal.dataobject.clearbill.ClearBillDO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 保洁账单管理 Mapper
@@ -16,6 +17,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ClearBillMapper extends BaseMapperX<ClearBillDO> {
 
+    BigDecimal sumMoneyByUserId(Long userId);
 
-
+    List<AppClearBillRespVO> getClearBillPage(AppClearBillReqVO reqVO);
 }

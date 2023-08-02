@@ -10,17 +10,41 @@
 
     <select id="getByUserIdAndStatusAndStoreIds"
             resultType="com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO">
-        select * from member_clear_info
-        where deleted=0 and user_id=#{userId} and status=#{status} and  store_id in
-        <foreach collection="storeIds" item="item" index="index" open="(" separator="," close=")">
-            #{item}
-        </foreach>
+        select *
+        from member_clear_info
+        where deleted = 0
+          and user_id = #{userId}
+          and status = #{status}
+          and store_id in ($storeIds)
 
 
     </select>
     <select id="getByUserIdAndStatusAndStoreId"
             resultType="com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO">
-        select * from member_clear_info
-        where deleted=0 and user_id=#{userId} and status=#{status} and  store_id =#{storeId}
+        select *
+        from member_clear_info
+        where deleted = 0
+          and user_id = #{userId}
+          and status = #{status}
+          and store_id = #{storeId}
+    </select>
+    <select id="getDetail" resultType="com.yanzu.module.member.controller.app.clear.vo.AppClearInfoRespVO">
+        select c.*, s.store_name, r.room_name, r.type roomType,
+        from member_clear_info c
+                 left join member_store_info s on c.store_id = s.store_id
+                 left join member_room_info r ON r.room_id = c.room_id
+                 left join member_store_user su ON su.store_id = c.store_id and su.user_id = c.user_id
+        where c.clear_id = #{clearId}
+    </select>
+    <select id="countByUserIdAndStatus" resultType="java.lang.Integer">
+        select count(1)
+        from member_clear_info
+        where deleted = 0
+        and user_id = #{userId}
+        and status = #{status}
+        <choose>
+            <when test="type==1">and to_days(create_time)=to_days(#{dateStr})</when>
+            <when test="type==2">and DATE_FORMAT(create_time, '%Y-%m')=DATE_FORMAT(#{dateStr}, '%Y-%m')</when>
+        </choose>
     </select>
 </mapper>

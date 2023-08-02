@@ -17,6 +17,10 @@ import javax.validation.constraints.NotNull;
 @ToString(callSuper = true)
 public class AppComplaintClearInfoReqVO {
 
+    @Schema(description = "clearId")
+    @NotNull(message = "数据id不能为空")
+    private Long clearId;
+
     @Schema(description = "驳回的原因")
     private String complaintDesc;
 

@@ -78,25 +78,31 @@
         , r.room_name
         , o.user_id
         , m.nickname
-        , o.start_time
+        , o.start_time as startTime
         , o.end_time
         , o.pay_price
         , o.refund_price
         , o.status
-        , o.create_time
+        , o.create_time as createTime
         from member_order_info o
         left join member_store_info s ON o.store_id = s.store_id
         left join member_room_info r ON r.room_id = o.room_id
         left join member_user m ON m.id = o.user_id
         where o.deleted = 0
+        <if test="null==storeIds or storeIds==''">
+            and o.user_id=#{userId}
+        </if>
+        <if test="null!=storeIds and storeIds!=''">
+            and o.store_id in (#{storeIds})
+        </if>
         <if test="null!=status and status!=''">
             and o.status=#{status}
         </if>
         <if test="null!=orderColumn and orderColumn!=''">
-            order by o.#{orderColumn} desc
+            order by ${orderColumn} desc
         </if>
-        <if test="null!=orderColumn or orderColumn=''">
-            order by o.id desc
+        <if test="null==orderColumn or orderColumn==''">
+            order by o.order_id desc
         </if>
 
 
@@ -126,9 +132,9 @@
                  left join member_store_info s ON o.store_id = s.store_id
                  left join member_room_info r ON r.room_id = o.room_id
                  left join member_user m ON m.id = o.user_id
-                 left join member_coupon_info c ON o.coupon_id=c.coupon_id
+                 left join member_coupon_info c ON o.coupon_id = c.coupon_id
         where o.deleted = 0
-            and o.order_id=#{orderId}
+          and o.order_id = #{orderId}
     </select>
     <select id="getBusinessStatistics"
             resultType="com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO">
@@ -197,7 +203,6 @@
     <select id="getNewMemberStatistics" resultType="com.yanzu.framework.common.core.KeyValue">
 
 
-
     </select>
     <select id="getRoomUseStatistics" resultType="com.yanzu.framework.common.core.KeyValue">
         select DATE_FORMAT(create_time, '%Y-%m-%d') `key`,count(distinct room_id) `value`
@@ -231,6 +236,20 @@
         </if>
         group by DATE_FORMAT(create_time, '%Y-%m-%d')
         order by create_time asc
+
+    </select>
+    <select id="getByStatus" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
+        select order_id,
+               order_no,
+               store_id,
+               room_id,
+               user_id,
+               start_time,
+               end_time,
+               status
+        from member_order_info o
+        where o.deleted = 0
+          and o.status = #{status}
 
     </select>
 </mapper>

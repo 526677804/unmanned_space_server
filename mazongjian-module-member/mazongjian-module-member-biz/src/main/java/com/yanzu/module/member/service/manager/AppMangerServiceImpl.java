@@ -13,11 +13,13 @@ import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
+import com.yanzu.module.member.dal.dataobject.clearbill.ClearBillDO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.userwithdrawal.UserWithdrawalDO;
+import com.yanzu.module.member.dal.mysql.clearbill.ClearBillMapper;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
@@ -54,7 +56,8 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Resource
     private ClearInfoMapper clearInfoMapper;
-
+    @Resource
+    private ClearBillMapper clearBillMapper;
     @Resource
     private StoreUserMapper storeUserMapper;
 
@@ -82,19 +85,43 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
         }
-        return null;
+        String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining(","));
+        reqVO.setStoreIds(storeIds);
+        PageHelper.startPage(reqVO);
+        List<OrderListRespVO> list = orderInfoMapper.getOrderPage(reqVO);
+        PageInfo<OrderListRespVO> page = new PageInfo<>(list);
+        return new PageResult<>(page.getList(), page.getTotal());
     }
 
     @Override
     public PageResult<AppMemberPageRespVO> getMemberPage(AppMemberPageReqVO reqVO) {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
+        }
+        //参数检查 排序字段和排序规则  要么全部为空，要么都不能为空
+        if (ObjectUtils.isEmpty(reqVO.getCloumnName()) && ObjectUtils.isEmpty(reqVO.getSortRule())) {
+
+        } else if (!ObjectUtils.isEmpty(reqVO.getCloumnName()) && !ObjectUtils.isEmpty(reqVO.getSortRule())) {
+
+        } else {
+            throw exception(MEMBER_PAGE_PARAM_ERROR);
+        }
+        //内容检查
+        if (!ObjectUtils.isEmpty(reqVO.getCloumnName())) {
+            if (reqVO.getCloumnName().equals("createTime") || reqVO.getCloumnName().equals("orderTime") || reqVO.getCloumnName().equals("orderCount")) {
+                //合法
+            } else {
+                throw exception(MEMBER_PAGE_PARAM_ERROR);
+            }
+            if (reqVO.getSortRule().toLowerCase().equals("asc") || reqVO.getSortRule().toLowerCase().equals("desc")) {
+                //合法
+            } else {
+                throw exception(MEMBER_PAGE_PARAM_ERROR);
+            }
         }
         PageHelper.startPage(reqVO);
         List<AppMemberPageRespVO> list = appUserMapper.getMemberPage(reqVO);
@@ -105,8 +132,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public PageResult<AppCouponPageRespVO> getPresentCouponPage(AppPresentCouponPageReqVO reqVO) {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
         }
         return null;
@@ -115,8 +141,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public PageResult<AppCouponPageRespVO> getCouponPage(AppManagerCouponPageReqVO reqVO) {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
         }
         //仅限查看当前用户所在门店的优惠券列表
@@ -224,13 +249,56 @@ public class AppMangerServiceImpl implements AppMangerService {
     }
 
     @Override
+    @Transactional
     public void settlementClearUser(AppSettlementClearUserReqVO reqVO) {
-
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        //查询出本用户的门店权限
+        String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining(","));
+        //查询出保洁员在这些门店下   有没有可结算的订单
+        List<ClearInfoDO> list = clearInfoMapper.getByUserIdAndStatusAndStoreIds(reqVO.getUserId(), AppEnum.clear_info_status.FINISH.getValue(), storeIds);
+        if (CollectionUtils.isEmpty(list)) {
+            throw exception(NOT_FINISH_CLEAR_IONF_ERROR);
+        }
+        //有订单 则结算
+        list.forEach(x -> {
+            x.setStatus(AppEnum.clear_info_status.JIESUAN.getValue());
+            x.setSettlementTime(LocalDateTime.now());
+        });
+        clearInfoMapper.updateBatch(list);
+        //增加结算记录
+        ClearBillDO clearBillDO = new ClearBillDO();
+        clearBillDO.setUserId(reqVO.getUserId());
+        clearBillDO.setMoney(reqVO.getMoney());
+        clearBillDO.setStoreId(reqVO.getStoreId());
+        clearBillDO.setOrderNum(list.size());
+        clearBillDO.setOrderIds(list.stream().map(x -> x.getOrderId().toString()).collect(Collectors.joining(",")));
+        clearBillMapper.insert(clearBillDO);
     }
 
     @Override
+    @Transactional
     public void complaintClearInfo(AppComplaintClearInfoReqVO reqVO) {
-
+        //仅管理员使用
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            throw exception(AUTH_PROMISSION_ERROR);
+        }
+        //先找出来
+        ClearInfoDO clearInfoDO = clearInfoMapper.selectById(reqVO.getClearId());
+        //只能操作已完成或已驳回的记录
+        if (clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.TOUSU.getValue()) == 0) {
+            clearInfoDO.setStatus(AppEnum.clear_info_status.FINISH.getValue());
+            clearInfoDO.setComplaintDesc("管理员已撤销投诉");
+            clearInfoMapper.updateById(clearInfoDO);
+        } else if (clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.FINISH.getValue()) == 0) {
+            clearInfoDO.setStatus(AppEnum.clear_info_status.TOUSU.getValue());
+            clearInfoDO.setComplaintDesc(reqVO.getComplaintDesc());
+            clearInfoMapper.updateById(clearInfoDO);
+        } else {
+            throw exception(CLEAR_INFO_STATUS_OPRATION_ERROR);
+        }
     }
 
     private String getWithdrawalNo() {
@@ -267,6 +335,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             memberUserDO.setWithdrawalMoney(memberUserDO.getWithdrawalMoney().add(memberUserDO.getMoney()));
             memberUserDO.setMoney(BigDecimal.ZERO);
             memberUserMapper.updateById(memberUserDO);
+            //todo..微信转账
         } else {
             //没有可提现的收入
             throw exception(USER_NO_MONEY_WITHDRAWAL_ERROR);
@@ -289,8 +358,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public AppRevenueChartRespVO getRevenueChart() {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(getLoginUserId());
@@ -304,8 +372,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public AppBusinessStatisticsRespVO getBusinessStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
         }
         reqVO.setUserId(getLoginUserId());
@@ -315,8 +382,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, BigDecimal>> getRevenueStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
         }
         reqVO.setUserId(getLoginUserId());
@@ -326,8 +392,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Integer>> getOrderStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
         }
         reqVO.setUserId(getLoginUserId());
@@ -337,8 +402,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Integer>> getMemberStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
         }
         reqVO.setUserId(getLoginUserId());
@@ -349,8 +413,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Double>> getRoomUseStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
         }
         reqVO.setUserId(getLoginUserId());
@@ -373,8 +436,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Double>> getRoomUseHourStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0
-                && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) != 0 && getLoginUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
             throw exception(AUTH_PROMISSION_ERROR);
         }
         reqVO.setUserId(getLoginUserId());

@@ -4,32 +4,32 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
 
-import java.util.Date;
+import java.math.BigDecimal;
 
 @Schema(description = "miniapp - 保洁统计图表  Response VO")
 @Data
 @ToString(callSuper = true)
 public class AppClearChartRespVO {
-    @Schema(description = "今日-已结单")
+    @Schema(description = "今日-已接单")
     private Integer todayJiedan;
     @Schema(description = "今日-进行中")
-    private Integer todayJinxingzhong;
+    private Integer todayStart;
     @Schema(description = "今日-已完成")
-    private Integer todayWancheng;
+    private Integer todayFinish;
 
-    @Schema(description = "本月-已结单")
-    private Integer tomonthJiedan;
+    @Schema(description = "本月-已结算")
+    private Integer tomonthJiesuan;
     @Schema(description = "本月-已完成")
-    private Integer tomonthWancheng;
+    private Integer tomonthFinish;
     @Schema(description = "本月-已驳回")
     private Integer tomonthBohui;
 
     @Schema(description = "总收入-已完成")
-    private Integer totalWancheng;
+    private Integer totalFinish;
     @Schema(description = "总收入-已结算")
     private Integer totalSettlementt;
     @Schema(description = "总收入-人民币")
-    private Integer totalMoney;
+    private BigDecimal totalMoney;
 
 
 }

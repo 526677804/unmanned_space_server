@@ -5,7 +5,6 @@ import com.yanzu.module.member.controller.app.order.vo.*;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 
 public interface AppOrderService {
 
@@ -29,4 +28,9 @@ public interface AppOrderService {
     void cancelOrder(Long orderId);
 
     void startOrder(Long orderId);
+
+    void executeOrderJob();
+
+
+//    void closeOrder(Long orderId);
 }

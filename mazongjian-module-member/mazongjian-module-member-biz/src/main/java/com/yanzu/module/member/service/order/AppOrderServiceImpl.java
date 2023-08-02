@@ -22,6 +22,7 @@ import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
@@ -500,10 +502,10 @@ public class AppOrderServiceImpl implements AppOrderService {
             orderInfoMapper.updateById(orderInfoDO);
             //判断支付方式
             if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
-                //团购支付的，操作团购退款
+                //团购支付的，操作团购退款 todo...
             } else {
                 if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
-                    //微信退款
+                    //微信退款 todo...
 
                 } else {
                     //余额退款  把支付记录找出来
@@ -590,12 +592,96 @@ public class AppOrderServiceImpl implements AppOrderService {
             clearInfoDO.setOrderId(orderId);
             clearInfoDO.setStoreId(orderInfoDO.getStoreId());
             clearInfoDO.setOrderNo(orderInfoDO.getOrderNo());
+            clearInfoDO.setRoomId(orderInfoDO.getRoomId());
             clearInfoMapper.insert(clearInfoDO);
+            //开门开电
+            deviceService.openRoomDoor(orderInfoDO.getRoomId(), null, 4);
+            //播放欢迎语
+            deviceService.runSound(orderInfoDO.getRoomId(), 4);
         } else {
             throw exception(ORDER_START_OPRATION_ERROR);
         }
 
     }
 
+    /**
+     * 订单处理的定时任务，每分钟执行一次， 用于到时间开始订单 或者 结束订单
+     */
+    @Override
+    @Transactional
+    @Synchronized
+    public void executeOrderJob() {
+        log.info("=====     开始执行订单定时检查任务     =====");
+        Date now = new Date();
+        //取出所有未开始的订单
+        List<OrderInfoDO> list1 = orderInfoMapper.getByStatus(AppEnum.order_status.PENDING.getValue());
+        //如果存在开始时间已经大于现在的时间的 则把订单状态改为开始
+        if (!org.springframework.util.CollectionUtils.isEmpty(list1)) {
+            List<String> roomIds = new ArrayList<>();
+            //新增保洁订单
+            List<ClearInfoDO> clearInfoDOList = new ArrayList<>();
+            list1.forEach(x -> {
+                if (x.getStartTime().after(now)) {
+                    //开始订单
+                    x.setStatus(AppEnum.order_status.START.getValue());
+                    //房间改为进行中
+                    roomIds.add(String.valueOf(x.getRoomId()));
+                    //新增保洁订单
+                    ClearInfoDO clearInfoDO = new ClearInfoDO();
+                    clearInfoDO.setOrderId(x.getOrderId());
+                    clearInfoDO.setStoreId(x.getStoreId());
+                    clearInfoDO.setOrderNo(x.getOrderNo());
+                    clearInfoDO.setRoomId(x.getRoomId());
+                    clearInfoDOList.add(clearInfoDO);
+                }
+            });
+            orderInfoMapper.updateBatch(list1);
+            if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
+                roomInfoMapper.updateStatusByIds(AppEnum.room_status.USED.getValue(), roomIds.stream().collect(Collectors.joining(",")));
+                clearInfoMapper.insertBatch(clearInfoDOList);
+            }
+        }
+        //取出所有进行中的订单
+        List<OrderInfoDO> listStart = orderInfoMapper.getByStatus(AppEnum.order_status.START.getValue());
+        //如果存在结束时间已经小于现在的时间的 则把订单状态改为完成
+        if (!org.springframework.util.CollectionUtils.isEmpty(listStart)) {
+            List<String> roomIds = new ArrayList<>();
+            listStart.forEach(x -> {
+                if (x.getEndTime().before(now)) {
+                    x.setStatus(AppEnum.order_status.FINISH.getValue());
+                    //房间改为待保洁
+                    roomIds.add(String.valueOf(x.getRoomId()));
+                    //关门关电
+                    deviceService.closeRoomDoor(x.getRoomId(), null, 4);
+                } else {
+                    //如果订单结束时间  还剩30分钟，发送第一次提醒
+                    long l = (now.getTime() - x.getEndTime().getTime()) / 1000 / 60;
+                    if (l == 30) {
+                        deviceService.runSound(x.getRoomId(), 2);
+                    } else if (l == 15) {
+                        deviceService.runSound(x.getRoomId(), 3);
+                    } else if (l == 5) {
+                        deviceService.runSound(x.getRoomId(), 4);
+                    }
+                }
+            });
+            if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
+                roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), roomIds.stream().collect(Collectors.joining(",")));
+            }
+        }
+    }
 
+//    @Override
+//    @Transactional
+//    public void closeOrder(Long orderId) {
+//        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
+//        Long loginUserId = getLoginUserId();
+//        //只能操作自己的订单
+//        if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
+//            throw exception(OPRATION_ERROR);
+//        }
+//        //状态改为完成
+//        orderInfoDO.setStatus(AppEnum.order_status.FINISH.getValue());
+//
+//    }
 }

@@ -9,4 +9,20 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="sumMoneyByUserId" resultType="java.math.BigDecimal">
+        select ifnull(sum(money), 0)
+        from member_clear_bill
+        where deleted = 0
+          and user_id = #{userId}
+
+    </select>
+    <select id="getClearBillPage"
+            resultType="com.yanzu.module.member.controller.app.clear.vo.AppClearBillRespVO">
+        select id, user_id, money, order_num, order_ids, create_time
+        from member_clear_bill
+        where deleted = 0
+          and user_id = #{userId}
+        order by create_time desc
+
+    </select>
 </mapper>

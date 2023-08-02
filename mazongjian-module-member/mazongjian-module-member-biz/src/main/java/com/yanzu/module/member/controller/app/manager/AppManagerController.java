@@ -14,13 +14,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
+import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.pojo.CommonResult.success;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.ORDER_PAGE_PARAM_ERROR;
 
 @Tag(name = "miniapp - 管理员角色使用（订单、会员、优惠券、保洁管理）相关接口")
 @RestController
@@ -37,6 +40,15 @@ public class AppManagerController {
     @Operation(summary = "获取订单列表分页", description = "管理员订单管理使用")
     @PreAuthenticated
     public CommonResult<PageResult<OrderListRespVO>> getOrderPage(@RequestBody @Valid OrderPageReqVO reqVO) {
+        //参数检查
+        if (!ObjectUtils.isEmpty(reqVO.getOrderColumn())) {
+            if (reqVO.getOrderColumn().equals("createTime") || reqVO.getOrderColumn().equals("startTime")) {
+                //正确
+
+            } else {
+                throw exception(ORDER_PAGE_PARAM_ERROR);
+            }
+        }
         return success(appMangerService.getOrderPage(reqVO));
     }
 

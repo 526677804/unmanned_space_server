@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,10 @@ import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
+import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.pojo.CommonResult.success;
+import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.ORDER_PAGE_PARAM_ERROR;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order
@@ -70,6 +74,16 @@ public class OrderController {
     @Operation(summary = "获取订单列表分页", description = "我的订单使用")
     @PreAuthenticated
     public CommonResult<PageResult<OrderListRespVO>> getOrderPage(@RequestBody @Valid OrderPageReqVO reqVO) {
+        //参数检查
+        if (!ObjectUtils.isEmpty(reqVO.getOrderColumn())) {
+            if (reqVO.getOrderColumn().equals("createTime") || reqVO.getOrderColumn().equals("startTime")) {
+                //正确
+
+            } else {
+                throw exception(ORDER_PAGE_PARAM_ERROR);
+            }
+        }
+        reqVO.setUserId(getLoginUserId());
         return success(appOrderService.getOrderPage(reqVO));
     }
 
@@ -100,6 +114,16 @@ public class OrderController {
         appOrderService.cancelOrder(orderId);
         return success(true);
     }
+
+//    @PutMapping("/closeOrder/{orderId}")
+//    @Operation(summary = "提前结束订单 ", description = "我的订单使用")
+//    @PreAuthenticated
+//    @Parameter(name = "orderId")
+//    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+//    public CommonResult<Boolean> closeOrder(@PathVariable("orderId") Long orderId) {
+//        appOrderService.closeOrder(orderId);
+//        return success(true);
+//    }
 
     @PutMapping("/openStoreDoor/{orderId}")
     @Operation(summary = "(开关)门店的大门", description = "我的订单使用")

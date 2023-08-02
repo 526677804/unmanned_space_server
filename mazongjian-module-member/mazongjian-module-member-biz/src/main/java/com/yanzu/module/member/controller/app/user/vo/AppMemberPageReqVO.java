@@ -14,10 +14,10 @@ public class AppMemberPageReqVO extends PageParam {
     private String name;
 
     @Schema(description = "排序字段 传createTime或orderTime,或orderCount")
-    private String cloumn;
+    private String cloumnName;
 
     @Schema(description = "排序规则 顺序传ASC 倒序传DESC")
-    private String order;
+    private String sortRule;
 
 
 }

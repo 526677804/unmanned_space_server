@@ -43,10 +43,10 @@
         <if test="null!=name and name!=''">
             and ( locate(#{name},m.nickname>0 OR locate(#{name},m.mobile>0)
         </if>
-        <if test="null!=cloumn and cloumn!=''">
-            order by #{cloumn} #{order}
+        <if test="null!=cloumnName and null!=sortRule">
+            order by ${cloumnName} ${sortRule}
         </if>
-        <if test="null==cloumn or null==order">
+        <if test="null==cloumnName or null==sortRule">
             order by m.create_time desc
         </if>
     </select>

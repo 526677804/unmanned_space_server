@@ -5,6 +5,7 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.clear.vo.*;
 import com.yanzu.module.member.service.clear.AppClearService;
+import com.yanzu.module.member.service.device.DeviceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +27,10 @@ public class AppClearInfoController {
 
     @Resource
     private AppClearService appClearService;
+
+
+    @Resource
+    private DeviceService deviceService;
 
 
     @PostMapping("/getClearPage")
@@ -70,16 +75,6 @@ public class AppClearInfoController {
         return success(true);
     }
 
-    @PutMapping("/changeStatus/{id}/{status}")
-    @Operation(summary = "修改任务状态（接单1/开始2/取消3/完成4）")
-    @PreAuthenticated
-    @Parameter(name = "id")
-    @Parameter(name = "status")
-    public CommonResult<Boolean> changeStatus(@PathVariable("id") Long id, @PathVariable("status") Integer status) {
-        appClearService.changeStatus(id, status);
-        return success(true);
-    }
-
     @PutMapping("/openStoreDoor/{id}")
     @Operation(summary = "任务大厅-(开关)门店的大门,传任务id", description = "保洁任务大厅使用")
     @PreAuthenticated
@@ -99,12 +94,12 @@ public class AppClearInfoController {
     }
 
 
-    @GetMapping("/getDetail/{id}")
+    @GetMapping("/getDetail/{clearId}")
     @Operation(summary = "获取保洁任务详情")
     @PreAuthenticated
-    @Parameter(name = "id")
-    public CommonResult<AppClearInfoRespVO> getDetail(@PathVariable("id") Long id) {
-        return success(appClearService.getDetail(id));
+    @Parameter(name = "clearId")
+    public CommonResult<AppClearInfoRespVO> getDetail(@PathVariable("clearId") Long clearId) {
+        return success(appClearService.getDetail(clearId));
     }
 
     @GetMapping("/getChartData")

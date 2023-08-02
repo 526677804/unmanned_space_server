@@ -1,11 +1,10 @@
 package com.yanzu.module.member.dal.dataobject.deviceuseinfo;
 
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import lombok.*;
 
 /**
  * 设备使用记录 DO
@@ -32,13 +31,13 @@ public class DeviceUseInfoDO extends BaseDO {
      */
     private Long userId;
     /**
-     * 设备id
+     * 门店id
      */
-    private Long deviceId;
+    private Long storeId;
     /**
-     * 设备sn
+     * 房间id
      */
-    private String deviceNo;
+    private Long roomId;
     /**
      * 命令
      */

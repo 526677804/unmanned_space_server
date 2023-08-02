@@ -12,7 +12,7 @@ public interface AppClearService {
 
     void openRoomDoor(Long id);
 
-    AppClearInfoRespVO getDetail(Long id);
+    AppClearInfoRespVO getDetail(Long clearId);
 
     AppClearChartRespVO getChartData();
 

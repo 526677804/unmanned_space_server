@@ -3,8 +3,11 @@ package com.yanzu.module.member.api.user;
 import com.yanzu.module.member.api.user.dto.MemberUserRespDTO;
 import com.yanzu.module.member.convert.user.UserConvert;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
+import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
+import lombok.Synchronized;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -22,6 +25,9 @@ public class MemberUserApiImpl implements MemberUserApi {
 
     @Resource
     private AppUserService userService;
+
+    @Resource
+    private AppOrderService appOrderService;
 
     @Override
     public MemberUserRespDTO getUser(Long id) {
@@ -42,6 +48,15 @@ public class MemberUserApiImpl implements MemberUserApi {
     @Override
     public MemberUserRespDTO getUserByMobile(String mobile) {
         return UserConvert.INSTANCE.convert2(userService.getUserByMobile(mobile));
+    }
+
+    /**
+     * 订单处理的定时任务，每分钟执行一次， 用于到时间开始订单 或者 结束订单
+     */
+    @Override
+    public void executeOrderJob() {
+        appOrderService.executeOrderJob();
+
     }
 
 }
