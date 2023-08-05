@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -45,10 +44,10 @@ public class OrderController {
     private DeviceService deviceService;
 
     @PostMapping("/preOrder")
-    @Operation(summary = "预下单,调用此接口用于判断当前是否能提交订单或者续费,如果可以下单会返回订单应付价格", description = "下单使用")
+    @Operation(summary = "预下单,预订和续费前需调用此接口，会返回需要支付的价格以及微信支付需要的参数", description = "下单使用")
     @PreAuthenticated
-    public CommonResult<BigDecimal> preOrder(@RequestBody @Valid OrderPreReqVO reqVO) {
-        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(), null));
+    public CommonResult<WxPayOrderRespVO> preOrder(@RequestBody @Valid OrderPreReqVO reqVO) {
+        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(), null, true));
     }
 
     @PostMapping("/save")

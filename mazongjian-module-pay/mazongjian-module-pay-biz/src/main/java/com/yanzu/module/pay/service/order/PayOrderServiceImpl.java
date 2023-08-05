@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.google.common.annotations.VisibleForTesting;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.date.LocalDateTimeUtils;
 import com.yanzu.framework.pay.core.client.PayClient;
@@ -32,7 +33,6 @@ import com.yanzu.module.pay.service.app.PayAppService;
 import com.yanzu.module.pay.service.channel.PayChannelService;
 import com.yanzu.module.pay.service.notify.PayNotifyService;
 import com.yanzu.module.pay.util.MoneyUtils;
-import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -254,9 +254,10 @@ public class PayOrderServiceImpl implements PayOrderService {
      * 通知并更新订单的支付结果
      *
      * @param channel 支付渠道
-     * @param notify 通知
+     * @param notify  通知
      */
-    @Transactional(rollbackFor = Exception.class) // 注意，如果是方法内调用该方法，需要通过 getSelf().notifyPayOrder(channel, notify) 调用，否则事务不生效
+    @Transactional(rollbackFor = Exception.class)
+    // 注意，如果是方法内调用该方法，需要通过 getSelf().notifyPayOrder(channel, notify) 调用，否则事务不生效
     public void notifyOrder(PayChannelDO channel, PayOrderRespDTO notify) {
         // 情况一：支付成功的回调
         if (PayOrderStatusRespEnum.isSuccess(notify.getStatus())) {
@@ -318,13 +319,13 @@ public class PayOrderServiceImpl implements PayOrderService {
     /**
      * 更新 PayOrderDO 支付成功
      *
-     * @param channel 支付渠道
+     * @param channel        支付渠道
      * @param orderExtension 支付拓展单
-     * @param notify 通知回调
+     * @param notify         通知回调
      * @return 是否之前已经成功回调
      */
     private Boolean updateOrderSuccess(PayChannelDO channel, PayOrderExtensionDO orderExtension,
-                                                         PayOrderRespDTO notify) {
+                                       PayOrderRespDTO notify) {
         // 1. 判断 PayOrderDO 是否处于待支付
         PayOrderDO order = orderMapper.selectById(orderExtension.getOrderId());
         if (order == null) {

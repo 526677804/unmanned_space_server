@@ -75,4 +75,11 @@ public interface SocialUserService {
      * @return 绑定用户编号
      */
     Long getBindUserId(Integer userType, Integer type, String code, String state);
+    /**
+     * 得社交用户指定社交平台的openId
+     * @param userId
+     * @param type
+     * @return
+     */
+    String getUserOpenIdByType(Long userId, Integer type);
 }

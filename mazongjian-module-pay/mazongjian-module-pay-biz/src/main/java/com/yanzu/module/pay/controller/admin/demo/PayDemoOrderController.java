@@ -6,7 +6,6 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
 import com.yanzu.module.pay.api.notify.dto.PayOrderNotifyReqDTO;
 import com.yanzu.module.pay.api.notify.dto.PayRefundNotifyReqDTO;
-import com.yanzu.module.pay.controller.admin.demo.vo.PayDemoOrderCreateReqVO;
 import com.yanzu.module.pay.controller.admin.demo.vo.PayDemoOrderRespVO;
 import com.yanzu.module.pay.convert.demo.PayDemoOrderConvert;
 import com.yanzu.module.pay.dal.dataobject.demo.PayDemoOrderDO;
@@ -23,7 +22,6 @@ import javax.validation.Valid;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
 import static com.yanzu.framework.common.util.servlet.ServletUtils.getClientIP;
-import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 
 @Tag(name = "管理后台 - 示例订单")
 @RestController
@@ -34,11 +32,11 @@ public class PayDemoOrderController {
     @Resource
     private PayDemoOrderService payDemoOrderService;
 
-    @PostMapping("/create")
-    @Operation(summary = "创建示例订单")
-    public CommonResult<Long> createDemoOrder(@Valid @RequestBody PayDemoOrderCreateReqVO createReqVO) {
-        return success(payDemoOrderService.createDemoOrder(getLoginUserId(), createReqVO));
-    }
+//    @PostMapping("/create")
+//    @Operation(summary = "创建示例订单")
+//    public CommonResult<Long> createDemoOrder(@Valid @RequestBody PayDemoOrderCreateReqVO createReqVO) {
+//        return success(payDemoOrderService.createDemoOrder(getLoginUserId(), createReqVO));
+//    }
 
     @GetMapping("/page")
     @Operation(summary = "获得示例订单分页")

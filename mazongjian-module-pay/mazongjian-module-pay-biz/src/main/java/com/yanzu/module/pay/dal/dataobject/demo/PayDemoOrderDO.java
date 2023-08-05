@@ -37,11 +37,11 @@ public class PayDemoOrderDO extends BaseDO {
     /**
      * 商品编号
      */
-    private Long spuId;
+    private String orderNo;
     /**
      * 商品名称
      */
-    private String spuName;
+    private String orderDesc;
     /**
      * 价格，单位：分
      */

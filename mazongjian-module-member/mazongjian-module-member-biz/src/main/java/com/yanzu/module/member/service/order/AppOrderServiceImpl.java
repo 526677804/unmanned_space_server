@@ -22,6 +22,8 @@ import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.system.api.social.SocialUserApi;
+import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -45,7 +47,6 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 @Validated
 @Slf4j
 public class AppOrderServiceImpl implements AppOrderService {
-
 
     @Resource
     private OrderInfoMapper orderInfoMapper;
@@ -71,16 +72,20 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Resource
     private ClearInfoMapper clearInfoMapper;
 
+    @Resource
+    private SocialUserApi socialUserApi;
+
     /**
      * @param roomId        房间id
      * @param startTime     开始时间
      * @param endTime       结束时间
      * @param couponId      优惠券id
      * @param ignoreOrderId 忽略校验的订单id，用于更换房间 或者提前开始订单
+     * @param wxpay         是否微信下单
      * @return
      */
     @Override
-    public BigDecimal preOrder(Long roomId, Date startTime, Date endTime, Long couponId, Long ignoreOrderId) {
+    public WxPayOrderRespVO preOrder(Long roomId, Date startTime, Date endTime, Long couponId, Long ignoreOrderId, boolean wxpay) {
         Date now = new Date();
         //参数校验
         if (startTime.before(now)) {
@@ -154,7 +159,18 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
             }
         }
-        return mathPrice(roomInfoDO.getPrice(), startTime, endTime, couponId);
+        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), startTime, endTime, couponId);
+        WxPayOrderRespVO respVO = new WxPayOrderRespVO();
+        respVO.setPrice(mathPrice);
+        if (wxpay) {
+            //需要微信下单  先获取到该用户的openId
+            String openId = socialUserApi.getUserOpenIdByType(getLoginUserId(), SocialTypeEnum.WECHAT_MINI_APP.getType());
+            if (ObjectUtils.isEmpty(openId)) {
+                throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
+            }
+
+        }
+        return respVO;
     }
 
     @Override
@@ -230,7 +246,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
         BigDecimal oldPrice = BigDecimal.valueOf(l / 60.0).multiply(roomInfoDO.getPrice());//原价
         //下单之前仍然再检查一遍 并计算出应付总金额
-        BigDecimal totalPrice = preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(), null);
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(), null, false);
+        BigDecimal totalPrice = wxPayOrderRespVO.getPrice();
         //判断是否有填团购券
         if (!ObjectUtils.isEmpty(reqVO.getGroupPayNo())) {
             //校验团购券 todo...
@@ -317,8 +334,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         LocalDateTime currentDateTime = LocalDateTime.now();
         String currentDate = currentDateTime.format(dateFormatter);
         Random random = new Random();
-        int randomNum = random.nextInt(1000000);
-        String randomNumString = String.format("%06d", randomNum);
+        int randomNum = random.nextInt(100000000);
+        String randomNumString = String.format("%08d", randomNum);
         return currentDate + randomNumString;
     }
 
@@ -350,7 +367,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         //下单之前仍然再检查一遍 并计算出应付总金额
         Date startTime = orderInfoDO.getEndTime();
         Date endTime = DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes());
-        BigDecimal totalPrice = preOrder(orderInfoDO.getRoomId(), startTime, endTime, null, null);
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(orderInfoDO.getRoomId(), startTime, endTime, null, null, false);
+        BigDecimal totalPrice = wxPayOrderRespVO.getPrice();
         switch (reqVO.getPayType()) {
             case 1://微信
                 //todo..检查微信付款订单是否完成
@@ -459,7 +477,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(ORDER_CHANGE_ROOM_ERROR);
             } else {
                 //检查是否可用
-                preOrder(roomId, orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), null, null);
+                preOrder(roomId, orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), null, null, false);
                 //开始更换
                 orderInfoDO.setRoomId(roomId);
                 orderInfoMapper.updateById(orderInfoDO);
@@ -577,7 +595,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 long l = now.getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime());
                 Date endTime = new Date(l);
                 //校验时间冲突
-                preOrder(orderInfoDO.getRoomId(), now, endTime, null, null);
+                preOrder(orderInfoDO.getRoomId(), now, endTime, null, null, false);
                 //校验通过 更改订单的开始和完成时间
                 orderInfoDO.setStartTime(now);
                 orderInfoDO.setEndTime(endTime);

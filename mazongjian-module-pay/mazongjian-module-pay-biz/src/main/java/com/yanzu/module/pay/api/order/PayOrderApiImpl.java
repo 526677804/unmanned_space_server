@@ -2,6 +2,8 @@ package com.yanzu.module.pay.api.order;
 
 import com.yanzu.module.pay.api.order.dto.PayOrderCreateReqDTO;
 import com.yanzu.module.pay.api.order.dto.PayOrderRespDTO;
+import com.yanzu.module.pay.api.order.dto.WxPayOrderCreateReqDTO;
+import com.yanzu.module.pay.api.order.dto.WxPayOrderRespDTO;
 import com.yanzu.module.pay.convert.order.PayOrderConvert;
 import com.yanzu.module.pay.dal.dataobject.order.PayOrderDO;
 import com.yanzu.module.pay.service.order.PayOrderService;
@@ -23,6 +25,11 @@ public class PayOrderApiImpl implements PayOrderApi {
     @Override
     public Long createOrder(PayOrderCreateReqDTO reqDTO) {
         return payOrderService.createOrder(reqDTO);
+    }
+
+    @Override
+    public WxPayOrderRespDTO createWxOrder(WxPayOrderCreateReqDTO reqDTO) {
+        return payOrderService.createWxOrder(reqDTO);
     }
 
     @Override

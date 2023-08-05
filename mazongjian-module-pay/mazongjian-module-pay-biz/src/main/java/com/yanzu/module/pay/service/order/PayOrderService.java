@@ -33,7 +33,7 @@ public interface PayOrderService {
     /**
      * 获得支付订单
      *
-     * @param appId 应用编号
+     * @param appId           应用编号
      * @param merchantOrderId 商户订单编号
      * @return 支付订单
      */
@@ -75,7 +75,7 @@ public interface PayOrderService {
      * 提交支付
      * 此时，会发起支付渠道的调用
      *
-     * @param reqVO 提交请求
+     * @param reqVO  提交请求
      * @param userIp 提交 IP
      * @return 提交结果
      */
@@ -93,7 +93,7 @@ public interface PayOrderService {
     /**
      * 更新支付订单的退款金额
      *
-     * @param id 编号
+     * @param id              编号
      * @param incrRefundPrice 增加的退款金额
      */
     void updateOrderRefundPrice(Long id, Integer incrRefundPrice);

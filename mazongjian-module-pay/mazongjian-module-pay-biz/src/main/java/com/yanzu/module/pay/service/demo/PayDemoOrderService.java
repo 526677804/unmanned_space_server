@@ -2,7 +2,8 @@ package com.yanzu.module.pay.service.demo;
 
 import com.yanzu.framework.common.pojo.PageParam;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.module.pay.controller.admin.demo.vo.PayDemoOrderCreateReqVO;
+import com.yanzu.module.pay.api.order.dto.WxPayOrderRespDTO;
+import com.yanzu.module.pay.controller.admin.demo.vo.PayOrderCreateReqVO;
 import com.yanzu.module.pay.dal.dataobject.demo.PayDemoOrderDO;
 
 import javax.validation.Valid;
@@ -21,7 +22,7 @@ public interface PayDemoOrderService {
      * @param createReqVO 创建信息
      * @return 编号
      */
-    Long createDemoOrder(Long userId, @Valid PayDemoOrderCreateReqVO createReqVO);
+    WxPayOrderRespDTO createDemoOrder(Long userId, @Valid PayOrderCreateReqVO createReqVO);
 
     /**
      * 获得示例订单

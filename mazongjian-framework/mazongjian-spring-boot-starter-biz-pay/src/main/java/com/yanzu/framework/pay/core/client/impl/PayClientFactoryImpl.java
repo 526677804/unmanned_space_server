@@ -59,18 +59,29 @@ public class PayClientFactoryImpl implements PayClientFactory {
         // 创建客户端
         switch (channelEnum) {
             // 微信支付
-            case WX_PUB: return (AbstractPayClient<Config>) new WxPubPayClient(channelId, (WxPayClientConfig) config);
-            case WX_LITE: return (AbstractPayClient<Config>) new WxLitePayClient(channelId, (WxPayClientConfig) config);
-            case WX_APP: return (AbstractPayClient<Config>) new WxAppPayClient(channelId, (WxPayClientConfig) config);
-            case WX_BAR: return (AbstractPayClient<Config>) new WxBarPayClient(channelId, (WxPayClientConfig) config);
-            case WX_NATIVE: return (AbstractPayClient<Config>) new WxNativePayClient(channelId, (WxPayClientConfig) config);
+            case WX_PUB:
+                return (AbstractPayClient<Config>) new WxPubPayClient(channelId, (WxPayClientConfig) config);
+            case WX_LITE:
+                return (AbstractPayClient<Config>) new WxLitePayClient(channelId, (WxPayClientConfig) config);
+            case WX_APP:
+                return (AbstractPayClient<Config>) new WxAppPayClient(channelId, (WxPayClientConfig) config);
+            case WX_BAR:
+                return (AbstractPayClient<Config>) new WxBarPayClient(channelId, (WxPayClientConfig) config);
+            case WX_NATIVE:
+                return (AbstractPayClient<Config>) new WxNativePayClient(channelId, (WxPayClientConfig) config);
             // 支付宝支付
-            case ALIPAY_WAP: return (AbstractPayClient<Config>) new AlipayWapPayClient(channelId, (AlipayPayClientConfig) config);
-            case ALIPAY_QR: return (AbstractPayClient<Config>) new AlipayQrPayClient(channelId, (AlipayPayClientConfig) config);
-            case ALIPAY_APP: return (AbstractPayClient<Config>) new AlipayAppPayClient(channelId, (AlipayPayClientConfig) config);
-            case ALIPAY_PC: return (AbstractPayClient<Config>) new AlipayPcPayClient(channelId, (AlipayPayClientConfig) config);
-            case ALIPAY_BAR: return (AbstractPayClient<Config>) new AlipayBarPayClient(channelId, (AlipayPayClientConfig) config);
-            case MOCK: return (AbstractPayClient<Config>) new MockPayClient(channelId, (MockPayClientConfig) config);
+            case ALIPAY_WAP:
+                return (AbstractPayClient<Config>) new AlipayWapPayClient(channelId, (AlipayPayClientConfig) config);
+            case ALIPAY_QR:
+                return (AbstractPayClient<Config>) new AlipayQrPayClient(channelId, (AlipayPayClientConfig) config);
+            case ALIPAY_APP:
+                return (AbstractPayClient<Config>) new AlipayAppPayClient(channelId, (AlipayPayClientConfig) config);
+            case ALIPAY_PC:
+                return (AbstractPayClient<Config>) new AlipayPcPayClient(channelId, (AlipayPayClientConfig) config);
+            case ALIPAY_BAR:
+                return (AbstractPayClient<Config>) new AlipayBarPayClient(channelId, (AlipayPayClientConfig) config);
+            case MOCK:
+                return (AbstractPayClient<Config>) new MockPayClient(channelId, (MockPayClientConfig) config);
         }
         // 创建失败，错误日志 + 抛出异常
         log.error("[createPayClient][配置({}) 找不到合适的客户端实现]", config);

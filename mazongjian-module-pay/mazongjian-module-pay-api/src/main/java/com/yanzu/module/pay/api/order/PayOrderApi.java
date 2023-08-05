@@ -2,6 +2,8 @@ package com.yanzu.module.pay.api.order;
 
 import com.yanzu.module.pay.api.order.dto.PayOrderCreateReqDTO;
 import com.yanzu.module.pay.api.order.dto.PayOrderRespDTO;
+import com.yanzu.module.pay.api.order.dto.WxPayOrderCreateReqDTO;
+import com.yanzu.module.pay.api.order.dto.WxPayOrderRespDTO;
 
 import javax.validation.Valid;
 
@@ -20,6 +22,8 @@ public interface PayOrderApi {
      * @return 支付单编号
      */
     Long createOrder(@Valid PayOrderCreateReqDTO reqDTO);
+
+    WxPayOrderRespDTO createWxOrder(@Valid WxPayOrderCreateReqDTO reqDTO);
 
     /**
      * 获得支付单

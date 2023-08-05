@@ -91,7 +91,6 @@
             <artifactId>forest-spring-boot-starter</artifactId>
             <version>1.5.32</version>
         </dependency>
-
         <dependency>
             <groupId>com.dtflys.forest</groupId>
             <artifactId>forest-jaxb</artifactId>
@@ -100,6 +99,11 @@
         <dependency>
             <groupId>com.yanzu</groupId>
             <artifactId>mazongjian-spring-boot-starter-protection</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yanzu</groupId>
+            <artifactId>mazongjian-spring-boot-starter-biz-pay</artifactId>
         </dependency>
         <!-- 工具类相关 -->
     </dependencies>

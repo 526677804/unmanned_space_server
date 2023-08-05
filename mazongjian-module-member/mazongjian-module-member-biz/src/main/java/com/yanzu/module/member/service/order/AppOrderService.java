@@ -8,7 +8,7 @@ import java.util.Date;
 
 public interface AppOrderService {
 
-    BigDecimal preOrder(Long roomId, Date startTime, Date endTime, Long couponId, Long ignoreOrderId);
+    WxPayOrderRespVO preOrder(Long roomId, Date startTime, Date endTime, Long couponId, Long ignoreOrderId, boolean wxpay);
 
     BigDecimal mathPrice(BigDecimal price, Date startTime, Date endTime, Long couponId);
 

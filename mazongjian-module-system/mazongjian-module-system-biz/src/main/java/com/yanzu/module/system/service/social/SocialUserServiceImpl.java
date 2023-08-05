@@ -144,6 +144,11 @@ public class SocialUserServiceImpl implements SocialUserService {
         return socialUserBind.getUserId();
     }
 
+    @Override
+    public String getUserOpenIdByType(Long userId, Integer type) {
+        return socialUserBindMapper.getUserOpenIdByType(userId,type);
+    }
+
     /**
      * 请求社交平台，获得授权的用户
      *

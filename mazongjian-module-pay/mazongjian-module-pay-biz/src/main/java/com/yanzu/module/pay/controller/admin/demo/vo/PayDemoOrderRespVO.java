@@ -19,10 +19,10 @@ public class PayDemoOrderRespVO {
     private Long userId;
 
     @Schema(description = "商品编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "17682")
-    private Long spuId;
+    private String orderNo;
 
     @Schema(description = "商家备注", example = "李四")
-    private String spuName;
+    private String orderDesc;
 
     @Schema(description = "价格，单位：分", requiredMode = Schema.RequiredMode.REQUIRED, example = "30381")
     private Integer price;

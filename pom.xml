@@ -16,7 +16,7 @@
         <module>mazongjian-module-member</module>
         <module>mazongjian-module-system</module>
         <module>mazongjian-module-infra</module>
-        <module>mazongjian-module-pay</module>
+<!--        <module>mazongjian-module-pay</module>-->
 <!--        <module>mazongjian-module-mp</module>-->
         <!-- 示例项目 -->
 <!--        <module>mazongjian-example</module>-->

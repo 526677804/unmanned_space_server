@@ -181,13 +181,13 @@ mazongjian:
       - ${spring.boot.admin.context-path}/** # 不处理 Spring Boot Admin 的请求
       - ${management.endpoints.web.base-path}/** # 不处理 Actuator 的请求
   pay:
-    order-notify-url: http://api.scyanzu.com/admin-api/pay/notify/order # 支付渠道的【支付】回调地址
-    refund-notify-url: http://api.scyanzu.com/admin-api/pay/notify/refund # 支付渠道的【退款】回调地址
+    order-notify-url: https://api.scyanzu.com/admin-api/pay/notify/order # 支付渠道的【支付】回调地址
+    refund-notify-url: https://api.scyanzu.com/admin-api/pay/notify/refund # 支付渠道的【退款】回调地址
   access-log: # 访问日志的配置项
     enable: true
   error-code: # 错误码相关配置项
     enable: false
-  demo: true # 关闭演示模式
+  demo: false # 关闭演示模式
 
 justauth:
   enabled: true
