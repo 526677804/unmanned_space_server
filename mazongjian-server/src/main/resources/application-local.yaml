@@ -212,19 +212,4 @@ justauth:
     prefix: 'social_auth_state:' # 缓存前缀，目前只对 Redis 缓存生效，默认 JUSTAUTH::STATE::
     timeout: 24h # 超时时长，目前只对 Redis 缓存生效，默认 3 分钟
 
-wx:
-  pay:
-    #微信公众号或者小程序等的appid
-    appId: wx9727cb1c69b545a7
-    #微信支付商户号
-    mchId: 1649165510
-    # 证书相对路径 （以classpath:开头）
-    privateKeyPath: classpath:apiclient_key.pem
-    # 证书相对路径 （以classpath:开头）商户私钥
-    privateCertPath: classpath:apiclient_cert.pem
-    #支付回调通知地址
-    returnUrl: https://api.scyanzu.com/app-api/pay/miniapp-order/update-paid
-    #    退款回调地址
-    refundUrl: https://api.scyanzu.com/app-api/pay/miniapp-order/update-refunded
-    # apiV3key
-    apiV3key: c4b040eb23ce28d1cc45f771099cbmzj
+

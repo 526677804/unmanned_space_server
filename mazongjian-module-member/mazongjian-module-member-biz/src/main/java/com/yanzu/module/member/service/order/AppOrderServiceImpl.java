@@ -22,6 +22,7 @@ import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.Synchronized;
@@ -74,6 +75,10 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Resource
     private SocialUserApi socialUserApi;
+
+    @Resource
+    private PayOrderService payOrderService;
+
 
     /**
      * @param roomId        房间id
@@ -160,6 +165,8 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
         }
         BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), startTime, endTime, couponId);
+        int price = mathPrice.multiply(BigDecimal.valueOf(100D)).intValue();//价格转成分为单位
+        String orderNo = getOrderNo();
         WxPayOrderRespVO respVO = new WxPayOrderRespVO();
         respVO.setPrice(mathPrice);
         if (wxpay) {
@@ -168,7 +175,11 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (ObjectUtils.isEmpty(openId)) {
                 throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
             }
-
+            //生成微信支付的订单
+//            Map<String, String> order = wxPayUtil.createOrder(openId, orderNo, price, "微信支付订单");
+//            String prepay_id = order.get("prepay_id");
+            //保存
+//            payOrderService.create(getLoginUserId(), orderNo, "微信支付订单", price, order.get("prepay_id"));
         }
         return respVO;
     }

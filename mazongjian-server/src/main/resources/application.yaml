@@ -185,3 +185,27 @@ pagehelper:
 
 debug: false
 
+wx:
+  pay:
+    #微信公众号或者小程序等的appid
+    appId: wx9727cb1c69b545a7
+    #微信支付商户号
+    mchId: 1649165510
+    # 证书相对路径 （以classpath:开头）
+    privateKeyPath: classpath:apiclient_key.pem
+    # 证书相对路径 （以classpath:开头）商户私钥
+    privateCertPath: classpath:apiclient_cert.pem
+    #支付回调通知地址
+    returnUrl: https://api.scyanzu.com/app-api/wx/pay/update
+    #    退款回调地址
+    refundUrl: https://api.scyanzu.com/app-api/wx/pay/refunded
+    # apiV3key
+    apiV3key: c4b040eb23ce28d1cc45f771099cbmzj
+weixin:
+  appid: wx9727cb1c69b545a7 # appid
+  mch-serial-no: 578A2EF30C682C7577197C72AE77264FFD65C7DC # 证书序列号
+  private-key-path: classpath:apiclient_key.pem # 证书路径
+  mch-id: 1649165510 # 商户号
+  key: c4b040eb23ce28d1cc45f771099cbmzj # api秘钥
+  domain: https://api.mch.weixin.qq.com # 微信服务器地址
+  notify-domain: https://api.scyanzu.com/app-api/wx/pay/ # 回调，自己的回调地址

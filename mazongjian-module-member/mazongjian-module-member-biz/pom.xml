@@ -45,6 +45,17 @@
         </dependency>
         <dependency>
             <groupId>com.yanzu</groupId>
+            <artifactId>mazongjian-spring-boot-starter-biz-pay</artifactId>
+        </dependency>
+        <!--  微信支付 -->
+        <dependency>
+            <groupId>com.github.wechatpay-apiv3</groupId>
+            <artifactId>wechatpay-apache-httpclient</artifactId>
+            <version>0.4.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yanzu</groupId>
             <artifactId>mazongjian-spring-boot-starter-biz-tenant</artifactId>
         </dependency>
 
