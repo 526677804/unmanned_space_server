@@ -1,12 +1,9 @@
-package com.yanzu.module.member.controller.app.pay;
+package com.yanzu.module.member.controller.app.callback;
 
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
-import com.yanzu.module.member.controller.app.pay.vo.PayOrderNotifyReqDTO;
-import com.yanzu.module.member.controller.app.pay.vo.PayRefundNotifyReqDTO;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -25,9 +22,9 @@ import static com.yanzu.framework.common.pojo.CommonResult.success;
  * @USER: MrGuan  mrguan@aliyun.com
  * @DATE: 2023/7/26 14:25
  */
-@Tag(name = "miniapp - 支付回调")
+@Tag(name = "miniapp - 回调")
 @RestController
-@RequestMapping("/wx/pay")
+@RequestMapping("/callback")
 @Validated
 @Slf4j
 public class PayOrderController {
@@ -37,7 +34,7 @@ public class PayOrderController {
     private PayOrderService payOrderService;
 
 
-    @PostMapping("/update")
+    @PostMapping("/wxpay/update")
     @Operation(summary = "更新订单为已支付")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
@@ -48,7 +45,7 @@ public class PayOrderController {
     }
 
 
-    @PostMapping("/urefunded")
+    @PostMapping("/wxpay/urefunded")
     @Operation(summary = "更新订单为已退款")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人

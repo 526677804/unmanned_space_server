@@ -1,4 +1,4 @@
-package com.yanzu.module.member.controller.app.pay.vo;
+package com.yanzu.module.member.controller.app.callback.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**
- * 支付单的通知 Request DTO
+ * 退款单的通知 Request DTO
  *
  * @author 芋道源码
  */
@@ -17,18 +17,18 @@ import javax.validation.constraints.NotNull;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PayOrderNotifyReqDTO {
+public class PayRefundNotifyReqDTO {
 
     /**
-     * 商户订单编号
+     * 商户退款单编号
      */
-    @NotEmpty(message = "商户订单号不能为空")
+    @NotEmpty(message = "商户退款单编号不能为空")
     private String merchantOrderId;
 
     /**
-     * 支付订单编号
+     * 支付退款编号
      */
-    @NotNull(message = "支付订单编号不能为空")
-    private Long payOrderId;
+    @NotNull(message = "支付退款编号不能为空")
+    private Long payRefundId;
 
 }

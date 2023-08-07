@@ -208,4 +208,4 @@ weixin:
   mch-id: 1649165510 # 商户号
   key: c4b040eb23ce28d1cc45f771099cbmzj # api秘钥
   domain: https://api.mch.weixin.qq.com # 微信服务器地址
-  notify-domain: https://api.scyanzu.com/app-api/wx/pay/ # 回调，自己的回调地址
+  notify-domain: https://api.scyanzu.com/app-api/callback/ # 回调，自己的回调地址

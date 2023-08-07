@@ -5,7 +5,7 @@ import java.util.*;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
-import com.yanzu.module.member.controller.app.pay.vo.PayOrderNotifyReqDTO;
+import com.yanzu.module.member.controller.app.callback.vo.PayOrderNotifyReqDTO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.yanzu.module.member.controller.admin.payorder.vo.*;
