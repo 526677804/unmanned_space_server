@@ -5,6 +5,7 @@ import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoPageReqVO;
+import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoRespVO;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -30,4 +31,7 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
     String getSnByStoreId(Long storeId);
 
     String getSnByRoomIdAndType(@Param("roomId") Long roomId, @Param("type") Integer type);
+
+    List<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO);
+
 }

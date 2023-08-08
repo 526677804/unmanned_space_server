@@ -204,7 +204,7 @@ wx:
 weixin:
   appid: wx9727cb1c69b545a7 # appid
   mch-serial-no: 578A2EF30C682C7577197C72AE77264FFD65C7DC # 证书序列号
-  private-key-path: classpath:apiclient_key.pem # 证书路径
+  private-key-path: apiclient_key.pem # 证书路径
   mch-id: 1649165510 # 商户号
   key: c4b040eb23ce28d1cc45f771099cbmzj # api秘钥
   domain: https://api.mch.weixin.qq.com # 微信服务器地址

@@ -56,26 +56,23 @@ export function exportDeviceInfoExcel(query) {
 // 获得门店下拉列表
 export function getStoreList() {
   return request({
-    url: '/member/index/getStoreList',
-    method: 'get',
-    params: query
+    url: '/index/getStoreList',
+    method: 'get'
   })
 }
 
 // 获得房间下拉列表
 export function getRoomList(storeId) {
   return request({
-    url: '/member/index/getRoomList/'+storeId,
-    method: 'get',
-    params: query
+    url: '/index/getRoomList/'+storeId,
+    method: 'get'
   })
 }
 
 // 配网
-export function config(deviceId) {
+export function configWifi(deviceId) {
   return request({
-    url: '/member/device-info/config/'+storeId,
-    method: 'get',
-    params: query
+    url: '/member/device-info/configWifi/'+deviceId,
+    method: 'put'
   })
 }

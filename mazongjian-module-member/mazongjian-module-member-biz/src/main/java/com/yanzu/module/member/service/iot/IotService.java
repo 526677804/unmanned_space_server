@@ -2,9 +2,7 @@ package com.yanzu.module.member.service.iot;
 
 import com.yanzu.module.member.service.iot.bean.*;
 import com.yanzu.module.member.service.iot.client.IotClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
@@ -45,6 +43,16 @@ public class IotService {
 
 
     public boolean runKongkai(String sn, String cmd) {
+        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        vo.setDevice_sn(sn);
+        KongkaiOpVO data = new KongkaiOpVO();
+        data.setCmd_type(cmd);
+        vo.setData(data);
+        IotApiV2BaseRespVO respVO = iotClient.runKongkai(vo);
+        return respVO.getCode() == 0;
+    }
+
+    public boolean runConfigWifi(String sn, String cmd) {
         IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
         KongkaiOpVO data = new KongkaiOpVO();

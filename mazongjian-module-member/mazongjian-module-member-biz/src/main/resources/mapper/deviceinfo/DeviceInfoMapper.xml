@@ -24,4 +24,34 @@
           AND room_id = #{roomId}
 
     </select>
+    <select id="getDeviceInfoPage"
+            resultType="com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoRespVO">
+        select d.*, s.store_name, r.room_name
+        from member_device_info d
+        left join member_store_info s ON s.store_id = d.store_id
+        left join member_room_info r ON r.room_id = d.room_id
+        where d.deleted = 0
+        <if test="null!=deviceSn and deviceSn!=''">
+            and locate(#{deviceSn},d.device_sn)>0
+        </if>
+        <if test="null!=type and type!=''">
+            and d.type=#{type}
+        </if>
+        <if test="null!=status and status!=''">
+            and d.status=#{status}
+        </if>
+        <if test="null!=roomId and roomId!=''">
+            and d.room_id=#{roomId}
+        </if>
+        <if test="null!=storeId and storeId!=''">
+            and d.store_id=#{storeId}
+        </if>
+        <if test="null!=createTime and createTime!=''">
+            and d.create_time between
+            <foreach collection="createTime" item="dateTime" separator="and">
+                #{dateTime}
+            </foreach>
+        </if>
+        order by d.device_id desc
+    </select>
 </mapper>

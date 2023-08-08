@@ -14,7 +14,8 @@
       </el-form-item>
       <el-form-item label="门店状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择门店状态" clearable size="small">
-          <el-option label="请选择字典生成" value="" />
+          <el-option label="正常" value="0" />
+          <el-option label="审核中" value="1" />
         </el-select>
       </el-form-item>
       <el-form-item label="创建时间" prop="createTime">
@@ -49,7 +50,7 @@
       <el-table-column label="纬度" align="center" prop="lat" />
       <el-table-column label="经度" align="center" prop="lon" />
       <el-table-column label="详细地址" align="center" prop="address" />
-      <el-table-column label="门店状态" align="center" prop="status" />
+      <el-table-column label="门店状态" align="center" :formatter="statusFomat" />
       <el-table-column label="wifi信息" align="center" prop="wifiInfo" />
       <el-table-column label="客服电话" align="center" prop="kefuPhone" />
       <el-table-column label="大众key" align="center" prop="dianpinKey" />
@@ -77,7 +78,7 @@
                 @pagination="getList"/>
 
     <!-- 对话框(添加 / 修改) -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" v-dialogDrag append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="800px" v-dialogDrag append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="门店名称" prop="storeName">
           <el-input v-model="form.storeName" placeholder="请输入门店名称" />
@@ -102,7 +103,13 @@
         </el-form-item>
         <el-form-item label="门店状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择门店状态">
-            <el-option label="请选择字典生成" value="" />
+            <el-option
+            v-for="item in optionsStas"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+            >
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="wifi信息" prop="wifiInfo">
@@ -171,7 +178,17 @@ export default {
         storeName: [{ required: true, message: "门店名称不能为空", trigger: "blur" }],
         cityName: [{ required: true, message: "城市名称不能为空", trigger: "blur" }],
         status: [{ required: true, message: "门店状态不能为空", trigger: "change" }],
-      }
+      },
+      optionsStas: [
+        {
+          name: "正常",
+          id: 0,
+        },
+        {
+          name: "审核中",
+          id: 1,
+        },
+      ],
     };
   },
   created() {
@@ -271,6 +288,15 @@ export default {
           this.getList();
           this.$modal.msgSuccess("删除成功");
         }).catch(() => {});
+    },
+    statusFomat(row, column) {
+      if (row.status == 0) {
+        return "正常";
+      } else if (row.status == 1) {
+        return "审核中";
+      } else {
+        return "-";
+      }
     },
     /** 导出按钮操作 */
     handleExport() {

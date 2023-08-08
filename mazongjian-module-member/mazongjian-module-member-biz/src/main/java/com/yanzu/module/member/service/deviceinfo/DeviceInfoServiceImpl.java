@@ -1,16 +1,16 @@
 package com.yanzu.module.member.service.deviceinfo;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoCreateReqVO;
-import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoExportReqVO;
-import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoPageReqVO;
-import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoUpdateReqVO;
+import com.yanzu.module.member.controller.admin.deviceinfo.vo.*;
 import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.service.iot.IotService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -18,8 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.DATA_NOT_EXISTS;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.DEVICE_REG_ERROR;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
  * 设备管理 Service 实现类
@@ -95,13 +94,28 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     }
 
     @Override
-    public PageResult<DeviceInfoDO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO) {
-        return deviceInfoMapper.selectPage(pageReqVO);
+    public PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO) {
+        PageHelper.startPage(pageReqVO);
+        List<DeviceInfoRespVO> list = deviceInfoMapper.getDeviceInfoPage(pageReqVO);
+        PageInfo<DeviceInfoRespVO> pageInfo = new PageInfo<>(list);
+        return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
     }
 
     @Override
     public List<DeviceInfoDO> getDeviceInfoList(DeviceInfoExportReqVO exportReqVO) {
         return deviceInfoMapper.selectList(exportReqVO);
+    }
+
+    @Override
+    public void configWifi(Long deviceId) {
+        //获取设备的sn
+        String sn = deviceInfoMapper.selectById(deviceId).getDeviceSn();
+        if (!ObjectUtils.isEmpty(sn)) {
+            boolean flag = iotService.runKongkai(sn, "wifi_config");
+            if (!flag) {
+                throw exception(DEVICE_OPRATION_ERROR);
+            }
+        }
     }
 
 }

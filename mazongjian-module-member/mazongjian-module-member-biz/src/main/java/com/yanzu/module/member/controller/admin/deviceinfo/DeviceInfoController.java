@@ -80,8 +80,7 @@ public class DeviceInfoController {
     @Operation(summary = "获得设备管理分页")
     @PreAuthorize("@ss.hasPermission('member:device-info:query')")
     public CommonResult<PageResult<DeviceInfoRespVO>> getDeviceInfoPage(@Valid DeviceInfoPageReqVO pageVO) {
-        PageResult<DeviceInfoDO> pageResult = deviceInfoService.getDeviceInfoPage(pageVO);
-        return success(DeviceInfoConvert.INSTANCE.convertPage(pageResult));
+        return success(deviceInfoService.getDeviceInfoPage(pageVO));
     }
 
     @GetMapping("/export-excel")
@@ -89,11 +88,19 @@ public class DeviceInfoController {
     @PreAuthorize("@ss.hasPermission('member:device-info:export')")
     @OperateLog(type = EXPORT)
     public void exportDeviceInfoExcel(@Valid DeviceInfoExportReqVO exportReqVO,
-              HttpServletResponse response) throws IOException {
+                                      HttpServletResponse response) throws IOException {
         List<DeviceInfoDO> list = deviceInfoService.getDeviceInfoList(exportReqVO);
         // 导出 Excel
         List<DeviceInfoExcelVO> datas = DeviceInfoConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "设备管理.xls", "数据", DeviceInfoExcelVO.class, datas);
     }
 
+    @PutMapping("/configWifi/{deviceId}")
+    @Operation(summary = "设备配网")
+    @Parameter(name = "deviceId", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('member:device-info:update')")
+    public CommonResult<Boolean> configWifi(@PathVariable(value = "deviceId",required = true) Long deviceId) {
+        deviceInfoService.configWifi(deviceId);
+        return success(true);
+    }
 }

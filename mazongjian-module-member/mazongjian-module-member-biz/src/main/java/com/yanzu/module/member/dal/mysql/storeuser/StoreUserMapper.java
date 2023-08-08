@@ -1,10 +1,6 @@
 package com.yanzu.module.member.dal.mysql.storeuser;
 
-import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
-import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
-import com.yanzu.module.member.controller.admin.storeuser.vo.StoreUserExportReqVO;
-import com.yanzu.module.member.controller.admin.storeuser.vo.StoreUserPageReqVO;
 import com.yanzu.module.member.controller.app.manager.vo.AppClearUserPageReqVO;
 import com.yanzu.module.member.controller.app.manager.vo.AppClearUserPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppGiftBalanceListRespVO;
@@ -23,27 +19,6 @@ import java.util.List;
 @Mapper
 public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
 
-    default PageResult<StoreUserDO> selectPage(StoreUserPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<StoreUserDO>()
-                .eqIfPresent(StoreUserDO::getStoreId, reqVO.getStoreId())
-                .eqIfPresent(StoreUserDO::getUserId, reqVO.getUserId())
-                .likeIfPresent(StoreUserDO::getName, reqVO.getName())
-                .eqIfPresent(StoreUserDO::getType, reqVO.getType())
-                .eqIfPresent(StoreUserDO::getStatus, reqVO.getStatus())
-                .betweenIfPresent(StoreUserDO::getCreateTime, reqVO.getCreateTime())
-                .orderByDesc(StoreUserDO::getId));
-    }
-
-    default List<StoreUserDO> selectList(StoreUserExportReqVO reqVO) {
-        return selectList(new LambdaQueryWrapperX<StoreUserDO>()
-                .eqIfPresent(StoreUserDO::getStoreId, reqVO.getStoreId())
-                .eqIfPresent(StoreUserDO::getUserId, reqVO.getUserId())
-                .likeIfPresent(StoreUserDO::getName, reqVO.getName())
-                .eqIfPresent(StoreUserDO::getType, reqVO.getType())
-                .eqIfPresent(StoreUserDO::getStatus, reqVO.getStatus())
-                .betweenIfPresent(StoreUserDO::getCreateTime, reqVO.getCreateTime())
-                .orderByDesc(StoreUserDO::getId));
-    }
     BigDecimal getGiftBalanceByUserId(Long userId);
 
     List<AppGiftBalanceListRespVO> getGiftBalanceList(Long userId);

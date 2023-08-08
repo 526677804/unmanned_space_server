@@ -4,13 +4,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.module.member.controller.admin.bannerinfo.vo.BannerInfoBaseVO;
 import com.yanzu.module.member.controller.app.index.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.TimeSlotVO;
-import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
-import com.yanzu.module.member.convert.storeinfo.StoreInfoConvert;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
-import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.mysql.bannerinfo.BannerInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
@@ -21,7 +17,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -75,8 +70,9 @@ public class IndexServiceImpl implements IndexService {
 
     @Override
     public List<KeyValue<String, Long>> getStoreList(String name, String cityName) {
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.MEMBER.getValue()) == 0) {
-            //返回全部
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.MEMBER.getValue()) == 0
+                || getLoginUserType().compareTo(2) == 0) {
+            //是APP用户  或者 后台管理员  则返回全部
             return storeInfoMapper.getStoreListByMember(name, cityName);
         } else {
             return storeInfoMapper.getStoreList(name, cityName, getLoginUserId());

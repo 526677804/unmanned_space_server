@@ -27,12 +27,10 @@ import static com.yanzu.framework.common.pojo.CommonResult.success;
 @RequestMapping("/callback")
 @Validated
 @Slf4j
-public class PayOrderController {
-
+public class AppCallbackController {
 
     @Resource
     private PayOrderService payOrderService;
-
 
     @PostMapping("/wxpay/update")
     @Operation(summary = "更新订单为已支付")

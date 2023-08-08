@@ -17,9 +17,15 @@
           <el-option label="请选择字典生成" value="" />
         </el-select>
       </el-form-item>
+      <el-form-item label="房间" prop="roomId">
+        <el-select v-model="queryParams.roomId" placeholder="请选择房间" clearable size="small">
+          <el-option label="请选择字典生成" value="" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
-          <el-option label="请选择字典生成" value="" />
+          <el-option label="在线" value="1" />
+          <el-option label="离线" value="0" />
         </el-select>
       </el-form-item>
       <el-form-item label="创建时间" prop="createTime">
@@ -54,9 +60,11 @@
           <dict-tag :type="DICT_TYPE.MEMBER_DEVICE_TYPE" :value="scope.row.type" />
         </template>
       </el-table-column>
-      <el-table-column label="房间" align="center" prop="roomId" />
-      <el-table-column label="门店" align="center" prop="storeId" />
-      <el-table-column label="状态" align="center" prop="status" />
+      <!-- <el-table-column label="门店" align="center" prop="storeId" /> -->
+      <el-table-column label="门店名称" align="center" prop="storeName" />
+      <!-- <el-table-column label="房间" align="center" prop="roomId" /> -->
+      <el-table-column label="房间名称" align="center" prop="roomName" />
+      <el-table-column label="状态" align="center" :formatter="statusFomat" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template v-slot="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
@@ -68,7 +76,7 @@
                      v-hasPermi="['member:device-info:update']">绑定房间</el-button>
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleBindStore(scope.row)"
                      v-hasPermi="['member:device-info:update']">绑定门店</el-button>
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleConfig(scope.row)"
+          <el-button size="mini" type="text"  @click="handleConfigWifi(scope.row.deviceId)"
                      v-hasPermi="['member:device-info:update']">配网</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
                      v-hasPermi="['member:device-info:delete']">删除</el-button>
@@ -120,7 +128,7 @@
 </template>
 
 <script>
-import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel } from "@/api/member/deviceInfo";
+import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel,configWifi } from "@/api/member/deviceInfo";
 
 export default {
   name: "DeviceInfo",
@@ -152,6 +160,7 @@ export default {
         deviceSn: null,
         type: null,
         storeId: null,
+        roomId: null,
         status: null,
         createTime: [],
       },
@@ -161,7 +170,24 @@ export default {
       rules: {
         deviceSn: [{ required: true, message: "设备sn不能为空", trigger: "blur" }],
         type: [{ required: true, message: "设备类型不能为空", trigger: "change" }],
-      }
+      },
+      optionsStas: [
+        {
+          name: "离线",
+          id: 0,
+        },
+        {
+          name: "在线",
+          id: 1,
+        },
+      ],
+      statusFomat(row, column) {
+      if (row.status == 0) {
+        return "离线";
+      } else if (row.status == 1) {
+        return "在线";
+      } 
+    },
     };
   },
   created() {
@@ -278,12 +304,12 @@ export default {
         this.roomList = response.data.list;
       });
     },
-    config(){
-      // let storeId=
-      // 执行查询
-      config().then(response => {
-        //
-      });
+    handleConfigWifi(deviceId){
+      this.$modal.confirm('是否确认设备编号为"' + deviceId + '"的数据项进行初始化配网操作?').then(function() {
+          return configWifi(deviceId);
+        }).then(() => {
+          this.$modal.msgSuccess("操作成功");
+        }).catch(() => {});
     }
   }
 };

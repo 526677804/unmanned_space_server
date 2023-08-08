@@ -1,10 +1,12 @@
 package com.yanzu.module.member.service.deviceinfo;
 
-import java.util.*;
-import javax.validation.*;
+import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.*;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
-import com.yanzu.framework.common.pojo.PageResult;
+
+import javax.validation.Valid;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 设备管理 Service 接口
@@ -57,7 +59,7 @@ public interface DeviceInfoService {
      * @param pageReqVO 分页查询
      * @return 设备管理分页
      */
-    PageResult<DeviceInfoDO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO);
+    PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO);
 
     /**
      * 获得设备管理列表, 用于 Excel 导出
@@ -66,5 +68,7 @@ public interface DeviceInfoService {
      * @return 设备管理列表
      */
     List<DeviceInfoDO> getDeviceInfoList(DeviceInfoExportReqVO exportReqVO);
+
+    void configWifi(Long deviceId);
 
 }

@@ -16,8 +16,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -27,7 +25,7 @@ import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exc
 import static com.yanzu.module.member.enums.ErrorCodeConstants.USER_WEIXIN_PAY_ERROR;
 
 @Configuration
-@PropertySource("classpath:application.yml") //读取配置文件
+@PropertySource("classpath:application.yaml") //读取配置文件
 @ConfigurationProperties(prefix = "weixin") //读取wxpay节点
 @Data //使用set方法将wxpay节点中的值填充到当前类的属性中
 public class WxPayConfig {
@@ -60,11 +58,7 @@ public class WxPayConfig {
      * @return 私钥文件
      */
     public PrivateKey getPrivateKey(String filename) {
-        try {
-            return PemUtil.loadPrivateKey(new FileInputStream(filename));
-        } catch (FileNotFoundException e) {
-            throw exception(USER_WEIXIN_PAY_ERROR);
-        }
+        return PemUtil.loadPrivateKey(this.getClass().getClassLoader().getResourceAsStream(filename));
     }
 
 
