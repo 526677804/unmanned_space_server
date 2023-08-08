@@ -118,4 +118,17 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         }
     }
 
+    @Override
+    @Transactional
+    public void bind(DeviceInfoBindReqVO reqVO) {
+        //如果设备已经被绑定了， 就不允许绑定
+        DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(reqVO.getDeviceId());
+        if (!ObjectUtils.isEmpty(deviceInfoDO.getStoreId())) {
+            throw exception(DEVICE_BIND_ERROR);
+        }
+        deviceInfoDO.setStoreId(reqVO.getStoreId());
+        deviceInfoDO.setRoomId(reqVO.getRoomId());
+        deviceInfoMapper.updateById(deviceInfoDO);
+    }
+
 }

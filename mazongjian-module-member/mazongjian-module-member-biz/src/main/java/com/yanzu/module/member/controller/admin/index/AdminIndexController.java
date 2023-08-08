@@ -42,7 +42,7 @@ public class AdminIndexController {
     @PreAuthenticated
     @Parameter(name = "storeId")
     public CommonResult<List<KeyValue<String, Long>>> getRoomList(@PathVariable("storeId") Long storeId) {
-        return success(indexService.getRoomList(storeId));
+        return success(indexService.getRoomListByAdmin(storeId));
     }
 
 }

@@ -103,4 +103,12 @@ public class DeviceInfoController {
         deviceInfoService.configWifi(deviceId);
         return success(true);
     }
+
+    @PostMapping("/bind")
+    @Operation(summary = "设备绑定门店/房间")
+    @PreAuthorize("@ss.hasPermission('member:device-info:update')")
+    public CommonResult<Boolean> bind(@RequestBody @Valid DeviceInfoBindReqVO reqVO) {
+        deviceInfoService.bind(reqVO);
+        return success(true);
+    }
 }

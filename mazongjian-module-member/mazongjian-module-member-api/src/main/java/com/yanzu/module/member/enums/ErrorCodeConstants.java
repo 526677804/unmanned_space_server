@@ -66,6 +66,7 @@ public interface ErrorCodeConstants {
     ErrorCode CLEAR_IMAGE_NOT_FOUNT_ERROR = new ErrorCode(1004004064, "请上传清洁完成的图片！");
     ErrorCode CLEAR_OPEN_DOOR_ERROR = new ErrorCode(1004004065, "只有状态为已开始的任务才能操作开门，请先开始任务！");
     ErrorCode DEVICE_REG_ERROR = new ErrorCode(1004004070, "设备注册到平台失败！");
+    ErrorCode DEVICE_BIND_ERROR = new ErrorCode(1004004071, "该设备已经被其他门店/房间绑定！");
 
 
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");

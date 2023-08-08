@@ -59,4 +59,11 @@
         </if>
 
     </select>
+    <select id="getRoomListByAdmin" resultType="com.yanzu.framework.common.core.KeyValue">
+        select r.room_name `key`, r.room_id `value`
+        from member_room_info r
+        where r.deleted = 0
+          and r.store_id = #{storeId}
+        order by sort_id asc
+    </select>
 </mapper>

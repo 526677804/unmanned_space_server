@@ -76,3 +76,12 @@ export function configWifi(deviceId) {
     method: 'put'
   })
 }
+
+// 绑定
+export function bind(data) {
+  return request({
+    url: '/member/device-info/bind',
+    method: 'post',
+    data: data
+  })
+}

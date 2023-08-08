@@ -85,6 +85,11 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
+    public List<KeyValue<String, Long>> getRoomListByAdmin(Long storeId) {
+        return roomInfoMapper.getRoomListByAdmin(storeId);
+    }
+
+    @Override
     public List<AppRoomInfoListRespVO> getRoomInfoList(Long storeId) {
         List<AppRoomInfoListRespVO> roomInfoList = storeInfoMapper.getRoomInfoList(storeId);
         if (!CollectionUtils.isEmpty(roomInfoList)) {

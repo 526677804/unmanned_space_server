@@ -4,22 +4,22 @@
     <!-- 搜索工作栏 -->
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="设备sn" prop="deviceSn">
-        <el-input v-model="queryParams.deviceSn" placeholder="请输入设备sn" clearable @keyup.enter.native="handleQuery"/>
+        <el-input v-model="queryParams.deviceSn" placeholder="请输入设备sn" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="设备类型" prop="type">
         <el-select v-model="queryParams.type" placeholder="请选择设备类型" clearable size="small">
-          <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_DEVICE_TYPE)"
-                       :key="dict.value" :label="dict.label" :value="dict.value"/>
+          <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_DEVICE_TYPE)" :key="dict.value" :label="dict.label"
+            :value="dict.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="门店" prop="storeId">
-        <el-select v-model="queryParams.storeId" placeholder="请选择门店" clearable size="small">
-          <el-option label="请选择字典生成" value="" />
+        <el-select v-model="queryParams.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList">
+          <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="房间" prop="roomId">
         <el-select v-model="queryParams.roomId" placeholder="请选择房间" clearable size="small">
-          <el-option label="请选择字典生成" value="" />
+          <el-option v-for="item in roomList" :key="item.value" :label="item.key" :value="item.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="状态" prop="status">
@@ -29,8 +29,9 @@
         </el-select>
       </el-form-item>
       <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker v-model="queryParams.createTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
-                        range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']" />
+        <el-date-picker v-model="queryParams.createTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss"
+          type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
+          :default-time="['00:00:00', '23:59:59']" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">搜索</el-button>
@@ -42,11 +43,11 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
-                   v-hasPermi="['member:device-info:create']">新增</el-button>
+          v-hasPermi="['member:device-info:create']">新增</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport" :loading="exportLoading"
-                   v-hasPermi="['member:device-info:export']">导出</el-button>
+          v-hasPermi="['member:device-info:export']">导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -72,20 +73,19 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleBindRoom(scope.row)"
-                     v-hasPermi="['member:device-info:update']">绑定房间</el-button>
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleBindStore(scope.row)"
-                     v-hasPermi="['member:device-info:update']">绑定门店</el-button>
-          <el-button size="mini" type="text"  @click="handleConfigWifi(scope.row.deviceId)"
-                     v-hasPermi="['member:device-info:update']">配网</el-button>
+            v-hasPermi="['member:device-info:update']">绑定</el-button>
+          
+          <el-button size="mini" type="text" @click="handleConfigWifi(scope.row.deviceId)"
+            v-hasPermi="['member:device-info:update']">配网</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-                     v-hasPermi="['member:device-info:delete']">删除</el-button>
+            v-hasPermi="['member:device-info:delete']">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
     <!-- 分页组件 -->
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNo" :limit.sync="queryParams.pageSize"
-                @pagination="getList"/>
+      @pagination="getList" />
 
     <!-- 对话框(添加 / 修改) -->
     <el-dialog :title="title" :visible.sync="open" width="500px" v-dialogDrag append-to-body>
@@ -95,8 +95,8 @@
         </el-form-item>
         <el-form-item label="设备类型" prop="type">
           <el-select v-model="form.type" placeholder="请选择设备类型">
-            <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_DEVICE_TYPE)"
-                       :key="dict.value" :label="dict.label" :value="dict.value" />
+            <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_DEVICE_TYPE)" :key="dict.value"
+              :label="dict.label" :value="dict.value" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -108,27 +108,32 @@
 
     <!-- 对话框(绑定门店) -->
     <el-dialog :title="title" :visible.sync="bindStore" width="500px" v-dialogDrag append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="设备sn" prop="deviceSn">
-          <el-label v-model="form.deviceSn" />
+      <el-form ref="bindForm" :model="bindForm" :rules="bindrules" label-width="80px">
+        <!-- <el-form-item label="设备sn" prop="deviceSn">
+          <el-label v-model="form.deviceSn" readonly />
+        </el-form-item> -->
+        <el-form-item label="门店" prop="storeId">
+          <el-select v-model="bindForm.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList"
+            required="true">
+            <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="绑定门店" prop="storeId">
-          <el-select v-model="form.type" placeholder="请选择绑定门店">
-            <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_DEVICE_TYPE)"
-                       :key="dict.value" :label="dict.label" :value="dict.value" />
+        <el-form-item label="房间" prop="roomId">
+          <el-select v-model="bindForm.roomId" placeholder="请选择房间" clearable size="small">
+            <el-option v-for="item in roomList" :key="item.value" :label="item.key" :value="item.value" />
           </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="submitBindForm">确 定</el-button>
+        <el-button @click="cancelBind">取 消</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel,configWifi } from "@/api/member/deviceInfo";
+import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, configWifi, getStoreList, getRoomList,bind } from "@/api/member/deviceInfo";
 
 export default {
   name: "DeviceInfo",
@@ -146,13 +151,14 @@ export default {
       total: 0,
       // 设备管理列表
       list: [],
-      sotreList:[],
+      storeList: [],
+      roomList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
       open: false,
-      bindStore:false,
-      bindRoom:false,
+      bindStore: false,
+      bindRoom: false,
       // 查询参数
       queryParams: {
         pageNo: 1,
@@ -166,10 +172,18 @@ export default {
       },
       // 表单参数
       form: {},
+      bindForm: {
+        deviceSn:null,
+        storeId:null,
+        roomId:null
+      },
       // 表单校验
       rules: {
         deviceSn: [{ required: true, message: "设备sn不能为空", trigger: "blur" }],
         type: [{ required: true, message: "设备类型不能为空", trigger: "change" }],
+      },
+      bindrules: {
+        storeId: [{ required: true, message: "门店不能为空", trigger: "blur" }],
       },
       optionsStas: [
         {
@@ -181,17 +195,15 @@ export default {
           id: 1,
         },
       ],
-      statusFomat(row, column) {
-      if (row.status == 0) {
-        return "离线";
-      } else if (row.status == 1) {
-        return "在线";
-      } 
-    },
+
     };
   },
   created() {
     this.getList();
+    // 执行查询
+    getStoreList().then(response => {
+      this.storeList = response.data;
+    });
   },
   methods: {
     /** 查询列表 */
@@ -208,6 +220,14 @@ export default {
     cancel() {
       this.open = false;
       this.reset();
+    },
+    cancelBind(){
+      this.bindStore = false;
+      this.bindForm={
+        deviceId: undefined,
+        storeId: undefined,
+        roomId: undefined,
+      }
     },
     /** 表单重置 */
     reset() {
@@ -267,49 +287,68 @@ export default {
         });
       });
     },
+    submitBindForm() {
+      this.$refs["bindForm"].validate(valid => {
+        if (!valid) {
+          return;
+        }
+        bind(this.bindForm).then(response => {
+          this.$modal.msgSuccess("操作成功");
+          this.bindStore = false;
+          this.getList();
+        });
+      });
+    },
     /** 删除按钮操作 */
     handleDelete(row) {
       const deviceId = row.deviceId;
-      this.$modal.confirm('是否确认删除设备管理编号为"' + deviceId + '"的数据项?').then(function() {
-          return deleteDeviceInfo(deviceId);
-        }).then(() => {
-          this.getList();
-          this.$modal.msgSuccess("删除成功");
-        }).catch(() => {});
+      this.$modal.confirm('是否确认删除设备管理编号为"' + deviceId + '"的数据项?').then(function () {
+        return deleteDeviceInfo(deviceId);
+      }).then(() => {
+        this.getList();
+        this.$modal.msgSuccess("删除成功");
+      }).catch(() => { });
     },
     /** 导出按钮操作 */
     handleExport() {
       // 处理查询参数
-      let params = {...this.queryParams};
+      let params = { ...this.queryParams };
       params.pageNo = undefined;
       params.pageSize = undefined;
       this.$modal.confirm('是否确认导出所有设备管理数据项?').then(() => {
-          this.exportLoading = true;
-          return exportDeviceInfoExcel(params);
-        }).then(response => {
-          this.$download.excel(response, '设备管理.xls');
-          this.exportLoading = false;
-        }).catch(() => {});
+        this.exportLoading = true;
+        return exportDeviceInfoExcel(params);
+      }).then(response => {
+        this.$download.excel(response, '设备管理.xls');
+        this.exportLoading = false;
+      }).catch(() => { });
     },
-    getStoreList(){
-      // 执行查询
-      getStoreList().then(response => {
-        this.sotreList = response.data.list;
-      });
+    loadRoomList(storeId) {
+      if (storeId) {
+        getRoomList(storeId).then(response => {
+          this.roomList = response.data;
+        });
+      }
     },
-    getRoomList(){
-      // let storeId=
-      // 执行查询
-      getRoomList().then(response => {
-        this.roomList = response.data.list;
-      });
+    handleConfigWifi(deviceId) {
+      this.$modal.confirm('是否确认设备编号为"' + deviceId + '"的数据项进行初始化配网操作?').then(function () {
+        return configWifi(deviceId);
+      }).then(() => {
+        this.$modal.msgSuccess("操作成功");
+      }).catch(() => { });
     },
-    handleConfigWifi(deviceId){
-      this.$modal.confirm('是否确认设备编号为"' + deviceId + '"的数据项进行初始化配网操作?').then(function() {
-          return configWifi(deviceId);
-        }).then(() => {
-          this.$modal.msgSuccess("操作成功");
-        }).catch(() => {});
+    statusFomat(row, column) {
+      if (row.status == 0) {
+        return "离线";
+      } else if (row.status == 1) {
+        return "在线";
+      }
+    },
+    /** 绑定门店 */
+    handleBindStore(row) {
+      this.bindForm.deviceId = row.deviceId;
+      this.bindStore = true;
+      this.title = "修改设备绑定";
     }
   }
 };

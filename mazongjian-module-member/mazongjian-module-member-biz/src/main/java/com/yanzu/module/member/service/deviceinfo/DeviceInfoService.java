@@ -71,4 +71,5 @@ public interface DeviceInfoService {
 
     void configWifi(Long deviceId);
 
+    void bind(DeviceInfoBindReqVO reqVO);
 }
