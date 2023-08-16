@@ -1,6 +1,5 @@
 package com.yanzu.module.system.api.social.dto;
 
-import com.yanzu.framework.common.enums.UserTypeEnum;
 import com.yanzu.framework.common.validation.InEnum;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.AllArgsConstructor;
@@ -28,7 +27,7 @@ public class SocialUserBindReqDTO {
     /**
      * 用户类型
      */
-    @InEnum(UserTypeEnum.class)
+//    @InEnum(UserTypeEnum.class)
     @NotNull(message = "用户类型不能为空")
     private Integer userType;
 

@@ -50,6 +50,15 @@ public class OrderController {
         return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(), null, true));
     }
 
+    @GetMapping("/queryWxOrder/{orderNo}")
+    @Operation(summary = "主动查询微信支付订单是否支付", description = "下单使用")
+    @PreAuthenticated
+    @Parameter(name = "orderNo")
+    public CommonResult<Boolean> queryWxOrder(@PathVariable("orderNo") String orderNo) {
+        return success(appOrderService.queryWxOrder(orderNo));
+    }
+
+
     @PostMapping("/save")
     @Operation(summary = "提交订单", description = "下单使用")
     @PreAuthenticated

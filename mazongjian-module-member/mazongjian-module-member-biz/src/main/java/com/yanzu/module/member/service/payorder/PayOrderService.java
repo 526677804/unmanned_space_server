@@ -1,10 +1,13 @@
 package com.yanzu.module.member.service.payorder;
 
-import java.util.*;
-
-import com.yanzu.module.member.controller.admin.payorder.vo.*;
-import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
+import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
+import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 支付订单 Service 接口
@@ -21,6 +24,7 @@ public interface PayOrderService {
      * @return 支付订单
      */
     PayOrderDO getPayOrder(Long id);
+    PayOrderDO getPayOrderByPayNo(String orderNo);
 
     /**
      * 获得支付订单列表
@@ -51,5 +55,5 @@ public interface PayOrderService {
 
     void updateOrderRefunded(Map<String, String> params, String body);
 
-    int create(Long userId, String orderNo, String orderDesc, Integer price, String pay_order_no);
+    void create(Long userId, String orderNo, String orderDesc, Integer price);
 }

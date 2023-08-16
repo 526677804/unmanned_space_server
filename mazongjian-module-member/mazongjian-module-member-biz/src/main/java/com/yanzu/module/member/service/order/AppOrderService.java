@@ -31,6 +31,8 @@ public interface AppOrderService {
 
     void executeOrderJob();
 
+    boolean queryWxOrder(String orderNo);
+
 
 //    void closeOrder(Long orderId);
 }

@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
 
-import java.math.BigDecimal;
-
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order.vo
  * @DESCRIPTION:
@@ -17,6 +15,8 @@ import java.math.BigDecimal;
 @ToString(callSuper = true)
 public class WxPayOrderRespVO {
 
+    @Schema(description = "prepay_id")
+    private String prepayId;
     @Schema(description = "应用ID")
     private String appId;
     @Schema(description = "随机字符串")
@@ -29,8 +29,9 @@ public class WxPayOrderRespVO {
     private String timeStamp;
     @Schema(description = "签名")
     private String paySign;
-    @Schema(description = "计算出来实际需要支付的价格 单位/元")
-    private BigDecimal price;
+    @Schema(description = "计算出来实际需要支付的价格 单位/分")
+    private Integer price;
+
 
 
 }

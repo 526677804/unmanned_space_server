@@ -1,5 +1,10 @@
 package com.yanzu.module.member.service.order;
 
+import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
+import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
+import com.github.binarywang.wxpay.bean.result.WxPayUnifiedOrderResult;
+import com.github.binarywang.wxpay.exception.WxPayException;
+import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
@@ -9,6 +14,7 @@ import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
+import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
@@ -28,6 +34,8 @@ import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -79,6 +87,11 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Resource
     private PayOrderService payOrderService;
 
+    @Autowired
+    private WxPayService wxService;
+
+    @Value("${wx.pay.returnUrl}")
+    private String returnUrl;
 
     /**
      * @param roomId        房间id
@@ -168,7 +181,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         int price = mathPrice.multiply(BigDecimal.valueOf(100D)).intValue();//价格转成分为单位
         String orderNo = getOrderNo();
         WxPayOrderRespVO respVO = new WxPayOrderRespVO();
-        respVO.setPrice(mathPrice);
+        respVO.setPrice(price);
         if (wxpay) {
             //需要微信下单  先获取到该用户的openId
             String openId = socialUserApi.getUserOpenIdByType(getLoginUserId(), SocialTypeEnum.WECHAT_MINI_APP.getType());
@@ -176,10 +189,30 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
             }
             //生成微信支付的订单
-//            Map<String, String> order = wxPayUtil.createOrder(openId, orderNo, price, "微信支付订单");
-//            String prepay_id = order.get("prepay_id");
-            //保存
-//            payOrderService.create(getLoginUserId(), orderNo, "微信支付订单", price, order.get("prepay_id"));
+            WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
+            wxPayUnifiedOrderRequest.setBody("微信支付订单");
+            wxPayUnifiedOrderRequest.setOutTradeNo(orderNo);
+            wxPayUnifiedOrderRequest.setTotalFee(price);
+            wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
+            wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
+            wxPayUnifiedOrderRequest.setTradeType("JSAPI");
+            wxPayUnifiedOrderRequest.setOpenid(openId);
+            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
+//            wxPayUnifiedOrderRequest.setTimeExpire()
+            try {
+                WxPayUnifiedOrderResult wxPayUnifiedOrderResult = wxService.unifiedOrder(wxPayUnifiedOrderRequest);
+                respVO.setPrepayId(wxPayUnifiedOrderResult.getPrepayId());
+                respVO.setAppId(wxPayUnifiedOrderResult.getAppid());
+                respVO.setNonceStr(wxPayUnifiedOrderResult.getNonceStr());
+                respVO.setPaySign(wxPayUnifiedOrderResult.getSign());
+                respVO.setSignType("HMAC-SHA256");
+                respVO.setTimeStamp(String.valueOf(now.getTime()));
+            } catch (WxPayException e) {
+                e.printStackTrace();
+//                throw new RuntimeException(e);
+                throw exception(USER_WEIXIN_PAY_ERROR);
+            }
+            payOrderService.create(getLoginUserId(), orderNo, "微信支付订单", price);
         }
         return respVO;
     }
@@ -258,7 +291,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         BigDecimal oldPrice = BigDecimal.valueOf(l / 60.0).multiply(roomInfoDO.getPrice());//原价
         //下单之前仍然再检查一遍 并计算出应付总金额
         WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(), null, false);
-        BigDecimal totalPrice = wxPayOrderRespVO.getPrice();
+        BigDecimal totalPrice = BigDecimal.valueOf(wxPayOrderRespVO.getPrice() * 100);
         //判断是否有填团购券
         if (!ObjectUtils.isEmpty(reqVO.getGroupPayNo())) {
             //校验团购券 todo...
@@ -267,11 +300,14 @@ public class AppOrderServiceImpl implements AppOrderService {
             //非团购支付 判断支付方式
             switch (reqVO.getPayType()) {
                 case 1://微信
-                    //todo..检查微信付款订单是否完成
                     if (ObjectUtils.isEmpty(reqVO.getWeixinOrderNo())) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
                     }
                     //有支付单号，再验证支付是否成功
+                    PayOrderDO payOrderByPayNo = payOrderService.getPayOrderByPayNo(reqVO.getWeixinOrderNo());
+                    if (ObjectUtils.isEmpty(payOrderByPayNo) || !queryWxOrder(payOrderByPayNo.getOrderNo()) || !payOrderByPayNo.getPayStatus()) {
+                        throw exception(ORDER_WEIXIN_PAY_ERROR);
+                    }
                     break;
                 case 2://余额
                     //先扣钱包余额
@@ -379,14 +415,17 @@ public class AppOrderServiceImpl implements AppOrderService {
         Date startTime = orderInfoDO.getEndTime();
         Date endTime = DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes());
         WxPayOrderRespVO wxPayOrderRespVO = preOrder(orderInfoDO.getRoomId(), startTime, endTime, null, null, false);
-        BigDecimal totalPrice = wxPayOrderRespVO.getPrice();
+        BigDecimal totalPrice = BigDecimal.valueOf(wxPayOrderRespVO.getPrice() * 100);
         switch (reqVO.getPayType()) {
             case 1://微信
-                //todo..检查微信付款订单是否完成
                 if (ObjectUtils.isEmpty(reqVO.getWeixinOrderNo())) {
                     throw exception(ORDER_WEIXIN_PAY_ERROR);
                 }
                 //有支付单号，再验证支付是否成功
+                PayOrderDO payOrderByPayNo = payOrderService.getPayOrderByPayNo(reqVO.getWeixinOrderNo());
+                if (ObjectUtils.isEmpty(payOrderByPayNo) || !queryWxOrder(payOrderByPayNo.getOrderNo()) || !payOrderByPayNo.getPayStatus()) {
+                    throw exception(ORDER_WEIXIN_PAY_ERROR);
+                }
                 break;
             case 2://余额
                 //先扣钱包余额
@@ -697,6 +736,20 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
                 roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), roomIds.stream().collect(Collectors.joining(",")));
             }
+        }
+    }
+
+    @Override
+    public boolean queryWxOrder(String orderNo) {
+        try {
+            WxPayOrderQueryResult wxPayOrderQueryResult = wxService.queryOrder(null, orderNo);
+            String tradeState = wxPayOrderQueryResult.getTradeState();
+            String returnCode = wxPayOrderQueryResult.getReturnCode();
+            String resultCode = wxPayOrderQueryResult.getResultCode();
+            return tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
+        } catch (WxPayException e) {
+//            throw new RuntimeException(e);
+            return false;
         }
     }
 

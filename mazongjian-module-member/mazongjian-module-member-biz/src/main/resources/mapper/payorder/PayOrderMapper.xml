@@ -18,4 +18,10 @@
           and deleted = 0
 
     </select>
+    <select id="getPayOrderByPayNo" resultType="com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO">
+        select *
+        from member_pay_order
+        where getPayOrderByPayNo = #{payNo}
+          and deleted = 0
+    </select>
 </mapper>
