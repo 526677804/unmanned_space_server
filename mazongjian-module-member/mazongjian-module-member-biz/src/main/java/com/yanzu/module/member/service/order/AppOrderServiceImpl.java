@@ -202,6 +202,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             try {
                 WxPayUnifiedOrderResult wxPayUnifiedOrderResult = wxService.unifiedOrder(wxPayUnifiedOrderRequest);
                 respVO.setPrepayId(wxPayUnifiedOrderResult.getPrepayId());
+                respVO.setPkg("prepay_id=" + wxPayUnifiedOrderResult.getPrepayId());
                 respVO.setAppId(wxPayUnifiedOrderResult.getAppid());
                 respVO.setNonceStr(wxPayUnifiedOrderResult.getNonceStr());
                 respVO.setPaySign(wxPayUnifiedOrderResult.getSign());
