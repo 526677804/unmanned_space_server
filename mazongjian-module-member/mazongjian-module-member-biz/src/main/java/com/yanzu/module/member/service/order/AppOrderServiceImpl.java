@@ -1,8 +1,8 @@
 package com.yanzu.module.member.service.order;
 
+import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
-import com.github.binarywang.wxpay.bean.result.WxPayUnifiedOrderResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.PageHelper;
@@ -200,14 +200,14 @@ public class AppOrderServiceImpl implements AppOrderService {
             wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
 //            wxPayUnifiedOrderRequest.setTimeExpire()
             try {
-                WxPayUnifiedOrderResult wxPayUnifiedOrderResult = wxService.unifiedOrder(wxPayUnifiedOrderRequest);
-                respVO.setPrepayId(wxPayUnifiedOrderResult.getPrepayId());
-                respVO.setPkg("prepay_id=" + wxPayUnifiedOrderResult.getPrepayId());
-                respVO.setAppId(wxPayUnifiedOrderResult.getAppid());
-                respVO.setNonceStr(wxPayUnifiedOrderResult.getNonceStr());
-                respVO.setPaySign(wxPayUnifiedOrderResult.getSign());
-                respVO.setSignType("HMAC-SHA256");
-                respVO.setTimeStamp(String.valueOf(now.getTime()));
+//                WxPayUnifiedOrderResult wxPayUnifiedOrderResult = wxService.unifiedOrder(wxPayUnifiedOrderRequest);
+                WxPayMpOrderResult wxPayMpOrderResult = wxService.createOrder(wxPayUnifiedOrderRequest);
+                respVO.setPkg(wxPayMpOrderResult.getPackageValue());
+                respVO.setAppId(wxPayMpOrderResult.getAppId());
+                respVO.setNonceStr(wxPayMpOrderResult.getNonceStr());
+                respVO.setPaySign(wxPayMpOrderResult.getPaySign());
+                respVO.setSignType(wxPayMpOrderResult.getSignType());
+                respVO.setTimeStamp(wxPayMpOrderResult.getTimeStamp());
             } catch (WxPayException e) {
                 e.printStackTrace();
 //                throw new RuntimeException(e);
