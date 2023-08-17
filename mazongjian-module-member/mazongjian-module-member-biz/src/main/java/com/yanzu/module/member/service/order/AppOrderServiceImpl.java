@@ -687,12 +687,14 @@ public class AppOrderServiceImpl implements AppOrderService {
         //如果存在开始时间已经大于现在的时间的 则把订单状态改为开始
         if (!org.springframework.util.CollectionUtils.isEmpty(list1)) {
             List<String> roomIds = new ArrayList<>();
+            List<String> orderIds = new ArrayList<>();
             //新增保洁订单
             List<ClearInfoDO> clearInfoDOList = new ArrayList<>();
             list1.forEach(x -> {
                 if (x.getStartTime().after(now)) {
                     //开始订单
-                    x.setStatus(AppEnum.order_status.START.getValue());
+                    orderIds.add(String.valueOf(x.getOrderId()));
+//                    x.setStatus(AppEnum.order_status.START.getValue());
                     //房间改为进行中
                     roomIds.add(String.valueOf(x.getRoomId()));
                     //新增保洁订单
@@ -704,8 +706,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                     clearInfoDOList.add(clearInfoDO);
                 }
             });
-            orderInfoMapper.updateBatch(list1);
+//            orderInfoMapper.updateBatch(list1);
             if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
+                orderInfoMapper.updateStatusByIds(AppEnum.order_status.START.getValue(), orderIds.stream().collect(Collectors.joining(",")));
                 roomInfoMapper.updateStatusByIds(AppEnum.room_status.USED.getValue(), roomIds.stream().collect(Collectors.joining(",")));
                 clearInfoMapper.insertBatch(clearInfoDOList);
             }
@@ -715,9 +718,11 @@ public class AppOrderServiceImpl implements AppOrderService {
         //如果存在结束时间已经小于现在的时间的 则把订单状态改为完成
         if (!org.springframework.util.CollectionUtils.isEmpty(listStart)) {
             List<String> roomIds = new ArrayList<>();
+            List<String> orderIds = new ArrayList<>();
             listStart.forEach(x -> {
                 if (x.getEndTime().before(now)) {
-                    x.setStatus(AppEnum.order_status.FINISH.getValue());
+//                    x.setStatus(AppEnum.order_status.FINISH.getValue());
+                    orderIds.add(String.valueOf(x.getOrderId()));
                     //房间改为待保洁
                     roomIds.add(String.valueOf(x.getRoomId()));
                     //关门关电
@@ -735,9 +740,11 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
             });
             if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
+                orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), orderIds.stream().collect(Collectors.joining(",")));
                 roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), roomIds.stream().collect(Collectors.joining(",")));
             }
         }
+        log.info("=====     订单定时检查任务执行完成     =====");
     }
 
     @Override
