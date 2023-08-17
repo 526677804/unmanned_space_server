@@ -23,6 +23,7 @@ public interface ErrorCodeConstants {
     ErrorCode AUTH_USER_PHONE_ERROR = new ErrorCode(1004003007, "该手机号未注册或未绑定用户！");
     ErrorCode AUTH_USER_BIND_MINIAPP_ERROR = new ErrorCode(1004003008, "该用户未授权微信登录，无法下单！");
     ErrorCode USER_WEIXIN_PAY_ERROR = new ErrorCode(1004003009, "微信支付失败！");
+    ErrorCode USER_WEIXIN_PAY_REFUND_ERROR = new ErrorCode(1004003010, "微信退款失败！请联系管理员处理");
 
     // ========== app相关 1004004000 ==========
     ErrorCode NOT_START_ORDER = new ErrorCode(1004004001, "没有进行中的订单！");

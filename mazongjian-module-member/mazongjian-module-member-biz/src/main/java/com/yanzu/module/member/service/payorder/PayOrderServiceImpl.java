@@ -35,7 +35,7 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     public PayOrderDO getPayOrderByPayNo(String orderNo) {
-        return payOrderMapper.getPayOrderByPayNo(orderNo);
+        return payOrderMapper.getByPayNo(orderNo);
     }
 
     @Override
@@ -75,6 +75,11 @@ public class PayOrderServiceImpl implements PayOrderService {
         payOrderDO.setOrderDesc(orderDesc);
         payOrderDO.setPrice(price);
         payOrderMapper.insert(payOrderDO);
+    }
+
+    @Override
+    public PayOrderDO getByOrderNo(String orderNo) {
+        return payOrderMapper.getByOrderNo(orderNo);
     }
 
 }

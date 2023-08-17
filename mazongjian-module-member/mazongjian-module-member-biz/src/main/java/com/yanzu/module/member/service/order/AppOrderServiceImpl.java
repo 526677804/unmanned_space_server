@@ -1,6 +1,7 @@
 package com.yanzu.module.member.service.order;
 
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
+import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
@@ -22,6 +23,7 @@ import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
+import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
@@ -89,6 +91,9 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Autowired
     private WxPayService wxService;
+
+    @Autowired
+    private PayOrderMapper payOrderMapper;
 
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
@@ -309,6 +314,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                     if (ObjectUtils.isEmpty(payOrderByPayNo) || !queryWxOrder(payOrderByPayNo.getOrderNo()) || !payOrderByPayNo.getPayStatus()) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
                     }
+                    //对比实际支付的价格 和订单应支付的价格是否一致
+                    if (payOrderByPayNo.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
+                        throw exception(ORDER_WEIXIN_PAY_ERROR);
+                    }
                     break;
                 case 2://余额
                     //先扣钱包余额
@@ -425,6 +434,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //有支付单号，再验证支付是否成功
                 PayOrderDO payOrderByPayNo = payOrderService.getPayOrderByPayNo(reqVO.getWeixinOrderNo());
                 if (ObjectUtils.isEmpty(payOrderByPayNo) || !queryWxOrder(payOrderByPayNo.getOrderNo()) || !payOrderByPayNo.getPayStatus()) {
+                    throw exception(ORDER_WEIXIN_PAY_ERROR);
+                }
+                //对比实际支付的价格 和订单应支付的价格是否一致
+                if (payOrderByPayNo.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
                     throw exception(ORDER_WEIXIN_PAY_ERROR);
                 }
                 break;
@@ -574,8 +587,23 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //团购支付的，操作团购退款 todo...
             } else {
                 if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
-                    //微信退款 todo...
-
+                    //微信退款
+                    PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
+                    WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+                    refundRequest.setOutRefundNo(orderInfoDO.getOrderNo());
+                    refundRequest.setOutRefundNo("TK" + orderInfoDO.getOrderNo());//退款单号
+                    refundRequest.setTotalFee(payOrderDO.getPrice());
+                    refundRequest.setRefundFee(payOrderDO.getPrice());
+                    try {
+                        wxService.refund(refundRequest);
+                        payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
+                        payOrderDO.setRefundPrice(payOrderDO.getPrice());
+                        payOrderDO.setRefundTime(LocalDateTime.now());
+                        payOrderMapper.updateById(payOrderDO);
+                    } catch (WxPayException e) {
+//                        throw new RuntimeException(e);
+                        throw exception(USER_WEIXIN_PAY_REFUND_ERROR);
+                    }
                 } else {
                     //余额退款  把支付记录找出来
                     List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderInfoDO.getOrderNo(), loginUserId);
@@ -748,13 +776,30 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
+    @Transactional
     public boolean queryWxOrder(String orderNo) {
         try {
             WxPayOrderQueryResult wxPayOrderQueryResult = wxService.queryOrder(null, orderNo);
             String tradeState = wxPayOrderQueryResult.getTradeState();
             String returnCode = wxPayOrderQueryResult.getReturnCode();
             String resultCode = wxPayOrderQueryResult.getResultCode();
-            return tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
+            boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
+            if (flag) {
+                Integer cashFee = wxPayOrderQueryResult.getTotalFee();//支付金额
+                String transactionId = wxPayOrderQueryResult.getTransactionId();//微信支付订单号
+                String outTradeNo = wxPayOrderQueryResult.getOutTradeNo();//商家订单号
+                //查询出该订单
+                PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(outTradeNo);
+                if (!payOrderDO.getPayStatus()) {
+                    //更新状态、支付订单号 和支付金额
+                    payOrderDO.setPrice(cashFee);
+                    payOrderDO.setPayOrderNo(transactionId);
+                    payOrderDO.setPayStatus(true);
+                    payOrderDO.setPayTime(LocalDateTime.now());
+                    payOrderMapper.updateById(payOrderDO);
+                }
+            }
+            return flag;
         } catch (WxPayException e) {
 //            throw new RuntimeException(e);
             return false;

@@ -56,4 +56,6 @@ public interface PayOrderService {
     void updateOrderRefunded(Map<String, String> params, String body);
 
     void create(Long userId, String orderNo, String orderDesc, Integer price);
+
+    PayOrderDO getByOrderNo(String orderNo);
 }

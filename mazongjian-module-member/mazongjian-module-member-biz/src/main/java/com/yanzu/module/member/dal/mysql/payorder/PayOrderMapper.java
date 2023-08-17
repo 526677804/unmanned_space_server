@@ -42,5 +42,7 @@ public interface PayOrderMapper extends BaseMapperX<PayOrderDO> {
     }
 
     PayOrderDO selectByOrderNoAndPayNo(PayOrderNotifyReqDTO notifyReqDTO);
-    PayOrderDO getPayOrderByPayNo(String payNo);
+    PayOrderDO getByPayNo(String payNo);
+
+    PayOrderDO getByOrderNo(String orderNo);
 }
