@@ -575,8 +575,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         Date now = new Date();
         //只有未开始的订单才能取消
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
-            //订单开始时间不足30分钟  将无法取消
-            if ((orderInfoDO.getStartTime().getTime() - now.getTime()) < 1000 * 60 * 30) {
+            //订单开始时间不足60分钟  将无法取消
+            if ((orderInfoDO.getStartTime().getTime() - now.getTime()) < 1000 * 60 * 60) {
                 throw exception(ORDER_CANCEL_TIMEOUT_ERROR);
             }
             //取消
@@ -678,6 +678,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //校验通过 更改订单的开始和完成时间
                 orderInfoDO.setStartTime(now);
                 orderInfoDO.setEndTime(endTime);
+                log.info("订单：{}，提前开始消费！", orderInfoDO.getOrderNo());
             }
             //开始订单
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
