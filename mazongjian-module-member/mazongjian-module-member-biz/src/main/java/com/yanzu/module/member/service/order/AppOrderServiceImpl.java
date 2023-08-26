@@ -11,6 +11,7 @@ import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
+import com.yanzu.framework.common.util.date.LocalDateTimeUtils;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
@@ -144,39 +145,42 @@ public class AppOrderServiceImpl implements AppOrderService {
         List<OrderInfoDO> orderInfoList = orderInfoMapper.getByRoomId(roomId, ignoreOrderId);
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
         //构建出不可用的时间区间
-        List<TimeSlotVO> timeSlotVOList = new ArrayList<>();
+        List<TimeRange> disabledTimeRanges = new ArrayList<>();
+        //先把订单中的时间进行处理
         if (!CollectionUtils.isAnyEmpty(orderInfoList)) {
             for (OrderInfoDO orderInfoDO : orderInfoList) {
-                TimeSlotVO timeSlotVO = new TimeSlotVO();
-                timeSlotVO.setStartTime(orderInfoDO.getStartTime());
-                timeSlotVO.setEndTime(orderInfoDO.getEndTime());
-                timeSlotVOList.add(timeSlotVO);
+                disabledTimeRanges.add(new TimeRange(DateUtils.of(orderInfoDO.getStartTime()), DateUtils.of(orderInfoDO.getEndTime())));
             }
         }
-        if (!ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart()) && !ObjectUtils.isEmpty(roomInfoDO.getBanTimeEnd())) {
-            //从今天起，加5天的禁用时间进去
-            String todayStr = DateUtils.dateToStr(now, DateUtils.FORMAT_YEAR_MONTH_DAY);
-            //拼接开始时间和结束时间
-            String startTimeStr = todayStr + " " + roomInfoDO.getBanTimeStart();
-            String endTimeStr = todayStr + " " + roomInfoDO.getBanTimeEnd();
-            //转回date
-            Date banStart = DateUtils.strToDate(startTimeStr, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE);
-            Date banEnd = DateUtils.strToDate(endTimeStr, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE);
+        //再处理每天有禁用时间的情况
+        // 获取当前日期
+        LocalDate currentDate = LocalDate.now();
+        if (!ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart()) && !ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart())) {
+            // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
+            LocalTime bstart = LocalTime.parse(roomInfoDO.getBanTimeStart());
+            LocalTime bend = LocalTime.parse(roomInfoDO.getBanTimeEnd());
+            // 遍历日期范围内的每一天'
             for (int i = 0; i < 5; i++) {
-                TimeSlotVO timeSlotVO = new TimeSlotVO();
-                timeSlotVO.setStartTime(banStart);
-                timeSlotVO.setEndTime(banEnd);
-                timeSlotVOList.add(timeSlotVO);
-                banStart = DateUtils.addDate(banStart, Calendar.DAY_OF_YEAR, 1);
-                banEnd = DateUtils.addDate(banStart, Calendar.DAY_OF_YEAR, 1);
+                // 判断是否跨越两天
+                if (bend.isBefore(bstart)) {
+                    // 添加禁用时间范围：从开始时间到当天最后一秒
+                    disabledTimeRanges.add(new TimeRange(currentDate.atTime(bstart), currentDate.atTime(LocalTime.MAX)));
+                    // 添加禁用时间范围：从零点到结束时间
+                    disabledTimeRanges.add(new TimeRange(currentDate.atTime(LocalTime.MIDNIGHT), currentDate.atTime(bend)));
+                } else {
+                    // 添加禁用时间范围：从开始时间到结束时间
+                    disabledTimeRanges.add(new TimeRange(currentDate.atTime(bstart), currentDate.atTime(bend)));
+                }
+                currentDate = currentDate.plusDays(1);
             }
         }
         //查看是否需要校验 如果是空的 代表可以下单 就不校验了
-        if (!CollectionUtils.isAnyEmpty(timeSlotVOList)) {
+        if (!CollectionUtils.isAnyEmpty(disabledTimeRanges)) {
             //需要校验
-            for (TimeSlotVO timeSlotVO : timeSlotVOList) {
+            for (TimeRange timeRange : disabledTimeRanges) {
                 //如果下单时间大于不可用时间的开始时间， 并且不可用时间的开始时间小于订单的结束时间，那么就不能下单
-                if (startTime.before(timeSlotVO.getEndTime()) && timeSlotVO.getStartTime().before(endTime)) {
+                if (startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isBefore(timeRange.getEnd())
+                        && timeRange.getStart().isBefore(endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
                     //存在交集
                     throw exception(ORDER_TIME_CHECK_ERROR);
                 }

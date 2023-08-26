@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.util.Date;
+import java.util.List;
 
 @Schema(description = "miapp - 门店管理 Response VO")
 @Data
@@ -50,6 +51,9 @@ public class AppIndexStoreInfoRespVO  {
 
     @Schema(description = "工作日折扣 1-100", example = "8")
     private Integer workDiscount;
+
+    @Schema(description = "门店优惠信息")
+    private List<String> discountRules;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private Date createTime;

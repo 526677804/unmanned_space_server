@@ -6,6 +6,7 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Schema(description = "miniapp - 门店信息详情 Response VO")
 @Data
@@ -50,6 +51,5 @@ public class AppStoreInfoRespVO {
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private Date createTime;
-
 
 }
