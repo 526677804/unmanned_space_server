@@ -116,8 +116,7 @@ public class IndexServiceImpl implements IndexService {
             } else {
                 orederMap = new HashMap<>();
             }
-            // 获取当前日期
-            LocalDate currentDate = LocalDate.now();
+
             DateTimeFormatter formatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             DateTimeFormatter formatterHour = DateTimeFormatter.ofPattern("HH:mm");
             //开始处理
@@ -125,6 +124,8 @@ public class IndexServiceImpl implements IndexService {
                 List<TimeRange> disabledTimeRanges = new ArrayList<>();
                 //先把订单中的时间进行处理
                 if (orederMap.containsKey(respVO.getRoomId())) {
+                    respVO.setStartTime(orederMap.get(respVO.getRoomId()).get(0).getStartTime());
+                    respVO.setEndTime(orederMap.get(respVO.getRoomId()).get(0).getEndTime());
                     for (OrderInfoDO orderInfoDO : orederMap.get(respVO.getRoomId())) {
                         if (orderInfoDO.getStartTime().getDay() != orderInfoDO.getEndTime().getDay()) {
                             //开始时间与结束时间跨日 分隔成两段
@@ -139,6 +140,8 @@ public class IndexServiceImpl implements IndexService {
                 }
                 //再处理每天有禁用时间的情况
                 if (!ObjectUtils.isEmpty(respVO.getBanTimeStart()) && !ObjectUtils.isEmpty(respVO.getBanTimeStart())) {
+                    // 获取当前日期
+                    LocalDate currentDate = LocalDate.now();
                     // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
                     LocalTime bstart = LocalTime.parse(respVO.getBanTimeStart());
                     LocalTime bend = LocalTime.parse(respVO.getBanTimeEnd());

@@ -175,7 +175,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
         }
         //查看是否需要校验 如果是空的 代表可以下单 就不校验了
-        if (!CollectionUtils.isAnyEmpty(disabledTimeRanges)) {
+            if (!CollectionUtils.isAnyEmpty(disabledTimeRanges)) {
             //需要校验
             for (TimeRange timeRange : disabledTimeRanges) {
                 //如果下单时间大于不可用时间的开始时间， 并且不可用时间的开始时间小于订单的结束时间，那么就不能下单

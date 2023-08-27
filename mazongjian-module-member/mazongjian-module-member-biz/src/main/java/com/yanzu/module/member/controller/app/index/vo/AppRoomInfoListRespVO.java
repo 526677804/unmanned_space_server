@@ -59,11 +59,11 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "每日禁用结束时间")
     private String banTimeEnd;
 
-    @Schema(description = "订单/预约开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "最近的订单/预约开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date startTime;
 
-    @Schema(description = "订单/预约结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "最近的订单/预约结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date endTime;
 
