@@ -25,7 +25,7 @@
         <foreach collection="roomIds" index="index" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
-
+        order by order_id asc
     </select>
     <select id="getByUserAndStatus" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
         select *

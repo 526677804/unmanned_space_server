@@ -72,7 +72,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public AppStoreInfoRespVO getDetail(Long storeId) {
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        return StoreInfoConvert.INSTANCE.convert2(storeInfoDO);
+        AppStoreInfoRespVO appStoreInfoRespVO = StoreInfoConvert.INSTANCE.convert2(storeInfoDO);
+
+        return appStoreInfoRespVO;
     }
 
     @Override
