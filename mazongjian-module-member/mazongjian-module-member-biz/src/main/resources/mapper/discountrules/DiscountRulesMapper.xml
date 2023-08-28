@@ -48,7 +48,7 @@
     </select>
     <select id="getRulesByStoreId" resultType="java.lang.String">
         select concat('充值', pay_money, '元,赠送', gift_money, '元！')
-        from member_discount_rules where delete=0 and status=1 and exprice_time>now()
+        from member_discount_rules where deleted=0 and status=1 and exprice_time>now()
         order by pay_money asc
     </select>
 </mapper>

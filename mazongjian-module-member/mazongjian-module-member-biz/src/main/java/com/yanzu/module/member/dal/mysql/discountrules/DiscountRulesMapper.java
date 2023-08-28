@@ -1,6 +1,7 @@
 package com.yanzu.module.member.dal.mysql.discountrules;
 
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.order.vo.AppDiscountRulesRespVO;
 import com.yanzu.module.member.controller.app.store.vo.AppDiscountRulesPageReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppDiscountRulesPageRespVO;
 import com.yanzu.module.member.dal.dataobject.discountrules.DiscountRulesDO;
