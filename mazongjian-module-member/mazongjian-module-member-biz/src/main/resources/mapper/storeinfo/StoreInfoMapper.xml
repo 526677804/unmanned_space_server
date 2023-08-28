@@ -39,7 +39,7 @@
     </select>
     <select id="getStorePageList"
             resultMap="StorePageList">
-        select s.store_id,s.store_name,s.city_name,s.head_img,s.lat,s.lon,s.address,s.status
+        select s.store_id,s.store_name,s.city_name,s.head_img,s.lat,s.lon,s.address,s.status,s.kefu_phone
         <if test=" null!=lat and null!=lon">
             ,(
             6371 * ACOS(

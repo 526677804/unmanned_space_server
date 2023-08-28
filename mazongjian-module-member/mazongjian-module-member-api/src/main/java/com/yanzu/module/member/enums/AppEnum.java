@@ -79,21 +79,6 @@ public class AppEnum {
         private final Integer value;
     }
 
-    //miniapp门店用户类型
-    @Getter
-    @AllArgsConstructor
-    public enum store_user_type {
-        //创建者	1
-        //管理员	2
-        //保洁员	3
-        CREATOR(1),
-        ADMIN(2),
-        CLEAR(3);
-
-
-        private final Integer value;
-    }
-
     //miniapp房间标签
     @Getter
     @AllArgsConstructor
@@ -285,7 +270,7 @@ public class AppEnum {
     @AllArgsConstructor
     public enum member_user_type {
         MEMBER(11),
-        FRANCHISEE(12),
+        BOSS(12),
         ADMIN(13),
         CLEAR(14);
 

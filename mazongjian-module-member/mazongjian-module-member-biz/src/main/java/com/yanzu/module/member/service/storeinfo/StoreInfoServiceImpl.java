@@ -22,6 +22,7 @@ import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.utils.StorePermissionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -78,9 +79,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Transactional
     public void save(AppStoreInfoReqVO reqVO) {
         // 只有创建者才可以操作
-        if (getLoginUserType() != 12) {
-            throw exception(AUTH_PROMISSION_ERROR);
-        }
+        StorePermissionUtils.checkBoss(getLoginUserType());
         if (ObjectUtils.isEmpty(reqVO.getStoreId())) {
             //新增
             StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
@@ -90,7 +89,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             StoreUserDO storeUserDO = new StoreUserDO();
             storeUserDO.setStoreId(storeInfoDO.getStoreId());
             storeUserDO.setUserId(getLoginUserId());
-            storeUserDO.setType(AppEnum.store_user_type.CREATOR.getValue());
+            storeUserDO.setType(AppEnum.member_user_type.BOSS.getValue());
             storeUserMapper.insert(storeUserDO);
         } else {
             //修改

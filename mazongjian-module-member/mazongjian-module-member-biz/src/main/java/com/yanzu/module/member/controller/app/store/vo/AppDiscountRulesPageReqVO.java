@@ -10,7 +10,6 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class AppDiscountRulesPageReqVO extends PageParam {
 
-
     @Schema(description = "门店Id")
     private Long storeId;
 

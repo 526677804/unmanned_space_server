@@ -46,7 +46,7 @@ public class AppGameServiceImpl implements AppGameService {
     public void save(AppGameInfoReqVO reqVO) {
         Long loginUserId = getLoginUserId();
         //检查限制  普通用户一天最多发5场  管理员不受限制
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) == 0 || getLoginUserType().compareTo(AppEnum.member_user_type.FRANCHISEE.getValue()) == 0) {
+        if (getLoginUserType().compareTo(AppEnum.member_user_type.BOSS.getValue()) == 0 || getLoginUserType().compareTo(AppEnum.member_user_type.BOSS.getValue()) == 0) {
             //管理员 暂时不做限制
         } else {
             //普通用户

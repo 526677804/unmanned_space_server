@@ -22,6 +22,7 @@ import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
+import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
@@ -35,6 +36,7 @@ import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -92,8 +94,11 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Autowired
     private WxPayService wxService;
 
-    @Autowired
+    @Resource
     private PayOrderMapper payOrderMapper;
+
+    @Resource
+    private DiscountRulesMapper discountRulesMapper;
 
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
@@ -805,6 +810,11 @@ public class AppOrderServiceImpl implements AppOrderService {
 //            throw new RuntimeException(e);
             return false;
         }
+    }
+
+    @Override
+    public List<AppDiscountRulesRespVO> getDiscountRules(Long storeId) {
+        return discountRulesMapper.getDiscountRulesByStoreId(storeId);
     }
 
 //    @Override

@@ -35,4 +35,15 @@
           AND store_id = #{storeId}
           and pay_money = #{payMoney}
     </select>
+    <select id="getDiscountRulesByStoreId"
+            resultType="com.yanzu.module.member.controller.app.order.vo.AppDiscountRulesRespVO">
+        select pay_money, gift_money
+        from member_discount_rules
+        where deleted = 0
+          and store_id = #{storeId}
+          and status = 1
+          and exprice_time > now()
+        order by pay_money asc
+
+    </select>
 </mapper>

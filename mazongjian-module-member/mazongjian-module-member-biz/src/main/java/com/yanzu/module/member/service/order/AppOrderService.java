@@ -5,6 +5,7 @@ import com.yanzu.module.member.controller.app.order.vo.*;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 public interface AppOrderService {
 
@@ -32,6 +33,8 @@ public interface AppOrderService {
     void executeOrderJob();
 
     boolean queryWxOrder(String orderNo);
+
+    List<AppDiscountRulesRespVO> getDiscountRules(Long storeId);
 
 
 //    void closeOrder(Long orderId);

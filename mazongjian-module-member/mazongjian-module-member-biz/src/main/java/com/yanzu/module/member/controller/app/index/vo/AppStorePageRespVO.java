@@ -43,6 +43,9 @@ public class AppStorePageRespVO {
     @Schema(description = "详细地址")
     private String address;
 
+    @Schema(description = "客服电话")
+    private String kefuPhone;
+
     @Schema(description = "门店状态")
     private Integer status;
 

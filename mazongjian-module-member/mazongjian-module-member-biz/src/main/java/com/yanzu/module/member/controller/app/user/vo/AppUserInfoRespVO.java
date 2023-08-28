@@ -29,6 +29,9 @@ public class AppUserInfoRespVO {
     @Schema(description = "赠送余额")
     private BigDecimal giftBalance;
 
+    @Schema(description = "用户类型")
+    private Integer userType;
+
     @Schema(description = "优惠券数量")
     private Integer couponCount;
 

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -170,6 +171,14 @@ public class OrderController {
     public CommonResult<Boolean> changeRoom(@PathVariable("orderId") Long orderId, @PathVariable("roomId") Long roomId) {
         appOrderService.changeRoom(orderId, roomId);
         return success(true);
+    }
+
+    @GetMapping("/getDiscountRules/{storeId}")
+    @Operation(summary = "获取指定门店的充值优惠信息列表")
+    @PreAuthenticated
+    @Parameter(name = "storeId")
+    public CommonResult<List<AppDiscountRulesRespVO>> getDiscountRules(@PathVariable("storeId")Long storeId) {
+        return success(appOrderService.getDiscountRules(storeId));
     }
 
 
