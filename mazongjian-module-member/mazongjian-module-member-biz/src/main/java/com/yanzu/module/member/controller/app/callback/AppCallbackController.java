@@ -36,9 +36,8 @@ public class AppCallbackController {
     @Operation(summary = "更新订单为已支付")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
-    public String updateOrder(@RequestParam(required = false) Map<String, String> params,
-                              @RequestBody(required = false) String body) {
-        return payOrderService.updateOrder(params, body);
+    public String updateOrder(@RequestBody String xmlData) {
+        return payOrderService.updateOrder(xmlData);
     }
 
 

@@ -70,12 +70,12 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     @Transactional
-    public String updateOrder(Map<String, String> params, String body) {
-        log.info("收到微信支付回调body：{}",body);
-        log.info("收到微信支付回调params：{}",params);
+    public String updateOrder( String xmlData) {
+        log.info("收到微信支付回调body：{}",xmlData);
+//        log.info("收到微信支付回调params：{}",params);
         try {
 //            String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
-            WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(body);
+            WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(xmlData);
             // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
             String orderNo = result.getOutTradeNo();
             PayOrderDO orderDO = payOrderMapper.getByOrderNo(orderNo);

@@ -51,7 +51,7 @@ public interface PayOrderService {
     List<PayOrderDO> getPayOrderList(PayOrderExportReqVO exportReqVO);
 
 
-    String updateOrder(Map<String, String> params, String body);
+    String updateOrder(String xmlData);
 
     String updateOrderRefunded(Map<String, String> params, String body);
 
