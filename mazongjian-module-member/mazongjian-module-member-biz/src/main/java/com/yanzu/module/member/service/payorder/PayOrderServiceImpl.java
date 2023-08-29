@@ -71,7 +71,8 @@ public class PayOrderServiceImpl implements PayOrderService {
     @Override
     @Transactional
     public String updateOrder(Map<String, String> params, String body) {
-        log.info("收到微信支付回调：{}",body);
+        log.info("收到微信支付回调body：{}",body);
+        log.info("收到微信支付回调params：{}",params);
         try {
 //            String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
             WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(body);
@@ -81,7 +82,7 @@ public class PayOrderServiceImpl implements PayOrderService {
             if (!ObjectUtils.isEmpty(orderDO) && !orderDO.getPayStatus()) {
                 String totalFee = BaseWxPayResult.fenToYuan(result.getTotalFee());
                 String tradeNo = result.getTransactionId();
-                if (orderDO.getPrice().compareTo(Integer.valueOf(tradeNo)) != 0) {
+                if (orderDO.getPrice().compareTo(Integer.valueOf(totalFee)) != 0) {
                     return WxPayNotifyResponse.fail("实际支付金额与订单应支付金额不匹配！");
                 }
                 orderDO.setPayOrderNo(tradeNo);
@@ -99,7 +100,8 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     public String updateOrderRefunded(Map<String, String> params, String body) {
-        log.info("收到微信支付回调：{}",body);
+        log.info("收到微信支付回调body：{}",body);
+        log.info("收到微信支付回调params：{}",params);
         return WxPayNotifyResponse.success("处理成功!");
     }
 
