@@ -31,6 +31,7 @@ import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.dal.mysql.userwithdrawal.UserWithdrawalMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.utils.StorePermissionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -411,5 +412,21 @@ public class AppMangerServiceImpl implements AppMangerService {
         StorePermissionUtils.checkAdmin(getLoginUserType());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getRoomUseHourStatistics(reqVO);
+    }
+
+    @Override
+    @Transactional
+    public void giftCoupon(AppGiftCouponReqVO reqVO) {
+        //仅管理员使用 检查权限
+        StorePermissionUtils.checkAdmin(getLoginUserType());
+        CouponInfoDO couponInfoDO = couponInfoMapper.getByIdAndAdmin(reqVO.getCouponId());
+        if(!ObjectUtils.isEmpty(couponInfoDO)){
+            CouponInfoDO newCouponInfoDO=new CouponInfoDO();
+            BeanUtils.copyProperties(couponInfoDO,newCouponInfoDO);
+            newCouponInfoDO.setCouponId(null);
+            newCouponInfoDO.setUserId(reqVO.getUserId());
+            couponInfoMapper.insert(newCouponInfoDO);
+        }
+
     }
 }

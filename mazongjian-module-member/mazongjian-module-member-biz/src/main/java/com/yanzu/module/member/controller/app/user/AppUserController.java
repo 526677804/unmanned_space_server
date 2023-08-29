@@ -5,23 +5,19 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.service.user.AppUserService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import java.util.List;
 
-import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.pojo.CommonResult.success;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
-import static com.yanzu.module.infra.enums.ErrorCodeConstants.FILE_IS_EMPTY;
 
 @Tag(name = "miniapp - 个人中心")
 @RestController
@@ -33,7 +29,7 @@ public class AppUserController {
     @Resource
     private AppUserService userService;
 
-    @PutMapping("/updateNickname")
+    @PostMapping("/updateNickname")
     @Operation(summary = "修改用户昵称")
     @PreAuthenticated
     public CommonResult<Boolean> updateUserNickname(@RequestParam("nickname") String nickname) {
@@ -41,7 +37,7 @@ public class AppUserController {
         return success(true);
     }
 
-    @PostMapping("/updateAvatar")
+  /*  @PostMapping("/updateAvatar")
     @Operation(summary = "修改用户头像")
     @PreAuthenticated
     public CommonResult<String> updateUserAvatar(@RequestParam("avatarFile") MultipartFile file) throws Exception {
@@ -50,6 +46,13 @@ public class AppUserController {
         }
         String avatar = userService.updateUserAvatar(getLoginUserId(), file.getInputStream());
         return success(avatar);
+    }*/
+    @PostMapping("/updateAvatar")
+    @Operation(summary = "修改用户头像")
+    @PreAuthenticated
+    public CommonResult<Boolean> updateUserAvatar(@RequestParam("avatarUrl") String avatarUrl)  {
+        userService.updateUserAvatarUrl(getLoginUserId(), avatarUrl);
+        return success(true);
     }
 
     @PostMapping("/update-mobile")

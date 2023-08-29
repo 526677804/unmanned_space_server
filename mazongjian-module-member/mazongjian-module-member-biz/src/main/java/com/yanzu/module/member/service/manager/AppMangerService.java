@@ -55,4 +55,6 @@ public interface AppMangerService {
     List<KeyValue<String, Double>> getRoomUseStatistics(AppChartDataReqVO reqVO);
 
     List<KeyValue<String, Double>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
+
+    void giftCoupon(AppGiftCouponReqVO reqVO);
 }

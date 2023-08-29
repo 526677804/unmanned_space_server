@@ -19,9 +19,10 @@
     <select id="getCouponPage" resultType="com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO">
         SELECT
         c.*,( SELECT group_concat( s.store_name ) FROM member_store_info s WHERE s.store_id IN ( c.store_ids ) )
-        AS storeName
+        AS storeName,o.order_id
         FROM
         member_coupon_info c
+        left join member_order_info o ON o.coupon_id=c.coupon_id
         WHERE
         c.deleted =0 and c.user_id=#{userId}
         <if test="null != status and status != null">
@@ -72,5 +73,8 @@
         WHERE c.deleted = 0
           and c.coupon_id = #{couponId}
 
+    </select>
+    <select id="getByIdAndAdmin" resultType="com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO">
+        select * from member_coupon_info where deleted=0 and user_id is null and exprice_time>now() and coupon_id=#{couponId}
     </select>
 </mapper>

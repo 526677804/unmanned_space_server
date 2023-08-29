@@ -49,6 +49,8 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_START_TIME_GT_NOW_ERROR = new ErrorCode(1004004021, "您选择的开始时间已经超过当前时间5分钟，请重新选择开始时间！");
     ErrorCode ORDER_MAX_END_TIME_ERROR = new ErrorCode(1004004022, "订单总时长不能超过24小时，请重新选择预订时间！");
     ErrorCode DISCOUNTRULE_REPETITION_ERROR = new ErrorCode(1004004024, "该充值金额已存在其他规则中，不允许重复添加！");
+    ErrorCode COUPON_USED_ERROR = new ErrorCode(1004004025, "该优惠券已被使用！");
+    ErrorCode COUPON_USE_CHECK_ERROR = new ErrorCode(1004004026, "该优惠券不符合使用条件！");
     ErrorCode USER_NO_MONEY_WITHDRAWAL_ERROR = new ErrorCode(1004004028, "您当前没有可提现的收入！");
     ErrorCode GAME_CREATE_NUM_MAX_ERROR = new ErrorCode(1004004030, "每日允许创建5条组局信息，请明天再试！");
     ErrorCode GAME_DELETE_USER_ERROR = new ErrorCode(1004004031, "只有组队中或未支付的对局才可以踢出玩家！");

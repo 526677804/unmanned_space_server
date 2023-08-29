@@ -56,6 +56,9 @@
             <if test=" null!=cityName and cityName!=''">
                 and s.city_name=#{cityName}
             </if>
+            <if test=" null!=name and name!=''">
+                and locate(#{name},s.store_name)>0
+            </if>
 
         </where>
         <if test=" null!=lat and null!=lon">

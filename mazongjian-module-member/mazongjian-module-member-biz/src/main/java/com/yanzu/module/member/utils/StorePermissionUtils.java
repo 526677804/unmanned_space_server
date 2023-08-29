@@ -22,7 +22,9 @@ public class StorePermissionUtils {
 
     public static void checkAdmin(Integer userType) {
         //加盟商使用或管理员使用
-        if (userType.compareTo(AppEnum.member_user_type.BOSS.getValue()) != 0 || userType.compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        if (userType.compareTo(AppEnum.member_user_type.BOSS.getValue()) == 0 || userType.compareTo(AppEnum.member_user_type.ADMIN.getValue()) == 0) {
+
+        } else {
             throw exception(AUTH_PROMISSION_ERROR);
         }
     }

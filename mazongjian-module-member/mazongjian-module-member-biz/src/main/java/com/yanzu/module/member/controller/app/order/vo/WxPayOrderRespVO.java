@@ -15,6 +15,8 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class WxPayOrderRespVO {
 
+    @Schema(description = "商户 订单号")
+    private String orderNo;
     @Schema(description = "应用ID")
     private String appId;
     @Schema(description = "随机字符串")

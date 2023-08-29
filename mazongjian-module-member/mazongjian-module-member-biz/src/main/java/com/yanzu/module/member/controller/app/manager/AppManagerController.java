@@ -2,6 +2,7 @@ package com.yanzu.module.member.controller.app.manager;
 
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+
+import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.pojo.CommonResult.success;
@@ -67,6 +70,14 @@ public class AppManagerController {
         return success(appMangerService.getCouponPage(reqVO));
     }
 
+    @PostMapping("/giftCoupon")
+    @Operation(summary = "管理员赠送优惠券")
+    @PreAuthenticated
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    public CommonResult<Boolean> giftCoupon(@RequestBody @Valid AppGiftCouponReqVO reqVO) {
+        appMangerService.giftCoupon(reqVO);
+        return success(true);
+    }
 
     @GetMapping("/getCouponDetail/{couponId}")
     @Operation(summary = "管理员获取优惠券详情")

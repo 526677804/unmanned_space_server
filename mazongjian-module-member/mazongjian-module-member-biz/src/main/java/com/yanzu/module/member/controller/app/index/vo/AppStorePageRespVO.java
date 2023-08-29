@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -38,7 +39,7 @@ public class AppStorePageRespVO {
     private Double lon;
 
     @Schema(description = "距离")
-    private Double distance;
+    private BigDecimal distance;
 
     @Schema(description = "详细地址")
     private String address;

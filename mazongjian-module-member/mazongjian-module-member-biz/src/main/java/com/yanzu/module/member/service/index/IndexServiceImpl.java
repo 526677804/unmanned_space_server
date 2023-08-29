@@ -5,7 +5,6 @@ import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.date.DateUtils;
-import com.yanzu.framework.common.util.date.LocalDateTimeUtils;
 import com.yanzu.module.member.controller.app.index.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.TimeRange;
 import com.yanzu.module.member.controller.app.order.vo.TimeSlotVO;
@@ -22,7 +21,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import java.sql.Time;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -71,6 +70,9 @@ public class IndexServiceImpl implements IndexService {
         PageHelper.startPage(reqVO);
         List<AppStorePageRespVO> list = storeInfoMapper.getStorePageList(reqVO);
         PageInfo<AppStorePageRespVO> page = new PageInfo<>(list);
+        if (!CollectionUtils.isEmpty(page.getList())) {
+            page.getList().forEach(x -> x.setDistance(x.getDistance().setScale(2, BigDecimal.ROUND_CEILING)));
+        }
         return new PageResult<>(page.getList(), page.getTotal());
     }
 
@@ -119,6 +121,13 @@ public class IndexServiceImpl implements IndexService {
 
             DateTimeFormatter formatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             DateTimeFormatter formatterHour = DateTimeFormatter.ofPattern("HH:mm");
+            // 获取当前日期
+            LocalDate currentDate = LocalDate.now();
+            Set<String> days = new HashSet<>(5);
+            for (int i = 0; i < 5; i++) {
+                days.add(currentDate.format(formatterDay));
+                currentDate = currentDate.plusDays(1);
+            }
             //开始处理
             for (AppRoomInfoListRespVO respVO : roomInfoList) {
                 List<TimeRange> disabledTimeRanges = new ArrayList<>();
@@ -141,7 +150,7 @@ public class IndexServiceImpl implements IndexService {
                 //再处理每天有禁用时间的情况
                 if (!ObjectUtils.isEmpty(respVO.getBanTimeStart()) && !ObjectUtils.isEmpty(respVO.getBanTimeStart())) {
                     // 获取当前日期
-                    LocalDate currentDate = LocalDate.now();
+                    currentDate = LocalDate.now();
                     // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
                     LocalTime bstart = LocalTime.parse(respVO.getBanTimeStart());
                     LocalTime bend = LocalTime.parse(respVO.getBanTimeEnd());
@@ -171,6 +180,11 @@ public class IndexServiceImpl implements IndexService {
                     }
                     timeSlotMap.put(entry.getKey(), timeSlotVOList);
                 }
+                days.forEach(d -> {
+                    if (!timeSlotMap.containsKey(d)) {
+                        timeSlotMap.put(d, new ArrayList<>(1));
+                    }
+                });
                 respVO.setDisabledTimeSlot(timeSlotMap);
             }
         }

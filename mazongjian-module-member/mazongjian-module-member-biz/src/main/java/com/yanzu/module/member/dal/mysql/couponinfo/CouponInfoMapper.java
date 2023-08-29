@@ -29,4 +29,7 @@ public interface CouponInfoMapper extends BaseMapperX<CouponInfoDO> {
     List<AppCouponPageRespVO> getCouponPageByAdmin(@Param("reqVO") AppManagerCouponPageReqVO reqVO, @Param("storeIds") String storeIds);
 
     AppCouponDetailRespVO getCouponDetail(Long couponId);
+
+    CouponInfoDO getByIdAndAdmin(Long couponId);
+
 }

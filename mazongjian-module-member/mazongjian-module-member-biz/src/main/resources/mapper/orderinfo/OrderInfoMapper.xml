@@ -86,6 +86,7 @@
         , m.nickname
         , o.start_time as startTime
         , o.end_time
+        , ROUND(TIMESTAMPDIFF(SECOND, o.start_time,o.end_time) / 3600, 1) AS orderHour
         , o.pay_price
         , o.refund_price
         , o.status
@@ -125,6 +126,7 @@
              , o.user_id
              , o.start_time
              , o.end_time
+             , ROUND(TIMESTAMPDIFF(SECOND, o.start_time,o.end_time) / 3600, 1) AS orderHour
              , o.price
              , o.pay_price
              , o.refund_price

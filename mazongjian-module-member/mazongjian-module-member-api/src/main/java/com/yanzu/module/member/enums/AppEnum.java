@@ -115,11 +115,11 @@ public class AppEnum {
     @Getter
     @AllArgsConstructor
     public enum room_type {
-        //特价包	0
+
         //小包	1
         //中包	2
         //大包	3
-        TEJIA(0),
+
         XIAO(1),
         ZHONG(2),
         DA(3);

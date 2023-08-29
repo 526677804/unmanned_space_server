@@ -31,15 +31,15 @@ public class DateUtils {
     public static final String FORMAT_HOUR_MINUTE_SECOND = "HH:mm:ss";
 
     public static String dateToStr(Date date, String patt) {
-        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDateTime localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(patt);
         return localDate.format(formatter);
     }
 
     public static Date strToDate(String dateString, String patt) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(patt);
-        LocalDate localDate = LocalDate.parse(dateString, formatter);
-        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        LocalDateTime localDate = LocalDateTime.parse(dateString, formatter);
+        return Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
     }
 
 

@@ -249,6 +249,13 @@ public class AppUserServiceImpl implements AppUserService {
         return new PageResult<>(page.getList(), page.getTotal());
     }
 
+    @Override
+    @Transactional
+    public void updateUserAvatarUrl(Long userId, String avatarUrl) {
+        // 更新头像路径
+        memberUserMapper.updateById(MemberUserDO.builder().id(userId).avatar(avatarUrl).build());
+    }
+
     /**
      * 对密码进行加密
      *

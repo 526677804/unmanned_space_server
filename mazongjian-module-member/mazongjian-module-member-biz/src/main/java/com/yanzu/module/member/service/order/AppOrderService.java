@@ -13,7 +13,7 @@ public interface AppOrderService {
 
     BigDecimal mathPrice(BigDecimal price, Date startTime, Date endTime, Long couponId);
 
-    void save(OrderSaveReqVO reqVO);
+    Long save(OrderSaveReqVO reqVO);
 
     void renew(OrderRenewalReqVO reqVO);
 

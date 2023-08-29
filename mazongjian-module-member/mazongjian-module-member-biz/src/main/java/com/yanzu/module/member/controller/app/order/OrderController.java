@@ -64,9 +64,8 @@ public class OrderController {
     @Operation(summary = "提交订单", description = "下单使用")
     @PreAuthenticated
     @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
-    public CommonResult<Boolean> save(@RequestBody @Valid OrderSaveReqVO reqVO) {
-        appOrderService.save(reqVO);
-        return success(true);
+    public CommonResult<Long> save(@RequestBody @Valid OrderSaveReqVO reqVO) {
+        return success(appOrderService.save(reqVO));
     }
 
     @PostMapping("/renew")
@@ -104,7 +103,7 @@ public class OrderController {
         return success(appOrderService.getOrderInfo(orderId));
     }
 
-    @PutMapping("/startOrder/{orderId}")
+    @PostMapping("/startOrder/{orderId}")
     @Operation(summary = "开始订单", description = "我的订单使用")
     @PreAuthenticated
     @Parameter(name = "orderId")
@@ -114,7 +113,7 @@ public class OrderController {
         return success(true);
     }
 
-    @PutMapping("/cancelOrder/{orderId}")
+    @PostMapping("/cancelOrder/{orderId}")
     @Operation(summary = "取消订单 ", description = "我的订单使用")
     @PreAuthenticated
     @Parameter(name = "orderId")
@@ -134,17 +133,17 @@ public class OrderController {
 //        return success(true);
 //    }
 
-    @PutMapping("/openStoreDoor/{orderId}")
+    @PostMapping("/openStoreDoor/{orderId}")
     @Operation(summary = "(开关)门店的大门", description = "我的订单使用")
     @PreAuthenticated
-    @Parameter(name = "orderId")
+    @Parameter(name = "orderId",required = false)
     @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
-    public CommonResult<Boolean> openStoreDoor(@PathVariable("orderId") Long orderId) {
+    public CommonResult<Boolean> openStoreDoor(@PathVariable(value = "orderId",required = false) Long orderId) {
         deviceService.openStoreDoor(null, orderId, 1);
         return success(true);
     }
 
-    @PutMapping("/openRoomDoor/{orderId}")
+    @PostMapping("/openRoomDoor/{orderId}")
     @Operation(summary = "(开关)房间的大门", description = "我的订单使用")
     @PreAuthenticated
     @Parameter(name = "orderId")
@@ -162,7 +161,7 @@ public class OrderController {
         return success(appOrderService.getRoomImgs(roomId));
     }
 
-    @PutMapping("/changeRoom/{orderId}/{roomId}")
+    @PostMapping("/changeRoom/{orderId}/{roomId}")
     @Operation(summary = "更换房间 - 提交更换", description = "我的订单使用")
     @PreAuthenticated
     @Parameter(name = "orderId")

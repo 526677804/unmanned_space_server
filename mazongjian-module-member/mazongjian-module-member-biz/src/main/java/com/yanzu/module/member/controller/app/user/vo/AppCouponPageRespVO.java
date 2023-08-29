@@ -63,5 +63,7 @@ public class AppCouponPageRespVO {
 
     @Schema(description = "状态 值见字典", example = "1")
     private Integer status;
+    @Schema(description = "被使用的订单id", example = "1")
+    private Long orderId;
 
 }

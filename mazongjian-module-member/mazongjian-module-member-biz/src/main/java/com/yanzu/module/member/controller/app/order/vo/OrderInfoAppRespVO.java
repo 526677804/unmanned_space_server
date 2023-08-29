@@ -54,6 +54,9 @@ public class OrderInfoAppRespVO {
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date endTime;
 
+    @Schema(description = "订单时长 单位/小时", requiredMode = Schema.RequiredMode.REQUIRED, example = "4.0")
+    private Float orderHour;
+
     @Schema(description = "订单价格", requiredMode = Schema.RequiredMode.REQUIRED, example = "1698")
     private BigDecimal price;
 

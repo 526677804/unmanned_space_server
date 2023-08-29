@@ -115,4 +115,6 @@ public interface AppUserService {
 
     PageResult<AppCouponPageRespVO> getCouponPage(AppCouponPageReqVO reqVO);
 
+    void updateUserAvatarUrl(Long userId, String avatarUrl);
+
 }

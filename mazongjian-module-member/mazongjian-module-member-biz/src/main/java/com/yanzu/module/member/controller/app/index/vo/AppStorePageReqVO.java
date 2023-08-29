@@ -23,6 +23,9 @@ public class AppStorePageReqVO extends PageParam {
     @Schema(description = "城市名称")
     private String cityName;
 
+    @Schema(description = "名称门店")
+    private String name;
+
     @Schema(description = "纬度")
     private Double lat;
 
