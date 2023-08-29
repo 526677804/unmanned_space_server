@@ -51,9 +51,9 @@ public interface PayOrderService {
     List<PayOrderDO> getPayOrderList(PayOrderExportReqVO exportReqVO);
 
 
-    void updateOrder(Map<String, String> params, String body);
+    String updateOrder(Map<String, String> params, String body);
 
-    void updateOrderRefunded(Map<String, String> params, String body);
+    String updateOrderRefunded(Map<String, String> params, String body);
 
     void create(Long userId, String orderNo, String orderDesc, Integer price);
 

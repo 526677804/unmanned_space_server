@@ -36,10 +36,9 @@ public class AppCallbackController {
     @Operation(summary = "更新订单为已支付")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
-    public CommonResult<Boolean> updateOrder(@RequestParam(required = false) Map<String, String> params,
-                                             @RequestBody(required = false) String body) {
-        payOrderService.updateOrder(params, body);
-        return success(true);
+    public String updateOrder(@RequestParam(required = false) Map<String, String> params,
+                              @RequestBody(required = false) String body) {
+        return payOrderService.updateOrder(params, body);
     }
 
 
@@ -47,9 +46,8 @@ public class AppCallbackController {
     @Operation(summary = "更新订单为已退款")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
-    public CommonResult<Boolean> updateOrderRefunded(@RequestParam(required = false) Map<String, String> params,
-                                                     @RequestBody(required = false) String body) {
-        payOrderService.updateOrderRefunded(params, body);
-        return success(true);
+    public String updateOrderRefunded(@RequestParam(required = false) Map<String, String> params,
+                                      @RequestBody(required = false) String body) {
+        return payOrderService.updateOrderRefunded(params, body);
     }
 }

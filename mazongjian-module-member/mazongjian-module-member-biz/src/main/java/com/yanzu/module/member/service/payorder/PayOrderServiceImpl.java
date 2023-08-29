@@ -1,16 +1,28 @@
 package com.yanzu.module.member.service.payorder;
 
+import com.alipay.api.internal.util.file.IOUtils;
+import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
+import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
+import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyV3Result;
+import com.github.binarywang.wxpay.bean.result.BaseWxPayResult;
+import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import lombok.extern.slf4j.Slf4j;
+import me.chanjar.weixin.common.service.WxService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +39,9 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Resource
     private PayOrderMapper payOrderMapper;
+
+    @Autowired
+    private WxPayService wxPayService;
 
     @Override
     public PayOrderDO getPayOrder(Long id) {
@@ -55,15 +70,37 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     @Transactional
-    public void updateOrder(Map<String, String> params, String body) {
-
-        log.info("收到微信支付回调:{},body{}", params, body);
+    public String updateOrder(Map<String, String> params, String body) {
+        log.info("收到微信支付回调：{}",body);
+        try {
+//            String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
+            WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(body);
+            // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
+            String orderNo = result.getOutTradeNo();
+            PayOrderDO orderDO = payOrderMapper.getByOrderNo(orderNo);
+            if (!ObjectUtils.isEmpty(orderDO) && !orderDO.getPayStatus()) {
+                String totalFee = BaseWxPayResult.fenToYuan(result.getTotalFee());
+                String tradeNo = result.getTransactionId();
+                if (orderDO.getPrice().compareTo(Integer.valueOf(tradeNo)) != 0) {
+                    return WxPayNotifyResponse.fail("实际支付金额与订单应支付金额不匹配！");
+                }
+                orderDO.setPayOrderNo(tradeNo);
+                orderDO.setPayStatus(true);
+                orderDO.setPayTime(LocalDateTime.now());
+                payOrderMapper.updateById(orderDO);
+            }
+            return WxPayNotifyResponse.success("处理成功!");
+        } catch (Exception e) {
+            log.error("微信回调结果异常,异常原因{}", e.getMessage());
+            return WxPayNotifyResponse.fail(e.getMessage());
+        }
 //        payOrderMapper.selectByOrderNoAndPayNo(notifyReqDTO);
     }
 
     @Override
-    public void updateOrderRefunded(Map<String, String> params, String body) {
-        log.info("收到微信支付回调:{},body{}", params, body);
+    public String updateOrderRefunded(Map<String, String> params, String body) {
+        log.info("收到微信支付回调：{}",body);
+        return WxPayNotifyResponse.success("处理成功!");
     }
 
     @Override

@@ -119,7 +119,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //开始时间在当前之前，不能超过5分钟  不然间隔太久了
             long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
             if (l > 6) {
-                throw exception(ORDER_START_TIME_GT_NOW_ERROR);
+                throw exception(ORDER_START_TIME_LT_NOW_ERROR);
             }
         }
         if (startTime.after(endTime)) {
@@ -343,7 +343,11 @@ public class AppOrderServiceImpl implements AppOrderService {
                     }
                     //有支付单号，再验证支付是否成功
                     PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
-                    if (ObjectUtils.isEmpty(payOrderDO) || !queryWxOrder(payOrderDO.getOrderNo()) || !payOrderDO.getPayStatus()) {
+                    if (ObjectUtils.isEmpty(payOrderDO)) {
+                        throw exception(ORDER_WEIXIN_PAY_ERROR);
+                    } else if (!queryWxOrder(payOrderDO.getOrderNo())) {
+                        throw exception(ORDER_WEIXIN_PAY_ERROR);
+                    } else if (!payOrderDO.getPayStatus()) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
                     }
                     //对比实际支付的价格 和订单应支付的价格是否一致
@@ -466,7 +470,11 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
                 //有支付单号，再验证支付是否成功
                 PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
-                if (ObjectUtils.isEmpty(payOrderDO) || !queryWxOrder(payOrderDO.getOrderNo()) || !payOrderDO.getPayStatus()) {
+                if (ObjectUtils.isEmpty(payOrderDO)) {
+                    throw exception(ORDER_WEIXIN_PAY_ERROR);
+                } else if (!queryWxOrder(payOrderDO.getOrderNo())) {
+                    throw exception(ORDER_WEIXIN_PAY_ERROR);
+                } else if (!payOrderDO.getPayStatus()) {
                     throw exception(ORDER_WEIXIN_PAY_ERROR);
                 }
                 //对比实际支付的价格 和订单应支付的价格是否一致
@@ -821,12 +829,15 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Override
     @Transactional
     public boolean queryWxOrder(String orderNo) {
+        log.info("检查订单：{}，微信支付状态！", orderNo);
         try {
             WxPayOrderQueryResult wxPayOrderQueryResult = wxService.queryOrder(null, orderNo);
             String tradeState = wxPayOrderQueryResult.getTradeState();
             String returnCode = wxPayOrderQueryResult.getReturnCode();
             String resultCode = wxPayOrderQueryResult.getResultCode();
+            log.info("tradeState:{},returnCode:{},resultCode:{}", tradeState, returnCode, resultCode);
             boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
+            log.info("订单：{}，微信支付状态为：{}", orderNo, flag);
             if (flag) {
                 Integer cashFee = wxPayOrderQueryResult.getTotalFee();//支付金额
                 String transactionId = wxPayOrderQueryResult.getTransactionId();//微信支付订单号
