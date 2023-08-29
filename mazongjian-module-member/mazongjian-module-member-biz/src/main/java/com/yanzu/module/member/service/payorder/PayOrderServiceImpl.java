@@ -92,6 +92,7 @@ public class PayOrderServiceImpl implements PayOrderService {
             }
             return WxPayNotifyResponse.success("处理成功!");
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("微信回调结果异常,异常原因{}", e.getMessage());
             return WxPayNotifyResponse.fail(e.getMessage());
         }

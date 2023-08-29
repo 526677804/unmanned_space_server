@@ -4,6 +4,7 @@ import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -36,6 +37,7 @@ public class AppCallbackController {
     @Operation(summary = "更新订单为已支付")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
+    @Parameter(name = "xmlData")
     public String updateOrder(@RequestBody String xmlData) {
         return payOrderService.updateOrder(xmlData);
     }
