@@ -1,9 +1,7 @@
 package com.yanzu.module.member.service.payorder;
 
-import com.alipay.api.internal.util.file.IOUtils;
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
-import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyV3Result;
 import com.github.binarywang.wxpay.bean.result.BaseWxPayResult;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.PageResult;
@@ -12,7 +10,6 @@ import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import lombok.extern.slf4j.Slf4j;
-import me.chanjar.weixin.common.service.WxService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +17,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -70,8 +65,8 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     @Transactional
-    public String updateOrder( String xmlData) {
-        log.info("收到微信支付回调body：{}",xmlData);
+    public String updateOrder(String xmlData) {
+        log.info("收到微信支付回调body：{}", xmlData);
 //        log.info("收到微信支付回调params：{}",params);
         try {
 //            String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
@@ -82,7 +77,7 @@ public class PayOrderServiceImpl implements PayOrderService {
             if (!ObjectUtils.isEmpty(orderDO) && !orderDO.getPayStatus()) {
                 String totalFee = BaseWxPayResult.fenToYuan(result.getTotalFee());
                 String tradeNo = result.getTransactionId();
-                if (orderDO.getPrice().compareTo(Integer.valueOf(totalFee)) != 0) {
+                if (String.valueOf(orderDO.getPrice()).equals(totalFee)) {
                     return WxPayNotifyResponse.fail("实际支付金额与订单应支付金额不匹配！");
                 }
                 orderDO.setPayOrderNo(tradeNo);
@@ -101,8 +96,8 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     public String updateOrderRefunded(Map<String, String> params, String body) {
-        log.info("收到微信支付回调body：{}",body);
-        log.info("收到微信支付回调params：{}",params);
+        log.info("收到微信支付回调body：{}", body);
+        log.info("收到微信支付回调params：{}", params);
         return WxPayNotifyResponse.success("处理成功!");
     }
 

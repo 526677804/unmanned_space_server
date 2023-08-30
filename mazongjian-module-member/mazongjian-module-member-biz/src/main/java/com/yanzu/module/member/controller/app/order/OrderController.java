@@ -98,9 +98,16 @@ public class OrderController {
     @GetMapping("/getOrderInfo/{orderId}")
     @Operation(summary = "获取订单详情", description = "我的订单使用")
     @PreAuthenticated
-    @Parameter(name = "orderId")
-    public CommonResult<OrderInfoAppRespVO> getOrderInfo(@PathVariable("orderId") Long orderId) {
+    @Parameter(name = "orderId", required = false)
+    public CommonResult<OrderInfoAppRespVO> getOrderInfo(@PathVariable(name = "orderId", required = false) Long orderId) {
         return success(appOrderService.getOrderInfo(orderId));
+    }
+
+    @GetMapping("/getOrderInfo")
+    @Operation(summary = "获取订单详情(开门按钮)", description = "我的订单使用")
+    @PreAuthenticated
+    public CommonResult<OrderInfoAppRespVO> getOrderInfo1() {
+        return success(appOrderService.getOrderInfo(null));
     }
 
     @PostMapping("/startOrder/{orderId}")
@@ -136,9 +143,9 @@ public class OrderController {
     @PostMapping("/openStoreDoor/{orderId}")
     @Operation(summary = "(开关)门店的大门", description = "我的订单使用")
     @PreAuthenticated
-    @Parameter(name = "orderId",required = false)
+    @Parameter(name = "orderId", required = false)
     @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
-    public CommonResult<Boolean> openStoreDoor(@PathVariable(value = "orderId",required = false) Long orderId) {
+    public CommonResult<Boolean> openStoreDoor(@PathVariable(value = "orderId") Long orderId) {
         deviceService.openStoreDoor(null, orderId, 1);
         return success(true);
     }
@@ -176,7 +183,7 @@ public class OrderController {
     @Operation(summary = "获取指定门店的充值优惠信息列表")
     @PreAuthenticated
     @Parameter(name = "storeId")
-    public CommonResult<List<AppDiscountRulesRespVO>> getDiscountRules(@PathVariable("storeId")Long storeId) {
+    public CommonResult<List<AppDiscountRulesRespVO>> getDiscountRules(@PathVariable("storeId") Long storeId) {
         return success(appOrderService.getDiscountRules(storeId));
     }
 

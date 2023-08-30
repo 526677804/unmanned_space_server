@@ -37,7 +37,7 @@
         <if test="null!=type and type!=''">
             and d.type=#{type}
         </if>
-        <if test="null!=status and status!=''">
+        <if test="null!=status">
             and d.status=#{status}
         </if>
         <if test="null!=roomId and roomId!=''">

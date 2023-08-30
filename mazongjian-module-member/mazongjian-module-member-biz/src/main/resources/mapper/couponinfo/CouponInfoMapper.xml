@@ -25,10 +25,10 @@
         left join member_order_info o ON o.coupon_id=c.coupon_id
         WHERE
         c.deleted =0 and c.user_id=#{userId}
-        <if test="null != status and status != null">
+        <if test="null != status">
             and c.status=#{status}
         </if>
-        <if test="null != roomType and roomType != null">
+        <if test="null != roomType">
             and c.room_type=#{roomType}
         </if>
         <if test="null != storeId and storeId != null">

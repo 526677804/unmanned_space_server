@@ -58,7 +58,7 @@
         <if test="null!=userId and userId!=''">
             and c.user_id=#{userId}
         </if>
-        <if test="null!=status and status!=''">
+        <if test="null!=status">
             and c.status=#{status}
         </if>
 
@@ -102,7 +102,7 @@
         <if test="null!=storeIds and storeIds!=''">
             and o.store_id in (#{storeIds})
         </if>
-        <if test="null!=status and status!=''">
+        <if test="null!=status">
             and o.status=#{status}
         </if>
         <if test="null!=orderColumn and orderColumn!=''">
@@ -116,33 +116,42 @@
     </select>
     <select id="getOrderInfo" resultType="com.yanzu.module.member.controller.app.order.vo.OrderInfoAppRespVO">
         select o.order_id
-             , o.order_no
-             , r.room_name
-             , r.type roomType
-             , s.store_name
-             , s.lat
-             , s.lon
-             , s.address
-             , o.user_id
-             , o.start_time
-             , o.end_time
-             , ROUND(TIMESTAMPDIFF(SECOND, o.start_time,o.end_time) / 3600, 1) AS orderHour
-             , o.price
-             , o.pay_price
-             , o.refund_price
-             , o.pay_type
-             , s.wifi_info
-             , s.kefu_phone
-             , c.coupon_name
-             , o.status
-             , o.create_time
+        , o.order_no
+        , r.room_name
+        , r.type roomType
+        , s.store_name
+        , s.lat
+        , s.lon
+        , s.address
+        , o.user_id
+        , o.start_time
+        , o.end_time
+        , ROUND(TIMESTAMPDIFF(SECOND, o.start_time,o.end_time) / 3600, 1) AS orderHour
+        , o.price
+        , o.pay_price
+        , o.refund_price
+        , o.pay_type
+        , s.wifi_info
+        , s.kefu_phone
+        , c.coupon_name
+        , o.status
+        , o.create_time
         from member_order_info o
-                 left join member_store_info s ON o.store_id = s.store_id
-                 left join member_room_info r ON r.room_id = o.room_id
-                 left join member_user m ON m.id = o.user_id
-                 left join member_coupon_info c ON o.coupon_id = c.coupon_id
+        left join member_store_info s ON o.store_id = s.store_id
+        left join member_room_info r ON r.room_id = o.room_id
+        left join member_user m ON m.id = o.user_id
+        left join member_coupon_info c ON o.coupon_id = c.coupon_id
         where o.deleted = 0
-          and o.order_id = #{orderId}
+        <if test="null != orderId">
+            and o.order_id = #{orderId}
+        </if>
+        <if test="null == orderId">
+            and o.user_id=#{userId}
+            and o.end_time>now()
+            and o.status in (0,1)
+            order by o.end_time asc
+            limit 1
+        </if>
     </select>
     <select id="getBusinessStatistics"
             resultType="com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO">

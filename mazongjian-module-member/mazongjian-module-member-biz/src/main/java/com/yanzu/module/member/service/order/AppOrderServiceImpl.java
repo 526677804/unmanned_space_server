@@ -182,8 +182,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //需要校验
             for (TimeRange timeRange : disabledTimeRanges) {
                 //如果下单时间大于不可用时间的开始时间， 并且不可用时间的开始时间小于订单的结束时间，那么就不能下单
-                if (startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isBefore(timeRange.getEnd())
-                        && timeRange.getStart().isBefore(endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
+                if (startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isBefore(timeRange.getEnd()) && timeRange.getStart().isBefore(endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
                     //存在交集
                     throw exception(ORDER_TIME_CHECK_ERROR);
                 }
@@ -210,7 +209,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
             wxPayUnifiedOrderRequest.setTradeType("JSAPI");
             wxPayUnifiedOrderRequest.setOpenid(openId);
-            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
+//            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
 //            wxPayUnifiedOrderRequest.setTimeExpire()
             try {
 //                WxPayUnifiedOrderResult wxPayUnifiedOrderResult = wxService.unifiedOrder(wxPayUnifiedOrderRequest);
@@ -219,7 +218,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 respVO.setAppId(wxPayMpOrderResult.getAppId());
                 respVO.setNonceStr(wxPayMpOrderResult.getNonceStr());
                 respVO.setPaySign(wxPayMpOrderResult.getPaySign());
-                respVO.setSignType(wxPayMpOrderResult.getSignType());
+                respVO.setSignType("MD5");
                 respVO.setTimeStamp(wxPayMpOrderResult.getTimeStamp());
             } catch (WxPayException e) {
                 e.printStackTrace();
@@ -345,7 +344,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
                     if (ObjectUtils.isEmpty(payOrderDO)) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    } else if (!queryWxOrder(payOrderDO.getOrderNo())) {
+                    } else if (!checkWxOrder(payOrderDO.getOrderNo(), wxPayOrderRespVO.getPrice())) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
                     } else if (!payOrderDO.getPayStatus()) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
@@ -472,7 +471,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
                 if (ObjectUtils.isEmpty(payOrderDO)) {
                     throw exception(ORDER_WEIXIN_PAY_ERROR);
-                } else if (!queryWxOrder(payOrderDO.getOrderNo())) {
+                } else if (!checkWxOrder(payOrderDO.getOrderNo(), wxPayOrderRespVO.getPrice())) {
                     throw exception(ORDER_WEIXIN_PAY_ERROR);
                 } else if (!payOrderDO.getPayStatus()) {
                     throw exception(ORDER_WEIXIN_PAY_ERROR);
@@ -555,7 +554,12 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Override
     public OrderInfoAppRespVO getOrderInfo(Long orderId) {
-        return orderInfoMapper.getOrderInfo(orderId);
+        //如果没有传订单id 就返回该用户最近的一笔订单  endTime>now
+        OrderInfoAppRespVO orderInfo = orderInfoMapper.getOrderInfo(orderId, getLoginUserId());
+        if(ObjectUtils.isEmpty(orderInfo)){
+            throw exception(ORDER_NOT_FOUND_ERROR);
+        }
+        return orderInfo;
     }
 
     @Override
@@ -762,8 +766,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //新增保洁订单
             List<ClearInfoDO> clearInfoDOList = new ArrayList<>();
             list1.forEach(x -> {
-                log.info("未开始订单：{}，开始时间:{}", x.getOrderNo(), DateUtils.dateToStr(x.getStartTime()
-                        , DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
+                log.info("未开始订单：{}，开始时间:{}", x.getOrderNo(), DateUtils.dateToStr(x.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
                 //开始时间 小于 当前的时间，则开始订单
                 if (x.getStartTime().before(now)) {
                     //开始订单
@@ -795,8 +798,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             List<String> roomIds = new ArrayList<>();
             List<String> orderIds = new ArrayList<>();
             listStart.forEach(x -> {
-                log.info("进行中订单：{}，结束时间:{}", x.getOrderNo(), DateUtils.dateToStr(x.getEndTime()
-                        , DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
+                log.info("进行中订单：{}，结束时间:{}", x.getOrderNo(), DateUtils.dateToStr(x.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
                 //进行中订单的结束时间 小于当前时间 则结束订单
                 if (x.getEndTime().before(now)) {
                     log.info("结束订单：{}", x.getOrderNo());
@@ -829,17 +831,26 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Override
     @Transactional
     public boolean queryWxOrder(String orderNo) {
+        return checkWxOrder(orderNo, null);
+    }
+
+
+    private boolean checkWxOrder(String orderNo, Integer price) {
         log.info("检查订单：{}，微信支付状态！", orderNo);
         try {
             WxPayOrderQueryResult wxPayOrderQueryResult = wxService.queryOrder(null, orderNo);
             String tradeState = wxPayOrderQueryResult.getTradeState();
             String returnCode = wxPayOrderQueryResult.getReturnCode();
+            Integer cashFee = wxPayOrderQueryResult.getTotalFee();//支付金额
             String resultCode = wxPayOrderQueryResult.getResultCode();
             log.info("tradeState:{},returnCode:{},resultCode:{}", tradeState, returnCode, resultCode);
+            //判断支付结果
             boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
+            if (!ObjectUtils.isEmpty(price) && cashFee.compareTo(price) != 0) {
+                flag = false;
+            }
             log.info("订单：{}，微信支付状态为：{}", orderNo, flag);
             if (flag) {
-                Integer cashFee = wxPayOrderQueryResult.getTotalFee();//支付金额
                 String transactionId = wxPayOrderQueryResult.getTransactionId();//微信支付订单号
                 String outTradeNo = wxPayOrderQueryResult.getOutTradeNo();//商家订单号
                 //查询出该订单
