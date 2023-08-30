@@ -22,4 +22,6 @@ public interface IndexService {
     List<KeyValue<String, Long>> getRoomListByAdmin(Long storeId);
 
     List<AppRoomInfoListRespVO> getRoomInfoList(Long storeId);
+
+    AppRoomInfoListRespVO getRoomInfo(Long roomId);
 }

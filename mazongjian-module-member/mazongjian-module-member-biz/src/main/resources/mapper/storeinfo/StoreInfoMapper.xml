@@ -130,5 +130,12 @@
         order by s.store_id asc
 
     </select>
+    <select id="getRoomInfo"
+            resultType="com.yanzu.module.member.controller.app.index.vo.AppRoomInfoListRespVO">
+        select *
+        from member_room_info
+        where deleted = 0
+          and room_id = #{roomId}
+    </select>
 
 </mapper>
