@@ -59,7 +59,7 @@ public class AppStoreController {
         storeInfoService.save(reqVO);
         return success(true);
     }
-    @PutMapping("/openStoreDoor/{storeId}")
+    @PostMapping("/openStoreDoor/{storeId}")
     @Operation(summary = "开门店的大门", description = "门店管理使用")
     @PreAuthenticated
     @Parameter(name = "storeId")
@@ -93,7 +93,7 @@ public class AppStoreController {
         return success(true);
     }
 
-    @PutMapping("/openRoomDoor/{roomId}")
+    @PostMapping("/openRoomDoor/{roomId}")
     @Operation(summary = "开房间的大门", description = "房间管理使用")
     @PreAuthenticated
     @Parameter(name = "roomId")
@@ -103,7 +103,7 @@ public class AppStoreController {
         return success(true);
     }
 
-    @PutMapping("/closeRoomDoor/{roomId}")
+    @PostMapping("/closeRoomDoor/{roomId}")
     @Operation(summary = "关房间的大门", description = "房间管理使用")
     @PreAuthenticated
     @Parameter(name = "roomId")
@@ -121,7 +121,7 @@ public class AppStoreController {
         return success(storeInfoService.getDiscountRulesPage(reqVO));
     }
 
-    @PutMapping("/changeDiscountRulesStatus/{discountId}")
+    @PostMapping("/changeDiscountRulesStatus/{discountId}")
     @Operation(summary = "修改门店充值优惠信息状态（启用/禁用）")
     @PreAuthenticated
     @Parameter(name = "discountId")

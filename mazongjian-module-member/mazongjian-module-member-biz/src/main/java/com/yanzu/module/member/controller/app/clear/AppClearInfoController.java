@@ -40,7 +40,7 @@ public class AppClearInfoController {
         return success(appClearService.getClearPage(reqVO));
     }
 
-    @PutMapping("/jiedan/{id}")
+    @PostMapping("/jiedan/{id}")
     @Operation(summary = "接单")
     @PreAuthenticated
     @Parameter(name = "id")
@@ -49,7 +49,7 @@ public class AppClearInfoController {
         return success(true);
     }
 
-    @PutMapping("/start/{id}")
+    @PostMapping("/start/{id}")
     @Operation(summary = "开始")
     @PreAuthenticated
     @Parameter(name = "id")
@@ -58,7 +58,7 @@ public class AppClearInfoController {
         return success(true);
     }
 
-    @PutMapping("/cancel/{id}")
+    @PostMapping("/cancel/{id}")
     @Operation(summary = "取消")
     @PreAuthenticated
     @Parameter(name = "id")
@@ -75,7 +75,7 @@ public class AppClearInfoController {
         return success(true);
     }
 
-    @PutMapping("/openStoreDoor/{id}")
+    @PostMapping("/openStoreDoor/{id}")
     @Operation(summary = "任务大厅-(开关)门店的大门,传任务id", description = "保洁任务大厅使用")
     @PreAuthenticated
     @Parameter(name = "id")
@@ -84,7 +84,7 @@ public class AppClearInfoController {
         return success(true);
     }
 
-    @PutMapping("/openRoomDoor/{id}")
+    @PostMapping("/openRoomDoor/{id}")
     @Operation(summary = "任务大厅-(开关)房间的大门,传任务id", description = "保洁任务大厅使用")
     @PreAuthenticated
     @Parameter(name = "id")

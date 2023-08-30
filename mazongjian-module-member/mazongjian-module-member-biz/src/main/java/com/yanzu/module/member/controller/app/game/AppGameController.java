@@ -55,7 +55,7 @@ public class AppGameController {
         return success(appGameService.getOrderPage(reqVO));
     }
 
-    @DeleteMapping("/deleteUser/{gameId}/{userId}")
+    @PostMapping("/deleteUser/{gameId}/{userId}")
     @Operation(summary = "踢出对局的用户", description = "线上组局使用")
     @PreAuthenticated
     @Parameter(name = "gameId")
@@ -65,7 +65,7 @@ public class AppGameController {
         return success(true);
     }
 
-    @DeleteMapping("/join/{gameId}")
+    @PostMapping("/join/{gameId}")
     @Operation(summary = "加入或退出对局", description = "线上组局使用")
     @PreAuthenticated
     @Parameter(name = "gameId")

@@ -14,6 +14,9 @@ import java.util.Date;
 @AllArgsConstructor
 public class AppUserInfoRespVO {
 
+    @Schema(description = "用户id", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    private Long id;
+
     @Schema(description = "用户昵称", requiredMode = Schema.RequiredMode.REQUIRED, example = "芋艿")
     private String nickname;
 

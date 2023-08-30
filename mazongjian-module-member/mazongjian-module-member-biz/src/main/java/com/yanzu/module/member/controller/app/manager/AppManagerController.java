@@ -139,7 +139,7 @@ public class AppManagerController {
         return success(true);
     }
 
-    @PutMapping("/applyWithdrawal")
+    @PostMapping("/applyWithdrawal")
     @Operation(summary = "申请提现")
     @PreAuthenticated
     public CommonResult<Boolean> applyWithdrawal() {
@@ -147,7 +147,7 @@ public class AppManagerController {
         return success(true);
     }
 
-    @PutMapping("/getWithdrawalPage")
+    @PostMapping("/getWithdrawalPage")
     @Operation(summary = "获取提现记录分页")
     @PreAuthenticated
     public CommonResult<PageResult<AppWithdrawalPageRespVO>> getWithdrawalPage(@RequestBody @Validated AppWithdrawalPageReqVO reqVO) {

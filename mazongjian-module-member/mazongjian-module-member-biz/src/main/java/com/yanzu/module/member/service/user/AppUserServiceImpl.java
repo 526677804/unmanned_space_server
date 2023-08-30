@@ -106,6 +106,8 @@ public class AppUserServiceImpl implements AppUserService {
         String password = IdUtil.fastSimpleUUID();
         // 插入用户
         MemberUserDO user = new MemberUserDO();
+        user.setNickname("用户" + mobile.substring(5, 11));
+        user.setAvatar("https://images.scyanzu.com/icon_avatar.png");
         user.setMobile(mobile);
         user.setStatus(CommonStatusEnum.ENABLE.getStatus()); // 默认开启
         user.setPassword(encodePassword(password)); // 加密密码

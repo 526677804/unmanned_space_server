@@ -71,7 +71,11 @@ public class IndexServiceImpl implements IndexService {
         List<AppStorePageRespVO> list = storeInfoMapper.getStorePageList(reqVO);
         PageInfo<AppStorePageRespVO> page = new PageInfo<>(list);
         if (!CollectionUtils.isEmpty(page.getList())) {
-            page.getList().forEach(x -> x.setDistance(x.getDistance().setScale(2, BigDecimal.ROUND_CEILING)));
+            page.getList().forEach(x -> {
+                if (!ObjectUtils.isEmpty(x.getDistance())) {
+                    x.setDistance(x.getDistance().setScale(2, BigDecimal.ROUND_CEILING));
+                }
+            });
         }
         return new PageResult<>(page.getList(), page.getTotal());
     }

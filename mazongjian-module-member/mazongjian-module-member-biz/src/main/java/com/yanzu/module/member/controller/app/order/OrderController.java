@@ -130,7 +130,7 @@ public class OrderController {
         return success(true);
     }
 
-//    @PutMapping("/closeOrder/{orderId}")
+//    @PostMapping("/closeOrder/{orderId}")
 //    @Operation(summary = "提前结束订单 ", description = "我的订单使用")
 //    @PreAuthenticated
 //    @Parameter(name = "orderId")

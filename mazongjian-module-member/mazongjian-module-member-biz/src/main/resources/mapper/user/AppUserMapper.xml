@@ -15,7 +15,7 @@
         select id userId, nickname, avatar
         from member_user
         where deleted = 0
-          and id in (#{playUserIds})
+          and id in (${playUserIds})
     </select>
     <select id="getMemberPage" resultType="com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO">
         select m.id,
