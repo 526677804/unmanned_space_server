@@ -3,6 +3,8 @@ package com.yanzu.module.member.service.payorder;
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.github.binarywang.wxpay.bean.result.BaseWxPayResult;
+import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
+import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
@@ -37,6 +39,7 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Autowired
     private WxPayService wxPayService;
+
 
     @Override
     public PayOrderDO getPayOrder(Long id) {
@@ -116,5 +119,42 @@ public class PayOrderServiceImpl implements PayOrderService {
     public PayOrderDO getByOrderNo(String orderNo) {
         return payOrderMapper.getByOrderNo(orderNo);
     }
+
+    public boolean checkWxOrder(String orderNo, Integer price) {
+        log.info("检查订单：{}，微信支付状态！", orderNo);
+        try {
+            WxPayOrderQueryResult wxPayOrderQueryResult = wxPayService.queryOrder(null, orderNo);
+            String tradeState = wxPayOrderQueryResult.getTradeState();
+            String returnCode = wxPayOrderQueryResult.getReturnCode();
+            Integer cashFee = wxPayOrderQueryResult.getTotalFee();//支付金额
+            String resultCode = wxPayOrderQueryResult.getResultCode();
+            log.info("tradeState:{},returnCode:{},resultCode:{}", tradeState, returnCode, resultCode);
+            //判断支付结果
+            boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
+            if (!ObjectUtils.isEmpty(price) && cashFee.compareTo(price) != 0) {
+                flag = false;
+            }
+            log.info("订单：{}，微信支付状态为：{}", orderNo, flag);
+            if (flag) {
+                String transactionId = wxPayOrderQueryResult.getTransactionId();//微信支付订单号
+                String outTradeNo = wxPayOrderQueryResult.getOutTradeNo();//商家订单号
+                //查询出该订单
+                PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(outTradeNo);
+                if (!payOrderDO.getPayStatus()) {
+                    //更新状态、支付订单号 和支付金额
+                    payOrderDO.setPrice(cashFee);
+                    payOrderDO.setPayOrderNo(transactionId);
+                    payOrderDO.setPayStatus(true);
+                    payOrderDO.setPayTime(LocalDateTime.now());
+                    payOrderMapper.updateById(payOrderDO);
+                }
+            }
+            return flag;
+        } catch (WxPayException e) {
+//            throw new RuntimeException(e);
+            return false;
+        }
+    }
+
 
 }

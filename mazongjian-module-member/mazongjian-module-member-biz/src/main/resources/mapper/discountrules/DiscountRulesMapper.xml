@@ -51,4 +51,14 @@
         from member_discount_rules where deleted=0 and status=1 and exprice_time>now()
         order by pay_money asc
     </select>
+    <select id="getMaxGiftByStoreIdAndPrice" resultType="java.math.BigDecimal">
+        select gift_money
+        from member_discount_rules
+        where deleted = 0
+          and status = 1
+          and store_id = #{storeId}
+          and exprice_time > now()
+          and pay_money &lt;= #{payMoney}
+        order by pay_money desc limit 1
+    </select>
 </mapper>

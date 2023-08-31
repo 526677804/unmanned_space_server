@@ -2,7 +2,9 @@ package com.yanzu.module.member.controller.app.user;
 
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
+import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.service.user.AppUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +17,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
@@ -87,9 +90,18 @@ public class AppUserController {
     @PostMapping("/rechargeBalance")
     @Operation(summary = "用户余额充值")
     @PreAuthenticated
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
     public CommonResult<Boolean> eechargeBalance(@RequestBody @Valid AppRechargeBalanceReqVO reqVO) {
         userService.eechargeBalance(reqVO);
         return success(true);
+    }
+
+    @PostMapping("/preRechargeBalance")
+    @Operation(summary = "预下单(微信支付)用户余额充值")
+    @PreAuthenticated
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    public CommonResult<WxPayOrderRespVO> preRechargeBalance(@RequestBody @Valid AppPreRechargeBalanceReqVO reqVO) {
+        return success(userService.preRechargeBalance(reqVO));
     }
 
     @GetMapping("/getFranchiseInfo")

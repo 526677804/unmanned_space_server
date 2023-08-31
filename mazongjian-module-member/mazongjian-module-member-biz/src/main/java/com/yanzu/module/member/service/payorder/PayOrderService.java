@@ -58,4 +58,6 @@ public interface PayOrderService {
     void create(Long userId, String orderNo, String orderDesc, Integer price);
 
     PayOrderDO getByOrderNo(String orderNo);
+
+    boolean  checkWxOrder(String orderNo, Integer price);
 }

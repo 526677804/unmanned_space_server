@@ -2,28 +2,42 @@ package com.yanzu.module.member.service.user;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.IdUtil;
+import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
+import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
+import com.github.binarywang.wxpay.exception.WxPayException;
+import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.annotations.VisibleForTesting;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.infra.api.file.FileApi;
+import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.convert.franchiseinfo.FranchiseInfoConvert;
 import com.yanzu.module.member.convert.user.UserConvert;
 import com.yanzu.module.member.dal.dataobject.franchiseinfo.FranchiseInfoDO;
+import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
+import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
+import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.franchiseinfo.FranchiseInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.system.api.sms.SmsCodeApi;
 import com.yanzu.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
+import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.api.tenant.TenantApi;
 import com.yanzu.module.system.enums.sms.SmsSceneEnum;
-import com.google.common.annotations.VisibleForTesting;
+import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,15 +47,18 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
-import java.time.LocalDateTime;
+import java.util.Random;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.util.servlet.ServletUtils.getClientIP;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getTenantId;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.USER_NOT_EXISTS;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
  * 会员 User Service 实现类
@@ -79,6 +96,25 @@ public class AppUserServiceImpl implements AppUserService {
     @Resource
     private FranchiseInfoMapper franchiseInfoMapper;
 
+    @Resource
+    private PayOrderService payOrderService;
+
+    @Resource
+    private DiscountRulesMapper discountRulesMapper;
+
+    @Resource
+    private SocialUserApi socialUserApi;
+
+    @Value("${wx.pay.returnUrl}")
+    private String returnUrl;
+
+    @Autowired
+    private WxPayService wxPayService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    private final String EECHARGE_BALANCE_REDIS_SET = "EECHARGE_BALANCE_REDIS_SET";
 
     @Override
     public MemberUserDO getUserByMobile(String mobile) {
@@ -119,8 +155,7 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Override
     public void updateUserLogin(Long id, String loginIp) {
-        memberUserMapper.updateById(new MemberUserDO().setId(id)
-                .setLoginIp(loginIp).setLoginDate(LocalDateTime.now()));
+        memberUserMapper.updateById(new MemberUserDO().setId(id).setLoginIp(loginIp).setLoginDate(LocalDateTime.now()));
     }
 
     @Override
@@ -164,11 +199,9 @@ public class AppUserServiceImpl implements AppUserService {
         // TODO 芋艿：oldMobile 应该不用传递
 
         // 校验旧手机和旧验证码
-        smsCodeApi.useSmsCode(new SmsCodeUseReqDTO().setMobile(reqVO.getOldMobile()).setCode(reqVO.getOldCode())
-                .setScene(SmsSceneEnum.MEMBER_UPDATE_MOBILE.getScene()).setUsedIp(getClientIP()));
+        smsCodeApi.useSmsCode(new SmsCodeUseReqDTO().setMobile(reqVO.getOldMobile()).setCode(reqVO.getOldCode()).setScene(SmsSceneEnum.MEMBER_UPDATE_MOBILE.getScene()).setUsedIp(getClientIP()));
         // 使用新验证码
-        smsCodeApi.useSmsCode(new SmsCodeUseReqDTO().setMobile(reqVO.getMobile()).setCode(reqVO.getCode())
-                .setScene(SmsSceneEnum.MEMBER_UPDATE_MOBILE.getScene()).setUsedIp(getClientIP()));
+        smsCodeApi.useSmsCode(new SmsCodeUseReqDTO().setMobile(reqVO.getMobile()).setCode(reqVO.getCode()).setScene(SmsSceneEnum.MEMBER_UPDATE_MOBILE.getScene()).setUsedIp(getClientIP()));
 
         // 更新用户手机
         memberUserMapper.updateById(MemberUserDO.builder().id(userId).mobile(reqVO.getMobile()).build());
@@ -214,10 +247,53 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     @Transactional
     public void eechargeBalance(AppRechargeBalanceReqVO reqVO) {
-        if (ObjectUtils.isEmpty(reqVO.getUserId())) {
+        if (ObjectUtils.isEmpty(reqVO.getUserId()) || reqVO.getUserId().compareTo(0L) == 0) {
             reqVO.setUserId(getLoginUserId());
         }
-
+        // 从redis查询 存在的情况才处理，防止重复验证充值
+        if (redisTemplate.opsForSet().isMember(EECHARGE_BALANCE_REDIS_SET, reqVO.getOrderNo())) {
+            //有支付单号，验证支付是否成功
+            PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
+            if (ObjectUtils.isEmpty(payOrderDO)) {
+                throw exception(ORDER_WEIXIN_PAY_ERROR);
+            } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), reqVO.getPrice())) {
+                throw exception(ORDER_WEIXIN_PAY_ERROR);
+            } else if (!payOrderDO.getPayStatus()) {
+                throw exception(ORDER_WEIXIN_PAY_ERROR);
+            }
+            //对比实际支付的价格 和订单应支付的价格是否一致
+            if (payOrderDO.getPrice().compareTo(reqVO.getPrice()) != 0) {
+                throw exception(ORDER_WEIXIN_PAY_ERROR);
+            }
+            //增加账户余额
+            BigDecimal bigDecimal = new BigDecimal(reqVO.getPrice() / 100.0);
+            if (bigDecimal.compareTo(BigDecimal.ZERO) <= 0) {
+                throw exception(OPRATION_ERROR);
+            }
+            MemberUserDO memberUserDO = memberUserMapper.selectById(reqVO.getUserId());
+            memberUserDO.setBalance(memberUserDO.getBalance().add(bigDecimal));
+            memberUserMapper.updateById(memberUserDO);
+            //增加赠送余额 先查询出该门店，该充值金额的最大赠送金额
+            BigDecimal gift = discountRulesMapper.getMaxGiftByStoreIdAndPrice(reqVO.getStoreId(), bigDecimal);
+            log.info("用户:{},充值门店:{},充值:{}元，赠送:{}元", reqVO.getUserId(), reqVO.getStoreId(), bigDecimal, gift);
+            if (!ObjectUtils.isEmpty(gift) && gift.compareTo(BigDecimal.ZERO) > 0) {
+                StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(reqVO.getUserId(), reqVO.getStoreId());
+                if (ObjectUtils.isEmpty(storeUserDO)) {
+                    //如果是会员第一次在门店充值，关系可能是不存在的 要先添加关系
+                    storeUserDO = new StoreUserDO();
+                    storeUserDO.setStoreId(reqVO.getStoreId());
+                    storeUserDO.setUserId(reqVO.getUserId());
+                    storeUserDO.setType(AppEnum.member_user_type.MEMBER.getValue());
+                    storeUserDO.setGiftBalance(gift);
+                    storeUserMapper.insert(storeUserDO);
+                } else {
+                    storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().add(gift));
+                    storeUserMapper.updateById(storeUserDO);
+                }
+            }
+            //如果已经充值了 就移除这个订单号
+            redisTemplate.opsForSet().remove(EECHARGE_BALANCE_REDIS_SET, reqVO.getOrderNo());
+        }
     }
 
     @Override
@@ -256,6 +332,62 @@ public class AppUserServiceImpl implements AppUserService {
     public void updateUserAvatarUrl(Long userId, String avatarUrl) {
         // 更新头像路径
         memberUserMapper.updateById(MemberUserDO.builder().id(userId).avatar(avatarUrl).build());
+    }
+
+    @Override
+    @Transactional
+    public WxPayOrderRespVO preRechargeBalance(AppPreRechargeBalanceReqVO reqVO) {
+        if (ObjectUtils.isEmpty(reqVO.getUserId()) || reqVO.getUserId().compareTo(0L) == 0) {
+            reqVO.setUserId(getLoginUserId());
+        }
+        String orderNo = getOrderNo();
+        WxPayOrderRespVO respVO = new WxPayOrderRespVO();
+        respVO.setPrice(reqVO.getPrice());
+        respVO.setOrderNo(orderNo);
+        //需要微信下单  先获取到该用户的openId
+        String openId = socialUserApi.getUserOpenIdByType(reqVO.getUserId(), SocialTypeEnum.WECHAT_MINI_APP.getType());
+        if (ObjectUtils.isEmpty(openId)) {
+            throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
+        }
+        //生成微信支付的订单
+        WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
+        wxPayUnifiedOrderRequest.setBody("微信支付订单");
+        wxPayUnifiedOrderRequest.setOutTradeNo(orderNo);
+        wxPayUnifiedOrderRequest.setTotalFee(reqVO.getPrice());
+        wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
+        wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
+        wxPayUnifiedOrderRequest.setTradeType("JSAPI");
+        wxPayUnifiedOrderRequest.setOpenid(openId);
+//            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
+//            wxPayUnifiedOrderRequest.setTimeExpire()
+        try {
+//                WxPayUnifiedOrderResult wxPayUnifiedOrderResult = wxService.unifiedOrder(wxPayUnifiedOrderRequest);
+            WxPayMpOrderResult wxPayMpOrderResult = wxPayService.createOrder(wxPayUnifiedOrderRequest);
+            respVO.setPkg(wxPayMpOrderResult.getPackageValue());
+            respVO.setAppId(wxPayMpOrderResult.getAppId());
+            respVO.setNonceStr(wxPayMpOrderResult.getNonceStr());
+            respVO.setPaySign(wxPayMpOrderResult.getPaySign());
+            respVO.setSignType("MD5");
+            respVO.setTimeStamp(wxPayMpOrderResult.getTimeStamp());
+        } catch (WxPayException e) {
+            e.printStackTrace();
+//                throw new RuntimeException(e);
+            throw exception(USER_WEIXIN_PAY_ERROR);
+        }
+        payOrderService.create(reqVO.getUserId(), orderNo, "余额充值订单", reqVO.getPrice());
+        //把订单号存到redis 如果已经充值了 就移除这个订单号
+        redisTemplate.opsForSet().add(EECHARGE_BALANCE_REDIS_SET, orderNo);
+        return respVO;
+    }
+
+    private String getOrderNo() {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        String currentDate = currentDateTime.format(dateFormatter);
+        Random random = new Random();
+        int randomNum = random.nextInt(100000000);
+        String randomNumString = String.format("%08d", randomNum);
+        return "CZ" + currentDate + randomNumString;
     }
 
     /**

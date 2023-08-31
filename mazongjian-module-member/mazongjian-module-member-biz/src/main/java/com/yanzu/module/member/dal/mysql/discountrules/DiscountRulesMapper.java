@@ -29,4 +29,7 @@ public interface DiscountRulesMapper extends BaseMapperX<DiscountRulesDO> {
     List<String> getRulesByStoreId(Long storeId);
 
     List<AppDiscountRulesRespVO> getDiscountRulesByStoreId(Long storeId);
+
+    BigDecimal getMaxGiftByStoreIdAndPrice(@Param("storeId") Long storeId, @Param("payMoney") BigDecimal payMoney);
+
 }

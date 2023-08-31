@@ -1,7 +1,9 @@
 package com.yanzu.module.member.service.user;
 
+import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.validation.Mobile;
+import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 
@@ -117,4 +119,5 @@ public interface AppUserService {
 
     void updateUserAvatarUrl(Long userId, String avatarUrl);
 
+    WxPayOrderRespVO preRechargeBalance(AppPreRechargeBalanceReqVO reqVO);
 }
