@@ -17,7 +17,7 @@ import java.util.TimeZone;
  */
 @SuppressWarnings("SpringComponentScan") // 忽略 IDEA 无法识别 ${mazongjian.info.base-package}
 @SpringBootApplication(scanBasePackages = {"${mazongjian.info.base-package}.server", "${mazongjian.info.base-package}.module"})
-@ForestScan(basePackages = "com.yanzu.module.member.service.iot.client")
+@ForestScan(basePackages = "com.yanzu.module.member.forest")
 public class MazongjianServerApplication {
 
     public static void main(String[] args) {

@@ -1,9 +1,9 @@
-package com.yanzu.module.member.service.iot.client;
+package com.yanzu.module.member.forest;
 
-import com.dtflys.forest.annotation.*;
+import com.dtflys.forest.annotation.Body;
+import com.dtflys.forest.annotation.JSONBody;
+import com.dtflys.forest.annotation.Post;
 import com.yanzu.module.member.service.iot.bean.*;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 public interface IotClient {
 

@@ -53,9 +53,9 @@
       <el-table-column label="门店状态" align="center" :formatter="statusFomat" />
       <el-table-column label="wifi信息" align="center" prop="wifiInfo" />
       <el-table-column label="客服电话" align="center" prop="kefuPhone" />
-      <el-table-column label="大众key" align="center" prop="dianpinKey" />
+      <!-- <el-table-column label="美团店铺uuid" align="center" prop="meituanOpenShopUuid" />
       <el-table-column label="美团key" align="center" prop="meituanKey" />
-      <el-table-column label="抖音key" align="center" prop="douyinKey" />
+      <el-table-column label="美团Secret" align="center" prop="meituanSecret" /> -->
       <el-table-column label="房间数量" align="center" prop="roomNum" />
       <el-table-column label="总收入" align="center" prop="totalMoney" />
       <el-table-column label="已提现" align="center" prop="totalWithdrawal" />
@@ -66,6 +66,8 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
+          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleMeituan(scope.row)"
+                     v-hasPermi="['member:store-info:update']">美团授权</el-button>
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
                      v-hasPermi="['member:store-info:update']">修改</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
@@ -118,15 +120,15 @@
         <el-form-item label="客服电话" prop="kefuPhone">
           <el-input v-model="form.kefuPhone" placeholder="请输入客服电话" />
         </el-form-item>
-        <el-form-item label="大众key" prop="dianpinKey">
-          <el-input v-model="form.dianpinKey" placeholder="请输入大众点评key" />
+        <!-- <el-form-item label="美团店铺uuid" prop="meituanOpenShopUuid">
+          <el-input v-model="form.meituanOpenShopUuid" placeholder="请输入美团店铺uuid" />
         </el-form-item>
         <el-form-item label="美团key" prop="meituanKey">
           <el-input v-model="form.meituanKey" placeholder="请输入美团key" />
         </el-form-item>
-        <el-form-item label="抖音key" prop="douyinKey">
-          <el-input v-model="form.douyinKey" placeholder="请输入抖音key" />
-        </el-form-item>
+        <el-form-item label="美团Secret" prop="meituanSecret">
+          <el-input v-model="form.meituanSecret" placeholder="请输入美团Secret" />
+        </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -224,9 +226,9 @@ export default {
         status: undefined,
         wifiInfo: undefined,
         kefuPhone: undefined,
-        dianpinKey: undefined,
+        meituanOpenShopUuid: undefined,
         meituanKey: undefined,
-        douyinKey: undefined,
+        meituanSecret: undefined,
       };
       this.resetForm("form");
     },
@@ -255,6 +257,12 @@ export default {
         this.open = true;
         this.title = "修改门店管理";
       });
+    },
+    /** 美团授权按钮操作 */
+    handleMeituan(row) {
+      const storeId = row.storeId;
+      let url="https://e.dianping.com/dz-open/merchant/auth?app_key=022008863ebef333&redirect_url=https://api.scyanzu.com/app-api/callback/meituan&state=storeId-"+storeId
+      window.open(url);
     },
     /** 提交按钮 */
     submitForm() {

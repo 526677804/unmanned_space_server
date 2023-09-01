@@ -1,15 +1,21 @@
 package com.yanzu.module.member.controller.app.user;
 
+import cn.hutool.json.JSONObject;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
+import com.yanzu.module.member.forest.MeituanClient;
+import com.yanzu.module.member.service.meituan.MeituanConstants;
+import com.yanzu.module.member.service.meituan.MeituanSignUtils;
+import com.yanzu.module.member.service.meituan.vo.MeituanReverseconsumeReqVO;
 import com.yanzu.module.member.service.user.AppUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +23,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
@@ -40,20 +47,20 @@ public class AppUserController {
         return success(true);
     }
 
-  /*  @PostMapping("/updateAvatar")
-    @Operation(summary = "修改用户头像")
-    @PreAuthenticated
-    public CommonResult<String> updateUserAvatar(@RequestParam("avatarFile") MultipartFile file) throws Exception {
-        if (file.isEmpty()) {
-            throw exception(FILE_IS_EMPTY);
-        }
-        String avatar = userService.updateUserAvatar(getLoginUserId(), file.getInputStream());
-        return success(avatar);
-    }*/
+    /*  @PostMapping("/updateAvatar")
+      @Operation(summary = "修改用户头像")
+      @PreAuthenticated
+      public CommonResult<String> updateUserAvatar(@RequestParam("avatarFile") MultipartFile file) throws Exception {
+          if (file.isEmpty()) {
+              throw exception(FILE_IS_EMPTY);
+          }
+          String avatar = userService.updateUserAvatar(getLoginUserId(), file.getInputStream());
+          return success(avatar);
+      }*/
     @PostMapping("/updateAvatar")
     @Operation(summary = "修改用户头像")
     @PreAuthenticated
-    public CommonResult<Boolean> updateUserAvatar(@RequestParam("avatarUrl") String avatarUrl)  {
+    public CommonResult<Boolean> updateUserAvatar(@RequestParam("avatarUrl") String avatarUrl) {
         userService.updateUserAvatarUrl(getLoginUserId(), avatarUrl);
         return success(true);
     }
@@ -128,6 +135,52 @@ public class AppUserController {
         return success(userService.getCouponPage(reqVO));
     }
 
+    @Autowired
+    private MeituanClient meituanClient;
+
+    @GetMapping("/test")
+    @Operation(summary = "test")
+
+    public CommonResult<Boolean> test() throws IllegalAccessException {
+  /*      MeituanPrepareReqVO reqVO = new MeituanPrepareReqVO();
+        reqVO.setApp_key("022008863ebef333");
+        reqVO.setOpen_shop_uuid("6eb50f3547e1195d43eb447b8ab62449");
+        reqVO.setSession("cc7a13ae967015e42ae1cd6484f3663766e1f09d");
+        reqVO.setReceipt_code("5571630793");
+        Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
+        String sign = MeituanSignUtils.generateSign(paramMap, "8c7729556cb497fcec48133dc760dd2808ba1399", MeituanConstants.SIGN_METHOD_MD5);
+        reqVO.setSign(sign);
+        JSONObject prepare = meituanClient.prepare(reqVO);
+        log.info("prepare:{}", prepare);*/
+
+       /* MeituanConsumeReqVO reqVO=new MeituanConsumeReqVO();
+        reqVO.setApp_key("022008863ebef333");
+        reqVO.setOpen_shop_uuid("6eb50f3547e1195d43eb447b8ab62449");
+        reqVO.setSession("cc7a13ae967015e42ae1cd6484f3663766e1f09d");
+        reqVO.setReceipt_code("5571630793");
+        reqVO.setApp_shop_account("1");
+        reqVO.setApp_shop_accountname("user");
+        Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
+        String sign = MeituanSignUtils.generateSign(paramMap, "8c7729556cb497fcec48133dc760dd2808ba1399", MeituanConstants.SIGN_METHOD_MD5);
+        reqVO.setSign(sign);
+        JSONObject consume = meituanClient.consume(reqVO);
+        log.info("consume:{}", consume);*/
+
+        MeituanReverseconsumeReqVO reqVO=new MeituanReverseconsumeReqVO();
+        reqVO.setApp_key("022008863ebef333");
+        reqVO.setOpen_shop_uuid("6eb50f3547e1195d43eb447b8ab62449");
+        reqVO.setSession("cc7a13ae967015e42ae1cd6484f3663766e1f09d");
+        reqVO.setReceipt_code("5571630793");
+        reqVO.setApp_deal_id("993507556");
+        reqVO.setApp_shop_account("1");
+        reqVO.setApp_shop_accountname("user");
+        Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
+        String sign = MeituanSignUtils.generateSign(paramMap, "8c7729556cb497fcec48133dc760dd2808ba1399", MeituanConstants.SIGN_METHOD_MD5);
+        reqVO.setSign(sign);
+        JSONObject reverseconsume = meituanClient.reverseconsume(reqVO);
+        log.info("reverseconsume:{}", reverseconsume);
+        return success(true);
+    }
 
 }
 

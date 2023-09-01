@@ -1,7 +1,7 @@
 package com.yanzu.module.member.service.iot;
 
 import com.yanzu.module.member.service.iot.bean.*;
-import com.yanzu.module.member.service.iot.client.IotClient;
+import com.yanzu.module.member.forest.IotClient;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;

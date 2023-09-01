@@ -86,18 +86,6 @@ public class StoreInfoDO extends BaseDO {
     private String kefuPhone;
 
     /**
-     * 大众点评key
-     */
-    private String dianpinKey;
-    /**
-     * 美团key
-     */
-    private String meituanKey;
-    /**
-     * 抖音key
-     */
-    private String douyinKey;
-    /**
      * 房间数量
      */
     private Integer roomNum;

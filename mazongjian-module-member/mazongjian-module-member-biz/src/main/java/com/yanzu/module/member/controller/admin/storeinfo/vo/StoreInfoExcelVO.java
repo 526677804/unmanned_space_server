@@ -1,14 +1,10 @@
 package com.yanzu.module.member.controller.admin.storeinfo.vo;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-
 import com.alibaba.excel.annotation.ExcelProperty;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 门店管理 Excel VO
@@ -47,15 +43,6 @@ public class StoreInfoExcelVO {
 
     @ExcelProperty("客服电话")
     private String kefuPhone;
-
-    @ExcelProperty("大众点评key")
-    private String dianpinKey;
-
-    @ExcelProperty("美团key")
-    private String meituanKey;
-
-    @ExcelProperty("抖音key")
-    private String douyinKey;
 
     @ExcelProperty("房间数量")
     private Integer roomNum;

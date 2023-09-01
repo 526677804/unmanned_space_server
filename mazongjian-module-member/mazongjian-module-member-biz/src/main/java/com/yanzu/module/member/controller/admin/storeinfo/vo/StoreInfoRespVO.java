@@ -44,14 +44,6 @@ public class StoreInfoRespVO extends StoreInfoBaseVO {
     @Schema(description = "客服电话")
     private String kefuPhone;
 
-    @Schema(description = "大众点评key")
-    private String dianpinKey;
-
-    @Schema(description = "美团key")
-    private String meituanKey;
-
-    @Schema(description = "抖音key")
-    private String douyinKey;
 
     @Schema(description = "房间数量")
     private Integer roomNum;

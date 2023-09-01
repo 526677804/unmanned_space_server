@@ -16,6 +16,7 @@ import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
+import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
@@ -25,6 +26,7 @@ import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
+import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
@@ -94,9 +96,11 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Resource
     private PayOrderMapper payOrderMapper;
-
     @Resource
     private DiscountRulesMapper discountRulesMapper;
+
+    @Resource
+    private StoreInfoMapper storeInfoMapper;
 
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
@@ -330,7 +334,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         BigDecimal totalPrice = BigDecimal.valueOf(wxPayOrderRespVO.getPrice() / 100.0);
         //判断是否有填团购券
         if (!ObjectUtils.isEmpty(reqVO.getGroupPayNo())) {
-            //校验团购券 todo...
+            //校验团购券 先取出门店的美团配置信息
+            StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
+
 
         } else {
             //非团购支付 判断支付方式

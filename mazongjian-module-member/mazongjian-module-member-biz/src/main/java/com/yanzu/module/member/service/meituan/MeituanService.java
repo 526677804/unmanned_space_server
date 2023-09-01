@@ -1,0 +1,125 @@
+package com.yanzu.module.member.service.meituan;
+
+import cn.hutool.json.JSONObject;
+import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
+import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
+import com.yanzu.module.member.forest.MeituanClient;
+import com.yanzu.module.member.service.meituan.vo.MeituanGetTokenReqVO;
+import com.yanzu.module.member.service.meituan.vo.MeituanRefreshTokenReqVO;
+import com.yanzu.module.member.service.meituan.vo.MeituanScopeReqVO;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
+
+import java.time.LocalDateTime;
+
+/**
+ * @PACKAGE_NAME: com.yanzu.module.member.meituan
+ * @DESCRIPTION:
+ * @USER: MrGuan  mrguan@aliyun.com
+ * @DATE: 2023/9/1 17:07
+ */
+@Component
+@Slf4j
+public class MeituanService {
+
+    @Value("${meituan.appKey}")
+    private String appKey;
+
+    @Value("${meituan.secret}")
+    private String secret;
+
+    @Value("${meituan.redirectUrl}")
+    private String redirectUrl;
+
+    @Autowired
+    private MeituanClient meituanClient;
+
+    @Autowired
+    private StoreMeituanInfoMapper storeMeituanInfoMapper;
+
+    public String getToken(String authCode, String state) {
+        Long storeId = Long.valueOf(state.split("-")[1]);
+        if (!ObjectUtils.isEmpty(storeId)) {
+            MeituanGetTokenReqVO reqVO = new MeituanGetTokenReqVO();
+            reqVO.setApp_key(appKey);
+            reqVO.setApp_secret(secret);
+            reqVO.setRedirect_url(redirectUrl);
+            reqVO.setAuth_code(authCode);
+            JSONObject result = meituanClient.getToken(reqVO);
+            log.info("result:{}", result);
+//            {"code":200,"msg":"success","access_token":"be887662bc3c89b855f572517f4055a6c03cf888","expires_in":2591999,
+//            "remain_refresh_count":12,"tokenType":"bearer","scope":"tuangou","bid":"c4408e57fb4058237e70beacb2945e49",
+//            "refresh_token":"1ae8013180fc4095b09c508c2ffe5d31d6a5cd62"}
+            if (result.getInt("code").intValue() == 200) {
+                StoreMeituanInfoDO storeMeituanInfoDO = storeMeituanInfoMapper.getByStoreId(storeId);
+                String access_token = result.getStr("access_token");
+                String refresh_token = result.getStr("refresh_token");
+                Integer remain_refresh_count = result.getInt("remain_refresh_count");
+                Long expires_in = result.getLong("expires_in");
+                LocalDateTime now = LocalDateTime.now();
+                LocalDateTime expiresDate = now.plusSeconds(expires_in);
+                if (ObjectUtils.isEmpty(storeMeituanInfoDO)) {
+                    //不存在时 属于第一次获取，需要把对应美团的open_shop_uuid查询出来
+                    String bid = result.getStr("bid");
+                    MeituanScopeReqVO scopeReqVO = new MeituanScopeReqVO();
+                    scopeReqVO.setBid(bid);
+                    scopeReqVO.setSession(access_token);
+                    scopeReqVO.setApp_key(appKey);
+                    JSONObject scope = meituanClient.scope(scopeReqVO);
+                    log.info("首次获取授权,店铺信息查询结果:{}", scope);
+                    storeMeituanInfoDO = new StoreMeituanInfoDO();
+                    storeMeituanInfoDO.setStoreId(storeId);
+                    storeMeituanInfoDO.setAccessToken(access_token);
+                    storeMeituanInfoDO.setRefreshToken(refresh_token);
+                    storeMeituanInfoDO.setRemainRefreshCount(remain_refresh_count);
+                    storeMeituanInfoDO.setExpiresIn(expiresDate);
+                    storeMeituanInfoMapper.insert(storeMeituanInfoDO);
+                } else {
+                    storeMeituanInfoDO.setStoreId(storeId);
+                    storeMeituanInfoDO.setAccessToken(access_token);
+                    storeMeituanInfoDO.setRefreshToken(refresh_token);
+                    storeMeituanInfoDO.setRemainRefreshCount(remain_refresh_count);
+                    storeMeituanInfoDO.setExpiresIn(expiresDate);
+                    storeMeituanInfoMapper.updateById(storeMeituanInfoDO);
+                }
+                return "success";
+            }
+        }
+        log.info("获取美团授权token失败，{}", state);
+        return "fail";
+    }
+
+    public String refreshToken(Long storeId, String refreshToken) {
+        MeituanRefreshTokenReqVO reqVO = new MeituanRefreshTokenReqVO();
+        reqVO.setApp_key(appKey);
+        reqVO.setApp_secret(secret);
+        reqVO.setRefresh_token(refreshToken);
+        JSONObject result = meituanClient.refreshToken(reqVO);
+        log.info("result:{}", result);
+        if (result.getInt("code").intValue() == 200) {
+            StoreMeituanInfoDO storeMeituanInfoDO = storeMeituanInfoMapper.getByStoreId(storeId);
+            String access_token = result.getStr("access_token");
+            Integer remain_refresh_count = result.getInt("remain_refresh_count");
+            Long expires_in = result.getLong("expires_in");
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime expiresDate = now.plusSeconds(expires_in);
+            storeMeituanInfoDO.setAccessToken(access_token);
+            storeMeituanInfoDO.setRemainRefreshCount(remain_refresh_count);
+            storeMeituanInfoDO.setExpiresIn(expiresDate);
+            storeMeituanInfoMapper.updateById(storeMeituanInfoDO);
+            return "success";
+        }
+        log.info("更新美团授权token失败，storeId：{}", storeId);
+        return "fail";
+    }
+
+
+    private String chaxun(Long storeId, Long userId, String receiptCode, Integer price) {
+        return "deal_id";
+    }
+
+
+}

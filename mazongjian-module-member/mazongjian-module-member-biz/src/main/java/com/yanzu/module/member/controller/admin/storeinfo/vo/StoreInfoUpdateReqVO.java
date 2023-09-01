@@ -1,9 +1,11 @@
 package com.yanzu.module.member.controller.admin.storeinfo.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import javax.validation.constraints.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+import javax.validation.constraints.NotNull;
 
 @Schema(description = "管理后台 - 门店管理更新 Request VO")
 @Data
@@ -47,14 +49,5 @@ public class StoreInfoUpdateReqVO extends StoreInfoBaseVO {
 
     @Schema(description = "客服电话")
     private String kefuPhone;
-
-    @Schema(description = "大众点评key")
-    private String dianpinKey;
-
-    @Schema(description = "美团key")
-    private String meituanKey;
-
-    @Schema(description = "抖音key")
-    private String douyinKey;
 
 }

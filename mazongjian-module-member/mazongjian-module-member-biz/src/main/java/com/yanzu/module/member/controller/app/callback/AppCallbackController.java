@@ -1,7 +1,7 @@
 package com.yanzu.module.member.controller.app.callback;
 
-import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
+import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
-
 import java.util.Map;
-
-import static com.yanzu.framework.common.pojo.CommonResult.success;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order
@@ -32,6 +29,9 @@ public class AppCallbackController {
 
     @Resource
     private PayOrderService payOrderService;
+
+    @Resource
+    private MeituanService meituanService;
 
     @PostMapping("/wxpay/update")
     @Operation(summary = "更新订单为已支付")
@@ -50,5 +50,13 @@ public class AppCallbackController {
     public String updateOrderRefunded(@RequestParam(required = false) Map<String, String> params,
                                       @RequestBody(required = false) String body) {
         return payOrderService.updateOrderRefunded(params, body);
+    }
+
+    @RequestMapping(value = "/meituan", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @Operation(summary = "美团授权回调")
+    @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
+    @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
+    public String meituan(@RequestParam("auth_code") String auth_code, @RequestParam("state") String state) {
+        return meituanService.getToken(auth_code, state);
     }
 }
