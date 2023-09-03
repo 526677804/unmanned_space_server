@@ -12,12 +12,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AppStoreAdminReqVO  extends PageParam {
+public class AppStoreAdminReqVO extends PageParam {
 
     @Schema(description = "查询关键字")
     private String name;
 
     @Schema(description = "城市名称")
     private String cityName;
+
+    @Schema(hidden = true)
+    private Long userId;
 
 }

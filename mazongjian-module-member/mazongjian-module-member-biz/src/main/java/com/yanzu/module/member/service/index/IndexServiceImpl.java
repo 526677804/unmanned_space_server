@@ -89,18 +89,12 @@ public class IndexServiceImpl implements IndexService {
 
     @Override
     public List<KeyValue<String, Long>> getStoreList(String name, String cityName) {
-        if (getLoginUserType().compareTo(AppEnum.member_user_type.MEMBER.getValue()) == 0
-                || getLoginUserType().compareTo(2) == 0) {
-            //是APP用户  或者 后台管理员  则返回全部
-            return storeInfoMapper.getStoreListByMember(name, cityName);
-        } else {
-            return storeInfoMapper.getStoreList(name, cityName, getLoginUserId());
-        }
+        return storeInfoMapper.getStoreListByMember(name, cityName);
     }
 
     @Override
     public List<KeyValue<String, Long>> getRoomList(Long storeId) {
-        return roomInfoMapper.getRoomList(storeId, getLoginUserId());
+        return roomInfoMapper.getRoomListByStoreId(storeId);
     }
 
     @Override

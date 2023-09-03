@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.app.store;
 
+import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
@@ -156,5 +157,21 @@ public class AppStoreController {
         }
         String avatar = storeInfoService.uploadImg(file.getInputStream());
         return success(avatar);
+    }
+
+    @GetMapping("/getStoreList")
+    @Operation(summary = "管理员获取门店下拉选择列表")
+    @PreAuthenticated
+    public CommonResult<List<KeyValue<String, Long>>> getStoreList(@RequestParam(value = "name", required = false) String name
+            , @RequestParam(value = "cityName", required = false) String cityName) {
+        return success(storeInfoService.getStoreList(name,cityName));
+    }
+
+    @GetMapping("/getRoomList/{storeId}")
+    @Operation(summary = "管理员获取房间下拉选择列表")
+    @PreAuthenticated
+    @Parameter(name = "storeId")
+    public CommonResult<List<KeyValue<String, Long>>> getRoomList(@PathVariable("storeId") Long storeId) {
+        return success(storeInfoService.getRoomList(storeId));
     }
 }

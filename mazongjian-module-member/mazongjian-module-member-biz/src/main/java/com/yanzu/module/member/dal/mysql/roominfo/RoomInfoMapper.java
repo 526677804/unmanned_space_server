@@ -42,7 +42,7 @@ public interface RoomInfoMapper extends BaseMapperX<RoomInfoDO> {
 
     List<KeyValue<String, Long>> getRoomList(@Param("storeId") Long storeId, @Param("userId") Long userId);
 
-    List<AppRoomListRespVO> getRoomInfoList(Long storeId);
+    List<AppRoomListRespVO> getRoomInfoList(@Param("storeId") Long storeId, @Param("userId") Long userId);
 
     int updateStatusById(@Param("status") Integer status, @Param("roomId") Long roomId);
 
@@ -53,4 +53,6 @@ public interface RoomInfoMapper extends BaseMapperX<RoomInfoDO> {
     Integer countByStoreIdAndUserId(@Param("storeId") Long storeId, @Param("userId") Long userId);
 
     List<KeyValue<String, Long>> getRoomListByAdmin(Long storeId);
+
+    List<KeyValue<String, Long>> getRoomListByStoreId(Long storeId);
 }

@@ -107,8 +107,10 @@
         deviceOnlineNum
         FROM
         member_store_info s
+        left join member_store_user su on su.store_id=s.store_id
         WHERE
         s.deleted = 0
+        and su.user_id=#{userId} and su.type in (12,13)
         <if test="null!=name and name!=''">
             and locate(#{name},s.store_name)>0
         </if>

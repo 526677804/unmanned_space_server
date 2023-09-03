@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.storeinfo;
 
+import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoCreateReqVO;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoExportReqVO;
@@ -96,4 +97,7 @@ public interface StoreInfoService {
      */
     List<StoreInfoDO> getStoreInfoList(StoreInfoExportReqVO exportReqVO);
 
+    List<KeyValue<String, Long>> getStoreList(String name, String cityName);
+
+    List<KeyValue<String, Long>> getRoomList(Long storeId);
 }

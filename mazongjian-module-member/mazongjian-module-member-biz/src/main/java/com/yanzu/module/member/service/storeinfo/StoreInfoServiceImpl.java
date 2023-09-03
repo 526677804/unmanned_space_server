@@ -3,7 +3,9 @@ package com.yanzu.module.member.service.storeinfo;
 import cn.hutool.core.io.IoUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoCreateReqVO;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoExportReqVO;
@@ -63,6 +65,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Override
     public PageResult<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO) {
+        reqVO.setUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
         List<AppStoreAdminRespVO> list = storeInfoMapper.getPageList(reqVO);
         PageInfo<AppStoreAdminRespVO> page = new PageInfo(list);
@@ -123,7 +126,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Override
     public List<AppRoomListRespVO> getRoomInfoList(Long storeId) {
-        return roomInfoMapper.getRoomInfoList(storeId);
+        return roomInfoMapper.getRoomInfoList(storeId, getLoginUserId());
     }
 
     @Override
@@ -273,6 +276,16 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public List<StoreInfoDO> getStoreInfoList(StoreInfoExportReqVO exportReqVO) {
         return storeInfoMapper.selectList(exportReqVO);
+    }
+
+    @Override
+    public List<KeyValue<String, Long>> getStoreList(String name, String cityName) {
+        return storeInfoMapper.getStoreList(name, cityName, WebFrameworkUtils.getLoginUserId());
+    }
+
+    @Override
+    public List<KeyValue<String, Long>> getRoomList(Long storeId) {
+        return roomInfoMapper.getRoomList(storeId, WebFrameworkUtils.getLoginUserId());
     }
 
 }
