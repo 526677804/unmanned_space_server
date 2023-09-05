@@ -28,7 +28,7 @@ public class SocialUserBindReqDTO {
      * 用户类型
      */
 //    @InEnum(UserTypeEnum.class)
-    @NotNull(message = "用户类型不能为空")
+//    @NotNull(message = "用户类型不能为空")
     private Integer userType;
 
     /**

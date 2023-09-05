@@ -166,6 +166,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Override
     public PageResult<AppDiscountRulesPageRespVO> getDiscountRulesPage(AppDiscountRulesPageReqVO reqVO) {
+        reqVO.setUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
         List<AppDiscountRulesPageRespVO> list = discountRulesMapper.getDiscountRulesPage(reqVO);
         PageInfo page = new PageInfo(list);

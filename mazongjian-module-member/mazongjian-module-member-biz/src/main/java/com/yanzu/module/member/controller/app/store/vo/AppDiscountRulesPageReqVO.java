@@ -14,4 +14,7 @@ public class AppDiscountRulesPageReqVO extends PageParam {
     private Long storeId;
 
 
+    @Schema(hidden = true)
+    private Long userId;
+
 }

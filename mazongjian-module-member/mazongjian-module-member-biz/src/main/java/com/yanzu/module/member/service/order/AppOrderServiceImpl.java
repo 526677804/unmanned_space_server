@@ -228,7 +228,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 //                throw new RuntimeException(e);
                 throw exception(USER_WEIXIN_PAY_ERROR);
             }
-            payOrderService.create(getLoginUserId(), orderNo, "微信支付订单", price);
+            payOrderService.create(getLoginUserId(), orderNo, "房间预定订单", price);
         }
         return respVO;
     }
@@ -641,7 +641,6 @@ public class AppOrderServiceImpl implements AppOrderService {
                     PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
                     WxPayRefundRequest refundRequest = new WxPayRefundRequest();
                     refundRequest.setOutRefundNo(orderInfoDO.getOrderNo());
-                    refundRequest.setOutRefundNo("TK" + orderInfoDO.getOrderNo());//退款单号
                     refundRequest.setTotalFee(payOrderDO.getPrice());
                     refundRequest.setRefundFee(payOrderDO.getPrice());
                     try {
@@ -666,7 +665,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                             newUserMoneyBillDO.setCreator(null);
                             newUserMoneyBillDO.setUpdateTime(null);
                             newUserMoneyBillDO.setUpdater(null);
-                            newUserMoneyBillDO.setType(4);//改成退款状态
+                            newUserMoneyBillDO.setType(AppEnum.user_money_bill_type.REFUND.getValue());//改成退款状态
+                            newUserMoneyBillDO.setRemark(newUserMoneyBillDO.getRemark().replace("支付", "退款"));
                             if (billDO.getMoneyType().intValue() == 1) {
                                 //账户余额  加回去
                                 MemberUserDO memberUserDO = memberUserMapper.selectById(loginUserId);

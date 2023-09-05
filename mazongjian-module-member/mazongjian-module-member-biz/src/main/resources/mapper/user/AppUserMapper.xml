@@ -41,7 +41,7 @@
         from member_user m
         where m.deleted=0
         <if test="null!=name and name!=''">
-            and ( locate(#{name},m.nickname>0 OR locate(#{name},m.mobile>0)
+            and ( locate(#{name},m.nickname)>0 OR locate(#{name},m.mobile)>0 )
         </if>
         <if test="null!=cloumnName and null!=sortRule">
             order by ${cloumnName} ${sortRule}

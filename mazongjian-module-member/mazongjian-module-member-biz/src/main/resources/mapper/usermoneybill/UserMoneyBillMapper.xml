@@ -21,7 +21,7 @@
         <if test="null != endTime">
             and DATE_FORMAT(create_time, '%Y%m%d')&lt;=DATE_FORMAT(#{endTime}, '%Y%m%d')
         </if>
-
+        order by create_time desc
     </select>
     <select id="getPayByOrderNo"
             resultType="com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO">

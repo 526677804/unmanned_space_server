@@ -20,6 +20,7 @@ import com.yanzu.module.member.dal.dataobject.franchiseinfo.FranchiseInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
+import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.franchiseinfo.FranchiseInfoMapper;
@@ -273,6 +274,15 @@ public class AppUserServiceImpl implements AppUserService {
             MemberUserDO memberUserDO = memberUserMapper.selectById(reqVO.getUserId());
             memberUserDO.setBalance(memberUserDO.getBalance().add(bigDecimal));
             memberUserMapper.updateById(memberUserDO);
+            //增加充值明细
+            UserMoneyBillDO userMoneyBillDO = new UserMoneyBillDO();
+            userMoneyBillDO.setMoney(bigDecimal);
+            userMoneyBillDO.setUserId(reqVO.getUserId());
+            userMoneyBillDO.setRemark("在线余额充值");
+            userMoneyBillDO.setMoneyType(AppEnum.user_money_type.MONEY.getValue());
+            userMoneyBillDO.setTotalMoney(memberUserDO.getBalance());
+            userMoneyBillDO.setType(AppEnum.user_money_bill_type.RECHARGE.getValue());
+            userMoneyBillMapper.insert(userMoneyBillDO);
             //增加赠送余额 先查询出该门店，该充值金额的最大赠送金额
             BigDecimal gift = discountRulesMapper.getMaxGiftByStoreIdAndPrice(reqVO.getStoreId(), bigDecimal);
             log.info("用户:{},充值门店:{},充值:{}元，赠送:{}元", reqVO.getUserId(), reqVO.getStoreId(), bigDecimal, gift);
@@ -290,6 +300,14 @@ public class AppUserServiceImpl implements AppUserService {
                     storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().add(gift));
                     storeUserMapper.updateById(storeUserDO);
                 }
+                userMoneyBillDO = new UserMoneyBillDO();
+                userMoneyBillDO.setMoney(gift);
+                userMoneyBillDO.setUserId(reqVO.getUserId());
+                userMoneyBillDO.setRemark("充值优惠余额赠送");
+                userMoneyBillDO.setMoneyType(AppEnum.user_money_type.GIFT_MONEY.getValue());
+                userMoneyBillDO.setTotalMoney(storeUserDO.getGiftBalance());
+                userMoneyBillDO.setType(AppEnum.user_money_bill_type.GIFT.getValue());
+                userMoneyBillMapper.insert(userMoneyBillDO);
             }
             //如果已经充值了 就移除这个订单号
             redisTemplate.opsForSet().remove(EECHARGE_BALANCE_REDIS_SET, reqVO.getOrderNo());
