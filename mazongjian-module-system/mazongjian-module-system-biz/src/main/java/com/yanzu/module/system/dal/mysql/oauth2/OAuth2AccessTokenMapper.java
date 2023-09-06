@@ -6,6 +6,7 @@ import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.module.system.controller.admin.oauth2.vo.token.OAuth2AccessTokenPageReqVO;
 import com.yanzu.module.system.dal.dataobject.oauth2.OAuth2AccessTokenDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public interface OAuth2AccessTokenMapper extends BaseMapperX<OAuth2AccessTokenDO
         return selectList(OAuth2AccessTokenDO::getRefreshToken, refreshToken);
     }
 
+
     default PageResult<OAuth2AccessTokenDO> selectPage(OAuth2AccessTokenPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<OAuth2AccessTokenDO>()
                 .eqIfPresent(OAuth2AccessTokenDO::getUserId, reqVO.getUserId())
@@ -31,6 +33,8 @@ public interface OAuth2AccessTokenMapper extends BaseMapperX<OAuth2AccessTokenDO
                 .orderByDesc(OAuth2AccessTokenDO::getId));
     }
 
-    @Update("Update system_oauth2_access_token set deleted=1 where user_id=#{userId}")
-    int removeAccessTokenByUserId(Long userId);
+    @Update("UPDATE system_oauth2_access_token SET deleted=1 WHERE user_id=#{userId}")
+    int removeByUser(Long userId);
+    @Select("SELECT access_token FROM system_oauth2_access_token WHERE user_id=#{userId} AND deleted=0")
+    List<String> selectByUserId(Long userId);
 }

@@ -5,6 +5,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.yanzu.framework.common.exception.enums.GlobalErrorCodeConstants;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.module.system.controller.admin.oauth2.vo.token.OAuth2AccessTokenPageReqVO;
@@ -134,10 +135,17 @@ public class OAuth2TokenServiceImpl implements OAuth2TokenService {
 
     @Override
     public int removeAccessTokenByUserId(Long userId) {
-        return oauth2AccessTokenMapper.removeAccessTokenByUserId(userId);
+        List<String> tokenList = oauth2AccessTokenMapper.selectByUserId(userId);
+        if (!CollectionUtils.isAnyEmpty(tokenList)) {
+            oauth2AccessTokenRedisDAO.deleteList(tokenList);
+        }
+        oauth2AccessTokenMapper.removeByUser(userId);
+        oauth2RefreshTokenMapper.removeByUser(userId);
+        return 1;
     }
 
     private OAuth2AccessTokenDO createOAuth2AccessToken(OAuth2RefreshTokenDO refreshTokenDO, OAuth2ClientDO clientDO) {
+        removeAccessTokenByUserId(refreshTokenDO.getUserId());
         OAuth2AccessTokenDO accessTokenDO = new OAuth2AccessTokenDO().setAccessToken(generateAccessToken())
                 .setUserId(refreshTokenDO.getUserId()).setUserType(refreshTokenDO.getUserType())
                 .setClientId(clientDO.getClientId()).setScopes(refreshTokenDO.getScopes())
