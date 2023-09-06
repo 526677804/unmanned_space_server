@@ -88,7 +88,7 @@ public class SocialUserServiceImpl implements SocialUserService {
     @Override
     public List<SocialUserDO> getSocialUserList(Long userId, Integer userType) {
         // 获得绑定
-        List<SocialUserBindDO> socialUserBinds = socialUserBindMapper.selectListByUserIdAndUserType(userId, userType);
+        List<SocialUserBindDO> socialUserBinds = socialUserBindMapper.selectListByUserId(userId);
         if (CollUtil.isEmpty(socialUserBinds)) {
             return Collections.emptyList();
         }
@@ -104,10 +104,10 @@ public class SocialUserServiceImpl implements SocialUserService {
         Assert.notNull(socialUser, "社交用户不能为空");
 
         // 社交用户可能之前绑定过别的用户，需要进行解绑
-        socialUserBindMapper.deleteByUserTypeAndSocialUserId(reqDTO.getUserType(), socialUser.getId());
+        socialUserBindMapper.deleteBySocialUserId(socialUser.getId());
 
         // 用户可能之前已经绑定过该社交类型，需要进行解绑
-        socialUserBindMapper.deleteByUserTypeAndUserIdAndSocialType(reqDTO.getUserType(), reqDTO.getUserId(),
+        socialUserBindMapper.deleteByUserIdAndSocialType(reqDTO.getUserId(),
                 socialUser.getType());
 
         // 绑定当前登录的社交用户
@@ -126,7 +126,7 @@ public class SocialUserServiceImpl implements SocialUserService {
         }
 
         // 获得对应的社交绑定关系
-        socialUserBindMapper.deleteByUserTypeAndUserIdAndSocialType(userType, userId, socialUser.getType());
+        socialUserBindMapper.deleteByUserIdAndSocialType( userId, socialUser.getType());
     }
 
     @Override
@@ -136,8 +136,7 @@ public class SocialUserServiceImpl implements SocialUserService {
         Assert.notNull(socialUser, "社交用户不能为空");
 
         // 如果未绑定的社交用户，则无法自动登录，进行报错
-        SocialUserBindDO socialUserBind = socialUserBindMapper.selectByUserTypeAndSocialUserId(userType,
-                socialUser.getId());
+        SocialUserBindDO socialUserBind = socialUserBindMapper.selectBySocialUserId(socialUser.getId());
         if (socialUserBind == null) {
             throw exception(AUTH_THIRD_LOGIN_NOT_BIND);
         }
@@ -146,14 +145,14 @@ public class SocialUserServiceImpl implements SocialUserService {
 
     @Override
     public String getUserOpenIdByType(Long userId, Integer type) {
-        return socialUserBindMapper.getUserOpenIdByType(userId,type);
+        return socialUserBindMapper.getUserOpenIdByType(userId, type);
     }
 
     /**
      * 请求社交平台，获得授权的用户
      *
-     * @param type 社交平台的类型
-     * @param code 授权码
+     * @param type  社交平台的类型
+     * @param code  授权码
      * @param state 授权 state
      * @return 授权的用户
      */
