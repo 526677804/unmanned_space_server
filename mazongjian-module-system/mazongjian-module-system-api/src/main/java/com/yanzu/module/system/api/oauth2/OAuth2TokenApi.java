@@ -46,4 +46,5 @@ public interface OAuth2TokenApi {
      */
     OAuth2AccessTokenRespDTO refreshAccessToken(String refreshToken, String clientId);
 
+    int removeAccessTokenByUserId(Long userId);
 }

@@ -77,7 +77,7 @@
              , su.name
              , m.mobile
              , su.status
-             , (select isnull(SUM(money), 0)
+             , (select ifnull(SUM(money), 0)
                 from member_clear_bill
                 where user_id = su.user_id
                   and store_id = #{storeId}) as money

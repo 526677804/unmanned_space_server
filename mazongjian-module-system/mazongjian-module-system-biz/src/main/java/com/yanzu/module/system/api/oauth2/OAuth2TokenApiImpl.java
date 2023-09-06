@@ -45,4 +45,9 @@ public class OAuth2TokenApiImpl implements OAuth2TokenApi {
         return OAuth2TokenConvert.INSTANCE.convert2(accessTokenDO);
     }
 
+    @Override
+    public int removeAccessTokenByUserId(Long userId) {
+        return oauth2TokenService.removeAccessTokenByUserId(userId);
+    }
+
 }

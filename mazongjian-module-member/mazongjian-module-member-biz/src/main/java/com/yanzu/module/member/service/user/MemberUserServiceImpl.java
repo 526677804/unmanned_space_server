@@ -7,6 +7,7 @@ import com.yanzu.module.member.controller.admin.user.vo.AppUserUpdateReqVO;
 import com.yanzu.module.member.convert.user.AppUserConvert;
 import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
+import com.yanzu.module.system.api.oauth2.OAuth2TokenApi;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -30,6 +31,9 @@ public class MemberUserServiceImpl implements MemberUserService {
     @Resource
     private AppUserMapper appUserMapper;
 
+    @Resource
+    private OAuth2TokenApi oAuth2TokenApi;
+
     @Override
     public void updateAppUser(AppUserUpdateReqVO updateReqVO) {
         // 校验存在
@@ -40,6 +44,9 @@ public class MemberUserServiceImpl implements MemberUserService {
         // 更新
         AppUserDO updateObj = AppUserConvert.INSTANCE.convert(updateReqVO);
         appUserMapper.updateById(updateObj);
+        //如果修改了用户类型，需要用户重新登录  否则代码中有很多从token中获取用户类型的地方要出错
+        oAuth2TokenApi.removeAccessTokenByUserId(updateObj.getId());
+
     }
 
     @Override

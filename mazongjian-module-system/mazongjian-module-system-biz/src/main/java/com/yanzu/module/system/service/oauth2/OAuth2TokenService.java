@@ -77,4 +77,5 @@ public interface OAuth2TokenService {
      */
     PageResult<OAuth2AccessTokenDO> getAccessTokenPage(OAuth2AccessTokenPageReqVO reqVO);
 
+    int removeAccessTokenByUserId(Long userId);
 }

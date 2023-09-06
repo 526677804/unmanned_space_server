@@ -6,6 +6,7 @@ import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.module.system.controller.admin.oauth2.vo.token.OAuth2AccessTokenPageReqVO;
 import com.yanzu.module.system.dal.dataobject.oauth2.OAuth2AccessTokenDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,4 +31,6 @@ public interface OAuth2AccessTokenMapper extends BaseMapperX<OAuth2AccessTokenDO
                 .orderByDesc(OAuth2AccessTokenDO::getId));
     }
 
+    @Update("Update system_oauth2_access_token set deleted=1 where user_id=#{userId}")
+    int removeAccessTokenByUserId(Long userId);
 }
