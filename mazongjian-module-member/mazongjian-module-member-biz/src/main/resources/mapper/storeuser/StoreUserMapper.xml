@@ -73,6 +73,7 @@
         select su.id
              , su.user_id
              , su.store_id
+             , s.store_name
              , m.nickname
              , su.name
              , m.mobile
@@ -95,6 +96,7 @@
                  left join member_user m
                            ON su.user_id = m.id
                  left join member_clear_bill cb ON cb.user_id = su.user_id
+        left join member_store_info s ON s.store_id =su.store_id
         where su.store_id = #{storeId}
           and su.deleted = 0
           and su.type = 14

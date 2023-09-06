@@ -13,6 +13,7 @@ import javax.validation.Valid;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 门店管理 Service 接口
@@ -103,4 +104,7 @@ public interface StoreInfoService {
     List<KeyValue<String, Long>> getRoomList(Long storeId);
 
     void checkPermisson(Long storeId, Long userId, Integer userType, Integer checkType);
+
+    List<KeyValue<Long, String>> getNameMapByIds(Set<String> storeIdSet);
+
 }

@@ -26,6 +26,9 @@ public class AppClearUserPageRespVO {
     @Schema(description = "门店Id")
     private Long storeId;
 
+    @Schema(description = "门店名称")
+    private String storeName;
+
     @Schema(description = "用户昵称", requiredMode = Schema.RequiredMode.REQUIRED, example = "芋艿")
     private String nickname;
 

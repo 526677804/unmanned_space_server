@@ -139,5 +139,15 @@
         where deleted = 0
           and room_id = #{roomId}
     </select>
+    <select id="getNameMapByIds" resultType="com.yanzu.framework.common.core.KeyValue">
+        select store_id as 'key', store_name as 'value'
+        from member_store_info
+        where deleted = 0 and
+        store_id in
+        <foreach collection="collection" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+
+    </select>
 
 </mapper>

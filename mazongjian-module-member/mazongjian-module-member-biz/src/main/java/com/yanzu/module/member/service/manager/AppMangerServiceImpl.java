@@ -42,9 +42,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -145,12 +143,31 @@ public class AppMangerServiceImpl implements AppMangerService {
         PageHelper.startPage(reqVO.getPageNo(), reqVO.getPageSize());
         List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPageByAdmin(reqVO, "," + storeIds + ",");
         PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
+        //再查一下门店名称
+        if (!CollectionUtils.isEmpty(page.getList())) {
+            Set<String> storeIdSet = Arrays.stream(page.getList().stream().map(x -> x.getStoreIds()).collect(Collectors.joining(",")).split(",")).collect(Collectors.toSet());
+            List<KeyValue<Long, String>> storeNameInfo = storeInfoService.getNameMapByIds(storeIdSet);
+            Map<String, String> storeNameMap = new HashMap<>(storeNameInfo.size());
+            storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
+            //依次设置名称
+            page.getList().stream().forEach(x -> {
+                x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
+            });
+        }
         return new PageResult<>(page.getList(), page.getTotal());
     }
 
     @Override
     public AppCouponDetailRespVO getCouponDetail(Long couponId) {
-        return couponInfoMapper.getCouponDetail(couponId);
+        AppCouponDetailRespVO couponDetail = couponInfoMapper.getCouponDetail(couponId);
+        if (!ObjectUtils.isEmpty(couponDetail)) {
+            Set<String> collect = Arrays.stream(couponDetail.getStoreIds().split(",")).collect(Collectors.toSet());
+            List<KeyValue<Long, String>> storeNameInfo = storeInfoService.getNameMapByIds(collect);
+            Map<String, String> storeNameMap = new HashMap<>(storeNameInfo.size());
+            storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
+            couponDetail.setStoreName(Arrays.stream(couponDetail.getStoreIds().split(",")).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
+        }
+        return couponDetail;
     }
 
     @Override
@@ -426,9 +443,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         //仅管理员使用 检查权限
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         CouponInfoDO couponInfoDO = couponInfoMapper.getByIdAndAdmin(reqVO.getCouponId());
-        if(!ObjectUtils.isEmpty(couponInfoDO)){
-            CouponInfoDO newCouponInfoDO=new CouponInfoDO();
-            BeanUtils.copyProperties(couponInfoDO,newCouponInfoDO);
+        if (!ObjectUtils.isEmpty(couponInfoDO)) {
+            CouponInfoDO newCouponInfoDO = new CouponInfoDO();
+            BeanUtils.copyProperties(couponInfoDO, newCouponInfoDO);
             newCouponInfoDO.setCouponId(null);
             newCouponInfoDO.setUserId(reqVO.getUserId());
             couponInfoMapper.insert(newCouponInfoDO);

@@ -33,6 +33,7 @@ import javax.annotation.Resource;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
@@ -302,6 +303,11 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 throw exception(AUTH_PROMISSION_ERROR);
             }
         }
+    }
+
+    @Override
+    public List<KeyValue<Long, String>> getNameMapByIds(Set<String> storeIdSet) {
+        return storeInfoMapper.getNameMapByIds(storeIdSet);
     }
 
 }

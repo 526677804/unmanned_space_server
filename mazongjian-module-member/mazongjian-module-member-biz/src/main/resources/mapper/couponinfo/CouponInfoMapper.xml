@@ -47,8 +47,7 @@
     <select id="getCouponPageByAdmin"
             resultType="com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO">
         SELECT
-        c.*,( SELECT group_concat( s.store_name ) FROM member_store_info s WHERE s.store_id IN ( c.store_ids ) )
-        AS storeName
+        c.*
         FROM
         member_coupon_info c
         WHERE
@@ -66,9 +65,7 @@
     </select>
     <select id="getCouponDetail"
             resultType="com.yanzu.module.member.controller.app.manager.vo.AppCouponDetailRespVO">
-        SELECT c.*,
-               (SELECT group_concat(s.store_name) FROM member_store_info s WHERE s.store_id IN (c.store_ids))
-                   AS storeName
+        SELECT c.*
         FROM member_coupon_info c
         WHERE c.deleted = 0
           and c.coupon_id = #{couponId}

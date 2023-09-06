@@ -41,7 +41,7 @@ public class AppCouponDetailRespVO {
     private BigDecimal price;
 
     @Schema(description = "适用门店ids", example = "7851")
-    private Long storeIds;
+    private String storeIds;
 
     @Schema(description = "适用门店名称 逗号分隔", example = "7851")
     private String storeName;

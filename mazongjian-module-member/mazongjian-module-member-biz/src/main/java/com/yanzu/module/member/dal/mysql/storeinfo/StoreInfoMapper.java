@@ -17,6 +17,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -61,4 +62,7 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
     List<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO);
 
     List<KeyValue<String, Long>> getStoreListByMember(@Param("name") String name, @Param("cityName") String cityName);
+
+    List<KeyValue<Long, String>> getNameMapByIds(Set<String> storeIdSet);
+
 }
