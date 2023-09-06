@@ -15,7 +15,7 @@
         where deleted = 0
           and user_id = #{userId}
           and status = #{status}
-          and store_id in ($storeIds)
+          and store_id in (${storeIds})
 
 
     </select>
