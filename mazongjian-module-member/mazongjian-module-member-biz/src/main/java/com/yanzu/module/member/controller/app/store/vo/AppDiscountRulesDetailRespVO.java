@@ -15,8 +15,8 @@ import java.util.Date;
 @ToString(callSuper = true)
 public class AppDiscountRulesDetailRespVO {
 
-    @Schema(description = "Id")
-    private Long id;
+    @Schema(description = "discountId")
+    private Long discountId;
 
     @Schema(description = "门店Id")
     @NotNull(message = "门店不能为空")

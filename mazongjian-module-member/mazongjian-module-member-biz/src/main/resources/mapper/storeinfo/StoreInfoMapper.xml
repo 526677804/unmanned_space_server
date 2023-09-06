@@ -79,7 +79,7 @@
         from member_store_info s
         left join member_store_user su ON su.store_id=s.store_id
         where s.deleted = 0 and su.deleted=0
-        and s.status = 0 and su.user_id=#{userId}
+        and su.user_id=#{userId}
         <if test=" null!=cityName and cityName!=''">
             and locate(#{cityName},s.city_name)>0
         </if>

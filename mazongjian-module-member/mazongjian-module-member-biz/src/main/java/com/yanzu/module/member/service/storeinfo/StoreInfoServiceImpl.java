@@ -24,7 +24,6 @@ import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
-import com.yanzu.module.member.utils.StorePermissionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -83,9 +82,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     @Transactional
     public void save(AppStoreInfoReqVO reqVO) {
-        // 只有创建者才可以操作
-        StorePermissionUtils.checkBoss(getLoginUserType());
         if (ObjectUtils.isEmpty(reqVO.getStoreId())) {
+            // 校验用户类型
+            checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
             //新增
             StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
             storeInfoDO.setStatus(1);
@@ -98,29 +97,10 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             storeUserMapper.insert(storeUserDO);
         } else {
             //修改
-            //检查修改的权限 只有创建者才可以修改
-            checkStorePromission(reqVO.getStoreId(), getLoginUserId(), "1");
+            //校验门店权限
+            checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
             StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
             storeInfoMapper.updateById(storeInfoDO);
-        }
-    }
-
-    private void checkStorePromission(Long storeId, Long userId, String type) {
-        //检查是不是管理员   1创建者 2管理员 3保洁员
-        switch (type) {//type决定了允许哪些角色访问
-            case "1":
-                type = "1";
-                break;
-            case "2":
-                type = "1,2";
-                break;
-            case "3":
-                type = "1,2,3";
-                break;
-        }
-        Long id = storeUserMapper.checkStorePromission(storeId, userId, type);
-        if (ObjectUtils.isEmpty(id)) {
-            throw exception(AUTH_PROMISSION_ERROR);
         }
     }
 
@@ -149,7 +129,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         } else {
             //修改 只有所有者才可以修改
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
-            checkStorePromission(roomInfoDO.getStoreId(), getLoginUserId(), "1");
+            //校验门店权限
+            checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
             roomInfoDO.setRoomName(reqVO.getRoomName());
             roomInfoDO.setType(reqVO.getType());
             roomInfoDO.setPrice(reqVO.getPrice());
@@ -178,7 +159,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     public void changeDiscountRulesStatus(Long id) {
         //检查修改的权限 只有创建者才可以修改充值优惠规则
         DiscountRulesDO discountRulesDO = discountRulesMapper.selectById(id);
-        checkStorePromission(discountRulesDO.getStoreId(), getLoginUserId(), "1");
+        //校验门店权限
+        checkPermisson(discountRulesDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
         if (discountRulesDO.getStatus().compareTo(AppEnum.discount_rules_status.ENABLE.getValue()) == 0) {
             //改成禁用
             discountRulesMapper.changeDiscountRulesStatus(id, 0);
@@ -200,19 +182,23 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     @Transactional
     public void saveDiscountRuleDetail(AppDiscountRulesDetailReqVO reqVO) {
-        //检查修改的权限 只有创建者才可以修改充值优惠规则
-//        DiscountRulesDO discountRulesDO = discountRulesMapper.selectById(reqVO.getId());
-        checkStorePromission(reqVO.getStoreId(), getLoginUserId(), "1");
-        //如果已有相同的充值支付金额，则不允许再添加
-        int count = discountRulesMapper.countByStoreIdAndPayMoney(reqVO.getStoreId(), reqVO.getPayMoney());
-        if (count > 0) {
-            throw exception(DISCOUNTRULE_REPETITION_ERROR);
-        }
+        //校验门店权限
+        checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
         if (ObjectUtils.isEmpty(reqVO.getDiscountId())) {
             //新增
+            //如果本门店已有相同的充值支付金额，则不允许再添加
+            int count = discountRulesMapper.countByStoreIdAndPayMoney(reqVO.getStoreId(), reqVO.getPayMoney(), null);
+            if (count > 0) {
+                throw exception(DISCOUNTRULE_REPETITION_ERROR);
+            }
             DiscountRulesDO discountRulesDO = DiscountRulesConvert.INSTANCE.convert2(reqVO);
             discountRulesMapper.insert(discountRulesDO);
         } else {
+            //修改 校验金额重复时要排除当前门店
+            int count = discountRulesMapper.countByStoreIdAndPayMoney(reqVO.getStoreId(), reqVO.getPayMoney(), reqVO.getDiscountId());
+            if (count > 0) {
+                throw exception(DISCOUNTRULE_REPETITION_ERROR);
+            }
             DiscountRulesDO discountRulesDO = DiscountRulesConvert.INSTANCE.convert2(reqVO);
             discountRulesDO.setStoreId(reqVO.getStoreId());
             discountRulesDO.setPayMoney(reqVO.getPayMoney());
@@ -287,6 +273,35 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public List<KeyValue<String, Long>> getRoomList(Long storeId) {
         return roomInfoMapper.getRoomList(storeId, WebFrameworkUtils.getLoginUserId());
+    }
+
+    @Override
+    public void checkPermisson(Long storeId, Long userId, Integer userType, Integer checkType) {
+        // 12加盟商 13管理员 14保洁员
+        if (ObjectUtils.isEmpty(storeId)) {
+            //不存在门店Id  仅判断用户类型
+            if (userType > checkType) {
+                throw exception(AUTH_PROMISSION_ERROR);
+            }
+        } else {
+            //存在门店id  需要根据门店来校验
+            String type = "";
+            switch (checkType) {
+                case 12:
+                    type = "12";
+                    break;
+                case 13:
+                    type = "12,13";
+                    break;
+                case 14:
+                    type = "12,13,14";
+                    break;
+            }
+            Long id = storeUserMapper.checkStorePromission(storeId, userId, type);
+            if (ObjectUtils.isEmpty(id)) {
+                throw exception(AUTH_PROMISSION_ERROR);
+            }
+        }
     }
 
 }

@@ -30,7 +30,7 @@ import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.dal.mysql.userwithdrawal.UserWithdrawalMapper;
 import com.yanzu.module.member.enums.AppEnum;
-import com.yanzu.module.member.utils.StorePermissionUtils;
+import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,10 +84,13 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Resource
     private AppUserMapper appUserMapper;
 
+    @Resource
+    private StoreInfoService storeInfoService;
+
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
-        //仅管理员使用
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        // 校验用户类型
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
         String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining(","));
         reqVO.setStoreIds(storeIds);
         PageHelper.startPage(reqVO);
@@ -98,8 +101,8 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Override
     public PageResult<AppMemberPageRespVO> getMemberPage(AppMemberPageReqVO reqVO) {
-        //仅管理员使用
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        // 校验用户类型
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //参数检查 排序字段和排序规则  要么全部为空，要么都不能为空
         if (ObjectUtils.isEmpty(reqVO.getCloumnName()) && ObjectUtils.isEmpty(reqVO.getSortRule())) {
 
@@ -135,8 +138,8 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Override
     public PageResult<AppCouponPageRespVO> getCouponPage(AppManagerCouponPageReqVO reqVO) {
-        //仅管理员使用
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        // 校验用户类型
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //仅限查看当前用户所在门店的优惠券列表
         String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining("|"));
         PageHelper.startPage(reqVO.getPageNo(), reqVO.getPageSize());
@@ -153,8 +156,6 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     @Transactional
     public void saveCouponDetail(AppCouponDetailReqVO reqVO) {
-        //仅创建者使用
-        StorePermissionUtils.checkBoss(getLoginUserType());
         Long loginUserId = getLoginUserId();
         //检查包间权限
         List<String> storeIds = storeUserMapper.getIdsByUserId(loginUserId);
@@ -244,8 +245,9 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     @Transactional
     public void settlementClearUser(AppSettlementClearUserReqVO reqVO) {
-        //权限校验：管理员和加盟商允许
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        // 校验用户类型
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+
         //查询出本用户的门店权限
         String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining(","));
         //查询出保洁员在这些门店下   有没有可结算的订单
@@ -273,7 +275,9 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Transactional
     public void complaintClearInfo(AppComplaintClearInfoReqVO reqVO) {
         //权限校验：管理员和加盟商允许
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        // 校验用户类型
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+
         //先找出来
         ClearInfoDO clearInfoDO = clearInfoMapper.selectById(reqVO.getClearId());
         //只能操作已完成或已驳回的记录
@@ -304,7 +308,9 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Transactional
     public void applyWithdrawal() {
         //仅创建者使用
-        StorePermissionUtils.checkBoss(getLoginUserType());
+        // 校验用户类型
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+
         //判断当前用户的收入还有没有可以提现的
         Long loginUserId = getLoginUserId();
         MemberUserDO memberUserDO = memberUserMapper.selectById(loginUserId);
@@ -332,7 +338,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public PageResult<AppWithdrawalPageRespVO> getWithdrawalPage(AppWithdrawalPageReqVO reqVO) {
         //仅创建者使用
-        StorePermissionUtils.checkBoss(getLoginUserType());
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
         reqVO.setUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
         List<AppWithdrawalPageRespVO> list = withdrawalMapper.getWithdrawalPage(reqVO);
@@ -343,7 +349,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public AppRevenueChartRespVO getRevenueChart() {
         //仅管理员使用
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         MemberUserDO memberUserDO = memberUserMapper.selectById(getLoginUserId());
         AppRevenueChartRespVO respVO = new AppRevenueChartRespVO();
         respVO.setMoney(memberUserDO.getMoney());
@@ -355,7 +361,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public AppBusinessStatisticsRespVO getBusinessStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getBusinessStatistics(reqVO);
     }
@@ -363,7 +369,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, BigDecimal>> getRevenueStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getRevenueStatistics(reqVO);
     }
@@ -371,7 +377,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Integer>> getOrderStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getOrderStatistics(reqVO);
     }
@@ -379,7 +385,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Integer>> getMemberStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getMemberStatistics(reqVO);
     }
@@ -388,7 +394,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Double>> getRoomUseStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         List<KeyValue<String, Long>> roomUseStatistics = orderInfoMapper.getRoomUseStatistics(reqVO);
         List<KeyValue<String, Double>> resultList = new ArrayList<>();
@@ -409,7 +415,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Double>> getRoomUseHourStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getRoomUseHourStatistics(reqVO);
     }
@@ -418,7 +424,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Transactional
     public void giftCoupon(AppGiftCouponReqVO reqVO) {
         //仅管理员使用 检查权限
-        StorePermissionUtils.checkAdmin(getLoginUserType());
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         CouponInfoDO couponInfoDO = couponInfoMapper.getByIdAndAdmin(reqVO.getCouponId());
         if(!ObjectUtils.isEmpty(couponInfoDO)){
             CouponInfoDO newCouponInfoDO=new CouponInfoDO();

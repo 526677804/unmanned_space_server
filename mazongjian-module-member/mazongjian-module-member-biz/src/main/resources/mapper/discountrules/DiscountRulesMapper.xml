@@ -33,8 +33,11 @@
         select count(1)
         from member_discount_rules
         where deleted = 0
-          AND store_id = #{storeId}
-          and pay_money = #{payMoney}
+        AND store_id = #{storeId}
+        AND pay_money = #{payMoney}
+        <if test="null!=discountId and discountId!=''">
+            and discount_id!=#{discountId}
+        </if>
     </select>
     <select id="getDiscountRulesByStoreId"
             resultType="com.yanzu.module.member.controller.app.order.vo.AppDiscountRulesRespVO">

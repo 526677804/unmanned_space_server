@@ -43,6 +43,7 @@ public interface StoreInfoService {
 
 
     String uploadImg(InputStream inputStream);
+
     /**
      * 创建门店管理
      *
@@ -100,4 +101,6 @@ public interface StoreInfoService {
     List<KeyValue<String, Long>> getStoreList(String name, String cityName);
 
     List<KeyValue<String, Long>> getRoomList(Long storeId);
+
+    void checkPermisson(Long storeId, Long userId, Integer userType, Integer checkType);
 }

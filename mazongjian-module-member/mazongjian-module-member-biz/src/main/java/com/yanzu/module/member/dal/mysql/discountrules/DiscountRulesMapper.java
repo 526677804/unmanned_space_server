@@ -24,7 +24,7 @@ public interface DiscountRulesMapper extends BaseMapperX<DiscountRulesDO> {
 
     int changeDiscountRulesStatus(@Param("id") Long id, @Param("status") Integer status);
 
-    int countByStoreIdAndPayMoney(@Param("storeId") Long storeId, @Param("payMoney") BigDecimal payMoney);
+    int countByStoreIdAndPayMoney(@Param("storeId") Long storeId, @Param("payMoney") BigDecimal payMoney, @Param("discountId") Long discountId);
 
     List<String> getRulesByStoreId(Long storeId);
 
