@@ -36,7 +36,9 @@
 
     </select>
     <select id="getClearPage" resultType="com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO">
-        select o.order_id,
+        select
+        c.clear_id,
+        o.order_id,
         o.order_no,
         o.store_id,
         s.store_name,
@@ -161,8 +163,10 @@
         from member_order_info
         where deleted = 0
         and status in (0, 1, 2)
-        and to_days(create_time) >= to_days(#{startTime})
-        and to_days(create_time) &lt;= to_days(#{endTime})
+        <if test="null!=startTime and null!=endTime">
+            and to_days(create_time) >= to_days(#{startTime})
+            and to_days(create_time) &lt;= to_days(#{endTime})
+        </if>
         <if test="null!=storeId and storeId!=''">
             and store_id=#{storeId}
         </if>
@@ -175,8 +179,10 @@
         from member_order_info
         where deleted = 0
         and status in (0, 1, 2)
-        and to_days(create_time) >= to_days(#{startTime})
-        and to_days(create_time) &lt;= to_days(#{endTime})
+        <if test="null!=startTime and null!=endTime">
+            and to_days(create_time) >= to_days(#{startTime})
+            and to_days(create_time) &lt;= to_days(#{endTime})
+        </if>
         <if test="null!=storeId and storeId!=''">
             and store_id=#{storeId}
         </if>
@@ -192,8 +198,10 @@
         from member_order_info
         where deleted = 0
         and status in (0, 1, 2)
-        and to_days(create_time) >= to_days(#{startTime})
-        and to_days(create_time) &lt;= to_days(#{endTime})
+        <if test="null!=startTime and null!=endTime">
+            and to_days(create_time) >= to_days(#{startTime})
+            and to_days(create_time) &lt;= to_days(#{endTime})
+        </if>
         <if test="null!=storeId and storeId!=''">
             and store_id=#{storeId}
         </if>
@@ -207,8 +215,10 @@
         from member_order_info
         where deleted = 0
         and status in (0, 1, 2)
-        and to_days(create_time) >= to_days(#{startTime})
-        and to_days(create_time) &lt;= to_days(#{endTime})
+        <if test="null!=startTime and null!=endTime">
+            and to_days(create_time) >= to_days(#{startTime})
+            and to_days(create_time) &lt;= to_days(#{endTime})
+        </if>
         <if test="null!=storeId and storeId!=''">
             and store_id=#{storeId}
         </if>
@@ -228,8 +238,10 @@
         from member_order_info
         where deleted = 0
         and status in (1, 2)
-        and to_days(create_time) >= to_days(#{startTime})
-        and to_days(create_time) &lt;= to_days(#{endTime})
+        <if test="null!=startTime and null!=endTime">
+            and to_days(create_time) >= to_days(#{startTime})
+            and to_days(create_time) &lt;= to_days(#{endTime})
+        </if>
         <if test="null!=storeId and storeId!=''">
             and store_id=#{storeId}
         </if>
@@ -245,8 +257,10 @@
         from member_order_info
         where deleted = 0
         and status in ( 1, 2)
-        and to_days(create_time) >= to_days(#{startTime})
-        and to_days(create_time) &lt;= to_days(#{endTime})
+        <if test="null!=startTime and null!=endTime">
+            and to_days(create_time) >= to_days(#{startTime})
+            and to_days(create_time) &lt;= to_days(#{endTime})
+        </if>
         <if test="null!=storeId and storeId!=''">
             and store_id=#{storeId}
         </if>

@@ -99,7 +99,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         } else {
             //修改
             //校验门店权限
-            checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
+            checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
             StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
             storeInfoMapper.updateById(storeInfoDO);
         }
@@ -131,7 +131,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //修改 只有所有者才可以修改
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
             //校验门店权限
-            checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
+            checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
             roomInfoDO.setRoomName(reqVO.getRoomName());
             roomInfoDO.setType(reqVO.getType());
             roomInfoDO.setPrice(reqVO.getPrice());
@@ -161,7 +161,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         //检查修改的权限 只有创建者才可以修改充值优惠规则
         DiscountRulesDO discountRulesDO = discountRulesMapper.selectById(id);
         //校验门店权限
-        checkPermisson(discountRulesDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
+        checkPermisson(discountRulesDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
         if (discountRulesDO.getStatus().compareTo(AppEnum.discount_rules_status.ENABLE.getValue()) == 0) {
             //改成禁用
             discountRulesMapper.changeDiscountRulesStatus(id, 0);
@@ -184,7 +184,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Transactional
     public void saveDiscountRuleDetail(AppDiscountRulesDetailReqVO reqVO) {
         //校验门店权限
-        checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
+        checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
         if (ObjectUtils.isEmpty(reqVO.getDiscountId())) {
             //新增
             //如果本门店已有相同的充值支付金额，则不允许再添加

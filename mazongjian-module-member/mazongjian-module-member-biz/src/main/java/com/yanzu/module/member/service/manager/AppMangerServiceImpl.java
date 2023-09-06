@@ -201,8 +201,16 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Override
     public PageResult<AppClearUserPageRespVO> getClearUserPage(AppClearUserPageReqVO reqVO) {
+        String ids = "";
+        if (ObjectUtils.isEmpty(reqVO.getStoreId())) {
+            //查询该账号权限下的所有保洁员
+            List<String> storeIds = storeUserMapper.getIdsByUserId(getLoginUserId());
+            ids = storeIds.stream().collect(Collectors.joining(","));
+        } else {
+            ids = String.valueOf(reqVO.getStoreId());
+        }
         PageHelper.startPage(reqVO);
-        List<AppClearUserPageRespVO> list = storeUserMapper.getClearUserPage(reqVO);
+        List<AppClearUserPageRespVO> list = storeUserMapper.getClearUserPage(ids);
         PageInfo<AppClearUserPageRespVO> page = new PageInfo<>(list);
         return new PageResult<>(page.getList(), page.getTotal());
     }
@@ -378,7 +386,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public AppBusinessStatisticsRespVO getBusinessStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getBusinessStatistics(reqVO);
     }
@@ -386,7 +394,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, BigDecimal>> getRevenueStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getRevenueStatistics(reqVO);
     }
@@ -394,7 +402,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Integer>> getOrderStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getOrderStatistics(reqVO);
     }
@@ -402,7 +410,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Integer>> getMemberStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getMemberStatistics(reqVO);
     }
@@ -411,7 +419,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Double>> getRoomUseStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         List<KeyValue<String, Long>> roomUseStatistics = orderInfoMapper.getRoomUseStatistics(reqVO);
         List<KeyValue<String, Double>> resultList = new ArrayList<>();
@@ -432,7 +440,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public List<KeyValue<String, Double>> getRoomUseHourStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
-        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getRoomUseHourStatistics(reqVO);
     }
