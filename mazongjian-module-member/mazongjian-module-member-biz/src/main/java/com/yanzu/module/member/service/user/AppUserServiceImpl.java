@@ -9,6 +9,7 @@ import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.annotations.VisibleForTesting;
+import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.infra.api.file.FileApi;
@@ -29,6 +30,7 @@ import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.payorder.PayOrderService;
+import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import com.yanzu.module.system.api.sms.SmsCodeApi;
 import com.yanzu.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
 import com.yanzu.module.system.api.social.SocialUserApi;
@@ -42,6 +44,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
@@ -51,9 +54,8 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.util.servlet.ServletUtils.getClientIP;
@@ -115,6 +117,8 @@ public class AppUserServiceImpl implements AppUserService {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Resource
+    private StoreInfoService storeInfoService;
     private final String EECHARGE_BALANCE_REDIS_SET = "EECHARGE_BALANCE_REDIS_SET";
 
     @Override
@@ -342,6 +346,17 @@ public class AppUserServiceImpl implements AppUserService {
         PageHelper.startPage(reqVO);
         List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
         PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
+        //再查一下门店名称
+        if (!CollectionUtils.isEmpty(page.getList())) {
+            Set<String> storeIdSet = Arrays.stream(page.getList().stream().map(x -> x.getStoreIds()).collect(Collectors.joining(",")).split(",")).collect(Collectors.toSet());
+            List<KeyValue<Long, String>> storeNameInfo = storeInfoService.getNameMapByIds(storeIdSet);
+            Map<String, String> storeNameMap = new HashMap<>(storeNameInfo.size());
+            storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
+            //依次设置名称
+            page.getList().stream().forEach(x -> {
+                x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
+            });
+        }
         return new PageResult<>(page.getList(), page.getTotal());
     }
 

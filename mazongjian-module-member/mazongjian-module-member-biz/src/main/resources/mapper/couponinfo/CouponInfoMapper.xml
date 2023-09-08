@@ -18,8 +18,7 @@
     </select>
     <select id="getCouponPage" resultType="com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO">
         SELECT
-        c.*,( SELECT group_concat( s.store_name ) FROM member_store_info s WHERE s.store_id IN ( c.store_ids ) )
-        AS storeName,o.order_id
+        c.*,o.order_id
         FROM
         member_coupon_info c
         left join member_order_info o ON o.coupon_id=c.coupon_id

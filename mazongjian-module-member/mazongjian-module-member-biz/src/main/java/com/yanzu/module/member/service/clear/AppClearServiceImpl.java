@@ -67,6 +67,7 @@ public class AppClearServiceImpl implements AppClearService {
                 if (ObjectUtils.isEmpty(clearInfoDO.getUserId())) {
                     clearInfoDO.setUserId(getLoginUserId());
                     clearInfoDO.setCreateTime(LocalDateTime.now());
+                    clearInfoDO.setStatus(status);
                     clearInfoMapper.updateById(clearInfoDO);
                 } else {
                     throw exception(CLEAR_ORDER_NOT_JIEDAN);
@@ -78,19 +79,19 @@ public class AppClearServiceImpl implements AppClearService {
                     switch (status) {
                         case 2:
                             //开始订单  只有已接单状态才能开始
-                            clearInfoDO.setStatus(AppEnum.clear_info_status.START.getValue());
                             if (clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.JIEDAN.getValue()) != 0) {
                                 throw exception(CLEAR_ORDER_STATUS_ERROR);
                             }
+                            clearInfoDO.setStatus(AppEnum.clear_info_status.START.getValue());
                             clearInfoDO.setStartTime(LocalDateTime.now());
                             break;
                         case 3:
                             //取消订单 只有已接单状态才能取消
-                            clearInfoDO.setStatus(AppEnum.clear_info_status.CANCEL.getValue());
                             clearInfoDO.setUserId(null);
                             if (clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.JIEDAN.getValue()) != 0) {
                                 throw exception(CLEAR_ORDER_STATUS_ERROR);
                             }
+                            clearInfoDO.setStatus(AppEnum.clear_info_status.CANCEL.getValue());
                             break;
                     }
                     clearInfoMapper.updateById(clearInfoDO);
