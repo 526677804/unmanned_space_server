@@ -82,6 +82,7 @@
         , s.store_id
         , s.store_name
         , r.room_id
+        , r.price
         , r.type roomType
         , r.room_name
         , o.user_id

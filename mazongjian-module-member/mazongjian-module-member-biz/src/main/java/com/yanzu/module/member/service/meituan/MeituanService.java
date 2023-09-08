@@ -15,8 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.GROUP_NO_CHECK_ERROR;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.STORE_TUANGOU_PAY_ERROR;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.meituan
@@ -191,6 +190,9 @@ public class MeituanService {
         JSONObject reverseconsume = meituanClient.reverseconsume(reqVO);
         log.info("美团退款:{}", reverseconsume);
         if (reverseconsume.getInt("code") != 200) {
+            if (reverseconsume.getInt("code") == 1029) {
+                throw exception(GROUP_NO_CANCEL_TIMEOUT_ERROR);
+            }
             throw exception(GROUP_NO_CHECK_ERROR);
         }
         return (JSONObject) reverseconsume.getJSONArray("data").get(0);

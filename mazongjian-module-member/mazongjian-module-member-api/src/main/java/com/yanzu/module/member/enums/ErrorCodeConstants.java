@@ -44,7 +44,7 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_STATUS_CANCEL_OPRATION_ERROR = new ErrorCode(1004004016, "订单已取消，不支持续费！");
     ErrorCode ORDER_STATUS_FINISH_OPRATION_ERROR = new ErrorCode(1004004017, "订单完成已超过5分钟，不支持续费！请重新下单");
     ErrorCode ORDER_START_OPRATION_ERROR = new ErrorCode(1004004018, "无法开始消费当前订单！");
-    ErrorCode ORDER_CANCEL_OPRATION_ERROR = new ErrorCode(1004004019, "无法取消当前订单！");
+    ErrorCode ORDER_CANCEL_OPRATION_ERROR = new ErrorCode(1004004019, "无法取消当前订单！仅允许取消下单不超过5分钟，且状态为未开始、进行中的订单！");
     ErrorCode ORDER_CANCEL_TIMEOUT_ERROR = new ErrorCode(1004004020, "距离预定开始时间不足60分钟，无法取消订单！特殊情况请联系客服");
     ErrorCode ORDER_START_TIME_LT_NOW_ERROR = new ErrorCode(1004004021, "您选择的开始时间已经小于当前时间5分钟，请重新选择开始时间！");
     ErrorCode ORDER_MAX_END_TIME_ERROR = new ErrorCode(1004004022, "订单总时长不能超过24小时，请重新选择预订时间！");
@@ -80,6 +80,7 @@ public interface ErrorCodeConstants {
     ErrorCode GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR = new ErrorCode(1004004081, "团购券的使用时长，与当前订单预定的房间类型不匹配，请检查!");
     ErrorCode STORE_TUANGOU_PAY_ERROR = new ErrorCode(1004004082, "当前店铺暂不支持团购券支付！请选择其他支付方式！");
     ErrorCode GROUP_NO_CHECK_ERROR = new ErrorCode(1004004083, "团购券验证失败！无效/已使用/已过期");
+    ErrorCode GROUP_NO_CANCEL_TIMEOUT_ERROR = new ErrorCode(1004004084, "团购券退款失败,已超过退款时效！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");
     ErrorCode DATA_EXISTS_ERROR = new ErrorCode(1004005001, "数据已存在，请不要重复保存！");
     ErrorCode OPRATION_ERROR = new ErrorCode(1004005002, "非法操作");

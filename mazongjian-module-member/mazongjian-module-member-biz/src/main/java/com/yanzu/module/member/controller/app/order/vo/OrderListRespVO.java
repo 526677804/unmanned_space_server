@@ -38,6 +38,8 @@ public class OrderListRespVO {
     @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "第一总店")
     private Long roomId;
 
+    @Schema(description = "房间单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "18.8")
+    private BigDecimal price;
 
     @Schema(description = "房间类型  值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Integer roomType;

@@ -51,6 +51,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -655,41 +656,37 @@ public class AppOrderServiceImpl implements AppOrderService {
     public void cancelOrder(Long orderId) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
         Long loginUserId = getLoginUserId();
-        Date now = new Date();
         boolean cancelFlag = true;//默认允许取消订单
-        //对于用户  只能取消自己的订单  对于管理员 可以取消自己管理门店的订单
         if (getLoginUserType() != AppEnum.member_user_type.MEMBER.getValue()) {
-            //是管理员  查询自己管理门店
+            //对于管理员 可以取消自己管理门店的订单
             List<String> storeIds = storeUserMapper.getIdsByUserId(loginUserId);
             if (CollectionUtils.isAnyEmpty(storeIds) || !storeIds.contains(String.valueOf(orderInfoDO.getStoreId()))) {
                 throw exception(OPRATION_ERROR);
             }
-            //对于管理员 未开始和进行中的订单 都可以取消  其他则不能
-            cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
-                    || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         } else {
+            //对于用户  只能取消自己的订单
             if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
                 throw exception(OPRATION_ERROR);
             }
-            //对于用户  只有未开始的订单才能取消
-            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) != 0) {
-                cancelFlag = false;
-            }
-            //对于用户 订单开始时间不足60分钟  将无法取消
-            if ((orderInfoDO.getStartTime().getTime() - now.getTime()) < 1000 * 60 * 60) {
-                throw exception(ORDER_CANCEL_TIMEOUT_ERROR);
-            }
         }
-        //只有未开始的订单才能取消
+        //未开始和进行中的订单  并且订单创建时间在5分钟内  都可以取消  其他则不能
+        cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
+                || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
+        LocalDateTime currentDateTime = LocalDateTime.now(); // 当前时间
+        LocalDateTime fiveMinutesAfter = currentDateTime.plus(5, ChronoUnit.MINUTES); // 当前时间5分钟后的时间
+        if (orderInfoDO.getCreateTime().isAfter(fiveMinutesAfter)) {
+            //订单创建时间超过了当前时间5分钟
+            cancelFlag=false;
+        }
         if (cancelFlag) {
-            //取消
+            //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
-
             //判断支付方式
             if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
                 String[] split = orderInfoDO.getGroupPayNo().split("-");//deal_id在前 团购码在后
                 //团购支付的，操作团购退款
-                meituanService.reverseconsume(orderInfoDO.getStoreId(), loginUserId, split[1], split[0]);
+                JSONObject reverseconsume = meituanService.reverseconsume(orderInfoDO.getStoreId(), loginUserId, split[1], split[0]);
+
             } else {
                 if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
                     //微信退款
