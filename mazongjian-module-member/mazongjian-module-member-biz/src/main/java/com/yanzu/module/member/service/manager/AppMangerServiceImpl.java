@@ -245,6 +245,10 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (memberUserDO.getId().compareTo(getLoginUserId()) == 0) {
             throw exception(OPRATION_ERROR);
         }
+        //只能把用户角色改成保洁员  不能同时拥有2个类型
+        if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.MEMBER.getValue()) != 0) {
+            throw exception(USER_TYPE_CHECK_ERROR);
+        }
         //已经绑定的门店不能再绑定
         StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(memberUserDO.getId(), reqVO.getStoreId());
         if (ObjectUtils.isEmpty(storeUserDO)) {
@@ -259,6 +263,11 @@ public class AppMangerServiceImpl implements AppMangerService {
                 storeUserDO.setStoreId(reqVO.getStoreId());
                 storeUserDO.setName(reqVO.getName());
                 storeUserMapper.insert(storeUserDO);
+                //如果用户之前不是保洁员角色 则改成保洁员的用户类型
+                if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.CLEAR.getValue()) != 0) {
+                    memberUserDO.setUserType(AppEnum.member_user_type.CLEAR.getValue());
+                    memberUserMapper.updateById(memberUserDO);
+                }
             } else {
                 throw exception(AUTH_PROMISSION_ERROR);
             }

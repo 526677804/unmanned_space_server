@@ -45,12 +45,13 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_STATUS_FINISH_OPRATION_ERROR = new ErrorCode(1004004017, "订单完成已超过5分钟，不支持续费！请重新下单");
     ErrorCode ORDER_START_OPRATION_ERROR = new ErrorCode(1004004018, "无法开始消费当前订单！");
     ErrorCode ORDER_CANCEL_OPRATION_ERROR = new ErrorCode(1004004019, "无法取消当前订单！");
-    ErrorCode ORDER_CANCEL_TIMEOUT_ERROR = new ErrorCode(1004004020, "距离预定开始时间不足30分钟，无法取消订单！特殊情况请联系客服");
+    ErrorCode ORDER_CANCEL_TIMEOUT_ERROR = new ErrorCode(1004004020, "距离预定开始时间不足60分钟，无法取消订单！特殊情况请联系客服");
     ErrorCode ORDER_START_TIME_LT_NOW_ERROR = new ErrorCode(1004004021, "您选择的开始时间已经小于当前时间5分钟，请重新选择开始时间！");
     ErrorCode ORDER_MAX_END_TIME_ERROR = new ErrorCode(1004004022, "订单总时长不能超过24小时，请重新选择预订时间！");
     ErrorCode DISCOUNTRULE_REPETITION_ERROR = new ErrorCode(1004004024, "该充值金额已存在其他规则中，不允许重复添加！");
     ErrorCode COUPON_USED_ERROR = new ErrorCode(1004004025, "该优惠券已被使用！");
     ErrorCode COUPON_USE_CHECK_ERROR = new ErrorCode(1004004026, "该优惠券不符合使用条件！");
+
     ErrorCode USER_NO_MONEY_WITHDRAWAL_ERROR = new ErrorCode(1004004028, "您当前没有可提现的收入！");
     ErrorCode GAME_CREATE_NUM_MAX_ERROR = new ErrorCode(1004004030, "每日允许创建5条组局信息，请明天再试！");
     ErrorCode GAME_DELETE_USER_ERROR = new ErrorCode(1004004031, "只有组队中或未支付的对局才可以踢出玩家！");
@@ -60,8 +61,10 @@ public interface ErrorCodeConstants {
     ErrorCode GAME_START_TIME_ERROR = new ErrorCode(1004004035, "开始时间不能小于当前时间！");
     ErrorCode ORDER_CHANGE_ROOM_ERROR = new ErrorCode(1004004036, "只能更换到等于或小于当前房间级别的房间！");
     ErrorCode ORDER_NOT_FOUND_ERROR = new ErrorCode(1004004037, "当前不存在可以消费的订单，请先下单！");
+
     ErrorCode CLEAR_ORDER_NOT_JIEDAN = new ErrorCode(1004004040, "订单已经被其他人抢走！");
     ErrorCode CLEAR_ORDER_STATUS_ERROR = new ErrorCode(1004004041, "订单当前状态不允许进行此操作！");
+    ErrorCode USER_TYPE_CHECK_ERROR = new ErrorCode(1004004042, "用户类型检查异常！选择的用户不支持进行此操作！");
     ErrorCode CHECK_STORE_PROMISSION_ERROR = new ErrorCode(1004004050, "选择的门店中包含未授权的门店！");
     ErrorCode MEMBER_PAGE_PARAM_ERROR = new ErrorCode(1004004060, "参数错误！");
     ErrorCode ORDER_PAGE_PARAM_ERROR = new ErrorCode(1004004061, "参数错误！");
@@ -73,6 +76,10 @@ public interface ErrorCodeConstants {
     ErrorCode DEVICE_BIND_ERROR = new ErrorCode(1004004071, "该设备已经被其他门店/房间绑定！");
 
 
+    ErrorCode GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR = new ErrorCode(1004004080, "团购券适用的房间类型，与当前订单预定的房间类型不匹配，请检查!");
+    ErrorCode GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR = new ErrorCode(1004004081, "团购券的使用时长，与当前订单预定的房间类型不匹配，请检查!");
+    ErrorCode STORE_TUANGOU_PAY_ERROR = new ErrorCode(1004004082, "当前店铺暂不支持团购券支付！请选择其他支付方式！");
+    ErrorCode GROUP_NO_CHECK_ERROR = new ErrorCode(1004004083, "团购券验证失败！无效/已使用/已过期");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");
     ErrorCode DATA_EXISTS_ERROR = new ErrorCode(1004005001, "数据已存在，请不要重复保存！");
     ErrorCode OPRATION_ERROR = new ErrorCode(1004005002, "非法操作");

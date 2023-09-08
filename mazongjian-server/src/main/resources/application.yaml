@@ -166,6 +166,7 @@ mazongjian:
       - tmp_report_data_1
       - tmp_report_data_income
       - member_pay_order
+      - member_store_meituan_info
   sms-code: # 短信验证码相关的配置项
     expire-times: 10m
     send-frequency: 1m

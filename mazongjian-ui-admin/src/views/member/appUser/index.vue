@@ -114,7 +114,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="手机号" prop="mobile">
-          <el-input v-model="form.mobile" placeholder="请输入手机号" />
+          <el-input v-model="form.mobile" placeholder="请输入手机号" disabled />
         </el-form-item>
         <el-form-item label="用户类型" prop="userType">
           <el-select v-model="form.userType" placeholder="请选择用户类型">

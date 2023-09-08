@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.order;
 
+import cn.hutool.json.JSONObject;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
@@ -32,6 +33,7 @@ import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
@@ -54,6 +56,7 @@ import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 @Service
@@ -94,6 +97,8 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Autowired
     private WxPayService wxPayService;
 
+    @Resource
+    private MeituanService meituanService;
     @Resource
     private PayOrderMapper payOrderMapper;
     @Resource
@@ -280,6 +285,19 @@ public class AppOrderServiceImpl implements AppOrderService {
         return totalPrice;
     }
 
+    private String getRoomNameByType(Integer roomType) {
+        if (roomType.compareTo(AppEnum.room_type.DA.getValue()) == 0) {
+            return "大包";
+        }
+        if (roomType.compareTo(AppEnum.room_type.ZHONG.getValue()) == 0) {
+            return "中包";
+        }
+        if (roomType.compareTo(AppEnum.room_type.XIAO.getValue()) == 0) {
+            return "小包";
+        }
+        return "";
+    }
+
     private void addPayRecord(BigDecimal price, Integer type, Integer moneyType, BigDecimal totalMoney, BigDecimal totalGiftMoney, String remark, Long userId) {
         UserMoneyBillDO userMoneyBillDO = new UserMoneyBillDO();
         userMoneyBillDO.setMoney(price);
@@ -334,10 +352,29 @@ public class AppOrderServiceImpl implements AppOrderService {
         BigDecimal totalPrice = BigDecimal.valueOf(wxPayOrderRespVO.getPrice() / 100.0);
         //判断是否有填团购券
         if (!ObjectUtils.isEmpty(reqVO.getGroupPayNo())) {
+            reqVO.setPayType(AppEnum.order_pay_type.TUANGOU.getValue());
+            reqVO.setGroupPayNo(reqVO.getGroupPayNo().replaceAll(" ", ""));
             //校验团购券 先取出门店的美团配置信息
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
-
-
+            JSONObject chaxun = meituanService.prepare(storeInfoDO.getStoreId(), reqVO.getGroupPayNo());
+            //取出标题 并按|进行分割,格式为： 包间类型|自定义名称|时间 首位是包间类型，尾部是时间  如：大包|极品房间|4小时
+            String dealTitle = chaxun.getStr("deal_title");
+            String[] split = dealTitle.split("\\|");
+            String roomTypeName = split[0];
+            Integer timeHour = Integer.valueOf(split[split.length - 1].replace("小时", ""));
+            //套餐id，退款的时候要用
+            String deal_id = chaxun.getStr("deal_id");
+            String roomNameByType = getRoomNameByType(roomInfoDO.getType());
+            if (!roomNameByType.equals(roomTypeName)) {
+                throw exception(GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR);
+            }
+            if (l / 60 != timeHour) {
+                throw exception(GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR);
+            }
+            //检验通过  把团购券给使用了
+            JSONObject consume = meituanService.consume(roomInfoDO.getStoreId(), userId, reqVO.getGroupPayNo());
+            //记录下来
+            reqVO.setGroupPayNo(reqVO.getGroupPayNo() + "-" + deal_id);
         } else {
             //非团购支付 判断支付方式
             switch (reqVO.getPayType()) {
@@ -618,23 +655,41 @@ public class AppOrderServiceImpl implements AppOrderService {
     public void cancelOrder(Long orderId) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
         Long loginUserId = getLoginUserId();
-        //只能操作自己的订单
-        if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
-            throw exception(OPRATION_ERROR);
-        }
         Date now = new Date();
-        //只有未开始的订单才能取消
-        if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
-            //订单开始时间不足60分钟  将无法取消
+        boolean cancelFlag = true;//默认允许取消订单
+        //对于用户  只能取消自己的订单  对于管理员 可以取消自己管理门店的订单
+        if (getLoginUserType() != AppEnum.member_user_type.MEMBER.getValue()) {
+            //是管理员  查询自己管理门店
+            List<String> storeIds = storeUserMapper.getIdsByUserId(loginUserId);
+            if (CollectionUtils.isAnyEmpty(storeIds) || !storeIds.contains(String.valueOf(orderInfoDO.getStoreId()))) {
+                throw exception(OPRATION_ERROR);
+            }
+            //对于管理员 未开始和进行中的订单 都可以取消  其他则不能
+            cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
+                    || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
+        } else {
+            if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
+                throw exception(OPRATION_ERROR);
+            }
+            //对于用户  只有未开始的订单才能取消
+            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) != 0) {
+                cancelFlag = false;
+            }
+            //对于用户 订单开始时间不足60分钟  将无法取消
             if ((orderInfoDO.getStartTime().getTime() - now.getTime()) < 1000 * 60 * 60) {
                 throw exception(ORDER_CANCEL_TIMEOUT_ERROR);
             }
+        }
+        //只有未开始的订单才能取消
+        if (cancelFlag) {
             //取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
-            orderInfoMapper.updateById(orderInfoDO);
+
             //判断支付方式
             if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
-                //团购支付的，操作团购退款 todo...
+                String[] split = orderInfoDO.getGroupPayNo().split("-");//deal_id在前 团购码在后
+                //团购支付的，操作团购退款
+                meituanService.reverseconsume(orderInfoDO.getStoreId(), loginUserId, split[1], split[0]);
             } else {
                 if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
                     //微信退款
@@ -690,12 +745,14 @@ public class AppOrderServiceImpl implements AppOrderService {
                         }
                     }
                 }
+                orderInfoDO.setRefundPrice(orderInfoDO.getPrice());
             }
             //取消后  如果后面没有预约了，把房间状态改回空闲
             List<OrderInfoDO> orderInfoDOList = orderInfoMapper.getByRoomId(orderInfoDO.getRoomId(), null);
             if (org.springframework.util.CollectionUtils.isEmpty(orderInfoDOList)) {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), orderInfoDO.getRoomId());
             }
+            orderInfoMapper.updateById(orderInfoDO);
         } else {
             throw exception(ORDER_CANCEL_OPRATION_ERROR);
         }

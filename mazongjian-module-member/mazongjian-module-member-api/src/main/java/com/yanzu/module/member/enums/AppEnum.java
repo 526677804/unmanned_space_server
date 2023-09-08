@@ -152,15 +152,16 @@ public class AppEnum {
     public enum order_pay_type {
         //微信	1
         //余额	2
-        //美团	3
+        //团购	3
         //大众点评	4
         //抖音	5
 
         WEIXIN(1),
         WALLET(2),
-        MEITUAN(3),
-        DAZONG(4),
-        DOUYIN(5);
+        TUANGOU(3),
+        ;
+//        DAZONG(4),
+//        DOUYIN(5);
 
 
         private final Integer value;

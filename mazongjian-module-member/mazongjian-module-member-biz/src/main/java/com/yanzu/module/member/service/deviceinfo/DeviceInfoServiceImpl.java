@@ -6,7 +6,10 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.*;
 import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
+import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
+import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
+import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.iot.IotService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +35,8 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     @Resource
     private DeviceInfoMapper deviceInfoMapper;
 
+    @Resource
+    private RoomInfoMapper roomInfoMapper;
     @Resource
     private IotService iotService;
 
@@ -129,6 +134,15 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         deviceInfoDO.setStoreId(reqVO.getStoreId());
         deviceInfoDO.setRoomId(reqVO.getRoomId());
         deviceInfoMapper.updateById(deviceInfoDO);
+        if(!ObjectUtils.isEmpty(reqVO.getRoomId())){
+            //绑定的房间  如果房间状态为禁用，则改成启用
+            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
+            if(roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue())==0){
+                roomInfoDO.setStatus(AppEnum.room_status.ENABLE.getValue());
+                roomInfoMapper.updateById(roomInfoDO);
+            }
+        }
+
     }
 
 }

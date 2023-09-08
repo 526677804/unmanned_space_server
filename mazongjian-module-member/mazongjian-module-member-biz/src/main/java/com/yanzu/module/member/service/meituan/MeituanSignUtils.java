@@ -67,7 +67,7 @@ public class MeituanSignUtils {
         return sign.toString();
     }
 
-    public static Map<String, String> convertBeanToMap(Object bean) throws IllegalAccessException {
+    public static Map<String, String> convertBeanToMap(Object bean)  {
         // 创建空的Map对象
         Map<String, String> map = new HashMap<>();
         // 获取当前对象的类
@@ -80,7 +80,12 @@ public class MeituanSignUtils {
             for (Field field : fields) {
                 field.setAccessible(true);
                 String fieldName = field.getName();
-                Object fieldValue = field.get(bean);
+                Object fieldValue = null;
+                try {
+                    fieldValue = field.get(bean);
+                } catch (IllegalAccessException e) {
+//                    throw new RuntimeException(e);
+                }
                 map.put(fieldName, String.valueOf(fieldValue));
             }
             // 获取父类

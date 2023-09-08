@@ -14,6 +14,6 @@ public class MeituanScopeReqVO extends MeituanCommonParam {
     //bid
     private String bid;
 
-    private int offset = 0;
-    private int limit = 300;
+    private Integer offset;
+    private Integer limit;
 }

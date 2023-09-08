@@ -299,7 +299,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                     break;
             }
             Integer count = storeUserMapper.checkStorePromission(storeId, userId, type);
-            if (!ObjectUtils.isEmpty(count) && count > 0) {
+            if (count < 1) {
                 throw exception(AUTH_PROMISSION_ERROR);
             }
         }

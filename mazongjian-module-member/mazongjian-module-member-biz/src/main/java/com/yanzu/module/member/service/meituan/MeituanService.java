@@ -4,9 +4,7 @@ import cn.hutool.json.JSONObject;
 import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
 import com.yanzu.module.member.forest.MeituanClient;
-import com.yanzu.module.member.service.meituan.vo.MeituanGetTokenReqVO;
-import com.yanzu.module.member.service.meituan.vo.MeituanRefreshTokenReqVO;
-import com.yanzu.module.member.service.meituan.vo.MeituanScopeReqVO;
+import com.yanzu.module.member.service.meituan.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +12,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+
+import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.GROUP_NO_CHECK_ERROR;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.STORE_TUANGOU_PAY_ERROR;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.meituan
@@ -61,15 +64,19 @@ public class MeituanService {
                 Long expires_in = result.getLong("expires_in");
                 LocalDateTime now = LocalDateTime.now();
                 LocalDateTime expiresDate = now.plusSeconds(expires_in);
+                //把对应美团的open_shop_uuid查询出来
+                String bid = result.getStr("bid");
+                MeituanScopeReqVO scopeReqVO = new MeituanScopeReqVO();
+                scopeReqVO.setBid(bid);
+                scopeReqVO.setSession(access_token);
+                scopeReqVO.setApp_key(appKey);
+                Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
+                String sign = MeituanSignUtils.generateSign(paramMap, secret, MeituanConstants.SIGN_METHOD_MD5);
+                scopeReqVO.setSign(sign);
+                JSONObject scope = meituanClient.scope(scopeReqVO);
+                log.info("首次获取授权,店铺信息查询结果:{}", scope);
                 if (ObjectUtils.isEmpty(storeMeituanInfoDO)) {
-                    //不存在时 属于第一次获取，需要把对应美团的open_shop_uuid查询出来
-                    String bid = result.getStr("bid");
-                    MeituanScopeReqVO scopeReqVO = new MeituanScopeReqVO();
-                    scopeReqVO.setBid(bid);
-                    scopeReqVO.setSession(access_token);
-                    scopeReqVO.setApp_key(appKey);
-                    JSONObject scope = meituanClient.scope(scopeReqVO);
-                    log.info("首次获取授权,店铺信息查询结果:{}", scope);
+                    //不存在时 属于第一次获取
                     storeMeituanInfoDO = new StoreMeituanInfoDO();
                     storeMeituanInfoDO.setStoreId(storeId);
                     storeMeituanInfoDO.setAccessToken(access_token);
@@ -116,10 +123,76 @@ public class MeituanService {
         return "fail";
     }
 
-
-    private String chaxun(Long storeId, Long userId, String receiptCode, Integer price) {
-        return "deal_id";
+    //查询美团券信息
+    public JSONObject prepare(Long storeId, String receiptCode) {
+        //查询出店铺id
+        StoreMeituanInfoDO meituan = storeMeituanInfoMapper.getByStoreId(storeId);
+        if (ObjectUtils.isEmpty(meituan) || ObjectUtils.isEmpty(meituan.getOpenShopUuid())) {
+            throw exception(STORE_TUANGOU_PAY_ERROR);
+        }
+        MeituanPrepareReqVO reqVO = new MeituanPrepareReqVO();
+        reqVO.setApp_key(appKey);
+        reqVO.setSession(meituan.getAccessToken());
+        reqVO.setReceipt_code(receiptCode);
+        reqVO.setOpen_shop_uuid(meituan.getOpenShopUuid());
+        Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
+        String sign = MeituanSignUtils.generateSign(paramMap, secret, MeituanConstants.SIGN_METHOD_MD5);
+        reqVO.setSign(sign);
+        JSONObject prepare = meituanClient.prepare(reqVO);
+        log.info("美团查询券信息:{}", prepare);
+        if (prepare.getInt("code") != 200) {
+            throw exception(GROUP_NO_CHECK_ERROR);
+        }
+        return prepare.getJSONObject("data");
     }
 
 
+    public JSONObject consume(Long storeId, Long userId, String receiptCode) {
+        //查询出店铺id
+        StoreMeituanInfoDO meituan = storeMeituanInfoMapper.getByStoreId(storeId);
+        if (ObjectUtils.isEmpty(meituan) || ObjectUtils.isEmpty(meituan.getOpenShopUuid())) {
+            throw exception(STORE_TUANGOU_PAY_ERROR);
+        }
+        MeituanConsumeReqVO reqVO = new MeituanConsumeReqVO();
+        reqVO.setApp_key(appKey);
+        reqVO.setSession(meituan.getAccessToken());
+        reqVO.setOpen_shop_uuid(meituan.getOpenShopUuid());
+        reqVO.setReceipt_code(receiptCode);
+        reqVO.setApp_shop_accountname(String.valueOf(userId));
+        reqVO.setApp_shop_account(String.valueOf(userId));
+        Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
+        String sign = MeituanSignUtils.generateSign(paramMap, secret, MeituanConstants.SIGN_METHOD_MD5);
+        reqVO.setSign(sign);
+        JSONObject consume = meituanClient.consume(reqVO);
+        log.info("美团验券:{}", consume);
+        if (consume.getInt("code") != 200) {
+            throw exception(GROUP_NO_CHECK_ERROR);
+        }
+        return (JSONObject) consume.getJSONArray("data").get(0);
+    }
+
+    public JSONObject reverseconsume(Long storeId, Long userId, String receiptCode, String dealId) {
+        //查询出店铺id
+        StoreMeituanInfoDO meituan = storeMeituanInfoMapper.getByStoreId(storeId);
+        if (ObjectUtils.isEmpty(meituan) || ObjectUtils.isEmpty(meituan.getOpenShopUuid())) {
+            throw exception(STORE_TUANGOU_PAY_ERROR);
+        }
+        MeituanReverseconsumeReqVO reqVO = new MeituanReverseconsumeReqVO();
+        reqVO.setApp_deal_id(dealId);
+        reqVO.setReceipt_code(receiptCode);
+        reqVO.setSession(meituan.getAccessToken());
+        reqVO.setOpen_shop_uuid(meituan.getOpenShopUuid());
+        reqVO.setApp_key(appKey);
+        reqVO.setApp_shop_accountname(String.valueOf(userId));
+        reqVO.setApp_shop_account(String.valueOf(userId));
+        Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
+        String sign = MeituanSignUtils.generateSign(paramMap, secret, MeituanConstants.SIGN_METHOD_MD5);
+        reqVO.setSign(sign);
+        JSONObject reverseconsume = meituanClient.reverseconsume(reqVO);
+        log.info("美团退款:{}", reverseconsume);
+        if (reverseconsume.getInt("code") != 200) {
+            throw exception(GROUP_NO_CHECK_ERROR);
+        }
+        return (JSONObject) reverseconsume.getJSONArray("data").get(0);
+    }
 }
