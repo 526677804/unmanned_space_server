@@ -1,7 +1,6 @@
 package com.yanzu.module.member.dal.mysql.storeuser;
 
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
-import com.yanzu.module.member.controller.app.manager.vo.AppClearUserPageReqVO;
 import com.yanzu.module.member.controller.app.manager.vo.AppClearUserPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppGiftBalanceListRespVO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
@@ -23,7 +22,7 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
 
     List<AppGiftBalanceListRespVO> getGiftBalanceList(Long userId);
 
-    Long checkStorePromission(@Param("storeId") Long storeId, @Param("userId") Long userId, @Param("type") String type);
+    Integer checkStorePromission(@Param("storeId") Long storeId, @Param("userId") Long userId, @Param("type") String type);
 
     List<StoreUserDO> getByUserIdAndType(@Param("userId") Long userId, @Param("type") Integer type);
 

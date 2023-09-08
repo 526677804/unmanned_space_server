@@ -41,8 +41,8 @@
           and s.deleted = 0
         order by su.gift_balance desc
     </select>
-    <select id="checkStorePromission" resultType="java.lang.Long">
-        select id
+    <select id="checkStorePromission" resultType="java.lang.Integer">
+        select count(1)
         from member_store_user
         where deleted = 0
           and type in (#{type})

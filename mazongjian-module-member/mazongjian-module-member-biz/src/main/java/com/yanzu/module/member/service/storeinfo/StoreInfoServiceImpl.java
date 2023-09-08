@@ -298,8 +298,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                     type = "12,13,14";
                     break;
             }
-            Long id = storeUserMapper.checkStorePromission(storeId, userId, type);
-            if (ObjectUtils.isEmpty(id)) {
+            Integer count = storeUserMapper.checkStorePromission(storeId, userId, type);
+            if (!ObjectUtils.isEmpty(count) && count > 0) {
                 throw exception(AUTH_PROMISSION_ERROR);
             }
         }
