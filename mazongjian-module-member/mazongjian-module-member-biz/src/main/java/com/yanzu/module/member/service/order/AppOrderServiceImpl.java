@@ -778,7 +778,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 long l = now.getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime());
                 Date endTime = new Date(l);
                 //校验时间冲突
-                preOrder(orderInfoDO.getRoomId(), now, endTime, null, null, false);
+                preOrder(orderInfoDO.getRoomId(), now, endTime, null, orderId, false);
                 //校验通过 更改订单的开始和完成时间
                 orderInfoDO.setStartTime(now);
                 orderInfoDO.setEndTime(endTime);
