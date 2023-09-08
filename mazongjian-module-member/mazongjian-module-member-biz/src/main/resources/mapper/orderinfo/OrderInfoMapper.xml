@@ -121,6 +121,7 @@
         select o.order_id
         , o.order_no
         , r.room_name
+        , r.price roomPrice
         , o.room_id
         , o.store_id
         , r.type roomType

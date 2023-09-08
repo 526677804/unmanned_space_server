@@ -29,6 +29,9 @@ public class OrderInfoAppRespVO {
     @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Long roomId;
 
+    @Schema(description = "房间单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    private BigDecimal roomPrice;
+
     @Schema(description = "房间名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "2319")
     private String roomName;
 
