@@ -77,9 +77,10 @@ public class AppGameServiceImpl implements AppGameService {
         reqVO.setCurrentUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
         List<AppGameInfoRespVO> list = gameInfoMapper.getOrderPage(reqVO);
-        if (!CollectionUtils.isEmpty(list)) {
+        PageInfo<AppGameInfoRespVO> page = new PageInfo(list);
+        if (!CollectionUtils.isEmpty(page.getList())) {
             //取出所有玩家
-            String playUserIds = list.stream().map(x -> x.getPlayUserIds()).collect(Collectors.joining(","));
+            String playUserIds = page.getList().stream().map(x -> x.getPlayUserIds()).collect(Collectors.joining(","));
             //查询出这些人的信息
             List<AppGameUserListRespVO> userListRespVOList = appUserMapper.getInfoByUserIds(playUserIds);
             //转map
@@ -95,7 +96,7 @@ public class AppGameServiceImpl implements AppGameService {
             }
         }
 
-        PageInfo<AppGameInfoRespVO> page = new PageInfo(list);
+
         return new PageResult<>(page.getList(), page.getTotal());
     }
 
@@ -135,7 +136,7 @@ public class AppGameServiceImpl implements AppGameService {
     public void join(Long gameId) {
         Long loginUserId = getLoginUserId();
         GameInfoDO gameInfoDO = gameInfoMapper.selectById(gameId);
-        List<String> strings = Arrays.asList(gameInfoDO.getPlayUserIds().split(","));
+        List<String> strings = new ArrayList<>(Arrays.asList(gameInfoDO.getPlayUserIds().split(",")));
         //只有组局中和已组局的状态（未支付）才能加入或退出
         if (gameInfoDO.getStatus().compareTo(AppEnum.game_status.PROGRESS.getValue()) == 0 || gameInfoDO.getStatus().compareTo(AppEnum.game_status.SUCCESS.getValue()) == 0) {
             //判断在不在对局里面存在
