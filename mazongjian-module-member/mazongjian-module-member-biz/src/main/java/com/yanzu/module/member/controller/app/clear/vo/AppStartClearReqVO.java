@@ -23,4 +23,8 @@ public class AppStartClearReqVO {
     @NotNull(message = "定位信息不能为空")
     private Double lon;
 
+    @Schema(description = "任务图片url 逗号分隔")
+    @NotNull(message = "任务图片信息不能为空")
+    private String  imgs;
+
 }

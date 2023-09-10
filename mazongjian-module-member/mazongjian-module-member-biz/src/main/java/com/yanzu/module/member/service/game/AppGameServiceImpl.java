@@ -112,7 +112,7 @@ public class AppGameServiceImpl implements AppGameService {
             }
             //只有组局中和已组局的状态（未支付）才能踢出
             if (gameInfoDO.getStatus().compareTo(AppEnum.game_status.PROGRESS.getValue()) == 0 || gameInfoDO.getStatus().compareTo(AppEnum.game_status.SUCCESS.getValue()) == 0) {
-                List<String> strings = Arrays.asList(gameInfoDO.getPlayUserIds().split(","));
+                List<String> strings = new ArrayList<>(Arrays.asList(gameInfoDO.getPlayUserIds().split(",")));
                 if (strings.contains(String.valueOf(userId))) {
                     strings.remove(String.valueOf(userId));
                     gameInfoDO.setPlayUserIds(strings.stream().collect(Collectors.joining(",")));

@@ -168,9 +168,10 @@ public class AppClearServiceImpl implements AppClearService {
         if (clearInfoDO.getUserId().compareTo(getLoginUserId()) == 0
                 && clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.START.getValue()) == 0) {
             //校验图片的数量
-            if (StringUtils.isEmpty(clearInfoDO.getImgs())) {
+            if (StringUtils.isEmpty(reqVO.getImgs())) {
                 throw exception(CLEAR_IMAGE_NOT_FOUNT_ERROR);
             }
+            clearInfoDO.setImgs(reqVO.getImgs());
             clearInfoDO.setStatus(AppEnum.clear_info_status.FINISH.getValue());
             clearInfoDO.setFinishTime(LocalDateTime.now());
             clearInfoMapper.updateById(clearInfoDO);

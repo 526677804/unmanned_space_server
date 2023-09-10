@@ -413,6 +413,16 @@ public class AppUserServiceImpl implements AppUserService {
         return respVO;
     }
 
+    @Override
+    public BigDecimal getGiftBalance(Long storeId) {
+        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(getLoginUserId(), storeId);
+        if (ObjectUtils.isEmpty(storeUserDO)) {
+            return BigDecimal.ZERO;
+        } else {
+            return storeUserDO.getGiftBalance();
+        }
+    }
+
     private String getOrderNo() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDateTime currentDateTime = LocalDateTime.now();

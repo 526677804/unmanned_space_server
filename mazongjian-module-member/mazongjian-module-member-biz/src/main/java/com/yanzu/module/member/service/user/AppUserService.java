@@ -9,6 +9,7 @@ import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -120,4 +121,6 @@ public interface AppUserService {
     void updateUserAvatarUrl(Long userId, String avatarUrl);
 
     WxPayOrderRespVO preRechargeBalance(AppPreRechargeBalanceReqVO reqVO);
+
+    BigDecimal getGiftBalance(Long storeId);
 }
