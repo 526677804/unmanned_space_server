@@ -789,6 +789,8 @@ public class AppOrderServiceImpl implements AppOrderService {
             orderInfoMapper.updateById(orderInfoDO);
             //房间改为进行中
             roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
+            //将该房间历史的保洁订单，未开始的  改成取消
+            clearInfoMapper.cancelByRoomId(orderInfoDO.getRoomId());
             //新增保洁订单
             ClearInfoDO clearInfoDO = new ClearInfoDO();
             clearInfoDO.setOrderId(orderId);
@@ -885,6 +887,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
         }
         log.info("==========     订单定时检查任务执行完成     ==========");
+
     }
 
     @Override

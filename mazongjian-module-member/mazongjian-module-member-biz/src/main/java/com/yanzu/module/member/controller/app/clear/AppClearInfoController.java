@@ -5,7 +5,6 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.clear.vo.*;
 import com.yanzu.module.member.service.clear.AppClearService;
-import com.yanzu.module.member.service.device.DeviceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,10 +26,6 @@ public class AppClearInfoController {
 
     @Resource
     private AppClearService appClearService;
-
-
-    @Resource
-    private DeviceService deviceService;
 
 
     @PostMapping("/getClearPage")

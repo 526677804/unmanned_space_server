@@ -25,4 +25,6 @@ public interface ClearInfoMapper extends BaseMapperX<ClearInfoDO> {
 
     //tpye  ->  1=日 2=月 3=全部
     int countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") Integer status, @Param("type") int type, @Param("dateStr") String dateStr);
+
+    int cancelByRoomId(Long roomId);
 }
