@@ -676,7 +676,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         LocalDateTime fiveMinutesAfter = currentDateTime.plus(5, ChronoUnit.MINUTES); // 当前时间5分钟后的时间
         if (orderInfoDO.getCreateTime().isAfter(fiveMinutesAfter)) {
             //订单创建时间超过了当前时间5分钟
-            cancelFlag=false;
+            cancelFlag = false;
         }
         if (cancelFlag) {
             //设置订单状态为取消
@@ -686,7 +686,6 @@ public class AppOrderServiceImpl implements AppOrderService {
                 String[] split = orderInfoDO.getGroupPayNo().split("-");//deal_id在前 团购码在后
                 //团购支付的，操作团购退款
                 JSONObject reverseconsume = meituanService.reverseconsume(orderInfoDO.getStoreId(), loginUserId, split[1], split[0]);
-
             } else {
                 if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
                     //微信退款
@@ -745,7 +744,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 orderInfoDO.setRefundPrice(orderInfoDO.getPrice());
             }
             //取消后  如果后面没有预约了，把房间状态改回空闲
-            List<OrderInfoDO> orderInfoDOList = orderInfoMapper.getByRoomId(orderInfoDO.getRoomId(), null);
+            List<OrderInfoDO> orderInfoDOList = orderInfoMapper.getByRoomId(orderInfoDO.getRoomId(), orderId);
             if (org.springframework.util.CollectionUtils.isEmpty(orderInfoDOList)) {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), orderInfoDO.getRoomId());
             }
