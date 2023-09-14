@@ -321,7 +321,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             throw exception(ORDER_TIME_MIN_ERROR);
         }
         //定义一些参数 备用
-        String orderNo = getOrderNo();
+        String orderNo = reqVO.getOrderNo();
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
         BigDecimal oldPrice = BigDecimal.valueOf(l / 60.0).multiply(roomInfoDO.getPrice());//原价
         //下单之前仍然再检查一遍 并计算出应付总金额
@@ -658,10 +658,12 @@ public class AppOrderServiceImpl implements AppOrderService {
         Long loginUserId = getLoginUserId();
         boolean cancelFlag = true;//默认允许取消订单
         if (getLoginUserType() != AppEnum.member_user_type.MEMBER.getValue()) {
-            //对于管理员 可以取消自己管理门店的订单
-            List<String> storeIds = storeUserMapper.getIdsByUserId(loginUserId);
-            if (CollectionUtils.isAnyEmpty(storeIds) || !storeIds.contains(String.valueOf(orderInfoDO.getStoreId()))) {
-                throw exception(OPRATION_ERROR);
+            if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
+                //对于管理员 可以取消自己管理门店的订单
+                List<String> storeIds = storeUserMapper.getIdsByUserId(loginUserId);
+                if (CollectionUtils.isAnyEmpty(storeIds) || !storeIds.contains(String.valueOf(orderInfoDO.getStoreId()))) {
+                    throw exception(OPRATION_ERROR);
+                }
             }
         } else {
             //对于用户  只能取消自己的订单
@@ -691,7 +693,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                     //微信退款
                     PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
                     WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-                    refundRequest.setOutRefundNo(orderInfoDO.getOrderNo());
+                    refundRequest.setOutTradeNo(orderInfoDO.getOrderNo());
+                    refundRequest.setOutRefundNo("TK" + orderInfoDO.getOrderNo());
                     refundRequest.setTotalFee(payOrderDO.getPrice());
                     refundRequest.setRefundFee(payOrderDO.getPrice());
                     try {
@@ -701,6 +704,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                         payOrderDO.setRefundTime(LocalDateTime.now());
                         payOrderMapper.updateById(payOrderDO);
                     } catch (WxPayException e) {
+                        e.printStackTrace();
 //                        throw new RuntimeException(e);
                         throw exception(USER_WEIXIN_PAY_REFUND_ERROR);
                     }
