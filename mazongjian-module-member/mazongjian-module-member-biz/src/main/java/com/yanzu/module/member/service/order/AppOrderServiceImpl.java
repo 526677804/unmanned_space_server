@@ -256,7 +256,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             switch (couponInfoDO.getType()) {
                 case 1://1抵扣券
                     //判断门槛
-                    if (couponInfoDO.getMinUsePrice().compareTo(hour) < 0) {
+                    if (couponInfoDO.getMinUsePrice().compareTo(hour) > 0) {
                         throw exception(COUPON_MIN_USER_PRICE_ERROR);
                     }
                     //抵扣 并重新算价格
@@ -270,7 +270,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     break;
                 case 2://2满减券
                     //判断门槛
-                    if (couponInfoDO.getMinUsePrice().compareTo(totalPrice) < 0) {
+                    if (couponInfoDO.getMinUsePrice().compareTo(totalPrice) > 0) {
                         throw exception(COUPON_MIN_USER_PRICE_ERROR);
                     }
                     //抵扣 并重新算价格
@@ -741,7 +741,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                         }
                     }
                 }
-                orderInfoDO.setRefundPrice(orderInfoDO.getPrice());
+                orderInfoDO.setRefundPrice(orderInfoDO.getPayPrice());
             }
             //取消后  如果后面没有预约了，把房间状态改回空闲
             List<OrderInfoDO> orderInfoDOList = orderInfoMapper.getByRoomId(orderInfoDO.getRoomId(), orderId);

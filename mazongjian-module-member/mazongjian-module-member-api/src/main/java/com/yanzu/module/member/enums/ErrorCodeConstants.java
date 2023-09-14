@@ -33,7 +33,7 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_START_TIME_ERROR = new ErrorCode(1004004005, "订单开始时间不能小于当前时间！");
     ErrorCode ORDER_START_TIME_GT_END_ERROR = new ErrorCode(1004004006, "订单开始时间不能小于结束时间！");
     ErrorCode ORDER_START_TIME_MAX_ERROR = new ErrorCode(1004004007, "订单开始时间最早不能超过5天！");
-    ErrorCode ORDER_TIME_CHECK_ERROR = new ErrorCode(1004004008, "当前选择的订单时间不可用，请检查后提交！");
+    ErrorCode ORDER_TIME_CHECK_ERROR = new ErrorCode(1004004008, "您选择的时间段在该房间不可用，请修改或更换房间！");
     ErrorCode TIME_UNIT_ERROR = new ErrorCode(1004004009, "时间单位错误，必须以0.5小时/30分钟为一个单位！");
     ErrorCode PAY_TYPE_ERROR = new ErrorCode(1004004010, "支付方式选择错误！");
     ErrorCode ORDER_TIME_MIN_ERROR = new ErrorCode(1004004011, "选择的时长不能低于4个小时！");

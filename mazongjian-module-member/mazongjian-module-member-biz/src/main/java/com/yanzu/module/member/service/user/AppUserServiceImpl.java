@@ -354,7 +354,7 @@ public class AppUserServiceImpl implements AppUserService {
             storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
             //依次设置名称
             page.getList().stream().forEach(x -> {
-                x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
+                x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).filter(v->storeNameMap.containsKey(v)).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
             });
         }
         return new PageResult<>(page.getList(), page.getTotal());
