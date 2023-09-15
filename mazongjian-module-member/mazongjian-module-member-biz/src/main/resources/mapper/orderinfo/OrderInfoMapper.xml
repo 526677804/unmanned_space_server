@@ -107,7 +107,7 @@
             and o.user_id=#{userId}
         </if>
         <if test="null!=storeIds and storeIds!=''">
-            and o.store_id in (#{storeIds})
+            and o.store_id in (${storeIds})
         </if>
         <if test="null!=status">
             and o.status=#{status}

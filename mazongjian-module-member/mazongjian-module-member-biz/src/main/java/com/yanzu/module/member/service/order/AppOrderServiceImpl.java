@@ -322,6 +322,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //定义一些参数 备用
         String orderNo = reqVO.getOrderNo();
+        if (ObjectUtils.isEmpty(orderNo)) {
+            orderNo = getOrderNo();
+        }
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
         BigDecimal oldPrice = BigDecimal.valueOf(l / 60.0).multiply(roomInfoDO.getPrice());//原价
         //下单之前仍然再检查一遍 并计算出应付总金额

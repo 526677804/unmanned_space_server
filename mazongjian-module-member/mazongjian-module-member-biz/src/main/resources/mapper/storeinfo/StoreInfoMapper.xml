@@ -29,6 +29,7 @@
           and status = 1
           and exprice_time > now()
         order by pay_money asc
+
     </select>
     <select id="getCityList" resultType="java.lang.String">
         select distinct city_name
