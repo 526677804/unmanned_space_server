@@ -1,6 +1,7 @@
 package com.yanzu.module.member.controller.app.user.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -63,7 +64,11 @@ public class AppCouponPageRespVO {
 
     @Schema(description = "状态 值见字典", example = "1")
     private Integer status;
+
     @Schema(description = "被使用的订单id", example = "1")
     private Long orderId;
+
+    @Schema(description = "是否使用（下单的时候判断）", example = "1")
+    private Boolean enable;
 
 }

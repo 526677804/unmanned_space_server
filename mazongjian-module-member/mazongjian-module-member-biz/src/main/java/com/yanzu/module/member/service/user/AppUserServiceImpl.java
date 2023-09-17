@@ -19,12 +19,14 @@ import com.yanzu.module.member.convert.franchiseinfo.FranchiseInfoConvert;
 import com.yanzu.module.member.convert.user.UserConvert;
 import com.yanzu.module.member.dal.dataobject.franchiseinfo.FranchiseInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
+import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.franchiseinfo.FranchiseInfoMapper;
+import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
@@ -105,6 +107,8 @@ public class AppUserServiceImpl implements AppUserService {
     @Resource
     private DiscountRulesMapper discountRulesMapper;
 
+    @Resource
+    private RoomInfoMapper roomInfoMapper;
     @Resource
     private SocialUserApi socialUserApi;
 
@@ -354,7 +358,21 @@ public class AppUserServiceImpl implements AppUserService {
             storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
             //依次设置名称
             page.getList().stream().forEach(x -> {
-                x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).filter(v->storeNameMap.containsKey(v)).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
+                x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).filter(v -> storeNameMap.containsKey(v)).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
+            });
+        }
+        if (!ObjectUtils.isEmpty(reqVO.getRoomId())) {
+            //下单的时候  要返回可用状态  先计算出房间单价
+            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
+            BigDecimal price = roomInfoDO.getPrice().multiply(reqVO.getOrderHour());
+            page.getList().stream().forEach(x -> {
+                if (x.getType().compareTo(AppEnum.coupon_type.DIKOU.getValue()) == 0) {
+                    //抵扣时长
+                    x.setEnable(reqVO.getOrderHour().compareTo(x.getMinUsePrice()) >= 0);
+                } else if (x.getType().compareTo(AppEnum.coupon_type.MANJIAN.getValue()) == 0) {
+                    //满减
+                    x.setEnable(price.compareTo(x.getMinUsePrice()) >= 0);
+                }
             });
         }
         return new PageResult<>(page.getList(), page.getTotal());

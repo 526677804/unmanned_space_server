@@ -145,8 +145,8 @@ public class AppUserController {
         return success(userService.getCouponPage(reqVO));
     }
 
-    @Autowired
-    private MeituanClient meituanClient;
+//    @Autowired
+//    private MeituanClient meituanClient;
 
 //    @GetMapping("/test")
 //    @Operation(summary = "test")

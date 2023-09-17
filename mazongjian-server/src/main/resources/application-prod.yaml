@@ -1,5 +1,5 @@
 server:
-  port: 8900
+  port: 8800
 
 --- #################### 数据库相关配置 ####################
 
@@ -45,19 +45,19 @@ spring:
       datasource:
         master:
           #          name: mazongjian
-          url: jdbc:mysql://139.155.146.244:8306/mazongjian_dev?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://139.155.146.244:8306/mazongjian?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           #          url: jdbc:mysql://127.0.0.1:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT # MySQL Connector/J 5.X 连接的示例
           #          url: jdbc:postgresql://127.0.0.1:5432/${spring.datasource.dynamic.datasource.slave.name} # PostgreSQL 连接的示例
           #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
           #          url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=${spring.datasource.dynamic.datasource.master.name} # SQLServer 连接的示例
-          username: mazongjian_dev
-          password: p6asJ37e2b8BkTyE
+          username: mazongjian
+          password: 4WpEGdbkHd4YGrpN
 
   # Redis 配置。Redisson 默认的配置足够使用，一般不需要进行调优
   redis:
     host: 139.155.146.244 # 地址
     port: 8379 # 端口
-    database: 12 # 数据库索引
+    database: 11 # 数据库索引
     password: FuY6c4SeEqCWuNB4 # 密码，建议生产环境开启
 
 --- #################### 定时任务相关配置 ####################
@@ -181,8 +181,8 @@ mazongjian:
       - ${spring.boot.admin.context-path}/** # 不处理 Spring Boot Admin 的请求
       - ${management.endpoints.web.base-path}/** # 不处理 Actuator 的请求
   pay:
-    order-notify-url: https://api-dev.scyanzu.com/admin-api/pay/notify/order # 支付渠道的【支付】回调地址
-    refund-notify-url: https://api-dev.scyanzu.com/admin-api/pay/notify/refund # 支付渠道的【退款】回调地址
+    order-notify-url: https://api.scyanzu.com/admin-api/pay/notify/order # 支付渠道的【支付】回调地址
+    refund-notify-url: https://api.scyanzu.com/admin-api/pay/notify/refund # 支付渠道的【退款】回调地址
   access-log: # 访问日志的配置项
     enable: true
   error-code: # 错误码相关配置项
