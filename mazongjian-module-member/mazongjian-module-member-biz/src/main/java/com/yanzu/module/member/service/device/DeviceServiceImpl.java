@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.device;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
@@ -8,6 +9,7 @@ import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.service.iot.IotService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -27,6 +29,7 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
  */
 @Service
 @Validated
+@Slf4j
 public class DeviceServiceImpl implements DeviceService {
 
 
@@ -243,5 +246,34 @@ public class DeviceServiceImpl implements DeviceService {
                 throw exception(DEVICE_OPRATION_ERROR);
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public void weimenjin(JSONObject body) {
+        //收到智能硬件回调:{"device_sn":"W71F9783B28","cmd":"notify","msg_id":0,"type":2,"app_id":"","cmd_type":"notify","info":{"notify_type":"on-off","state":1}}
+        //收到智能硬件回调:{"device_sn":"W71F9783B28","cmd":"notify","msg_id":0,"type":2,"app_id":"","cmd_type":"notify","info":{"notify_type":"on-off","state":0}}
+        String device_sn = body.getString("device_sn");
+        if (body.getString("cmd").equals("notify")) {
+            JSONObject info = body.getJSONObject("info");
+            Integer state = info.getInteger("state");
+            if (state == 1) {
+                //上线
+                log.info("智能硬件，上线，设备:{}", device_sn);
+                deviceInfoMapper.updateStatusBySN(device_sn, 1);
+            } else {
+                //下线
+                log.info("智能硬件，离线，设备:{}", device_sn);
+                deviceInfoMapper.updateStatusBySN(device_sn, 0);
+            }
+        }
+
+
+        //收到智能硬件回调:{"device_sn":"W70F9783D78","cmd":"OnLine","msg_id":0,"type":0,"app_id":"","cmd_type":"OnLine","info":{"time":1694930336}}
+
+        //收到智能硬件回调:{"device_sn":"W70F9783D78","cmd":"dev_reg","msg_id":0,"type":2,"app_id":"","cmd_type":"dev_reg","info":{"hw_ver":"1.0.0","iccid":"535479429655B2D5","imei":"6055F9783D78","project":"WMJ_CLOUDSPEAKER_C3","rssi":-52,"sw_ver":"1.0.7","username":"W70F9783D78"}}
+        //{"device_sn":"W70F9783D78","cmd":"dev_reg","msg_id":0,"type":2,"app_id":"","cmd_type":"dev_reg","info":{"hw_ver":"1.0.0","iccid":"535479429655B2D5","imei":"6055F9783D78","project":"WMJ_CLOUDSPEAKER_C3","rssi":-52,"sw_ver":"1.0.7","username":"W70F9783D78"}}
+
+
     }
 }

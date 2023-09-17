@@ -104,7 +104,7 @@
         s.*,
         ( SELECT count( 1 ) FROM member_room_info WHERE deleted = 0 AND store_id = s.store_id ) roomNum,
         ( SELECT count( 1 ) FROM member_device_info WHERE deleted = 0 AND store_id = s.store_id ) deviceNum,
-        ( SELECT count( 1 ) FROM member_device_info WHERE deleted = 0 AND STATUS = 1 AND room_id = s.store_id )
+        ( SELECT count( 1 ) FROM member_device_info WHERE deleted = 0 AND STATUS = 1 AND store_id = s.store_id )
         deviceOnlineNum
         FROM
         member_store_info s

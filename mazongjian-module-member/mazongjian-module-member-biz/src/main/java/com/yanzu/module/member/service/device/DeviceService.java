@@ -1,5 +1,7 @@
 package com.yanzu.module.member.service.device;
 
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.device
  * @DESCRIPTION:
@@ -19,4 +21,6 @@ public interface DeviceService {
      * @param type   提示语类型 1欢迎语 2结束时间30分钟提醒  3结束时间15分钟提示  4 结束时间5分钟提醒
      */
     void runSound(Long roomId, Integer type);
+
+    void weimenjin(JSONObject body);
 }

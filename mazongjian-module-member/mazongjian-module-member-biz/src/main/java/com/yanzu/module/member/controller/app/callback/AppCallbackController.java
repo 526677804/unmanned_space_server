@@ -1,6 +1,8 @@
 package com.yanzu.module.member.controller.app.callback;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
+import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +35,10 @@ public class AppCallbackController {
     @Resource
     private MeituanService meituanService;
 
+    @Resource
+    private DeviceService deviceService;
+
+
     @PostMapping("/wxpay/update")
     @Operation(summary = "更新订单为已支付")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
@@ -58,5 +64,15 @@ public class AppCallbackController {
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public String meituan(@RequestParam("auth_code") String auth_code, @RequestParam("state") String state) {
         return meituanService.getToken(auth_code, state);
+    }
+
+    @PostMapping(value = "/weimenjin")
+    @Operation(summary = "微门禁回调")
+    @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
+    @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
+    public void weimenjin(@RequestBody(required = false) JSONObject body) {
+        log.info("收到智能硬件回调:{}",body);
+        System.out.println(body);
+         deviceService.weimenjin(body);
     }
 }
