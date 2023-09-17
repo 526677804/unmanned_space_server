@@ -691,9 +691,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (cancelFlag) {
             //判断支付方式
             if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
-                String[] split = orderInfoDO.getGroupPayNo().split("-");//deal_id在前 团购码在后
+                String[] split = orderInfoDO.getGroupPayNo().split("-");//团购码在前   deal_id在后
                 //团购支付的，操作团购退款
-                JSONObject reverseconsume = meituanService.reverseconsume(orderInfoDO.getStoreId(), orderInfoDO.getUserId(), split[1], split[0]);
+                JSONObject reverseconsume = meituanService.reverseconsume(orderInfoDO.getStoreId(), orderInfoDO.getUserId(), split[0], split[1]);
             } else {
                 if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
                     //微信退款
@@ -816,7 +816,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //开门开电
             deviceService.openRoomDoor(orderInfoDO.getRoomId(), null, 4);
             //播放欢迎语
-            deviceService.runSound(orderInfoDO.getRoomId(), 4);
+//            deviceService.runSound(orderInfoDO.getRoomId(), 4);
         } else {
             throw exception(ORDER_START_OPRATION_ERROR);
         }

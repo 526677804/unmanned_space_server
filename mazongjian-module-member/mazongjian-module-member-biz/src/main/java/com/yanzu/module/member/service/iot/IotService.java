@@ -43,7 +43,7 @@ public class IotService {
         vo.setSn(sn);
         IotApiBaseRespVO respVO = iotClient.runDoorV1(vo);
         log.info("data:{}",respVO);
-        return respVO.getState_code() == 0;
+        return respVO.getState_code() == 1&&respVO.getState_msg().equals("成功");
     }
 
 

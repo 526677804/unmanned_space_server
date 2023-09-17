@@ -59,6 +59,7 @@ public interface IotClient {
      */
     @Post(url = "https://wdev.wmj.com.cn/deviceApi/getOnLine")
     IotApiV2BaseRespVO<IotApiV2OnlineDataVO> getV2Status(@JSONBody IotApiV2BaseReqVO reqVO);
+
     /**
      * 查询v1设备的状态
      */
