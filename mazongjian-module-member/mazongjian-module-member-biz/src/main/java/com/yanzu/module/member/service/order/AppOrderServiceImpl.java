@@ -380,7 +380,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //记录下来
             reqVO.setGroupPayNo(reqVO.getGroupPayNo() + "-" + deal_id);
             //团购消费的  支付价格设置为0
-            totalPrice=BigDecimal.ZERO;
+            totalPrice = BigDecimal.ZERO;
         } else {
             //非团购支付 判断支付方式
             switch (reqVO.getPayType()) {
@@ -887,13 +887,23 @@ public class AppOrderServiceImpl implements AppOrderService {
                     //关门关电
                     deviceService.closeRoomDoor(x.getRoomId(), null, 4);
                 } else {
-                    //如果订单结束时间  还剩30分钟，发送第一次提醒
-                    long l = (now.getTime() - x.getEndTime().getTime()) / 1000 / 60;
-                    if (l == 30) {
+                    //如果订单结束时间  还剩30分钟，发送提醒
+                    Calendar cal1 = Calendar.getInstance();
+                    cal1.setTime(now);
+                    Calendar cal2 = Calendar.getInstance();
+                    cal2.setTime(x.getEndTime());
+                    // 忽略秒
+                    cal1.set(Calendar.SECOND, 0);
+                    cal2.set(Calendar.SECOND, 0);
+                    long milliseconds1 = cal1.getTimeInMillis();
+                    long milliseconds2 = cal2.getTimeInMillis();
+                    long diff = milliseconds2 - milliseconds1;
+                    int minutes = (int) (diff / (60 * 1000));
+                    if (minutes == 30) {
                         deviceService.runSound(x.getRoomId(), 2);
-                    } else if (l == 15) {
+                    } else if (minutes == 15) {
                         deviceService.runSound(x.getRoomId(), 3);
-                    } else if (l == 5) {
+                    } else if (minutes == 5) {
                         deviceService.runSound(x.getRoomId(), 4);
                     }
                 }
