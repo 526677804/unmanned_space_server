@@ -379,6 +379,8 @@ public class AppOrderServiceImpl implements AppOrderService {
             JSONObject consume = meituanService.consume(roomInfoDO.getStoreId(), userId, reqVO.getGroupPayNo());
             //记录下来
             reqVO.setGroupPayNo(reqVO.getGroupPayNo() + "-" + deal_id);
+            //团购消费的  支付价格设置为0
+            totalPrice=BigDecimal.ZERO;
         } else {
             //非团购支付 判断支付方式
             switch (reqVO.getPayType()) {
