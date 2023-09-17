@@ -31,7 +31,7 @@
             and (c.room_type=#{roomType} or c.room_type is null)
         </if>
         <if test="null != storeId and storeId != null">
-            and c.store_ids in (#{storeId})
+            and #{storeId} in (c.store_ids)
         </if>
     </select>
     <select id="getByUserIdAndCouponId"

@@ -2,6 +2,7 @@ package com.yanzu.module.member.service.iot;
 
 import com.yanzu.module.member.service.iot.bean.*;
 import com.yanzu.module.member.forest.IotClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -12,6 +13,7 @@ import javax.annotation.Resource;
  * @USER: MrGuan  mrguan@aliyun.com
  * @DATE: 2023/7/17 14:49
  */
+@Slf4j
 @Component
 public class IotService {
 
@@ -22,6 +24,7 @@ public class IotService {
         IotApiBaseReqVO vo = new IotApiBaseReqVO();
         vo.setSn(sn);
         IotApiBaseRespVO respVO = iotClient.regV1(vo);
+        log.info("data:{}",respVO);
         return respVO.getState() == 1 && respVO.getState_code() == 1;
     }
 
@@ -30,6 +33,7 @@ public class IotService {
         vo.setDevice_sn(sn);
         vo.setType(null);
         IotApiV2BaseRespVO respVO = iotClient.regV2(vo);
+        log.info("data:{}",respVO);
         return respVO.getCode() == 0;
 
     }
@@ -38,6 +42,7 @@ public class IotService {
         IotApiBaseReqVO vo=new IotApiBaseReqVO();
         vo.setSn(sn);
         IotApiBaseRespVO respVO = iotClient.runDoorV1(vo);
+        log.info("data:{}",respVO);
         return respVO.getState_code() == 0;
     }
 
@@ -49,6 +54,7 @@ public class IotService {
         data.setCmd_type(cmd);
         vo.setData(data);
         IotApiV2BaseRespVO respVO = iotClient.runKongkai(vo);
+        log.info("data:{}",respVO);
         return respVO.getCode() == 0;
     }
 
@@ -59,6 +65,7 @@ public class IotService {
         data.setCmd_type(cmd);
         vo.setData(data);
         IotApiV2BaseRespVO respVO = iotClient.runKongkai(vo);
+        log.info("data:{}",respVO);
         return respVO.getCode() == 0;
     }
 
@@ -72,6 +79,7 @@ public class IotService {
         data.setInfo(info);
         vo.setData(data);
         IotApiV2BaseRespVO respVO = iotClient.runYunlaba(vo);
+        log.info("data:{}",respVO);
         return respVO.getCode() == 0;
     }
 
@@ -79,6 +87,7 @@ public class IotService {
         IotApiBaseReqVO vo = new IotApiBaseReqVO();
         vo.setSn(sn);
         IotApiOnlineDataVO v1Status = iotClient.getV1Status(vo);
+        log.info("data:{}",v1Status);
         if (v1Status.getState() == 1 && v1Status.getState_code() == 1) {
             return v1Status.getOnline();
         }
@@ -90,6 +99,7 @@ public class IotService {
     public Integer getV2Status(String sn) {
         IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
         IotApiV2BaseRespVO<IotApiV2OnlineDataVO> v2Status = iotClient.getV2Status(vo);
+        log.info("data:{}",v2Status);
         if (v2Status.getCode() == 0) {
             return v2Status.getData().getOn_line();
         }

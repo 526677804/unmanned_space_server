@@ -48,12 +48,12 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         switch (createReqVO.getType()) {
             case 1:
                 //门禁
-                iotService.regV1(createReqVO.getDeviceSn());
+                flag = iotService.regV1(createReqVO.getDeviceSn());
                 break;
             case 2:
             case 3:
                 //空开和云喇叭
-                iotService.regV2(createReqVO.getDeviceSn());
+                flag = iotService.regV2(createReqVO.getDeviceSn());
                 break;
         }
         if (!flag) {
@@ -134,10 +134,10 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         deviceInfoDO.setStoreId(reqVO.getStoreId());
         deviceInfoDO.setRoomId(reqVO.getRoomId());
         deviceInfoMapper.updateById(deviceInfoDO);
-        if(!ObjectUtils.isEmpty(reqVO.getRoomId())){
+        if (!ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //绑定的房间  如果房间状态为禁用，则改成启用
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
-            if(roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue())==0){
+            if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
                 roomInfoDO.setStatus(AppEnum.room_status.ENABLE.getValue());
                 roomInfoMapper.updateById(roomInfoDO);
             }

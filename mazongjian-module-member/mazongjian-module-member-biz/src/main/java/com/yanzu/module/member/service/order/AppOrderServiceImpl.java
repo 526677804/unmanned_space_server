@@ -576,6 +576,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
         }
+
         //增加订单金额
         orderInfoDO.setPrice(orderInfoDO.getPrice().add(oldPrice));
         //增加已支付的金额
@@ -584,6 +585,10 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
             deviceService.openRoomDoor(roomInfoDO.getRoomId(), orderInfoDO.getOrderId(), 1);
+            if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) != 0) {
+                roomInfoDO.setStatus(AppEnum.room_status.USED.getValue());
+                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
+            }
         }
         //todo...如果有已接单的保洁订单 发消息通知保洁时间延后了
 
@@ -684,13 +689,11 @@ public class AppOrderServiceImpl implements AppOrderService {
             cancelFlag = false;
         }
         if (cancelFlag) {
-            //设置订单状态为取消
-            orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
             //判断支付方式
             if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
                 String[] split = orderInfoDO.getGroupPayNo().split("-");//deal_id在前 团购码在后
                 //团购支付的，操作团购退款
-                JSONObject reverseconsume = meituanService.reverseconsume(orderInfoDO.getStoreId(), loginUserId, split[1], split[0]);
+                JSONObject reverseconsume = meituanService.reverseconsume(orderInfoDO.getStoreId(), orderInfoDO.getUserId(), split[1], split[0]);
             } else {
                 if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
                     //微信退款
@@ -713,7 +716,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     }
                 } else {
                     //余额退款  把支付记录找出来
-                    List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderInfoDO.getOrderNo(), loginUserId);
+                    List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
                     if (!org.springframework.util.CollectionUtils.isEmpty(userMoneyBillDOList)) {
                         for (UserMoneyBillDO billDO : userMoneyBillDOList) {
                             UserMoneyBillDO newUserMoneyBillDO = new UserMoneyBillDO();
@@ -727,7 +730,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                             newUserMoneyBillDO.setRemark(newUserMoneyBillDO.getRemark().replace("支付", "退款"));
                             if (billDO.getMoneyType().intValue() == 1) {
                                 //账户余额  加回去
-                                MemberUserDO memberUserDO = memberUserMapper.selectById(loginUserId);
+                                MemberUserDO memberUserDO = memberUserMapper.selectById(orderInfoDO.getUserId());
                                 memberUserDO.setBalance(memberUserDO.getBalance().add(billDO.getMoney()));
                                 synchronized (this) {
                                     memberUserMapper.updateById(memberUserDO);
@@ -735,7 +738,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                                 newUserMoneyBillDO.setTotalMoney(memberUserDO.getBalance());
                             } else if (billDO.getMoneyType().intValue() == 2) {
                                 //赠送余额  加回去
-                                StoreUserDO byUserIdAndStoreId = storeUserMapper.getByUserIdAndStoreId(loginUserId, orderInfoDO.getStoreId());
+                                StoreUserDO byUserIdAndStoreId = storeUserMapper.getByUserIdAndStoreId(orderInfoDO.getUserId(), orderInfoDO.getStoreId());
                                 byUserIdAndStoreId.setGiftBalance(byUserIdAndStoreId.getGiftBalance().add(billDO.getMoney()));
                                 synchronized (this) {
                                     storeUserMapper.updateById(byUserIdAndStoreId);
@@ -750,6 +753,12 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
                 orderInfoDO.setRefundPrice(orderInfoDO.getPayPrice());
             }
+            //取消的订单已开始  那就触发一下关门
+            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                deviceService.closeRoomDoor(orderInfoDO.getRoomId(), null, 4);
+            }
+            //设置订单状态为取消
+            orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
             //取消后  如果后面没有预约了，把房间状态改回空闲
             List<OrderInfoDO> orderInfoDOList = orderInfoMapper.getByRoomId(orderInfoDO.getRoomId(), orderId);
             if (org.springframework.util.CollectionUtils.isEmpty(orderInfoDOList)) {
