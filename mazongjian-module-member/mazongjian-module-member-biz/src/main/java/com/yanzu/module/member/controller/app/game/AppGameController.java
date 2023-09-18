@@ -42,7 +42,7 @@ public class AppGameController {
     @PostMapping("/save")
     @Operation(summary = "发起在线组局", description = "线上组局使用")
     @PreAuthenticated
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> save(@RequestBody @Valid AppGameInfoReqVO reqVO) {
         appGameService.save(reqVO);
         return success(true);
@@ -69,7 +69,7 @@ public class AppGameController {
     @Operation(summary = "加入或退出对局", description = "线上组局使用")
     @PreAuthenticated
     @Parameter(name = "gameId")
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> join(@PathVariable("gameId") Long gameId) {
         appGameService.join(gameId);
         return success(true);

@@ -3,6 +3,7 @@ package com.yanzu.module.member.controller.app.store;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.service.device.DeviceService;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.pojo.CommonResult.success;
@@ -56,6 +58,7 @@ public class AppStoreController {
     @PostMapping("/save")
     @Operation(summary = "保存门店详情")
     @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> save(@RequestBody @Valid AppStoreInfoReqVO reqVO) {
         storeInfoService.save(reqVO);
         return success(true);
@@ -64,6 +67,7 @@ public class AppStoreController {
     @Operation(summary = "开门店的大门", description = "门店管理使用")
     @PreAuthenticated
     @Parameter(name = "storeId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openStoreDoor(@PathVariable("storeId") Long storeId) {
         //1用户开门 2管理员开门 3保洁开门
         deviceService.openStoreDoor(storeId, null, 2);
@@ -89,6 +93,7 @@ public class AppStoreController {
     @PostMapping("/saveRoomDetail")
     @Operation(summary = "保存房间详情")
     @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> saveRoomDetail(@RequestBody @Valid AppRoomDetailReqVO reqVO) {
         storeInfoService.saveRoomDetail(reqVO);
         return success(true);
@@ -98,6 +103,7 @@ public class AppStoreController {
     @Operation(summary = "开房间的大门", description = "房间管理使用")
     @PreAuthenticated
     @Parameter(name = "roomId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户开门 2管理员开门 3保洁开门
         deviceService.openRoomDoor(roomId, null, 2);
@@ -108,6 +114,7 @@ public class AppStoreController {
     @Operation(summary = "关房间的大门", description = "房间管理使用")
     @PreAuthenticated
     @Parameter(name = "roomId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> closeRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户关门 2管理员关门 3保洁关门
         deviceService.closeRoomDoor(roomId, null, 2);

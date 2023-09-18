@@ -63,7 +63,7 @@ public class OrderController {
     @PostMapping("/save")
     @Operation(summary = "提交订单", description = "下单使用")
     @PreAuthenticated
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Long> save(@RequestBody @Valid OrderSaveReqVO reqVO) {
         return success(appOrderService.save(reqVO));
     }
@@ -71,7 +71,7 @@ public class OrderController {
     @PostMapping("/renew")
     @Operation(summary = "订单续费", description = "订单详情/订单管理使用")
     @PreAuthenticated
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> renew(@RequestBody @Valid OrderRenewalReqVO reqVO) {
         appOrderService.renew(reqVO);
         return success(true);
@@ -114,7 +114,7 @@ public class OrderController {
     @Operation(summary = "开始订单", description = "我的订单使用")
     @PreAuthenticated
     @Parameter(name = "orderId")
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> startOrder(@PathVariable("orderId") Long orderId) {
         appOrderService.startOrder(orderId);
         return success(true);
@@ -124,7 +124,7 @@ public class OrderController {
     @Operation(summary = "取消订单 ", description = "我的订单使用")
     @PreAuthenticated
     @Parameter(name = "orderId")
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> cancelOrder(@PathVariable("orderId") Long orderId) {
         appOrderService.cancelOrder(orderId);
         return success(true);
@@ -134,7 +134,7 @@ public class OrderController {
 //    @Operation(summary = "提前结束订单 ", description = "我的订单使用")
 //    @PreAuthenticated
 //    @Parameter(name = "orderId")
-//    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+//    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
 //    public CommonResult<Boolean> closeOrder(@PathVariable("orderId") Long orderId) {
 //        appOrderService.closeOrder(orderId);
 //        return success(true);
@@ -144,7 +144,7 @@ public class OrderController {
     @Operation(summary = "(开关)门店的大门", description = "我的订单使用")
     @PreAuthenticated
     @Parameter(name = "orderId", required = false)
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openStoreDoor(@PathVariable(value = "orderId") Long orderId) {
         deviceService.openStoreDoor(null, orderId, 1);
         return success(true);
@@ -154,7 +154,7 @@ public class OrderController {
     @Operation(summary = "(开关)房间的大门", description = "我的订单使用")
     @PreAuthenticated
     @Parameter(name = "orderId")
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openRoomDoor(@PathVariable("orderId") Long orderId) {
         deviceService.openRoomDoor(null, orderId, 1);
         return success(true);
@@ -173,7 +173,7 @@ public class OrderController {
     @PreAuthenticated
     @Parameter(name = "orderId")
     @Parameter(name = "roomId")
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> changeRoom(@PathVariable("orderId") Long orderId, @PathVariable("roomId") Long roomId) {
         appOrderService.changeRoom(orderId, roomId);
         return success(true);

@@ -8,7 +8,7 @@
         where deleted = 0
           and room_id = #{roomId}
           and create_time &gt; now()
-          and status in (0, 1)
+          and status in (0, 1, 2)
 
     </update>
     <!--

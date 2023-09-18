@@ -175,6 +175,8 @@ public class AppClearServiceImpl implements AppClearService {
             clearInfoDO.setStatus(AppEnum.clear_info_status.FINISH.getValue());
             clearInfoDO.setFinishTime(LocalDateTime.now());
             clearInfoMapper.updateById(clearInfoDO);
+            //任务完成了  要关闭房间电源
+            deviceService.closeRoomDoor(clearInfoDO.getRoomId(), null, 4);
         } else {
             throw exception(OPRATION_ERROR);
         }

@@ -73,7 +73,7 @@ public class AppManagerController {
     @PostMapping("/giftCoupon")
     @Operation(summary = "管理员赠送优惠券")
     @PreAuthenticated
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> giftCoupon(@RequestBody @Valid AppGiftCouponReqVO reqVO) {
         appMangerService.giftCoupon(reqVO);
         return success(true);

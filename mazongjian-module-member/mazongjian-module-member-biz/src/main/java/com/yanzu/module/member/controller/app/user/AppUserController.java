@@ -107,7 +107,7 @@ public class AppUserController {
     @PostMapping("/rechargeBalance")
     @Operation(summary = "用户余额充值")
     @PreAuthenticated
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> eechargeBalance(@RequestBody @Valid AppRechargeBalanceReqVO reqVO) {
         userService.eechargeBalance(reqVO);
         return success(true);
@@ -116,7 +116,7 @@ public class AppUserController {
     @PostMapping("/preRechargeBalance")
     @Operation(summary = "预下单(微信支付)用户余额充值")
     @PreAuthenticated
-    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "请勿重复提交")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<WxPayOrderRespVO> preRechargeBalance(@RequestBody @Valid AppPreRechargeBalanceReqVO reqVO) {
         return success(userService.preRechargeBalance(reqVO));
     }

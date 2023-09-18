@@ -23,7 +23,7 @@
         left join member_store_info s ON g.store_id = s.store_id
         left join member_room_info r ON g.room_id = r.room_id
         where g.deleted = 0
-        and g.start_time > now()
+        and to_days(g.start_time) >= to_days(now())
         and g.store_id=#{storeId}
         <if test="null!=status">
             <choose>
