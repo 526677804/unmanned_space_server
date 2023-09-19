@@ -53,4 +53,6 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
     List<OrderInfoDO> getByStatus(Integer status);
 
     int updateStatusByIds(@Param("status") Integer status, @Param("orderIds") String orderIds);
+
+    Integer countByRoomIdGtNow(Long roomId);
 }

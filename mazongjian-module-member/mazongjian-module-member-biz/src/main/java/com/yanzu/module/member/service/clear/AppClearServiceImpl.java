@@ -9,6 +9,7 @@ import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.mysql.clearbill.ClearBillMapper;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
+import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,9 @@ public class AppClearServiceImpl implements AppClearService {
 
     @Resource
     private DeviceService deviceService;
+
+    @Resource
+    private RoomInfoMapper roomInfoMapper;
 
     @Override
     public PageResult<AppClearPageRespVO> getClearPage(AppClearPageReqVO reqVO) {
@@ -177,6 +181,13 @@ public class AppClearServiceImpl implements AppClearService {
             clearInfoMapper.updateById(clearInfoDO);
             //任务完成了  要关闭房间电源
             deviceService.closeRoomDoor(clearInfoDO.getRoomId(), null, 4);
+            //如果房间后面还有订单 就改成已预定 否则改成空闲
+            Integer orderCount = orderInfoMapper.countByRoomIdGtNow(clearInfoDO.getRoomId());
+            if (orderCount > 0) {
+                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), clearInfoDO.getRoomId());
+            }else{
+                roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), clearInfoDO.getRoomId());
+            }
         } else {
             throw exception(OPRATION_ERROR);
         }

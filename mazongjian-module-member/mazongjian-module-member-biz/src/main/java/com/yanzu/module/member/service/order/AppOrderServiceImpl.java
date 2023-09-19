@@ -434,8 +434,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                                     storeUserMapper.updateById(byUserIdAndStoreId);
                                 }
                                 //增加付款记录
-                                addPayRecord(userBalance, AppEnum.user_money_bill_type.PAY.getValue(), 1, BigDecimal.ZERO, null, "订单：" + orderNo + ",支付", userId);
-                                addPayRecord(subtract, AppEnum.user_money_bill_type.PAY.getValue(), 2, byUserIdAndStoreId.getGiftBalance(), null, "订单：" + orderNo + ",支付", userId);
+                                if (userBalance.compareTo(BigDecimal.ZERO) > 0) {
+                                    addPayRecord(userBalance, AppEnum.user_money_bill_type.PAY.getValue(), AppEnum.user_money_type.MONEY.getValue(), BigDecimal.ZERO, null, "订单：" + orderNo + ",支付", userId);
+                                }
+                                addPayRecord(subtract, AppEnum.user_money_bill_type.PAY.getValue(), AppEnum.user_money_type.GIFT_MONEY.getValue(), null, byUserIdAndStoreId.getGiftBalance(), "订单：" + orderNo + ",支付", userId);
                             } else {
                                 throw exception(MEMBER_BALANCE_MIN_ERROR);
                             }

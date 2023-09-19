@@ -67,7 +67,7 @@
         <if test="null!=status">
             and c.status=#{status}
         </if>
-
+        order by create_time desc
     </select>
     <select id="getByRoomId" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
         select *
@@ -291,5 +291,13 @@
         where o.deleted = 0
           and o.status = #{status}
 
+    </select>
+    <select id="countByRoomIdGtNow" resultType="java.lang.Integer">
+        select count(1)
+        from member_order_info
+        where deleted = 0
+          and room_id = #{roomId}
+          and status = 0
+          and start_time > now()
     </select>
 </mapper>
