@@ -14,7 +14,7 @@
         select *
         from member_user_money_bill
         where
-        deleted =0
+        deleted =0 and user_id=#{userId}
         <if test="null != startTime">
             and DATE_FORMAT(create_time, '%Y%m%d')>=DATE_FORMAT(#{startTime}, '%Y%m%d')
         </if>

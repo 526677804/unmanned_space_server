@@ -28,4 +28,6 @@ public class AppUserMoneyBillPageReqVO extends PageParam {
     @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private Date endTime;
 
+    @Schema(description = "userId",hidden = true)
+    private Long userId;
 }

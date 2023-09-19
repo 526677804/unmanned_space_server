@@ -234,6 +234,7 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Override
     public PageResult<AppUserMoneyBillRespVO> getOrderPage(AppUserMoneyBillPageReqVO reqVO) {
+        reqVO.setUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
         List<AppUserMoneyBillRespVO> list = userMoneyBillMapper.getOrderPage(reqVO);
         PageInfo<AppUserMoneyBillRespVO> page = new PageInfo<>(list);
