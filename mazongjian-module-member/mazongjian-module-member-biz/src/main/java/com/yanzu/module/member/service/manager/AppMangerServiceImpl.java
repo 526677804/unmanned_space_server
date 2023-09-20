@@ -88,7 +88,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
         // 校验用户类型
-        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining(","));
         reqVO.setStoreIds(storeIds);
         PageHelper.startPage(reqVO);
