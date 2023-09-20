@@ -3,6 +3,7 @@ package com.yanzu.module.member.service.game;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.controller.app.game.vo.AppGameInfoReqVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGameInfoRespVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGamePageReqVO;
@@ -12,7 +13,10 @@ import com.yanzu.module.member.dal.mysql.gameinfo.GameInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.service.workwx.WorkWxService;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -31,6 +35,10 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 @Service
 @Validated
 public class AppGameServiceImpl implements AppGameService {
+
+
+    @Autowired
+    private WorkWxService workWxService;
 
     @Resource
     private GameInfoMapper gameInfoMapper;
@@ -70,6 +78,14 @@ public class AppGameServiceImpl implements AppGameService {
         gameInfoDO.setUserId(loginUserId);
         gameInfoDO.setPlayUserIds(String.valueOf(loginUserId));
         gameInfoMapper.insert(gameInfoDO);
+        //异步发送微信通知
+        StringBuffer sb = new StringBuffer();
+        sb.append("在线组局信息\n");
+            sb.append(">结束时间:<font color=\"warning\">")
+                    .append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        sb.append(">玩法规则:<font color=\"warning\">").append(reqVO.getRuleDesc()).append("</font>\n");
+        sb.append(">人数:<font color=\"warning\">").append(reqVO.getUserNum()).append("</font>人");
+        workWxService.sendMDMsg(reqVO.getStoreId(), sb.toString());
     }
 
     @Override

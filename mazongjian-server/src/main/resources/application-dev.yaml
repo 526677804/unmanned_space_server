@@ -188,6 +188,15 @@ mazongjian:
   error-code: # 错误码相关配置项
     enable: false
   demo: false # 关闭演示模式
+--- #################### 接口文档配置 ####################
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui
 
 justauth:
   enabled: true

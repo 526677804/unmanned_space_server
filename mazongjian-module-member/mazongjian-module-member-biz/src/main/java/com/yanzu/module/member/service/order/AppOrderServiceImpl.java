@@ -329,6 +329,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         String orderNo = reqVO.getOrderNo();
         if (ObjectUtils.isEmpty(orderNo)) {
             orderNo = getOrderNo();
+            reqVO.setOrderNo(orderNo);
         }
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
         BigDecimal oldPrice = BigDecimal.valueOf(l / 60.0).multiply(roomInfoDO.getPrice());//原价
@@ -343,7 +344,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             //判断限制门店
             if (!ObjectUtils.isEmpty(couponInfoDO.getStoreIds())) {
-                if(!couponInfoDO.getStoreIds().equals(String.valueOf(roomInfoDO.getStoreId()))){
+                if (!couponInfoDO.getStoreIds().equals(String.valueOf(roomInfoDO.getStoreId()))) {
                     exception(COUPON_USE_CHECK_ERROR);
                 }
 //                if (!Arrays.asList(couponInfoDO.getStoreIds().split(",")).contains(roomInfoDO.getStoreId().toString())) {
@@ -476,23 +477,30 @@ public class AppOrderServiceImpl implements AppOrderService {
             roomInfoDO.setStatus(AppEnum.room_status.PENDDING.getValue());
             roomInfoMapper.updateById(roomInfoDO);
         }
-        //异步发送微信通过
-        StringBuffer sb=new StringBuffer();
+        //异步发送微信通知
+        StringBuffer sb = new StringBuffer();
         sb.append("用户下单通知\n");
-        sb.append(">订单编号:<font color=\"warning\"").append(reqVO.getOrderNo()).append("</font>");
-        sb.append(">订单金额:<font color=\"warning\"").append(totalPrice).append("</font>");
-        sb.append(">支付方式:<font color=\"warning\"").append(getPayTypeStr(reqVO.getPayType())).append("</font>");
-        sb.append(">订单时间:<font color=\"warning\"").append(reqVO.getStartTime()).append(" - ").append(reqVO.getEndTime()).append("</font>");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomInfoDO.getRoomName()).append("</font>\n");
+        sb.append(">订单编号:<font color=\"warning\">").append(reqVO.getOrderNo()).append("</font>\n");
+        sb.append(">订单金额:<font color=\"warning\">").append(totalPrice).append("</font>\n");
+        sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(reqVO.getPayType())).append("</font>\n");
+        sb.append(">开始时间:<font color=\"warning\">")
+                .append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">结束时间:<font color=\"warning\">")
+                .append(DateUtils.dateToStr(reqVO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         workWxService.sendMDMsg(roomInfoDO.getStoreId(), sb.toString());
         return orderInfoDO.getOrderId();
 
     }
 
-    private String getPayTypeStr(Integer type){
-        switch (type){
-            case 1: return "微信";
-            case 2: return "余额";
-            case 3: return "团购";
+    private String getPayTypeStr(Integer type) {
+        switch (type) {
+            case 1:
+                return "微信";
+            case 2:
+                return "余额";
+            case 3:
+                return "团购";
         }
         return "";
     }
@@ -619,6 +627,16 @@ public class AppOrderServiceImpl implements AppOrderService {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
             }
         }
+        //异步发送微信通知
+        StringBuffer sb = new StringBuffer();
+        sb.append("用户续费通知\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomInfoDO.getRoomName()).append("</font>\n");
+        sb.append(">订单编号:<font color=\"warning\">").append(reqVO.getOrderNo()).append("</font>\n");
+        sb.append(">续费金额:<font color=\"warning\">").append(totalPrice).append("</font>\n");
+        sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(reqVO.getPayType())).append("</font>\n");
+        sb.append(">结束时间:<font color=\"warning\">")
+                .append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        workWxService.sendMDMsg(roomInfoDO.getStoreId(), sb.toString());
         //todo...如果有已接单的保洁订单 发消息通知保洁时间延后了
 
     }
@@ -794,9 +812,17 @@ public class AppOrderServiceImpl implements AppOrderService {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), orderInfoDO.getRoomId());
             }
             orderInfoMapper.updateById(orderInfoDO);
+            //异步发送微信通知
+            StringBuffer sb = new StringBuffer();
+            sb.append("订单取消\n");
+            sb.append(">订单编号:<font color=\"warning\">").append(orderInfoDO.getOrderNo()).append("</font>\n");
+//            sb.append(">结束时间:<font color=\"warning\">")
+//                    .append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+            workWxService.sendMDMsg(orderInfoDO.getStoreId(), sb.toString());
         } else {
             throw exception(ORDER_CANCEL_OPRATION_ERROR);
         }
+
 
     }
 

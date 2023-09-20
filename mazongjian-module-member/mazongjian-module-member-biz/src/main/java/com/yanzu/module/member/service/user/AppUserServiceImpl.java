@@ -12,6 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
@@ -33,6 +34,7 @@ import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
+import com.yanzu.module.member.service.workwx.WorkWxService;
 import com.yanzu.module.system.api.sms.SmsCodeApi;
 import com.yanzu.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
 import com.yanzu.module.system.api.social.SocialUserApi;
@@ -121,6 +123,8 @@ public class AppUserServiceImpl implements AppUserService {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Resource
+    private WorkWxService workWxService;
     @Resource
     private StoreInfoService storeInfoService;
     private final String EECHARGE_BALANCE_REDIS_SET = "EECHARGE_BALANCE_REDIS_SET";
@@ -320,6 +324,14 @@ public class AppUserServiceImpl implements AppUserService {
             }
             //如果已经充值了 就移除这个订单号
             redisTemplate.opsForSet().remove(EECHARGE_BALANCE_REDIS_SET, reqVO.getOrderNo());
+            //异步发送微信通知
+            StringBuffer sb = new StringBuffer();
+            sb.append("用户充值通知\n");
+            sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+            sb.append(">用户手机号:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
+            sb.append(">充值金额:<font color=\"warning\">").append(reqVO.getPrice()).append("</font>\n");
+            sb.append(">赠送金额:<font color=\"warning\">").append(gift).append("</font>");
+            workWxService.sendMDMsg(reqVO.getStoreId(), sb.toString());
         }
     }
 
@@ -389,7 +401,7 @@ public class AppUserServiceImpl implements AppUserService {
                         f1 = price.compareTo(x.getMinUsePrice()) >= 0;
                     }
                     //判断门店
-                    boolean f2  = x.getStoreIds().equals(String.valueOf(roomInfoDO.getStoreId()));
+                    boolean f2 = x.getStoreIds().equals(String.valueOf(roomInfoDO.getStoreId()));
                     x.setEnable(f1 && f2);
                 });
             }
