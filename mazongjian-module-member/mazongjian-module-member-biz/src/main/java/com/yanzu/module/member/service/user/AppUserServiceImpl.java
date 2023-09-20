@@ -348,35 +348,54 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public PageResult<AppCouponPageRespVO> getCouponPage(AppCouponPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        PageHelper.startPage(reqVO);
-        List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
-        PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
-        //再查一下门店名称
-        if (!CollectionUtils.isEmpty(page.getList())) {
-            Set<String> storeIdSet = Arrays.stream(page.getList().stream().map(x -> x.getStoreIds()).collect(Collectors.joining(",")).split(",")).collect(Collectors.toSet());
-            List<KeyValue<Long, String>> storeNameInfo = storeInfoService.getNameMapByIds(storeIdSet);
-            Map<String, String> storeNameMap = new HashMap<>(storeNameInfo.size());
-            storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
-            //依次设置名称
-            page.getList().stream().forEach(x -> {
-                x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).filter(v -> storeNameMap.containsKey(v)).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
-            });
-        }
-        if (!ObjectUtils.isEmpty(reqVO.getRoomId())) {
+        if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
+            //个人中心分页查询
+            PageHelper.startPage(reqVO);
+            List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
+            PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
+            //再查一下门店名称
+            if (!CollectionUtils.isEmpty(page.getList())) {
+                Set<String> storeIdSet = Arrays.stream(page.getList().stream().map(x -> x.getStoreIds()).collect(Collectors.joining(",")).split(",")).collect(Collectors.toSet());
+                List<KeyValue<Long, String>> storeNameInfo = storeInfoService.getNameMapByIds(storeIdSet);
+                Map<String, String> storeNameMap = new HashMap<>(storeNameInfo.size());
+                storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
+                //依次设置名称
+                page.getList().stream().forEach(x -> {
+                    x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).filter(v -> storeNameMap.containsKey(v)).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
+                });
+            }
+            return new PageResult<>(page.getList(), page.getTotal());
+        } else {
+            //提交订单页查询
             //下单的时候  要返回可用状态  先计算出房间单价
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
             BigDecimal price = roomInfoDO.getPrice().multiply(reqVO.getOrderHour());
-            page.getList().stream().forEach(x -> {
-                if (x.getType().compareTo(AppEnum.coupon_type.DIKOU.getValue()) == 0) {
-                    //抵扣时长
-                    x.setEnable(reqVO.getOrderHour().compareTo(x.getMinUsePrice()) >= 0);
-                } else if (x.getType().compareTo(AppEnum.coupon_type.MANJIAN.getValue()) == 0) {
-                    //满减
-                    x.setEnable(price.compareTo(x.getMinUsePrice()) >= 0);
-                }
-            });
+            List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
+            //再查一下门店名称
+            if (!CollectionUtils.isEmpty(list)) {
+                Set<String> storeIdSet = Arrays.stream(list.stream().map(x -> x.getStoreIds()).collect(Collectors.joining(",")).split(",")).collect(Collectors.toSet());
+                List<KeyValue<Long, String>> storeNameInfo = storeInfoService.getNameMapByIds(storeIdSet);
+                Map<String, String> storeNameMap = new HashMap<>(storeNameInfo.size());
+                storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
+                //依次设置名称
+                list.stream().forEach(x -> {
+                    x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).filter(v -> storeNameMap.containsKey(v)).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
+                    boolean f1 = false;
+                    if (x.getType().compareTo(AppEnum.coupon_type.DIKOU.getValue()) == 0) {
+                        //抵扣时长
+                        f1 = reqVO.getOrderHour().compareTo(x.getMinUsePrice()) >= 0;
+                    } else if (x.getType().compareTo(AppEnum.coupon_type.MANJIAN.getValue()) == 0) {
+                        //满减
+                        f1 = price.compareTo(x.getMinUsePrice()) >= 0;
+                    }
+                    //判断门店
+                    boolean f2  = x.getStoreIds().equals(String.valueOf(roomInfoDO.getStoreId()));
+                    x.setEnable(f1 && f2);
+                });
+            }
+            return new PageResult<>(list.stream().sorted((x1, x2) -> String.valueOf(x2.isEnable()).compareTo(String.valueOf(x1.isEnable()))).collect(Collectors.toList()), Long.valueOf(list.size()));
         }
-        return new PageResult<>(page.getList(), page.getTotal());
+
     }
 
     @Override

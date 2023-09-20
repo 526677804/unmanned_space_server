@@ -46,8 +46,8 @@ public class AppCouponDetailRespVO {
     @Schema(description = "适用门店名称 逗号分隔", example = "7851")
     private String storeName;
 
-    @Schema(description = "适用房间类型 值见字典 0表示不限制", example = "1")
-    private Integer roomType;
+//    @Schema(description = "适用房间类型 值见字典 0表示不限制", example = "1")
+//    private Integer roomType;
 
     @Schema(description = "优惠券类型 值见字典", example = "1")
     private Integer type;

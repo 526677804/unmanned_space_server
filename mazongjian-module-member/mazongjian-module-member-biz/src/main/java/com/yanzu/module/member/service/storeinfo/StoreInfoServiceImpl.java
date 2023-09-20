@@ -140,6 +140,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoDO.setStoreId(reqVO.getStoreId());
             roomInfoDO.setBanTimeStart(reqVO.getBanTimeStart());
             roomInfoDO.setBanTimeEnd(reqVO.getBanTimeEnd());
+            roomInfoDO.setSortId(reqVO.getSortId());
             roomInfoMapper.updateById(roomInfoDO);
         }
 

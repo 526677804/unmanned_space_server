@@ -338,16 +338,19 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             //判断限制门店
             if (!ObjectUtils.isEmpty(couponInfoDO.getStoreIds())) {
-                if (!Arrays.asList(couponInfoDO.getStoreIds().split(",")).contains(roomInfoDO.getStoreId().toString())) {
+                if(!couponInfoDO.getStoreIds().equals(String.valueOf(roomInfoDO.getStoreId()))){
                     exception(COUPON_USE_CHECK_ERROR);
                 }
+//                if (!Arrays.asList(couponInfoDO.getStoreIds().split(",")).contains(roomInfoDO.getStoreId().toString())) {
+//                    exception(COUPON_USE_CHECK_ERROR);
+//                }
             }
             //判断限制房间类型
-            if (!ObjectUtils.isEmpty(couponInfoDO.getRoomType())) {
-                if (roomInfoDO.getType() > couponInfoDO.getRoomType()) {
-                    exception(COUPON_USE_CHECK_ERROR);
-                }
-            }
+//            if (!ObjectUtils.isEmpty(couponInfoDO.getRoomType())) {
+//                if (roomInfoDO.getType() > couponInfoDO.getRoomType()) {
+//                    exception(COUPON_USE_CHECK_ERROR);
+//                }
+//            }
             //use
             couponInfoDO.setStatus(AppEnum.coupon_status.USED.getValue());
             couponInfoMapper.updateById(couponInfoDO);

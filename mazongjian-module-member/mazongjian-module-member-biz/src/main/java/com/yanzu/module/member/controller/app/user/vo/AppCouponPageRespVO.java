@@ -1,7 +1,6 @@
 package com.yanzu.module.member.controller.app.user.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -27,6 +26,8 @@ public class AppCouponPageRespVO {
     private Long couponId;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = DateUtils.TIME_ZONE_DEFAULT)
     private Date createTime;
 
     @Schema(description = "持有用户", example = "13545")
@@ -56,8 +57,8 @@ public class AppCouponPageRespVO {
     @Schema(description = "适用门店名称 逗号分隔", example = "7851")
     private String storeName;
 
-    @Schema(description = "适用房间类型 值见字典 0表示不限制", example = "1")
-    private Integer roomType;
+//    @Schema(description = "适用房间类型 值见字典 0表示不限制", example = "1")
+//    private Integer roomType;
 
     @Schema(description = "优惠券类型 值见字典", example = "1")
     private Integer type;
@@ -69,6 +70,6 @@ public class AppCouponPageRespVO {
     private Long orderId;
 
     @Schema(description = "是否使用（下单的时候判断）", example = "1")
-    private Boolean enable;
+    private boolean enable;
 
 }

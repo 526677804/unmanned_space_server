@@ -47,8 +47,8 @@ public class AppCouponDetailReqVO {
     private String storeIds;
 
 
-    @Schema(description = "适用房间类型 值见字典 0表示不限制", example = "1")
-    private Integer roomType;
+//    @Schema(description = "适用房间类型 值见字典 0表示不限制", example = "1")
+//    private Integer roomType;
 
     @Schema(description = "优惠券类型 值见字典", example = "1")
     @NotNull(message = "优惠券类型不能为空")
