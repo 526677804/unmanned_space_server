@@ -174,29 +174,47 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Transactional
     public void saveCouponDetail(AppCouponDetailReqVO reqVO) {
         Long loginUserId = getLoginUserId();
-        //检查包间权限
-        List<String> storeIds = storeUserMapper.getIdsByUserId(loginUserId);
-        if (ObjectUtils.isEmpty(reqVO.getStoreIds())) {
-            reqVO.setStoreIds(storeIds.stream().collect(Collectors.joining(",")));
-        } else {
-            String[] split = reqVO.getStoreIds().split(",");
-            for (String s : split) {
-                if (!storeIds.contains(s)) {
-                    throw exception(CHECK_STORE_PROMISSION_ERROR);
-                }
-            }
-        }
+        //检查权限
+        storeInfoService.checkPermisson(Long.valueOf(reqVO.getStoreIds()), loginUserId, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+//        List<String> storeIds = storeUserMapper.getIdsByUserId(loginUserId);
+//        if (ObjectUtils.isEmpty(reqVO.getStoreIds())) {
+//            reqVO.setStoreIds(storeIds.stream().collect(Collectors.joining(",")));
+//        } else {
+//            String[] split = reqVO.getStoreIds().split(",");
+//            for (String s : split) {
+//                if (!storeIds.contains(s)) {
+//                    throw exception(CHECK_STORE_PROMISSION_ERROR);
+//                }
+//            }
+//        }
         //保存进去
-        CouponInfoDO couponInfoDO = new CouponInfoDO();
-        couponInfoDO.setCouponName(reqVO.getCouponName());
-        couponInfoDO.setType(reqVO.getType());
-        couponInfoDO.setCreateUserId(loginUserId);
-        couponInfoDO.setPrice(reqVO.getPrice());
-        couponInfoDO.setMinUsePrice(reqVO.getMinUsePrice());
-        couponInfoDO.setStoreIds(reqVO.getStoreIds());
-        couponInfoDO.setExpriceTime(reqVO.getExpriceTime());
+        if (ObjectUtils.isEmpty(reqVO.getCouponId())) {
+            CouponInfoDO couponInfoDO = new CouponInfoDO();
+            couponInfoDO.setCouponName(reqVO.getCouponName());
+            couponInfoDO.setType(reqVO.getType());
+            couponInfoDO.setCreateUserId(loginUserId);
+            couponInfoDO.setPrice(reqVO.getPrice());
+            couponInfoDO.setMinUsePrice(reqVO.getMinUsePrice());
+            couponInfoDO.setStoreIds(reqVO.getStoreIds());
+            couponInfoDO.setExpriceTime(reqVO.getExpriceTime());
 //        couponInfoDO.setRoomType(reqVO.getRoomType());
-        couponInfoMapper.insert(couponInfoDO);
+            couponInfoMapper.insert(couponInfoDO);
+        } else {
+            CouponInfoDO couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
+            if(couponInfoDO.getCreateUserId().compareTo(loginUserId)!=0){
+                throw exception(CHECK_STORE_PROMISSION_ERROR);
+            }
+            couponInfoDO.setCouponName(reqVO.getCouponName());
+            couponInfoDO.setType(reqVO.getType());
+            couponInfoDO.setCreateUserId(loginUserId);
+            couponInfoDO.setPrice(reqVO.getPrice());
+            couponInfoDO.setMinUsePrice(reqVO.getMinUsePrice());
+            couponInfoDO.setStoreIds(reqVO.getStoreIds());
+            couponInfoDO.setExpriceTime(reqVO.getExpriceTime());
+//        couponInfoDO.setRoomType(reqVO.getRoomType());
+            couponInfoMapper.updateById(couponInfoDO);
+        }
+
     }
 
     @Override
