@@ -11,6 +11,7 @@ import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
+import com.yanzu.framework.excel.core.convert.DictConvert;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
@@ -35,6 +36,7 @@ import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
+import com.yanzu.module.member.service.workwx.WorkWxService;
 import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.Synchronized;
@@ -107,6 +109,9 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Resource
     private StoreInfoMapper storeInfoMapper;
+
+    @Resource
+    private WorkWxService workWxService;
 
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
@@ -453,7 +458,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //生成订单，并修改房间状态
         OrderInfoDO orderInfoDO = new OrderInfoDO();
-        orderInfoDO.setOrderNo(orderNo);
+        orderInfoDO.setOrderNo(reqVO.getOrderNo());
         orderInfoDO.setStoreId(roomInfoDO.getStoreId());
         orderInfoDO.setRoomId(roomInfoDO.getRoomId());
         orderInfoDO.setUserId(userId);
@@ -471,8 +476,25 @@ public class AppOrderServiceImpl implements AppOrderService {
             roomInfoDO.setStatus(AppEnum.room_status.PENDDING.getValue());
             roomInfoMapper.updateById(roomInfoDO);
         }
+        //异步发送微信通过
+        StringBuffer sb=new StringBuffer();
+        sb.append("用户下单通知\n");
+        sb.append(">订单编号:<font color=\"warning\"").append(reqVO.getOrderNo()).append("</font>");
+        sb.append(">订单金额:<font color=\"warning\"").append(totalPrice).append("</font>");
+        sb.append(">支付方式:<font color=\"warning\"").append(getPayTypeStr(reqVO.getPayType())).append("</font>");
+        sb.append(">订单时间:<font color=\"warning\"").append(reqVO.getStartTime()).append(" - ").append(reqVO.getEndTime()).append("</font>");
+        workWxService.sendMDMsg(roomInfoDO.getStoreId(), sb.toString());
         return orderInfoDO.getOrderId();
 
+    }
+
+    private String getPayTypeStr(Integer type){
+        switch (type){
+            case 1: return "微信";
+            case 2: return "余额";
+            case 3: return "团购";
+        }
+        return "";
     }
 
     private String getOrderNo() {

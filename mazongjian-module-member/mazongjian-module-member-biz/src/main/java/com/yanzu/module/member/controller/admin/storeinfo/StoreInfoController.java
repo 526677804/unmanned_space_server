@@ -34,12 +34,12 @@ public class StoreInfoController {
     @Resource
     private StoreInfoService storeInfoService;
 
-    @PostMapping("/create")
-    @Operation(summary = "创建门店管理")
-    @PreAuthorize("@ss.hasPermission('member:store-info:create')")
-    public CommonResult<Long> createStoreInfo(@Valid @RequestBody StoreInfoCreateReqVO createReqVO) {
-        return success(storeInfoService.createStoreInfo(createReqVO));
-    }
+//    @PostMapping("/create")
+//    @Operation(summary = "创建门店管理")
+//    @PreAuthorize("@ss.hasPermission('member:store-info:create')")
+//    public CommonResult<Long> createStoreInfo(@Valid @RequestBody StoreInfoCreateReqVO createReqVO) {
+//        return success(storeInfoService.createStoreInfo(createReqVO));
+//    }
 
     @PutMapping("/update")
     @Operation(summary = "更新门店管理")
@@ -67,14 +67,14 @@ public class StoreInfoController {
         return success(StoreInfoConvert.INSTANCE.convert(storeInfo));
     }
 
-    @GetMapping("/list")
-    @Operation(summary = "获得门店管理列表")
-    @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")
-    @PreAuthorize("@ss.hasPermission('member:store-info:query')")
-    public CommonResult<List<StoreInfoRespVO>> getStoreInfoList(@RequestParam("ids") Collection<Long> ids) {
-        List<StoreInfoDO> list = storeInfoService.getStoreInfoList(ids);
-        return success(StoreInfoConvert.INSTANCE.convertList(list));
-    }
+//    @GetMapping("/list")
+//    @Operation(summary = "获得门店管理列表")
+//    @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")
+//    @PreAuthorize("@ss.hasPermission('member:store-info:query')")
+//    public CommonResult<List<StoreInfoRespVO>> getStoreInfoList(@RequestParam("ids") Collection<Long> ids) {
+//        List<StoreInfoDO> list = storeInfoService.getStoreInfoList(ids);
+//        return success(StoreInfoConvert.INSTANCE.convertList(list));
+//    }
 
     @GetMapping("/page")
     @Operation(summary = "获得门店管理分页")
@@ -84,16 +84,16 @@ public class StoreInfoController {
         return success(StoreInfoConvert.INSTANCE.convertPage(pageResult));
     }
 
-    @GetMapping("/export-excel")
-    @Operation(summary = "导出门店管理 Excel")
-    @PreAuthorize("@ss.hasPermission('member:store-info:export')")
-    @OperateLog(type = EXPORT)
-    public void exportStoreInfoExcel(@Valid StoreInfoExportReqVO exportReqVO,
-              HttpServletResponse response) throws IOException {
-        List<StoreInfoDO> list = storeInfoService.getStoreInfoList(exportReqVO);
-        // 导出 Excel
-        List<StoreInfoExcelVO> datas = StoreInfoConvert.INSTANCE.convertList02(list);
-        ExcelUtils.write(response, "门店管理.xls", "数据", StoreInfoExcelVO.class, datas);
-    }
+//    @GetMapping("/export-excel")
+//    @Operation(summary = "导出门店管理 Excel")
+//    @PreAuthorize("@ss.hasPermission('member:store-info:export')")
+//    @OperateLog(type = EXPORT)
+//    public void exportStoreInfoExcel(@Valid StoreInfoExportReqVO exportReqVO,
+//              HttpServletResponse response) throws IOException {
+//        List<StoreInfoDO> list = storeInfoService.getStoreInfoList(exportReqVO);
+//        // 导出 Excel
+//        List<StoreInfoExcelVO> datas = StoreInfoConvert.INSTANCE.convertList02(list);
+//        ExcelUtils.write(response, "门店管理.xls", "数据", StoreInfoExcelVO.class, datas);
+//    }
 
 }

@@ -43,7 +43,7 @@ public class OrderSaveReqVO {
     @NotNull(message = "订单结束时间不能为空")
     private Date endTime;
 
-    @Schema(description = "支付方式 1微信 2余额", example = "1")
+    @Schema(description = "支付方式 1微信 2余额 3团购", example = "1")
     @NotNull(message = "支付方式不能为空")
     private Integer payType;
 

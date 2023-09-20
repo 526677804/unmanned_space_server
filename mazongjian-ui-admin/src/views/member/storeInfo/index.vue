@@ -30,14 +30,14 @@
 
     <!-- 操作工具栏 -->
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
-                   v-hasPermi="['member:store-info:create']">新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport" :loading="exportLoading"
-                   v-hasPermi="['member:store-info:export']">导出</el-button>
-      </el-col>
+<!--      <el-col :span="1.5">-->
+<!--        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"-->
+<!--                   v-hasPermi="['member:store-info:create']">新增</el-button>-->
+<!--      </el-col>-->
+<!--      <el-col :span="1.5">-->
+<!--        <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport" :loading="exportLoading"-->
+<!--                   v-hasPermi="['member:store-info:export']">导出</el-button>-->
+<!--      </el-col>-->
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -119,6 +119,9 @@
         </el-form-item>
         <el-form-item label="客服电话" prop="kefuPhone">
           <el-input v-model="form.kefuPhone" placeholder="请输入客服电话" />
+        </el-form-item>
+        <el-form-item label="微信webhook" prop="wxWebhook">
+          <el-input v-model="form.wxWebhook" placeholder="请输入企业微信webhook地址" />
         </el-form-item>
         <!-- <el-form-item label="美团店铺uuid" prop="meituanOpenShopUuid">
           <el-input v-model="form.meituanOpenShopUuid" placeholder="请输入美团店铺uuid" />
@@ -226,6 +229,7 @@ export default {
         status: undefined,
         wifiInfo: undefined,
         kefuPhone: undefined,
+        wxWebhook: undefined,
         meituanOpenShopUuid: undefined,
         meituanKey: undefined,
         meituanSecret: undefined,

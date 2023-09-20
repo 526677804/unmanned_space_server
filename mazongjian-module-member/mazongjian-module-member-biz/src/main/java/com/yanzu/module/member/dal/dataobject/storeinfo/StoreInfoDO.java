@@ -86,6 +86,10 @@ public class StoreInfoDO extends BaseDO {
     private String kefuPhone;
 
     /**
+     * 微信机器人webhook
+     */
+    private String wxWebhook;
+    /**
      * 房间数量
      */
     private Integer roomNum;

@@ -50,4 +50,7 @@ public class StoreInfoUpdateReqVO extends StoreInfoBaseVO {
     @Schema(description = "客服电话")
     private String kefuPhone;
 
+    @Schema(description = "微信机器人webhook")
+    private String wxWebhook;
+
 }
