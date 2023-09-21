@@ -44,6 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -813,18 +814,31 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             orderInfoMapper.updateById(orderInfoDO);
             //异步发送微信通知
-            StringBuffer sb = new StringBuffer();
-            sb.append("订单取消\n");
-            sb.append(">订单编号:<font color=\"warning\">").append(orderInfoDO.getOrderNo()).append("</font>\n");
-//            sb.append(">结束时间:<font color=\"warning\">")
-//                    .append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
-            workWxService.sendMDMsg(orderInfoDO.getStoreId(), sb.toString());
+            sendOrderCancelMsgToWx(loginUserId,orderInfoDO.getOrderNo(),orderInfoDO.getRoomId());
         } else {
             throw exception(ORDER_CANCEL_OPRATION_ERROR);
         }
 
 
     }
+
+    @Async
+    protected void sendOrderCancelMsgToWx(Long userId,String orderNo,Long roomId){
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("订单取消\n");
+        sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
+        sb.append(">取消用户:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomInfoDO.getRoomName()).append("</font>\n");
+//            sb.append(">结束时间:<font color=\"warning\">")
+//                    .append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        workWxService.sendMDMsg(roomInfoDO.getStoreId(), sb.toString());
+    }
+
 
     @Override
     @Transactional

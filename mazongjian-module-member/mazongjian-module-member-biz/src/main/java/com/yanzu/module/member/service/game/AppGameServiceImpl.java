@@ -9,6 +9,7 @@ import com.yanzu.module.member.controller.app.game.vo.AppGameInfoRespVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGamePageReqVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGameUserListRespVO;
 import com.yanzu.module.member.dal.dataobject.gameinfo.GameInfoDO;
+import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
 import com.yanzu.module.member.dal.mysql.gameinfo.GameInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
@@ -17,6 +18,7 @@ import com.yanzu.module.member.service.workwx.WorkWxService;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -79,12 +81,21 @@ public class AppGameServiceImpl implements AppGameService {
         gameInfoDO.setPlayUserIds(String.valueOf(loginUserId));
         gameInfoMapper.insert(gameInfoDO);
         //异步发送微信通知
+        sendGameMsgtoWx(loginUserId, reqVO, 1);
+    }
+
+    @Async
+    protected void sendGameMsgtoWx(Long userId, AppGameInfoReqVO reqVO, Integer userNum) {
+        AppUserDO appUserDO = appUserMapper.selectById(userId);
         StringBuffer sb = new StringBuffer();
         sb.append("在线组局信息\n");
-            sb.append(">结束时间:<font color=\"warning\">")
-                    .append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        sb.append(">发起用户:<font color=\"warning\">").append(appUserDO.getNickname()).append("</font>\n");
         sb.append(">玩法规则:<font color=\"warning\">").append(reqVO.getRuleDesc()).append("</font>\n");
-        sb.append(">人数:<font color=\"warning\">").append(reqVO.getUserNum()).append("</font>人");
+        sb.append(">开始时间:<font color=\"warning\">")
+                .append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">玩家人数:<font color=\"warning\">").append(reqVO.getUserNum()).append("</font>人\n");
+        sb.append(">当前人数:<font color=\"warning\">").append(userNum).append("</font>人");
+
         workWxService.sendMDMsg(reqVO.getStoreId(), sb.toString());
     }
 
