@@ -371,19 +371,31 @@ public class AppOrderServiceImpl implements AppOrderService {
             //校验团购券 先取出门店的美团配置信息
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
             JSONObject chaxun = meituanService.prepare(storeInfoDO.getStoreId(), reqVO.getGroupPayNo());
-            //取出标题 并按|进行分割,格式为： 包间类型|自定义名称|时间 首位是包间类型，尾部是时间  如：大包|极品房间|4小时
-            String dealTitle = chaxun.getStr("deal_title");
-            String[] split = dealTitle.split("\\|");
-            String roomTypeName = split[0];
-            Integer timeHour = Integer.valueOf(split[split.length - 1].replace("小时", ""));
             //套餐id，退款的时候要用
             String deal_id = chaxun.getStr("deal_id");
-            String roomNameByType = getRoomNameByType(roomInfoDO.getType());
-            if (!roomNameByType.equals(roomTypeName)) {
-                throw exception(GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR);
-            }
-            if (l / 60 != timeHour) {
-                throw exception(GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR);
+            //取出标题 并按|进行分割,格式为： 包间类型|自定义名称|时间 首位是包间类型，尾部是时间  如：大包|极品房间|4小时
+            String dealTitle = chaxun.getStr("deal_title");
+            //团购券的名称 如果包含 “通宵”两个字，说明是通宵场 23-8时
+            if (dealTitle.indexOf("通宵") > 0) {
+                //通宵场  判断开始时间必须为23:00
+                if (reqVO.getStartTime().getHours() != 23) {
+                    throw exception(GROUP_NO_CHECK_TONGXIAO_TIME_ERROR);
+                }
+                if (reqVO.getEndTime().getHours() != 8) {
+                    throw exception(GROUP_NO_CHECK_TONGXIAO_TIME_ERROR);
+                }
+            } else {
+                String[] split = dealTitle.split("\\|");
+                String roomTypeName = split[0];
+                //普通券
+                Integer timeHour = Integer.valueOf(split[split.length - 1].replace("小时", ""));
+                String roomNameByType = getRoomNameByType(roomInfoDO.getType());
+                if (!roomNameByType.equals(roomTypeName)) {
+                    throw exception(GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR);
+                }
+                if (l / 60 != timeHour) {
+                    throw exception(GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR);
+                }
             }
             //检验通过  把团购券给使用了
             JSONObject consume = meituanService.consume(roomInfoDO.getStoreId(), userId, reqVO.getGroupPayNo());
@@ -479,9 +491,19 @@ public class AppOrderServiceImpl implements AppOrderService {
             roomInfoMapper.updateById(roomInfoDO);
         }
         //异步发送微信通知
+        sendSaveOrderWxMsg(roomInfoDO.getRoomName(), reqVO, totalPrice, orderInfoDO.getStoreId(), userId);
+        return orderInfoDO.getOrderId();
+
+    }
+
+    @Async
+    protected void sendSaveOrderWxMsg(String roomName, OrderSaveReqVO reqVO, BigDecimal totalPrice, Long storeId, Long userId) {
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
         StringBuffer sb = new StringBuffer();
         sb.append("用户下单通知\n");
-        sb.append(">房间名称:<font color=\"warning\">").append(roomInfoDO.getRoomName()).append("</font>\n");
+        sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">手机号码:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
         sb.append(">订单编号:<font color=\"warning\">").append(reqVO.getOrderNo()).append("</font>\n");
         sb.append(">订单金额:<font color=\"warning\">").append(totalPrice).append("</font>\n");
         sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(reqVO.getPayType())).append("</font>\n");
@@ -489,10 +511,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                 .append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
         sb.append(">结束时间:<font color=\"warning\">")
                 .append(DateUtils.dateToStr(reqVO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
-        workWxService.sendMDMsg(roomInfoDO.getStoreId(), sb.toString());
-        return orderInfoDO.getOrderId();
-
+        workWxService.sendMDMsg(storeId, sb.toString());
     }
+
 
     private String getPayTypeStr(Integer type) {
         switch (type) {
@@ -814,7 +835,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             orderInfoMapper.updateById(orderInfoDO);
             //异步发送微信通知
-            sendOrderCancelMsgToWx(loginUserId,orderInfoDO.getOrderNo(),orderInfoDO.getRoomId());
+            sendOrderCancelMsgToWx(loginUserId, orderInfoDO.getOrderNo(), orderInfoDO.getRoomId());
         } else {
             throw exception(ORDER_CANCEL_OPRATION_ERROR);
         }
@@ -823,7 +844,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Async
-    protected void sendOrderCancelMsgToWx(Long userId,String orderNo,Long roomId){
+    protected void sendOrderCancelMsgToWx(Long userId, String orderNo, Long roomId) {
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
