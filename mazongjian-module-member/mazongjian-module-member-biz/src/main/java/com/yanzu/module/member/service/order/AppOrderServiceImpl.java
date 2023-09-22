@@ -11,7 +11,6 @@ import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
-import com.yanzu.framework.excel.core.convert.DictConvert;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
@@ -511,7 +510,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 .append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
         sb.append(">结束时间:<font color=\"warning\">")
                 .append(DateUtils.dateToStr(reqVO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
-        workWxService.sendMDMsg(storeId, sb.toString());
+        workWxService.sendOrderMsg(storeId, sb.toString());
     }
 
 
@@ -658,7 +657,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(reqVO.getPayType())).append("</font>\n");
         sb.append(">结束时间:<font color=\"warning\">")
                 .append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
-        workWxService.sendMDMsg(roomInfoDO.getStoreId(), sb.toString());
+        workWxService.sendOrderMsg(roomInfoDO.getStoreId(), sb.toString());
         //todo...如果有已接单的保洁订单 发消息通知保洁时间延后了
 
     }
@@ -857,7 +856,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         sb.append(">房间名称:<font color=\"warning\">").append(roomInfoDO.getRoomName()).append("</font>\n");
 //            sb.append(">结束时间:<font color=\"warning\">")
 //                    .append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
-        workWxService.sendMDMsg(roomInfoDO.getStoreId(), sb.toString());
+        workWxService.sendOrderMsg(roomInfoDO.getStoreId(), sb.toString());
     }
 
 

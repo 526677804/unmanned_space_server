@@ -81,7 +81,7 @@ public interface ErrorCodeConstants {
     ErrorCode STORE_TUANGOU_PAY_ERROR = new ErrorCode(1004004082, "当前店铺暂不支持团购券支付！请选择其他支付方式！");
     ErrorCode GROUP_NO_CHECK_ERROR = new ErrorCode(1004004083, "团购券验证失败！无效/已使用/已过期");
     ErrorCode GROUP_NO_CANCEL_TIMEOUT_ERROR = new ErrorCode(1004004084, "团购券退款失败,已超过退款时效！");
-    ErrorCode GROUP_NO_CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004085, "当前输入的团购券为通宵券，仅支持23时~次日8日使用！请修改预定时间后重试！");
+    ErrorCode GROUP_NO_CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004085, "当前输入的团购券为通宵券，仅支持23时~次日8时使用！请修改预定时间后重试！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");
     ErrorCode DATA_EXISTS_ERROR = new ErrorCode(1004005001, "数据已存在，请不要重复保存！");
     ErrorCode OPRATION_ERROR = new ErrorCode(1004005002, "非法操作");

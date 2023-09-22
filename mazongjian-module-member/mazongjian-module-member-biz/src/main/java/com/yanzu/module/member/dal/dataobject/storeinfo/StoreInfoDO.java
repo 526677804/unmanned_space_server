@@ -55,11 +55,11 @@ public class StoreInfoDO extends BaseDO {
     /**
      * 纬度
      */
-     private Double lat;
+    private Double lat;
     /**
      * 经度
      */
-     private Double lon;
+    private Double lon;
     /**
      * 详细地址
      */
@@ -85,10 +85,11 @@ public class StoreInfoDO extends BaseDO {
      */
     private String kefuPhone;
 
-    /**
-     * 微信机器人webhook
-     */
-    private String wxWebhook;
+    /*订单通知webhook*/
+    private String orderWebhook;
+
+    /*组局通知webhook*/
+    private String gameWebhook;
     /**
      * 房间数量
      */

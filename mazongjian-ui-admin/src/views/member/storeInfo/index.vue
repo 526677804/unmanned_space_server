@@ -120,9 +120,12 @@
         <el-form-item label="客服电话" prop="kefuPhone">
           <el-input v-model="form.kefuPhone" placeholder="请输入客服电话" />
         </el-form-item>
-        <el-form-item label="微信webhook" prop="wxWebhook">
-          <el-input v-model="form.wxWebhook" placeholder="请输入企业微信webhook地址" />
+        <el-form-item label="订单通知webhook" prop="orderWebhook">
+          <el-input v-model="form.orderWebhook" placeholder="请输入订单通知webhook地址" />
         </el-form-item>
+         <el-form-item label="组局通知webhook" prop="gameWebhook">
+                  <el-input v-model="form.gameWebhook" placeholder="请输入组局通知webhook地址" />
+                </el-form-item>
         <!-- <el-form-item label="美团店铺uuid" prop="meituanOpenShopUuid">
           <el-input v-model="form.meituanOpenShopUuid" placeholder="请输入美团店铺uuid" />
         </el-form-item>

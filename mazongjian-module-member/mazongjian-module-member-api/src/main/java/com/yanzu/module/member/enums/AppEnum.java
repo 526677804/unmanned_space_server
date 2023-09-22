@@ -70,10 +70,12 @@ public class AppEnum {
         //充值赠送	2
         //订单支付	3
         //订单退款	4
+        //管理员赠送	5
         RECHARGE(1),
         GIFT(2),
         PAY(3),
-        REFUND(4);
+        REFUND(4),
+        ADMIN_GIFT(5);
 
 
         private final Integer value;

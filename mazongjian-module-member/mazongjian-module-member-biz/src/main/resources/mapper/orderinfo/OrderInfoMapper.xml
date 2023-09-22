@@ -67,7 +67,7 @@
         <if test="null!=status">
             and c.status=#{status}
         </if>
-        order by create_time desc
+        order by c.create_time desc
     </select>
     <select id="getByRoomId" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
         select *

@@ -12,7 +12,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
@@ -331,7 +330,7 @@ public class AppUserServiceImpl implements AppUserService {
             sb.append(">用户手机号:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
             sb.append(">充值金额:<font color=\"warning\">").append(reqVO.getPrice()).append("</font>\n");
             sb.append(">赠送金额:<font color=\"warning\">").append(gift).append("</font>");
-            workWxService.sendMDMsg(reqVO.getStoreId(), sb.toString());
+            workWxService.sendOrderMsg(reqVO.getStoreId(), sb.toString());
         }
     }
 

@@ -1,7 +1,6 @@
 package com.yanzu.module.member.service.workwx;
 
-import com.alibaba.fastjson.JSONObject;
-
 public interface WorkWxService {
-    void sendMDMsg(Long storeId,String content);
+    void sendOrderMsg(Long storeId, String content);
+    void sendGameMsg(Long storeId, String content);
 }

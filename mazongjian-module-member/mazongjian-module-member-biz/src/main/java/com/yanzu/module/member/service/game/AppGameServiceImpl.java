@@ -9,13 +9,14 @@ import com.yanzu.module.member.controller.app.game.vo.AppGameInfoRespVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGamePageReqVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGameUserListRespVO;
 import com.yanzu.module.member.dal.dataobject.gameinfo.GameInfoDO;
+import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
 import com.yanzu.module.member.dal.mysql.gameinfo.GameInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
+import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.workwx.WorkWxService;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -50,6 +51,9 @@ public class AppGameServiceImpl implements AppGameService {
 
     @Resource
     private OrderInfoMapper orderInfoMapper;
+
+    @Resource
+    private RoomInfoMapper roomInfoMapper;
 
     @Override
     @Transactional
@@ -91,12 +95,11 @@ public class AppGameServiceImpl implements AppGameService {
         sb.append("在线组局信息\n");
         sb.append(">发起用户:<font color=\"warning\">").append(appUserDO.getNickname()).append("</font>\n");
         sb.append(">玩法规则:<font color=\"warning\">").append(reqVO.getRuleDesc()).append("</font>\n");
-        sb.append(">开始时间:<font color=\"warning\">")
-                .append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
         sb.append(">玩家人数:<font color=\"warning\">").append(reqVO.getUserNum()).append("</font>人\n");
         sb.append(">当前人数:<font color=\"warning\">").append(userNum).append("</font>人");
 
-        workWxService.sendMDMsg(reqVO.getStoreId(), sb.toString());
+        workWxService.sendGameMsg(reqVO.getStoreId(), sb.toString());
     }
 
     @Override
@@ -196,6 +199,7 @@ public class AppGameServiceImpl implements AppGameService {
                     }
                     gameInfoMapper.updateById(gameInfoDO);
                     //todo发送微信通知
+                    sendGameJoinMsgtoWx(loginUserId,gameInfoDO);
                 } else {
                     throw exception(GAME_MAX_USER_ERROR);
                 }
@@ -204,4 +208,23 @@ public class AppGameServiceImpl implements AppGameService {
             throw exception(GAME_JOIN_USER_ERROR);
         }
     }
+
+    @Async
+    protected void sendGameJoinMsgtoWx(Long userId, GameInfoDO gameInfoDO) {
+        int userNum = gameInfoDO.getPlayUserIds().split(",").length;
+        AppUserDO appUserDO = appUserMapper.selectById(userId);
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(gameInfoDO.getRoomId());
+        StringBuffer sb = new StringBuffer();
+        sb.append("用户:").append(appUserDO.getNickname()).append("加入了组局！\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomInfoDO.getRoomName()).append("</font>\n");
+        sb.append(">玩法规则:<font color=\"warning\">").append(gameInfoDO.getRuleDesc()).append("</font>\n");
+        sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(gameInfoDO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">玩家人数:<font color=\"warning\">").append(gameInfoDO.getUserNum()).append("</font>人\n");
+        sb.append(">当前人数:<font color=\"warning\">").append(userNum).append("</font>人");
+        if(userNum==gameInfoDO.getUserNum()){
+            sb.append("组局已成功！请及时预订该消费时段，祝您玩的开心~");
+        }
+        workWxService.sendGameMsg(gameInfoDO.getStoreId(), sb.toString());
+    }
+
 }
