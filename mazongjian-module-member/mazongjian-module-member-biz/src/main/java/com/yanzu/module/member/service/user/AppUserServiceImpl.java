@@ -328,7 +328,7 @@ public class AppUserServiceImpl implements AppUserService {
             sb.append("用户充值通知\n");
             sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
             sb.append(">用户手机号:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
-            sb.append(">充值金额:<font color=\"warning\">").append(reqVO.getPrice()).append("</font>\n");
+            sb.append(">充值金额:<font color=\"warning\">").append(reqVO.getPrice() / 100.0).append("</font>\n");
             sb.append(">赠送金额:<font color=\"warning\">").append(gift).append("</font>");
             workWxService.sendOrderMsg(reqVO.getStoreId(), sb.toString());
         }

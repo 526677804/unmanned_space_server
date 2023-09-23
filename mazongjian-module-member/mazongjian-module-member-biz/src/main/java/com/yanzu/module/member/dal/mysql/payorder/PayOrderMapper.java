@@ -6,9 +6,11 @@ import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
 import com.yanzu.module.member.controller.app.callback.vo.PayOrderNotifyReqDTO;
+import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -45,4 +47,6 @@ public interface PayOrderMapper extends BaseMapperX<PayOrderDO> {
     PayOrderDO getByPayNo(String payNo);
 
     PayOrderDO getByOrderNo(String orderNo);
+
+    BigDecimal getMoney(AppChartDataReqVO reqVO);
 }

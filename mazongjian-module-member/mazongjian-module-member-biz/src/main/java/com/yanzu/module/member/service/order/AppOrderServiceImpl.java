@@ -130,10 +130,15 @@ public class AppOrderServiceImpl implements AppOrderService {
         Date now = new Date();
         //参数校验
         if (startTime.before(now)) {
-            //开始时间在当前之前，不能超过5分钟  不然间隔太久了
+            //开始时间在当前之前，不能超过5分钟  不然间隔太久了  通宵场的例外 23-08时
             long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
-            if (l > 6) {
-                throw exception(ORDER_START_TIME_LT_NOW_ERROR);
+            if (startTime.getHours() == 23 && endTime.getHours() == 8) {
+                //不校验开始时间是否早于当前时间
+            } else {
+                //不能超过5分钟
+                if (l > 6) {
+                    throw exception(ORDER_START_TIME_LT_NOW_ERROR);
+                }
             }
         }
         if (startTime.after(endTime)) {

@@ -30,4 +30,22 @@
         where order_no = #{orderNo}
           and deleted = 0
     </select>
+    <select id="getMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(p.price), 0) money
+        from member_pay_order p
+        left join member_order_info o ON o.order_no=p.order_no
+        where p.deleted = 0 and o.deleted=0 and  p.pay_status=1 and p.refund_price=0
+        and o.status in (0, 1, 2)
+        <if test="null!=startTime and null!=endTime">
+            and to_days(p.create_time) >= to_days(#{startTime})
+            and to_days(p.create_time) &lt;= to_days(#{endTime})
+        </if>
+        <if test="null!=storeId and storeId!=''">
+            and o.store_id=#{storeId}
+        </if>
+        <if test="null==storeId or storeId==''">
+            and o.store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})
+        </if>
+
+    </select>
 </mapper>

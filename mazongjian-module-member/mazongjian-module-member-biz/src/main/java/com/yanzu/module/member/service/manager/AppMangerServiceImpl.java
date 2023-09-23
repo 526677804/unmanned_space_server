@@ -23,6 +23,7 @@ import com.yanzu.module.member.dal.mysql.clearbill.ClearBillMapper;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
+import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
@@ -84,6 +85,9 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Resource
     private StoreInfoService storeInfoService;
+
+    @Resource
+    private PayOrderMapper payOrderMapper;
 
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
@@ -415,7 +419,11 @@ public class AppMangerServiceImpl implements AppMangerService {
         //仅管理员使用
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
-        return orderInfoMapper.getBusinessStatistics(reqVO);
+        AppBusinessStatisticsRespVO businessStatistics = orderInfoMapper.getBusinessStatistics(reqVO);
+        //查收入
+        BigDecimal money=payOrderMapper.getMoney(reqVO);
+        businessStatistics.setMoney(money);
+        return businessStatistics;
     }
 
     @Override
