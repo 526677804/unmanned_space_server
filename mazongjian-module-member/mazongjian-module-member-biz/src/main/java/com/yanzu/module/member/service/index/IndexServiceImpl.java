@@ -120,6 +120,7 @@ public class IndexServiceImpl implements IndexService {
             DateTimeFormatter formatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             DateTimeFormatter formatterHour = DateTimeFormatter.ofPattern("HH:mm");
             // 获取当前日期
+            LocalDate now = LocalDate.now();
             LocalDate currentDate = LocalDate.now();
             Set<String> days = new HashSet<>(5);
             for (int i = 0; i < 5; i++) {
@@ -131,14 +132,17 @@ public class IndexServiceImpl implements IndexService {
                 List<TimeRange> disabledTimeRanges = new ArrayList<>();
                 //先把订单中的时间进行处理
                 if (orederMap.containsKey(respVO.getRoomId())) {
-                    respVO.setStartTime(orederMap.get(respVO.getRoomId()).get(0).getStartTime());
-                    respVO.setEndTime(orederMap.get(respVO.getRoomId()).get(0).getEndTime());
+                    List<OrderInfoDO> sortOrder = orederMap.get(respVO.getRoomId()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
+                    respVO.setStartTime(sortOrder.get(0).getStartTime());
+                    respVO.setEndTime(sortOrder.get(0).getEndTime());
                     for (OrderInfoDO orderInfoDO : orederMap.get(respVO.getRoomId())) {
                         if (orderInfoDO.getStartTime().getDay() != orderInfoDO.getEndTime().getDay()) {
                             //开始时间与结束时间跨日 分隔成两段
                             LocalDateTime start = DateUtils.of(orderInfoDO.getStartTime());
                             LocalDateTime end = DateUtils.of(orderInfoDO.getEndTime());
-                            disabledTimeRanges.add(new TimeRange(start, start.with(LocalTime.of(23, 59))));
+                            if (start.getDayOfYear() >= now.getDayOfYear()) {
+                                disabledTimeRanges.add(new TimeRange(start, start.with(LocalTime.of(23, 59))));
+                            }
                             disabledTimeRanges.add(new TimeRange(end.with(LocalTime.of(00, 00)), end));
                         } else {
                             disabledTimeRanges.add(new TimeRange(DateUtils.of(orderInfoDO.getStartTime()), DateUtils.of(orderInfoDO.getEndTime())));
@@ -157,7 +161,9 @@ public class IndexServiceImpl implements IndexService {
                         // 判断是否跨越两天
                         if (bend.isBefore(bstart)) {
                             // 添加禁用时间范围：从开始时间到当天最后一秒
-                            disabledTimeRanges.add(new TimeRange(currentDate.atTime(bstart), currentDate.atTime(LocalTime.MAX)));
+                            if (currentDate.getDayOfYear() >= now.getDayOfYear()) {
+                                disabledTimeRanges.add(new TimeRange(currentDate.atTime(bstart), currentDate.atTime(LocalTime.MAX)));
+                            }
                             // 添加禁用时间范围：从零点到结束时间
                             disabledTimeRanges.add(new TimeRange(currentDate.atTime(LocalTime.MIDNIGHT), currentDate.atTime(bend)));
                         } else {
