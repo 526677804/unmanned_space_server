@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.workwx;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
@@ -56,5 +57,22 @@ public class WorkWxServiceImpl implements WorkWxService {
         markdown.put("content", content);
         msg.put("markdown", markdown);
         workWxClient.sendMDMsg(storeInfoDO.getGameWebhook(), msg);
+    }
+
+    @Override
+    public void sendClearMsg(String webhookUrl, String content) {
+        if (!ObjectUtils.isEmpty(webhookUrl)) {
+            log.info("发送清洁消息到配置的企业微信:{}", content);
+            JSONObject msg = new JSONObject();
+            msg.put("msgtype", "text");
+            JSONObject text = new JSONObject();
+            text.put("content", content);
+            JSONArray mentioned_list = new JSONArray();
+            mentioned_list.add("@all");
+            text.put("mentioned_list", mentioned_list);
+            msg.put("text", text);
+            workWxClient.sendMDMsg(webhookUrl, msg);
+        }
+
     }
 }

@@ -22,5 +22,4 @@ public class AppClearUserPageReqVO extends PageParam {
     private Long storeId;
 
 
-
 }

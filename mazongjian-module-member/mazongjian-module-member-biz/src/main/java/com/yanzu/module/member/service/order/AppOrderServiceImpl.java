@@ -55,6 +55,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -382,10 +383,10 @@ public class AppOrderServiceImpl implements AppOrderService {
             //团购券的名称 如果包含 “通宵”两个字，说明是通宵场 23-8时
             if (dealTitle.indexOf("通宵") > 0) {
                 //通宵场  判断开始时间必须为23:00
-                if (reqVO.getStartTime().getHours() != 23) {
+                if (reqVO.getStartTime().getHours() != 23 || reqVO.getStartTime().getMinutes() != 0) {
                     throw exception(GROUP_NO_CHECK_TONGXIAO_TIME_ERROR);
                 }
-                if (reqVO.getEndTime().getHours() != 8) {
+                if (reqVO.getEndTime().getHours() != 8 || reqVO.getEndTime().getMinutes() != 0) {
                     throw exception(GROUP_NO_CHECK_TONGXIAO_TIME_ERROR);
                 }
             } else {
@@ -511,10 +512,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         sb.append(">订单编号:<font color=\"warning\">").append(reqVO.getOrderNo()).append("</font>\n");
         sb.append(">订单金额:<font color=\"warning\">").append(totalPrice).append("</font>\n");
         sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(reqVO.getPayType())).append("</font>\n");
-        sb.append(">开始时间:<font color=\"warning\">")
-                .append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
-        sb.append(">结束时间:<font color=\"warning\">")
-                .append(DateUtils.dateToStr(reqVO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(reqVO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         workWxService.sendOrderMsg(storeId, sb.toString());
     }
 
@@ -660,8 +659,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         sb.append(">订单编号:<font color=\"warning\">").append(reqVO.getOrderNo()).append("</font>\n");
         sb.append(">续费金额:<font color=\"warning\">").append(totalPrice).append("</font>\n");
         sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(reqVO.getPayType())).append("</font>\n");
-        sb.append(">结束时间:<font color=\"warning\">")
-                .append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         workWxService.sendOrderMsg(roomInfoDO.getStoreId(), sb.toString());
         //todo...如果有已接单的保洁订单 发消息通知保洁时间延后了
 
@@ -753,8 +751,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
         }
         //未开始和进行中的订单  并且订单创建时间在5分钟内  都可以取消  其他则不能
-        cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
-                || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
+        cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         LocalDateTime currentDateTime = LocalDateTime.now(); // 当前时间
         LocalDateTime fiveMinutesAfter = currentDateTime.plus(5, ChronoUnit.MINUTES); // 当前时间5分钟后的时间
         if (orderInfoDO.getCreateTime().isAfter(fiveMinutesAfter)) {
@@ -883,15 +880,21 @@ public class AppOrderServiceImpl implements AppOrderService {
             //判断当前的时间是否在订单开始时间之前
             if (now.before(orderInfoDO.getStartTime())) {
                 //早于开始时间 判断一下是否能提前开始
-                //新的结束时间 等于当前时间加上订单的时长
-                long l = now.getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime());
-                Date endTime = new Date(l);
-                //校验时间冲突
-                preOrder(orderInfoDO.getRoomId(), now, endTime, null, orderId, false);
-                //校验通过 更改订单的开始和完成时间
-                orderInfoDO.setStartTime(now);
-                orderInfoDO.setEndTime(endTime);
-                log.info("订单：{}，提前开始消费！", orderInfoDO.getOrderNo());
+                //对于通宵场，开始时间只能在23：00以后
+                if (orderInfoDO.getStartTime().getHours() == 23 && orderInfoDO.getStartTime().getMinutes() == 0 && orderInfoDO.getEndTime().getHours() == 8 && orderInfoDO.getEndTime().getMinutes() == 0) {
+                    //通宵场
+                    throw exception(TONGXIAO_ORDER_START_ERROR);
+                } else {
+                    //新的结束时间 等于当前时间加上订单的时长
+                    long l = now.getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime());
+                    Date endTime = new Date(l);
+                    //校验时间冲突
+                    preOrder(orderInfoDO.getRoomId(), now, endTime, null, orderId, false);
+                    //校验通过 更改订单的开始和完成时间
+                    orderInfoDO.setStartTime(now);
+                    orderInfoDO.setEndTime(endTime);
+                    log.info("订单：{}，提前开始消费！", orderInfoDO.getOrderNo());
+                }
             }
             //开始订单
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
@@ -927,6 +930,54 @@ public class AppOrderServiceImpl implements AppOrderService {
         log.info("==========     开始执行订单定时检查任务     ==========");
         Date now = new Date();
         log.info("当前时间:{}", DateUtils.dateToStr(now, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
+        //取出所有进行中的订单
+        List<OrderInfoDO> listStart = orderInfoMapper.getByStatus(AppEnum.order_status.START.getValue());
+        //如果存在结束时间已经小于现在的时间的 则把订单状态改为完成
+        if (!org.springframework.util.CollectionUtils.isEmpty(listStart)) {
+            List<String> roomIds = new ArrayList<>();
+            Set<String> storeIds = new HashSet<>();
+            List<String> orderIds = new ArrayList<>();
+            listStart.forEach(x -> {
+                log.info("进行中订单：{}，结束时间:{}", x.getOrderNo(), DateUtils.dateToStr(x.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
+                //进行中订单的结束时间 小于当前时间 则结束订单
+                if (x.getEndTime().before(now)) {
+                    log.info("结束订单：{}", x.getOrderNo());
+//                    x.setStatus(AppEnum.order_status.FINISH.getValue());
+                    orderIds.add(String.valueOf(x.getOrderId()));
+                    //房间改为待保洁
+                    roomIds.add(String.valueOf(x.getRoomId()));
+                    //关门关电
+                    deviceService.closeRoomDoor(x.getRoomId(), null, 4);
+                    storeIds.add(x.getStoreId().toString());
+                } else {
+                    //如果订单结束时间  还剩30分钟，发送提醒
+                    Calendar cal1 = Calendar.getInstance();
+                    cal1.setTime(now);
+                    Calendar cal2 = Calendar.getInstance();
+                    cal2.setTime(x.getEndTime());
+                    // 忽略秒
+                    cal1.set(Calendar.SECOND, 0);
+                    cal2.set(Calendar.SECOND, 0);
+                    long milliseconds1 = cal1.getTimeInMillis();
+                    long milliseconds2 = cal2.getTimeInMillis();
+                    long diff = milliseconds2 - milliseconds1;
+                    int minutes = (int) (diff / (60 * 1000));
+                    if (minutes == 30) {
+                        deviceService.runSound(x.getRoomId(), 2);
+                    } else if (minutes == 15) {
+                        deviceService.runSound(x.getRoomId(), 3);
+                    } else if (minutes == 5) {
+                        deviceService.runSound(x.getRoomId(), 4);
+                    }
+                }
+            });
+            if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
+                orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), orderIds.stream().collect(Collectors.joining(",")));
+                roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), roomIds.stream().collect(Collectors.joining(",")));
+                //发送微信通知
+                sendClearMsg(roomIds, storeIds);
+            }
+        }
         //取出所有未开始的订单
         List<OrderInfoDO> list1 = orderInfoMapper.getByStatus(AppEnum.order_status.PENDING.getValue());
         //如果存在开始时间已经大于现在的时间的 则把订单状态改为开始
@@ -961,52 +1012,24 @@ public class AppOrderServiceImpl implements AppOrderService {
                 clearInfoMapper.insertBatch(clearInfoDOList);
             }
         }
-        //取出所有进行中的订单
-        List<OrderInfoDO> listStart = orderInfoMapper.getByStatus(AppEnum.order_status.START.getValue());
-        //如果存在结束时间已经小于现在的时间的 则把订单状态改为完成
-        if (!org.springframework.util.CollectionUtils.isEmpty(listStart)) {
-            List<String> roomIds = new ArrayList<>();
-            List<String> orderIds = new ArrayList<>();
-            listStart.forEach(x -> {
-                log.info("进行中订单：{}，结束时间:{}", x.getOrderNo(), DateUtils.dateToStr(x.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
-                //进行中订单的结束时间 小于当前时间 则结束订单
-                if (x.getEndTime().before(now)) {
-                    log.info("结束订单：{}", x.getOrderNo());
-//                    x.setStatus(AppEnum.order_status.FINISH.getValue());
-                    orderIds.add(String.valueOf(x.getOrderId()));
-                    //房间改为待保洁
-                    roomIds.add(String.valueOf(x.getRoomId()));
-                    //关门关电
-                    deviceService.closeRoomDoor(x.getRoomId(), null, 4);
-                } else {
-                    //如果订单结束时间  还剩30分钟，发送提醒
-                    Calendar cal1 = Calendar.getInstance();
-                    cal1.setTime(now);
-                    Calendar cal2 = Calendar.getInstance();
-                    cal2.setTime(x.getEndTime());
-                    // 忽略秒
-                    cal1.set(Calendar.SECOND, 0);
-                    cal2.set(Calendar.SECOND, 0);
-                    long milliseconds1 = cal1.getTimeInMillis();
-                    long milliseconds2 = cal2.getTimeInMillis();
-                    long diff = milliseconds2 - milliseconds1;
-                    int minutes = (int) (diff / (60 * 1000));
-                    if (minutes == 30) {
-                        deviceService.runSound(x.getRoomId(), 2);
-                    } else if (minutes == 15) {
-                        deviceService.runSound(x.getRoomId(), 3);
-                    } else if (minutes == 5) {
-                        deviceService.runSound(x.getRoomId(), 4);
-                    }
-                }
-            });
-            if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
-                orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), orderIds.stream().collect(Collectors.joining(",")));
-                roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), roomIds.stream().collect(Collectors.joining(",")));
-            }
-        }
         log.info("==========     订单定时检查任务执行完成     ==========");
 
+    }
+
+
+    @Async
+    protected void sendClearMsg(List<String> roomIds, Set<String> storeIds) {
+        //先查询出所有门店 并转map
+        Map<String, StoreInfoDO> storeInfoDOMap = storeInfoMapper.getListByIds(storeIds).stream().collect(Collectors.toMap(x -> String.valueOf(x.getStoreId()), Function.identity()));
+        //开始发消息
+        for (String roomId : roomIds) {
+            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+            StringBuffer sb = new StringBuffer();
+            sb.append("订单结束,待清洁通知\n");
+            sb.append(">门店名称:").append(storeInfoDOMap.get(roomInfoDO.getStoreId().toString()).getStoreName()).append("\n");
+            sb.append(">房间名称:").append(roomInfoDO.getRoomName()).append("\n");
+            workWxService.sendClearMsg(storeInfoDOMap.get(roomInfoDO.getStoreId().toString()).getOrderWebhook(),sb.toString());
+        }
     }
 
     @Override

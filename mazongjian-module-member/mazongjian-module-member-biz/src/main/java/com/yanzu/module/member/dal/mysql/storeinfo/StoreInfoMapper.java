@@ -65,4 +65,6 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
 
     List<KeyValue<Long, String>> getNameMapByIds(Set<String> storeIdSet);
 
+    List<StoreInfoDO> getListByIds(Set<String> storeIds);
+
 }

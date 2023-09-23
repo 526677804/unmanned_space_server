@@ -57,4 +57,10 @@ public interface AppMangerService {
     List<KeyValue<String, Double>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
 
     void giftCoupon(AppGiftCouponReqVO reqVO);
+
+    PageResult<AppAdminUserPageRespVO> getAdminUserPage(AppClearUserPageReqVO reqVO);
+
+    void deleteAdminUser(Long storeId, Long userId);
+
+    void saveAdminUser(AppClearUserDetailReqVO reqVO);
 }

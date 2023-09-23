@@ -16,22 +16,27 @@ import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
 import com.yanzu.module.member.convert.roominfo.RoomInfoConvert;
 import com.yanzu.module.member.convert.storeinfo.StoreInfoConvert;
 import com.yanzu.module.member.dal.dataobject.discountrules.DiscountRulesDO;
+import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
+import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.service.device.DeviceService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -60,11 +65,19 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Resource
     private DiscountRulesMapper discountRulesMapper;
+
+    @Resource
+    private OrderInfoMapper orderInfoMapper;
+
+    @Resource
+    private DeviceService deviceService;
+
     @Resource
     private FileApi fileApi;
 
     @Override
     public PageResult<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO) {
+
         reqVO.setUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
         List<AppStoreAdminRespVO> list = storeInfoMapper.getPageList(reqVO);
@@ -309,6 +322,36 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public List<KeyValue<Long, String>> getNameMapByIds(Set<String> storeIdSet) {
         return storeInfoMapper.getNameMapByIds(storeIdSet);
+    }
+
+    @Override
+    @Transactional
+    public void clearAndFinish(Long roomId) {
+        //检查权限
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+        checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        //只有状态为进行中或待清洁，才能处理
+        if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) == 0) {
+            //使用中  订单结束时间改为当前  房间状态改为空闲
+            List<OrderInfoDO> orderList = orderInfoMapper.getByRoomId(roomId, null);
+            if (!CollectionUtils.isEmpty(orderList)) {
+                //因为是排序后的列表 所以第一条就是当前的订单
+                OrderInfoDO currentOrder = orderList.get(0);
+                Date now = new Date();
+                if (currentOrder.getStartTime().before(now) && currentOrder.getEndTime().after(now)) {
+                    currentOrder.setEndTime(now);
+                    currentOrder.setStatus(AppEnum.order_status.FINISH.getValue());
+                    orderInfoMapper.updateById(currentOrder);
+                }
+            }
+        } else if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {
+            //待清洁  房间状态改为空闲
+        } else {
+            throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
+        }
+        roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomId);
+        //关电
+        deviceService.closeRoomDoor(roomId, null, 4);
     }
 
 }

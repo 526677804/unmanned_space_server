@@ -181,4 +181,13 @@ public class AppStoreController {
     public CommonResult<List<KeyValue<String, Long>>> getRoomList(@PathVariable("storeId") Long storeId) {
         return success(storeInfoService.getRoomList(storeId));
     }
+
+    @GetMapping("/clearAndFinish/{roomId}")
+    @Operation(summary = "管理员一键清洁并结单")
+    @PreAuthenticated
+    @Parameter(name = "roomId")
+    public CommonResult<Boolean> clearAndFinish(@PathVariable("roomId") Long roomId) {
+        storeInfoService.clearAndFinish(roomId);
+        return success(true);
+    }
 }

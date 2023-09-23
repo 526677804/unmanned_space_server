@@ -74,6 +74,8 @@ public interface ErrorCodeConstants {
     ErrorCode CLEAR_OPEN_DOOR_ERROR = new ErrorCode(1004004065, "只有状态为已开始的任务才能操作开门，请先开始任务！");
     ErrorCode DEVICE_REG_ERROR = new ErrorCode(1004004070, "设备注册到平台失败！");
     ErrorCode DEVICE_BIND_ERROR = new ErrorCode(1004004071, "该设备已经被其他门店/房间绑定！");
+    ErrorCode CLEAR_AND_FINISH_ROOM_STATUS_ERROR = new ErrorCode(1004004072, "房间当前状态不允许执行此操作！");
+    ErrorCode USRE_ADD_ADMIN_ERROR = new ErrorCode(1004004073, "当前用户不允许进行添加管理员操作！");
 
 
     ErrorCode GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR = new ErrorCode(1004004080, "团购券适用的房间类型，与当前订单预定的房间类型不匹配，请检查!");
@@ -82,6 +84,7 @@ public interface ErrorCodeConstants {
     ErrorCode GROUP_NO_CHECK_ERROR = new ErrorCode(1004004083, "团购券验证失败！无效/已使用/已过期");
     ErrorCode GROUP_NO_CANCEL_TIMEOUT_ERROR = new ErrorCode(1004004084, "团购券退款失败,已超过退款时效！");
     ErrorCode GROUP_NO_CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004085, "当前输入的团购券为通宵券，仅支持23时~次日8时使用！请修改预定时间后重试！");
+    ErrorCode TONGXIAO_ORDER_START_ERROR = new ErrorCode(1004004086, "当前预定的时段为通宵场！仅支持23时~次日8时使用！请在23:00后开始订单！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");
     ErrorCode DATA_EXISTS_ERROR = new ErrorCode(1004005001, "数据已存在，请不要重复保存！");
     ErrorCode OPRATION_ERROR = new ErrorCode(1004005002, "非法操作");

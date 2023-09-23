@@ -104,6 +104,30 @@ public class AppManagerController {
         return success(appMangerService.getClearUserPage(reqVO));
     }
 
+    @PostMapping("/getAdminUserPage")
+    @Operation(summary = "管理员获取管理员分页列表")
+    @PreAuthenticated
+    public CommonResult<PageResult<AppAdminUserPageRespVO>> getAdminUserPage(@RequestBody @Valid AppClearUserPageReqVO reqVO) {
+        return success(appMangerService.getAdminUserPage(reqVO));
+    }
+
+    @PostMapping("/deleteAdminUser/{storeId}/{userId}")
+    @Operation(summary = "管理员删除管理员")
+    @PreAuthenticated
+    @Parameter(name = "storeId")
+    @Parameter(name = "userId")
+    public CommonResult<Boolean> deleteAdminUser(@PathVariable("storeId") Long storeId, @PathVariable("userId") Long userId) {
+        appMangerService.deleteAdminUser(storeId, userId);
+        return success(true);
+    }
+
+    @PostMapping("/saveAdminUser")
+    @Operation(summary = "管理员保存管理信息")
+    @PreAuthenticated
+    public CommonResult<Boolean> saveAdminUser(@RequestBody @Valid AppClearUserDetailReqVO reqVO) {
+        appMangerService.saveAdminUser(reqVO);
+        return success(true);
+    }
     @PostMapping("/deleteClearUser/{storeId}/{userId}")
     @Operation(summary = "管理员删除保洁员")
     @PreAuthenticated

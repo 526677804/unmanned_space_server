@@ -79,6 +79,7 @@
         <if test="null!=ignoreOrderId and ignoreOrderId!=''">
             and order_id!=#{ignoreOrderId}
         </if>
+        order by start_time asc
     </select>
     <select id="getOrderPage" resultType="com.yanzu.module.member.controller.app.order.vo.OrderListRespVO">
         select o.order_id

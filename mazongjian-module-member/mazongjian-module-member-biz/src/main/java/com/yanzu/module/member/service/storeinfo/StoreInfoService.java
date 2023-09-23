@@ -107,4 +107,5 @@ public interface StoreInfoService {
 
     List<KeyValue<Long, String>> getNameMapByIds(Set<String> storeIdSet);
 
+    void clearAndFinish(Long roomId);
 }

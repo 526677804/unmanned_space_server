@@ -150,5 +150,15 @@
         </foreach>
 
     </select>
+    <select id="getListByIds" resultType="com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO">
+        select * from
+        member_store_info
+        where deleted = 0 and
+        store_id in
+        <foreach collection="collection" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+
+    </select>
 
 </mapper>

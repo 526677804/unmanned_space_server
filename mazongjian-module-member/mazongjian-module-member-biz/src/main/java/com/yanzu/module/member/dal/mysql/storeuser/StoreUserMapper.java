@@ -1,6 +1,7 @@
 package com.yanzu.module.member.dal.mysql.storeuser;
 
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.manager.vo.AppAdminUserPageRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.AppClearUserPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppGiftBalanceListRespVO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
@@ -37,4 +38,8 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
     int deleteClearUserAndStoreId(@Param("userId") Long userId, @Param("storeId") Long storeId);
 
     List<AppClearUserPageRespVO> getClearUserPage(String storeIds);
+
+    List<AppAdminUserPageRespVO> getAdminUserPage(String storeIds);
+
+    int deleteAdminUser(@Param("storeId") Long storeId, @Param("userId") Long userId);
 }

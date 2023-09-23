@@ -205,7 +205,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             couponInfoMapper.insert(couponInfoDO);
         } else {
             CouponInfoDO couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
-            if(couponInfoDO.getCreateUserId().compareTo(loginUserId)!=0){
+            if (couponInfoDO.getCreateUserId().compareTo(loginUserId) != 0) {
                 throw exception(CHECK_STORE_PROMISSION_ERROR);
             }
             couponInfoDO.setCouponName(reqVO.getCouponName());
@@ -242,8 +242,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     public void deleteClearUser(Long storeId, Long userId) {
         //权限检查
         StoreUserDO do2 = storeUserMapper.getByUserIdAndStoreId(getLoginUserId(), storeId);
-        if (!ObjectUtils.isEmpty(do2) && (do2.getType().intValue() == AppEnum.member_user_type.BOSS.getValue()
-                || do2.getType().intValue() == AppEnum.member_user_type.ADMIN.getValue())) {
+        if (!ObjectUtils.isEmpty(do2) && (do2.getType().intValue() == AppEnum.member_user_type.BOSS.getValue() || do2.getType().intValue() == AppEnum.member_user_type.ADMIN.getValue())) {
             //检查该用户在这个门店，有没有未结算的任务
             List<ClearInfoDO> clearInfoDOS = clearInfoMapper.getByUserIdAndStatusAndStoreId(userId, AppEnum.clear_info_status.FINISH.getValue(), storeId);
             if (CollectionUtils.isEmpty(clearInfoDOS)) {
@@ -268,7 +267,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             throw exception(OPRATION_ERROR);
         }
         //只能把用户角色改成保洁员  不能同时拥有2个类型
-        if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.MEMBER.getValue()) != 0) {
+        if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.MEMBER.getValue()) != 0 && memberUserDO.getUserType().compareTo(AppEnum.member_user_type.CLEAR.getValue()) != 0) {
             throw exception(USER_TYPE_CHECK_ERROR);
         }
         //已经绑定的门店不能再绑定
@@ -276,8 +275,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (ObjectUtils.isEmpty(storeUserDO)) {
             //权限检查
             StoreUserDO do2 = storeUserMapper.getByUserIdAndStoreId(getLoginUserId(), reqVO.getStoreId());
-            if (!ObjectUtils.isEmpty(do2) && (do2.getType().intValue() == AppEnum.member_user_type.BOSS.getValue()
-                    || do2.getType().intValue() == AppEnum.member_user_type.ADMIN.getValue())) {
+            if (!ObjectUtils.isEmpty(do2) && (do2.getType().intValue() == AppEnum.member_user_type.BOSS.getValue() || do2.getType().intValue() == AppEnum.member_user_type.ADMIN.getValue())) {
                 //新增
                 storeUserDO = new StoreUserDO();
                 storeUserDO.setUserId(memberUserDO.getId());
@@ -421,7 +419,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         reqVO.setUserId(getLoginUserId());
         AppBusinessStatisticsRespVO businessStatistics = orderInfoMapper.getBusinessStatistics(reqVO);
         //查收入
-        BigDecimal money=payOrderMapper.getMoney(reqVO);
+        BigDecimal money = payOrderMapper.getMoney(reqVO);
         businessStatistics.setMoney(money);
         return businessStatistics;
     }
@@ -494,5 +492,60 @@ public class AppMangerServiceImpl implements AppMangerService {
             couponInfoMapper.insert(newCouponInfoDO);
         }
 
+    }
+
+    @Override
+    public PageResult<AppAdminUserPageRespVO> getAdminUserPage(AppClearUserPageReqVO reqVO) {
+        String ids = "";
+        if (ObjectUtils.isEmpty(reqVO.getStoreId())) {
+            //查询该账号权限下的
+            List<String> storeIds = storeUserMapper.getIdsByUserId(getLoginUserId());
+            ids = storeIds.stream().collect(Collectors.joining(","));
+        } else {
+            storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
+            ids = String.valueOf(reqVO.getStoreId());
+        }
+        PageHelper.startPage(reqVO);
+        List<AppAdminUserPageRespVO> list = storeUserMapper.getAdminUserPage(ids);
+        PageInfo<AppAdminUserPageRespVO> page = new PageInfo<>(list);
+        return new PageResult<>(page.getList(), page.getTotal());
+    }
+
+    @Override
+    @Transactional
+    public void deleteAdminUser(Long storeId, Long userId) {
+        //检查权限
+        storeInfoService.checkPermisson(storeId, getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
+        storeUserMapper.deleteAdminUser(storeId, userId);
+    }
+
+    @Override
+    public void saveAdminUser(AppClearUserDetailReqVO reqVO) {
+        //检查权限
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
+        //找出用户
+        MemberUserDO memberUserDO = memberUserMapper.selectByMobile(reqVO.getMobile());
+        if (ObjectUtils.isEmpty(memberUserDO)) {
+            throw exception(AUTH_USER_PHONE_ERROR);
+        }
+        if (memberUserDO.getId().compareTo(getLoginUserId()) == 0) {
+            throw exception(OPRATION_ERROR);
+        }
+        //只能把用户角色改成管理员  不能同时拥有2个类型
+        if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.MEMBER.getValue()) != 0 && memberUserDO.getUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0 && memberUserDO.getUserType().compareTo(AppEnum.member_user_type.BOSS.getValue()) != 0) {
+            throw exception(USER_TYPE_CHECK_ERROR);
+        }
+        //如果已经存在门店与用户的关系 就不允许再添加
+        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(memberUserDO.getId(), reqVO.getStoreId());
+        if (!ObjectUtils.isEmpty(storeUserDO)) {
+            throw exception(USRE_ADD_ADMIN_ERROR);
+        } else {
+            storeUserDO = new StoreUserDO();
+            storeUserDO.setUserId(memberUserDO.getId());
+            storeUserDO.setType(AppEnum.member_user_type.ADMIN.getValue());
+            storeUserDO.setName(reqVO.getName());
+            storeUserDO.setStoreId(reqVO.getStoreId());
+            storeUserMapper.insert(storeUserDO);
+        }
     }
 }
