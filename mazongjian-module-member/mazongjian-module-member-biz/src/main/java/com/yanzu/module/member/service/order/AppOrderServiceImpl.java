@@ -716,14 +716,16 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.ENABLE.getValue()) == 0) {
                     roomInfoDO.setStatus(AppEnum.room_status.PENDDING.getValue());
                 }
-                //改旧房间的状态  如果房间是已预订，并且没有其他订单，则改回空闲
-                if (roomInfoDO1.getStatus().compareTo(AppEnum.room_status.PENDDING.getValue()) == 0) {
-                    List<OrderInfoDO> orderInfoDOList = orderInfoMapper.getByRoomId(roomInfoDO1.getRoomId(), null);
-                    if (!CollectionUtils.isAnyEmpty(orderInfoDOList)) {
-                        roomInfoDO1.setStatus(AppEnum.room_status.ENABLE.getValue());
-                        roomInfoMapper.updateById(roomInfoDO1);
-                    }
+                //改旧房间的状态  如果房间没有其他订单，则改回空闲
+//                if (roomInfoDO1.getStatus().compareTo(AppEnum.room_status.PENDDING.getValue()) == 0) {
+                if (orderInfoMapper.countByRoomId(roomInfoDO1.getRoomId(), orderId) > 0) {
+                    roomInfoDO1.setStatus(AppEnum.room_status.PENDDING.getValue());
+                    roomInfoMapper.updateById(roomInfoDO1);
+                }else{
+                    roomInfoDO1.setStatus(AppEnum.room_status.ENABLE.getValue());
+                    roomInfoMapper.updateById(roomInfoDO1);
                 }
+//                }
             }
         } else {
             throw exception(CLEAR_ORDER_STATUS_ERROR);
@@ -830,8 +832,9 @@ public class AppOrderServiceImpl implements AppOrderService {
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
             //取消后  如果后面没有预约了，把房间状态改回空闲
-            List<OrderInfoDO> orderInfoDOList = orderInfoMapper.getByRoomId(orderInfoDO.getRoomId(), orderId);
-            if (org.springframework.util.CollectionUtils.isEmpty(orderInfoDOList)) {
+            if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId)>0) {
+                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), orderInfoDO.getRoomId());
+            }else{
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), orderInfoDO.getRoomId());
             }
             orderInfoMapper.updateById(orderInfoDO);

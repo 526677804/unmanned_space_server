@@ -349,7 +349,12 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         } else {
             throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
         }
-        roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomId);
+        //如果房间后面没有订单了 就改成空闲  否则改成已预定
+        if (orderInfoMapper.countByRoomId(roomId,null) > 0) {
+            roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), roomId);
+        }else{
+            roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomId);
+        }
         //关电
         deviceService.closeRoomDoor(roomId, null, 4);
     }

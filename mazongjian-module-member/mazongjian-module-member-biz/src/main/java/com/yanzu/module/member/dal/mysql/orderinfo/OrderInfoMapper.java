@@ -31,6 +31,7 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
     List<AppClearPageRespVO> getClearPage(AppClearPageReqVO reqVO);
 
     List<OrderInfoDO> getByRoomId(@Param("roomId") Long roomId, @Param("ignoreOrderId") Long ignoreOrderId);
+    int countByRoomId(@Param("roomId") Long roomId, @Param("ignoreOrderId") Long ignoreOrderId);
 
     List<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO);
 

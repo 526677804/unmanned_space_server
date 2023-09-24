@@ -301,4 +301,15 @@
           and status = 0
           and start_time > now()
     </select>
+    <select id="countByRoomId" resultType="java.lang.Integer">
+        select count(1)
+        from member_order_info
+        where deleted = 0
+        and room_id = #{roomId}
+        and status in (0, 1)
+        and start_time>now()
+        <if test="null!=ignoreOrderId and ignoreOrderId!=''">
+            and order_id!=#{ignoreOrderId}
+        </if>
+    </select>
 </mapper>
