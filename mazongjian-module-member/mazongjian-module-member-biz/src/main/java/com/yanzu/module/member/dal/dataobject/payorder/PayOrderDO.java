@@ -33,6 +33,8 @@ public class PayOrderDO extends BaseDO {
      * 用户编号
      */
     private Long userId;
+
+    private Long storeId;
     /**
      * 订单编号
      */

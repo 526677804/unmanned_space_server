@@ -106,10 +106,11 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     @Transactional
-    public void create(Long userId, String orderNo, String orderDesc, Integer price) {
+    public void create(Long userId, String orderNo, Long storeId,String orderDesc, Integer price) {
         PayOrderDO payOrderDO = new PayOrderDO();
         payOrderDO.setUserId(userId);
         payOrderDO.setOrderNo(orderNo);
+        payOrderDO.setStoreId(storeId);
         payOrderDO.setOrderDesc(orderDesc);
         payOrderDO.setPrice(price);
         payOrderMapper.insert(payOrderDO);

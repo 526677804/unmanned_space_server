@@ -456,7 +456,7 @@ public class AppUserServiceImpl implements AppUserService {
 //                throw new RuntimeException(e);
             throw exception(USER_WEIXIN_PAY_ERROR);
         }
-        payOrderService.create(reqVO.getUserId(), orderNo, "余额充值订单", reqVO.getPrice());
+        payOrderService.create(reqVO.getUserId(), orderNo, reqVO.getStoreId(), "余额充值订单", reqVO.getPrice());
         //把订单号存到redis 如果已经充值了 就移除这个订单号
         redisTemplate.opsForSet().add(EECHARGE_BALANCE_REDIS_SET, orderNo);
         return respVO;

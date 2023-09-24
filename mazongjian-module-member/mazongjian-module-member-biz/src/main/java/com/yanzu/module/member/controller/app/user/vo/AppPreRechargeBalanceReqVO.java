@@ -22,6 +22,11 @@ public class AppPreRechargeBalanceReqVO {
     @Schema(description = "用户Id 管理员代为充值的时候才传", example = "1")
     private Long userId;
 
+
+    @Schema(description = "门店Id 必传", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    @NotNull(message = "门店不能为空")
+    private Long storeId;
+
     @Schema(description = "充值金额,单位为分 必传", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     @NotNull(message = "充值金额不能为空")
     @Min(value = 1, message = "充值金额不能小于0")

@@ -245,7 +245,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 //                throw new RuntimeException(e);
                 throw exception(USER_WEIXIN_PAY_ERROR);
             }
-            payOrderService.create(getLoginUserId(), orderNo, "房间预定订单", price);
+            payOrderService.create(getLoginUserId(), orderNo, roomInfoDO.getStoreId(), "房间预定订单", price);
         }
         return respVO;
     }
@@ -1028,7 +1028,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             sb.append("订单结束,待清洁通知\n");
             sb.append(">门店名称:").append(storeInfoDOMap.get(roomInfoDO.getStoreId().toString()).getStoreName()).append("\n");
             sb.append(">房间名称:").append(roomInfoDO.getRoomName()).append("\n");
-            workWxService.sendClearMsg(storeInfoDOMap.get(roomInfoDO.getStoreId().toString()).getOrderWebhook(),sb.toString());
+            workWxService.sendClearMsg(storeInfoDOMap.get(roomInfoDO.getStoreId().toString()).getOrderWebhook(), sb.toString());
         }
     }
 
