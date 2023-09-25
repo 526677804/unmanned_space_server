@@ -9,8 +9,12 @@ import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
+import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
+import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
+import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
+import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +23,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -39,7 +44,10 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Autowired
     private WxPayService wxPayService;
-
+    @Resource
+    private OrderInfoMapper orderInfoMapper;
+    @Resource
+    private AppUserMapper appUserMapper;
 
     @Override
     public PayOrderDO getPayOrder(Long id) {
@@ -83,10 +91,17 @@ public class PayOrderServiceImpl implements PayOrderService {
                 if (String.valueOf(orderDO.getPrice()).equals(totalFee)) {
                     return WxPayNotifyResponse.fail("实际支付金额与订单应支付金额不匹配！");
                 }
+//                //如果收到的回调  里面的订单号，是不存在的  就返还用户余额（注意续费订单问题）
+//                OrderInfoDO orderInfoDO = orderInfoMapper.getByOrderNo(orderNo);
+//                if (ObjectUtils.isEmpty(orderInfoDO)) {
+//                    AppUserDO appUserDO = appUserMapper.selectById(orderDO.getUserId());
+//                    appUserDO.setBalance(appUserDO.getBalance().add(new BigDecimal(orderDO.getPrice() / 100.0)));
+//                }
                 orderDO.setPayOrderNo(tradeNo);
                 orderDO.setPayStatus(true);
                 orderDO.setPayTime(LocalDateTime.now());
                 payOrderMapper.updateById(orderDO);
+
             }
             return WxPayNotifyResponse.success("处理成功!");
         } catch (Exception e) {
@@ -106,7 +121,7 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     @Transactional
-    public void create(Long userId, String orderNo, Long storeId,String orderDesc, Integer price) {
+    public void create(Long userId, String orderNo, Long storeId, String orderDesc, Integer price) {
         PayOrderDO payOrderDO = new PayOrderDO();
         payOrderDO.setUserId(userId);
         payOrderDO.setOrderNo(orderNo);

@@ -47,7 +47,8 @@ public class OrderSaveReqVO {
     @NotNull(message = "支付方式不能为空")
     private Integer payType;
 
-    @Schema(description = "订单号，选择微信支付时必填")
+    @Schema(description = "订单号 预下单返回的  必填")
+    @NotNull(message = "订单号不能为空")
     private String orderNo;
 
     @Schema(description = "团购券码 填了团购券时，其他支付方式均不生效")

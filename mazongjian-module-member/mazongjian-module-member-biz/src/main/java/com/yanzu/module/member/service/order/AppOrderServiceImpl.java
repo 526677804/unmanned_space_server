@@ -202,7 +202,8 @@ public class AppOrderServiceImpl implements AppOrderService {
             //需要校验
             for (TimeRange timeRange : disabledTimeRanges) {
                 //如果下单时间大于不可用时间的开始时间， 并且不可用时间的开始时间小于订单的结束时间，那么就不能下单
-                if (startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isBefore(timeRange.getEnd()) && timeRange.getStart().isBefore(endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
+                if (startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isBefore(timeRange.getEnd())
+                        && timeRange.getStart().isBefore(endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
                     //存在交集
                     throw exception(ORDER_TIME_CHECK_ERROR);
                 }
@@ -333,10 +334,6 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //定义一些参数 备用
         String orderNo = reqVO.getOrderNo();
-        if (ObjectUtils.isEmpty(orderNo)) {
-            orderNo = getOrderNo();
-            reqVO.setOrderNo(orderNo);
-        }
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
         BigDecimal oldPrice = BigDecimal.valueOf(l / 60.0).multiply(roomInfoDO.getPrice());//原价
         //下单之前仍然再检查一遍 并计算出应付总金额
@@ -390,7 +387,16 @@ public class AppOrderServiceImpl implements AppOrderService {
                     throw exception(GROUP_NO_CHECK_TONGXIAO_TIME_ERROR);
                 }
             } else {
-                String[] split = dealTitle.split("\\|");
+                String[] split = new String[0];
+                try {
+                    split = dealTitle.split("\\|");
+                    if (split.length < 3) {
+                        throw exception(GROUP_NO_CHECK_ERROR);
+                    }
+                } catch (Exception e) {
+//                    throw new RuntimeException(e);
+                    throw exception(GROUP_NO_CHECK_ERROR);
+                }
                 String roomTypeName = split[0];
                 //普通券
                 Integer timeHour = Integer.valueOf(split[split.length - 1].replace("小时", ""));
@@ -568,7 +574,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //下单之前仍然再检查一遍 并计算出应付总金额
         Date startTime = orderInfoDO.getEndTime();
         Date endTime = DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes());
-        WxPayOrderRespVO wxPayOrderRespVO = preOrder(orderInfoDO.getRoomId(), startTime, endTime, null, null, false);
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(orderInfoDO.getRoomId(), startTime, endTime, null, reqVO.getOrderId(), false);
         BigDecimal totalPrice = BigDecimal.valueOf(wxPayOrderRespVO.getPrice() / 100.0);
         switch (reqVO.getPayType()) {
             case 1://微信
@@ -588,6 +594,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
                     throw exception(ORDER_WEIXIN_PAY_ERROR);
                 }
+                //是微信支付的  增加已支付的金额
+                orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
                 break;
             case 2://余额
                 //先扣钱包余额
@@ -634,16 +642,10 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //支付完了，增加订单的结束时间
         orderInfoDO.setEndTime(DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes()));
-        //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
-        if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
-            orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
-        }
-
         //增加订单金额
         orderInfoDO.setPrice(orderInfoDO.getPrice().add(oldPrice));
-        //增加已支付的金额
-        orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
-        orderInfoMapper.updateById(orderInfoDO);
+
+        //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
             deviceService.openRoomDoor(roomInfoDO.getRoomId(), orderInfoDO.getOrderId(), 1);
@@ -652,6 +654,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
             }
         }
+        orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
         StringBuffer sb = new StringBuffer();
         sb.append("用户续费通知\n");
@@ -721,7 +724,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (orderInfoMapper.countByRoomId(roomInfoDO1.getRoomId(), orderId) > 0) {
                     roomInfoDO1.setStatus(AppEnum.room_status.PENDDING.getValue());
                     roomInfoMapper.updateById(roomInfoDO1);
-                }else{
+                } else {
                     roomInfoDO1.setStatus(AppEnum.room_status.ENABLE.getValue());
                     roomInfoMapper.updateById(roomInfoDO1);
                 }
@@ -832,9 +835,9 @@ public class AppOrderServiceImpl implements AppOrderService {
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
             //取消后  如果后面没有预约了，把房间状态改回空闲
-            if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId)>0) {
+            if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), orderInfoDO.getRoomId());
-            }else{
+            } else {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), orderInfoDO.getRoomId());
             }
             orderInfoMapper.updateById(orderInfoDO);

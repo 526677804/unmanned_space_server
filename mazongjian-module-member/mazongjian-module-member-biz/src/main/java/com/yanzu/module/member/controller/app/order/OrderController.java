@@ -48,7 +48,7 @@ public class OrderController {
     @Operation(summary = "预下单,预订和续费前需调用此接口，会返回需要支付的价格以及微信支付需要的参数", description = "下单使用")
     @PreAuthenticated
     public CommonResult<WxPayOrderRespVO> preOrder(@RequestBody @Valid OrderPreReqVO reqVO) {
-        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(), null, true));
+        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(), reqVO.getOrderId(), true));
     }
 
     @GetMapping("/queryWxOrder/{orderNo}")
@@ -69,7 +69,7 @@ public class OrderController {
     }
 
     @PostMapping("/renew")
-    @Operation(summary = "订单续费", description = "订单详情/订单管理使用")
+    @Operation(summary = "订单续费", description = "订单详情使用")
     @PreAuthenticated
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> renew(@RequestBody @Valid OrderRenewalReqVO reqVO) {

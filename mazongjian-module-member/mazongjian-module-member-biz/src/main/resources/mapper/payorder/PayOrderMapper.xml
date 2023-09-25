@@ -33,7 +33,7 @@
     <select id="getMoney" resultType="java.math.BigDecimal">
         select ifnull(sum(p.price), 0)/100.0 money
         from member_pay_order p
-        where p.deleted = 0 p.pay_status=1 and p.refund_price=0
+        where p.deleted = 0 and p.pay_status=1 and p.refund_price=0
         <if test="null!=startTime and null!=endTime">
             and to_days(p.create_time) >= to_days(#{startTime})
             and to_days(p.create_time) &lt;= to_days(#{endTime})

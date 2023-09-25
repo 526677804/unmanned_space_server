@@ -4,18 +4,24 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
+import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
+import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
 import com.yanzu.module.member.dal.dataobject.clearbill.ClearBillDO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
+import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
+import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
+import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.userwithdrawal.UserWithdrawalDO;
@@ -31,7 +37,10 @@ import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.dal.mysql.userwithdrawal.UserWithdrawalMapper;
 import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
+import com.yanzu.module.member.service.workwx.WorkWxService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,6 +97,15 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Resource
     private PayOrderMapper payOrderMapper;
+
+    @Resource
+    private AppOrderService appOrderService;
+
+    @Resource
+    private DeviceService deviceService;
+
+    @Resource
+    private WorkWxService workWxService;
 
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
@@ -547,5 +565,54 @@ public class AppMangerServiceImpl implements AppMangerService {
             storeUserDO.setStoreId(reqVO.getStoreId());
             storeUserMapper.insert(storeUserDO);
         }
+    }
+
+    @Override
+    @Transactional
+    public void renew(OrderRenewalReqVO reqVO) {
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(reqVO.getOrderId());
+        //权限校验
+//        Long userId = getLoginUserId();
+        storeInfoService.checkPermisson(orderInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        if (reqVO.getMinutes() < 1 || reqVO.getMinutes() % 30 != 0) {
+            throw exception(TIME_UNIT_ERROR);
+        }
+        //未开始=0 进行中=1  已完成=2  已取消=3
+        switch (orderInfoDO.getStatus()) {
+            case 0:
+            case 1:
+                //未开始和进行中  直接续费
+                break;
+            case 2://已完成，5分钟内可以续费，超过5分钟只能重新下单
+                if (((new Date().getTime() - orderInfoDO.getEndTime().getTime()) / 1000 / 60) > 5) {
+                    throw exception(ORDER_STATUS_FINISH_OPRATION_ERROR);
+                }
+                break;
+            case 3://已经取消，不能续费
+                throw exception(ORDER_STATUS_CANCEL_OPRATION_ERROR);
+        }
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
+        //管理员下单  不需要算钱了，但是要校验时间冲突
+        Date endTime = DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes());
+        appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), endTime, null, reqVO.getOrderId(), false);
+        //增加订单的结束时间
+        orderInfoDO.setEndTime(DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes()));
+        //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
+        if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
+            orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
+            deviceService.openRoomDoor(roomInfoDO.getRoomId(), orderInfoDO.getOrderId(), 1);
+            if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) != 0) {
+                roomInfoDO.setStatus(AppEnum.room_status.USED.getValue());
+                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
+            }
+        }
+        orderInfoMapper.updateById(orderInfoDO);
+        //异步发送微信通知
+        StringBuffer sb = new StringBuffer();
+        sb.append("管理员续费通知\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomInfoDO.getRoomName()).append("</font>\n");
+        sb.append(">订单编号:<font color=\"warning\">").append(reqVO.getOrderNo()).append("</font>\n");
+        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        workWxService.sendOrderMsg(roomInfoDO.getStoreId(), sb.toString());
     }
 }

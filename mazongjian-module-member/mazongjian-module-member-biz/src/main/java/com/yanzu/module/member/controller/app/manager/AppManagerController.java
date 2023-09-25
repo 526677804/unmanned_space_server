@@ -7,6 +7,7 @@ import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
+import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
@@ -87,6 +88,14 @@ public class AppManagerController {
         return success(appMangerService.getCouponDetail(couponId));
     }
 
+    @PostMapping("/renewByAdmin")
+    @Operation(summary = "订单续费", description = "管理员订单管理使用")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> renew(@RequestBody @Valid OrderRenewalReqVO reqVO) {
+        appMangerService.renew(reqVO);
+        return success(true);
+    }
 
     @PostMapping("/saveCouponDetail")
     @Operation(summary = "管理员保存优惠券详情")

@@ -8,6 +8,7 @@ import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
+import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
@@ -63,4 +64,6 @@ public interface AppMangerService {
     void deleteAdminUser(Long storeId, Long userId);
 
     void saveAdminUser(AppClearUserDetailReqVO reqVO);
+
+    void renew(OrderRenewalReqVO reqVO);
 }
