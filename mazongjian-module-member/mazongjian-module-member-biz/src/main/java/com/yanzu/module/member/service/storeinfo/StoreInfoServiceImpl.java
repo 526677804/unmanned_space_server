@@ -15,11 +15,13 @@ import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
 import com.yanzu.module.member.convert.roominfo.RoomInfoConvert;
 import com.yanzu.module.member.convert.storeinfo.StoreInfoConvert;
+import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.discountrules.DiscountRulesDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
+import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
@@ -72,6 +74,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Resource
     private DeviceService deviceService;
 
+    @Resource
+    private ClearInfoMapper clearInfoMapper;
     @Resource
     private FileApi fileApi;
 
@@ -330,7 +334,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         //检查权限
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
         checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
-        //只有状态为进行中或待清洁，才能处理
+        //只有状态为进行中 或 待清洁，才能处理
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) == 0) {
             //使用中  订单结束时间改为当前  房间状态改为空闲
             List<OrderInfoDO> orderList = orderInfoMapper.getByRoomId(roomId, null);
@@ -349,6 +353,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         } else {
             throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
         }
+        //取消掉该房间 未完成的所有保洁订单
+        clearInfoMapper.cancelByRoomId(roomId);
         //如果房间后面没有订单了 就改成空闲  否则改成已预定
         if (orderInfoMapper.countByRoomId(roomId,null) > 0) {
             roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), roomId);

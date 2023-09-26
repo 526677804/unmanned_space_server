@@ -4,10 +4,10 @@
     <update id="cancelByRoomId">
         update member_clear_info
         set status=4,
-            complaint_desc='用户选择不需要清洁，订单取消'
+            complaint_desc='已不需要清洁，订单取消'
         where deleted = 0
           and room_id = #{roomId}
-          and create_time &gt; now()
+          and create_time &lt; now()
           and status in (0, 1, 2)
 
     </update>
