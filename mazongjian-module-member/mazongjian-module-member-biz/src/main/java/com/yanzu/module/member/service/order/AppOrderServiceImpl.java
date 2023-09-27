@@ -644,7 +644,6 @@ public class AppOrderServiceImpl implements AppOrderService {
         orderInfoDO.setEndTime(DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes()));
         //增加订单金额
         orderInfoDO.setPrice(orderInfoDO.getPrice().add(oldPrice));
-
         //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
@@ -824,6 +823,15 @@ public class AppOrderServiceImpl implements AppOrderService {
                             }
                             userMoneyBillMapper.insert(newUserMoneyBillDO);
                         }
+                    }
+                    //退还优惠券
+                    if (!ObjectUtils.isEmpty(orderInfoDO.getCouponId())) {
+                        CouponInfoDO couponInfoDO = couponInfoMapper.selectById(orderInfoDO.getCouponId());
+                        if (couponInfoDO.getExpriceTime().after(new Date())) {
+                            couponInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
+                            couponInfoMapper.updateById(couponInfoDO);
+                        }
+
                     }
                 }
                 orderInfoDO.setRefundPrice(orderInfoDO.getPayPrice());

@@ -317,7 +317,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                     break;
             }
             Integer count = storeUserMapper.checkStorePromission(storeId, userId, type);
-            if (count < 1) {
+            if (count == 0) {
                 throw exception(AUTH_PROMISSION_ERROR);
             }
         }
@@ -356,9 +356,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         //取消掉该房间 未完成的所有保洁订单
         clearInfoMapper.cancelByRoomId(roomId);
         //如果房间后面没有订单了 就改成空闲  否则改成已预定
-        if (orderInfoMapper.countByRoomId(roomId,null) > 0) {
+        if (orderInfoMapper.countByRoomId(roomId, null) > 0) {
             roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), roomId);
-        }else{
+        } else {
             roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomId);
         }
         //关电

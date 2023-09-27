@@ -51,7 +51,7 @@
         select count(1)
         from member_store_user
         where deleted = 0
-          and type in (#{type})
+          and type in (${type})
           and store_id = #{storeId}
           and user_id = #{userId}
     </select>
