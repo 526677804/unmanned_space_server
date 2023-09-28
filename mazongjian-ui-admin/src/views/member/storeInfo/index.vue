@@ -92,7 +92,7 @@
           <editor v-model="form.content" :min-height="192"/>
         </el-form-item>
         <el-form-item label="门店公告" prop="notice">
-          <el-input v-model="form.notice" placeholder="请输入门店公告" />
+          <editor v-model="form.notice" :min-height="192"/>
         </el-form-item>
         <el-form-item label="纬度" prop="lat">
           <el-input v-model="form.lat" placeholder="请输入纬度" />

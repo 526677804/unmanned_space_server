@@ -551,10 +551,12 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.CLEAR.getValue()) == 0) {
             throw exception(USER_TYPE_CHECK_ERROR);
         }
-        //如果已经存在门店与用户的关系 就不允许再添加
+        //如果已经存在门店与用户的关系 就修改
         StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(memberUserDO.getId(), reqVO.getStoreId());
         if (!ObjectUtils.isEmpty(storeUserDO)) {
-            throw exception(USRE_ADD_ADMIN_ERROR);
+            storeUserDO.setType(AppEnum.member_user_type.ADMIN.getValue());
+            storeUserDO.setName(reqVO.getName());
+            storeUserMapper.updateById(storeUserDO);
         } else {
             storeUserDO = new StoreUserDO();
             storeUserDO.setUserId(memberUserDO.getId());

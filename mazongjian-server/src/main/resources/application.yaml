@@ -183,8 +183,8 @@ debug: false
 wx:
   pay:
     appId: wx9727cb1c69b545a7 #微信公众号或者小程序等的appid
-    mchId: 1649165510 #微信支付商户号
-    mchKey: c4b040eb23ce28d1cc45f771099v2mzj #微信支付商户密钥
+    mchId: 1654622828 #微信支付商户号
+    mchKey: c0b4c25a4a6880b4812a25fe1a0a124c #微信支付商户密钥
     #    subAppId: #服务商模式下的子商户公众账号ID
     #    subMchId: #服务商模式下的子商户号
     keyPath: classpath:apiclient_cert.p12 # p12证书的位置，可以指定绝对路径，也可以指定类路径（以classpath:开头）
