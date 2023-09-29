@@ -1016,7 +1016,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             sb.append("订单结束,待清洁通知\n");
             sb.append(">门店名称:").append(storeInfoDOMap.get(roomInfoDO.getStoreId().toString()).getStoreName()).append("\n");
             sb.append(">房间名称:").append(roomInfoDO.getRoomName()).append("\n");
-            sb.append(">时间:<font color=\"warning\">").append(dateStr).append("</font>");
+            sb.append(">时间:").append(dateStr).append("\n");
             workWxService.sendClearMsg(storeInfoDOMap.get(roomInfoDO.getStoreId().toString()).getOrderWebhook(), sb.toString());
         }
     }
