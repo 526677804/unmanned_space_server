@@ -160,5 +160,11 @@
         </foreach>
 
     </select>
+    <select id="getNameById" resultType="java.lang.String">
+        select store_name
+        from member_store_info
+        where deleted = 0
+          and store_id = #{storeId}
+    </select>
 
 </mapper>

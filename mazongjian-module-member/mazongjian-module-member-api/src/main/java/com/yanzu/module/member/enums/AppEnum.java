@@ -7,6 +7,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AppEnum {
 
+
+    @Getter
+    public static final String PAY_ORDER_REDIS_SET = "PAY_ORDER_REDIS_SET";
+
     //miniapp广告类型
     @Getter
     @AllArgsConstructor

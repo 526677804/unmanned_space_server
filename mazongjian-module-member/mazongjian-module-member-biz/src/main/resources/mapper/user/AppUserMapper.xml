@@ -50,4 +50,7 @@
             order by m.create_time desc
         </if>
     </select>
+    <select id="getNameById" resultType="java.lang.String">
+        select nickname from member_user where deleted=0 and id=#{userId}
+    </select>
 </mapper>

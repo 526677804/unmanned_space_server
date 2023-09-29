@@ -64,6 +64,7 @@ import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exc
 import static com.yanzu.framework.common.util.servlet.ServletUtils.getClientIP;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getTenantId;
+import static com.yanzu.module.member.enums.AppEnum.PAY_ORDER_REDIS_SET;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
@@ -126,7 +127,6 @@ public class AppUserServiceImpl implements AppUserService {
     private WorkWxService workWxService;
     @Resource
     private StoreInfoService storeInfoService;
-    private final String EECHARGE_BALANCE_REDIS_SET = "EECHARGE_BALANCE_REDIS_SET";
 
     @Override
     public MemberUserDO getUserByMobile(String mobile) {
@@ -264,7 +264,7 @@ public class AppUserServiceImpl implements AppUserService {
             reqVO.setUserId(getLoginUserId());
         }
         // 从redis查询 存在的情况才处理，防止重复验证充值
-        if (redisTemplate.opsForSet().isMember(EECHARGE_BALANCE_REDIS_SET, reqVO.getOrderNo())) {
+        if (redisTemplate.opsForSet().isMember(PAY_ORDER_REDIS_SET, reqVO.getOrderNo())) {
             //有支付单号，验证支付是否成功
             PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
             if (ObjectUtils.isEmpty(payOrderDO)) {
@@ -321,16 +321,11 @@ public class AppUserServiceImpl implements AppUserService {
                 userMoneyBillDO.setType(AppEnum.user_money_bill_type.GIFT.getValue());
                 userMoneyBillMapper.insert(userMoneyBillDO);
             }
-            //如果已经充值了 就移除这个订单号
-            redisTemplate.opsForSet().remove(EECHARGE_BALANCE_REDIS_SET, reqVO.getOrderNo());
-            //异步发送微信通知
-            StringBuffer sb = new StringBuffer();
-            sb.append("用户充值通知\n");
-            sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
-            sb.append(">用户手机号:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
-            sb.append(">充值金额:<font color=\"warning\">").append(reqVO.getPrice() / 100.0).append("</font>\n");
-            sb.append(">赠送金额:<font color=\"warning\">").append(gift).append("</font>");
-            workWxService.sendOrderMsg(reqVO.getStoreId(), sb.toString());
+            //如果已经验证成功了 就移除这个订单号
+            redisTemplate.opsForSet().remove(PAY_ORDER_REDIS_SET, reqVO.getOrderNo());
+            workWxService.sendRechargeMsg(reqVO.getStoreId(), getLoginUserId(), bigDecimal, gift);
+        } else {
+            throw exception(ORDER_WEIXIN_PAY_ERROR);
         }
     }
 
@@ -458,7 +453,7 @@ public class AppUserServiceImpl implements AppUserService {
         }
         payOrderService.create(reqVO.getUserId(), orderNo, reqVO.getStoreId(), "余额充值订单", reqVO.getPrice());
         //把订单号存到redis 如果已经充值了 就移除这个订单号
-        redisTemplate.opsForSet().add(EECHARGE_BALANCE_REDIS_SET, orderNo);
+        redisTemplate.opsForSet().add(PAY_ORDER_REDIS_SET, orderNo);
         return respVO;
     }
 

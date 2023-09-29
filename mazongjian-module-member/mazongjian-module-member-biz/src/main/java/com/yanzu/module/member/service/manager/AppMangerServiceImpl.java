@@ -29,6 +29,7 @@ import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
+import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
@@ -104,6 +105,9 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Resource
     private WorkWxService workWxService;
+
+    @Resource
+    private StoreInfoMapper storeInfoMapper;
 
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
@@ -608,11 +612,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         }
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
-        StringBuffer sb = new StringBuffer();
-        sb.append("管理员续费通知\n");
-        sb.append(">房间名称:<font color=\"warning\">").append(roomInfoDO.getRoomName()).append("</font>\n");
-        sb.append(">订单编号:<font color=\"warning\">").append(reqVO.getOrderNo()).append("</font>\n");
-        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
-        workWxService.sendOrderMsg(roomInfoDO.getStoreId(), sb.toString());
+        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), getLoginUserId(), roomInfoDO.getRoomName(), BigDecimal.ZERO, reqVO.getPayType(),
+                orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), true);
     }
+
+
 }

@@ -29,6 +29,7 @@ import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
+import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
@@ -43,6 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,6 +63,7 @@ import java.util.stream.Collectors;
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
+import static com.yanzu.module.member.enums.AppEnum.PAY_ORDER_REDIS_SET;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 @Service
@@ -112,7 +115,13 @@ public class AppOrderServiceImpl implements AppOrderService {
     private StoreInfoMapper storeInfoMapper;
 
     @Resource
+    private AppUserMapper appUserMapper;
+    @Resource
     private WorkWxService workWxService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
 
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
@@ -247,6 +256,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(USER_WEIXIN_PAY_ERROR);
             }
             payOrderService.create(getLoginUserId(), orderNo, roomInfoDO.getStoreId(), "房间预定订单", price);
+            //把订单号存到redis 如果已经充值了 就移除这个订单号
+            redisTemplate.opsForSet().add(PAY_ORDER_REDIS_SET, orderNo);
         }
         return respVO;
     }
@@ -421,17 +432,24 @@ public class AppOrderServiceImpl implements AppOrderService {
                     if (ObjectUtils.isEmpty(reqVO.getOrderNo())) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
                     }
-                    //有支付单号，再验证支付是否成功
-                    PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
-                    if (ObjectUtils.isEmpty(payOrderDO)) {
-                        throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), wxPayOrderRespVO.getPrice())) {
-                        throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    } else if (!payOrderDO.getPayStatus()) {
-                        throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    }
-                    //对比实际支付的价格 和订单应支付的价格是否一致
-                    if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
+                    // 从redis查询 存在的情况才处理，防止重复验证充值
+                    if (redisTemplate.opsForSet().isMember(PAY_ORDER_REDIS_SET, reqVO.getOrderNo())) {
+                        //有支付单号，再验证支付是否成功
+                        PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
+                        if (ObjectUtils.isEmpty(payOrderDO)) {
+                            throw exception(ORDER_WEIXIN_PAY_ERROR);
+                        } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), wxPayOrderRespVO.getPrice())) {
+                            throw exception(ORDER_WEIXIN_PAY_ERROR);
+                        } else if (!payOrderDO.getPayStatus()) {
+                            throw exception(ORDER_WEIXIN_PAY_ERROR);
+                        }
+                        //对比实际支付的价格 和订单应支付的价格是否一致
+                        if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
+                            throw exception(ORDER_WEIXIN_PAY_ERROR);
+                        }
+                        //如果已经验证成功了 就移除这个订单号
+                        redisTemplate.opsForSet().remove(PAY_ORDER_REDIS_SET, reqVO.getOrderNo());
+                    } else {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
                     }
                     //
@@ -502,39 +520,11 @@ public class AppOrderServiceImpl implements AppOrderService {
             roomInfoMapper.updateById(roomInfoDO);
         }
         //异步发送微信通知
-        sendSaveOrderWxMsg(roomInfoDO.getRoomName(), reqVO, totalPrice, orderInfoDO.getStoreId(), userId);
+        workWxService.sendOrderMsg(roomInfoDO.getStoreId(), userId, roomInfoDO.getRoomName(), totalPrice, reqVO.getPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         return orderInfoDO.getOrderId();
 
     }
 
-    @Async
-    protected void sendSaveOrderWxMsg(String roomName, OrderSaveReqVO reqVO, BigDecimal totalPrice, Long storeId, Long userId) {
-        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
-        StringBuffer sb = new StringBuffer();
-        sb.append("用户下单通知\n");
-        sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
-        sb.append(">手机号码:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
-        sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
-        sb.append(">订单编号:<font color=\"warning\">").append(reqVO.getOrderNo()).append("</font>\n");
-        sb.append(">订单金额:<font color=\"warning\">").append(totalPrice).append("</font>\n");
-        sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(reqVO.getPayType())).append("</font>\n");
-        sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
-        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(reqVO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
-        workWxService.sendOrderMsg(storeId, sb.toString());
-    }
-
-
-    private String getPayTypeStr(Integer type) {
-        switch (type) {
-            case 1:
-                return "微信";
-            case 2:
-                return "余额";
-            case 3:
-                return "团购";
-        }
-        return "";
-    }
 
     private String getOrderNo() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -569,6 +559,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             case 3://已经取消，不能续费
                 throw exception(ORDER_STATUS_CANCEL_OPRATION_ERROR);
         }
+
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
         BigDecimal oldPrice = BigDecimal.valueOf(reqVO.getMinutes() / 60.0).multiply(roomInfoDO.getPrice());//原价
         //下单之前仍然再检查一遍 并计算出应付总金额
@@ -581,21 +572,28 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (ObjectUtils.isEmpty(reqVO.getOrderNo())) {
                     throw exception(ORDER_WEIXIN_PAY_ERROR);
                 }
-                //有支付单号，再验证支付是否成功
-                PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
-                if (ObjectUtils.isEmpty(payOrderDO)) {
-                    throw exception(ORDER_WEIXIN_PAY_ERROR);
-                } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), wxPayOrderRespVO.getPrice())) {
-                    throw exception(ORDER_WEIXIN_PAY_ERROR);
-                } else if (!payOrderDO.getPayStatus()) {
+                // 从redis查询 存在的情况才处理，防止重复验证充值
+                if (redisTemplate.opsForSet().isMember(PAY_ORDER_REDIS_SET, reqVO.getOrderNo())) {
+                    //有支付单号，再验证支付是否成功
+                    PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
+                    if (ObjectUtils.isEmpty(payOrderDO)) {
+                        throw exception(ORDER_WEIXIN_PAY_ERROR);
+                    } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), wxPayOrderRespVO.getPrice())) {
+                        throw exception(ORDER_WEIXIN_PAY_ERROR);
+                    } else if (!payOrderDO.getPayStatus()) {
+                        throw exception(ORDER_WEIXIN_PAY_ERROR);
+                    }
+                    //对比实际支付的价格 和订单应支付的价格是否一致
+                    if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
+                        throw exception(ORDER_WEIXIN_PAY_ERROR);
+                    }
+                    //如果已经验证成功了 就移除这个订单号
+                    redisTemplate.opsForSet().remove(PAY_ORDER_REDIS_SET, reqVO.getOrderNo());
+                    //是微信支付的  增加已支付的金额
+                    orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
+                } else {
                     throw exception(ORDER_WEIXIN_PAY_ERROR);
                 }
-                //对比实际支付的价格 和订单应支付的价格是否一致
-                if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
-                    throw exception(ORDER_WEIXIN_PAY_ERROR);
-                }
-                //是微信支付的  增加已支付的金额
-                orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
                 break;
             case 2://余额
                 //先扣钱包余额
@@ -655,14 +653,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
-        StringBuffer sb = new StringBuffer();
-        sb.append("用户续费通知\n");
-        sb.append(">房间名称:<font color=\"warning\">").append(roomInfoDO.getRoomName()).append("</font>\n");
-        sb.append(">订单编号:<font color=\"warning\">").append(reqVO.getOrderNo()).append("</font>\n");
-        sb.append(">续费金额:<font color=\"warning\">").append(totalPrice).append("</font>\n");
-        sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(reqVO.getPayType())).append("</font>\n");
-        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
-        workWxService.sendOrderMsg(roomInfoDO.getStoreId(), sb.toString());
+        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), userId, roomInfoDO.getRoomName(), totalPrice, reqVO.getPayType(),
+                orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), false);
         //todo...如果有已接单的保洁订单 发消息通知保洁时间延后了
 
     }
@@ -850,29 +842,10 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             orderInfoMapper.updateById(orderInfoDO);
             //异步发送微信通知
-            sendOrderCancelMsgToWx(loginUserId, orderInfoDO.getOrderNo(), orderInfoDO.getRoomId());
+            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), orderInfoDO.getPayType(), orderInfoDO.getOrderNo());
         } else {
             throw exception(ORDER_CANCEL_OPRATION_ERROR);
         }
-
-
-    }
-
-    @Async
-    protected void sendOrderCancelMsgToWx(Long userId, String orderNo, Long roomId) {
-        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
-        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
-        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
-
-        StringBuffer sb = new StringBuffer();
-        sb.append("订单取消\n");
-        sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
-        sb.append(">取消用户:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
-        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
-        sb.append(">房间名称:<font color=\"warning\">").append(roomInfoDO.getRoomName()).append("</font>\n");
-//            sb.append(">结束时间:<font color=\"warning\">")
-//                    .append(DateUtils.dateToStr(orderInfoDO.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
-        workWxService.sendOrderMsg(roomInfoDO.getStoreId(), sb.toString());
     }
 
 
@@ -1033,6 +1006,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Async
     protected void sendClearMsg(List<String> roomIds, Set<String> storeIds) {
+        String dateStr = DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
         //先查询出所有门店 并转map
         Map<String, StoreInfoDO> storeInfoDOMap = storeInfoMapper.getListByIds(storeIds).stream().collect(Collectors.toMap(x -> String.valueOf(x.getStoreId()), Function.identity()));
         //开始发消息
@@ -1042,6 +1016,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             sb.append("订单结束,待清洁通知\n");
             sb.append(">门店名称:").append(storeInfoDOMap.get(roomInfoDO.getStoreId().toString()).getStoreName()).append("\n");
             sb.append(">房间名称:").append(roomInfoDO.getRoomName()).append("\n");
+            sb.append(">时间:<font color=\"warning\">").append(dateStr).append("</font>");
             workWxService.sendClearMsg(storeInfoDOMap.get(roomInfoDO.getStoreId().toString()).getOrderWebhook(), sb.toString());
         }
     }

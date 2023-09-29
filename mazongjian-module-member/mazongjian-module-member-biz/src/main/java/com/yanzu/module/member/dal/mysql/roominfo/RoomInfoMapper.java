@@ -55,4 +55,7 @@ public interface RoomInfoMapper extends BaseMapperX<RoomInfoDO> {
     List<KeyValue<String, Long>> getRoomListByAdmin(Long storeId);
 
     List<KeyValue<String, Long>> getRoomListByStoreId(Long storeId);
+
+    String getNameById(Long roomId);
+
 }
