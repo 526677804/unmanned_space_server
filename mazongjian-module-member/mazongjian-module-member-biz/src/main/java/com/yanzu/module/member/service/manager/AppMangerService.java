@@ -5,6 +5,8 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
+import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
+import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
@@ -66,4 +68,6 @@ public interface AppMangerService {
     void saveAdminUser(AppClearUserDetailReqVO reqVO);
 
     void renew(OrderRenewalReqVO reqVO);
+
+    PageResult<AppClearPageRespVO> getClearManagerPage(AppClearPageReqVO reqVO);
 }

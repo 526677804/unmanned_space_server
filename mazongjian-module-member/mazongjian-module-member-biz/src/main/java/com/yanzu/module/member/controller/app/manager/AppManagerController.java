@@ -4,6 +4,8 @@ import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
+import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
+import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
@@ -95,6 +97,12 @@ public class AppManagerController {
     public CommonResult<Boolean> renew(@RequestBody @Valid OrderRenewalReqVO reqVO) {
         appMangerService.renew(reqVO);
         return success(true);
+    }
+    @PostMapping("/getClearManagerPage")
+    @Operation(summary = "管理员获取任务大厅分页列表")
+    @PreAuthenticated
+    public CommonResult<PageResult<AppClearPageRespVO>> getClearManagerPage(@RequestBody @Valid AppClearPageReqVO reqVO) {
+        return success(appMangerService.getClearManagerPage(reqVO));
     }
 
     @PostMapping("/saveCouponDetail")

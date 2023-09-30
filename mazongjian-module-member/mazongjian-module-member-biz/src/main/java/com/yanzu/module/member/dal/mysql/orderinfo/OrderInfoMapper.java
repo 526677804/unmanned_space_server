@@ -58,4 +58,6 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
     Integer countByRoomIdGtNow(Long roomId);
 
     OrderInfoDO getByOrderNo(String orderNo);
+
+
 }

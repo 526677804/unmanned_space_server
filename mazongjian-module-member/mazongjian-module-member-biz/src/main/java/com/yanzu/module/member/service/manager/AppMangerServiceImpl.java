@@ -8,6 +8,8 @@ import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
+import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
+import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
@@ -616,5 +618,11 @@ public class AppMangerServiceImpl implements AppMangerService {
                 orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), true);
     }
 
-
+    @Override
+    public PageResult<AppClearPageRespVO> getClearManagerPage(AppClearPageReqVO reqVO) {
+        PageHelper.startPage(reqVO);
+        List<AppClearPageRespVO> list = clearInfoMapper.getClearManagerPage(reqVO);
+        PageInfo<AppClearPageRespVO> page = new PageInfo<>(list);
+        return new PageResult<>(page.getList(), page.getTotal());
+    }
 }

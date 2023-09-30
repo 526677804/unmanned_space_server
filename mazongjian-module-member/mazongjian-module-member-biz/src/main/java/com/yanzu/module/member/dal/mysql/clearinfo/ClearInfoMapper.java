@@ -2,6 +2,8 @@ package com.yanzu.module.member.dal.mysql.clearinfo;
 
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearInfoRespVO;
+import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
+import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -27,4 +29,7 @@ public interface ClearInfoMapper extends BaseMapperX<ClearInfoDO> {
     int countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") Integer status, @Param("type") int type, @Param("dateStr") String dateStr);
 
     int cancelByRoomId(Long roomId);
+
+    List<AppClearPageRespVO> getClearManagerPage(AppClearPageReqVO reqVO);
+
 }

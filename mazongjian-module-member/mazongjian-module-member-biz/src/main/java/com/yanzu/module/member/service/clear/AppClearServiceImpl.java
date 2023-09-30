@@ -192,4 +192,6 @@ public class AppClearServiceImpl implements AppClearService {
             throw exception(OPRATION_ERROR);
         }
     }
+
+
 }
