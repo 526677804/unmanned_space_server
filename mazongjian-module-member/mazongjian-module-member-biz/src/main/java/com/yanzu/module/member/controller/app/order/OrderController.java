@@ -5,6 +5,8 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.*;
+import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
+import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.order.AppOrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,11 +46,19 @@ public class OrderController {
     @Resource
     private DeviceService deviceService;
 
+    @Resource
+    private CouponInfoMapper couponInfoMapper;
+
+
     @PostMapping("/preOrder")
     @Operation(summary = "预下单,预订和续费前需调用此接口，会返回需要支付的价格以及微信支付需要的参数", description = "下单使用")
     @PreAuthenticated
     public CommonResult<WxPayOrderRespVO> preOrder(@RequestBody @Valid OrderPreReqVO reqVO) {
-        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getCouponId(), reqVO.getOrderId(), true));
+        CouponInfoDO couponInfoDO = null;
+        if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
+            couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
+        }
+        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, reqVO.getOrderId(), true));
     }
 
     @GetMapping("/queryWxOrder/{orderNo}")

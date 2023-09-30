@@ -421,39 +421,41 @@ public class AppUserServiceImpl implements AppUserService {
         WxPayOrderRespVO respVO = new WxPayOrderRespVO();
         respVO.setPrice(reqVO.getPrice());
         respVO.setOrderNo(orderNo);
-        //需要微信下单  先获取到该用户的openId
-        String openId = socialUserApi.getUserOpenIdByType(reqVO.getUserId(), SocialTypeEnum.WECHAT_MINI_APP.getType());
-        if (ObjectUtils.isEmpty(openId)) {
-            throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
-        }
-        //生成微信支付的订单
-        WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
-        wxPayUnifiedOrderRequest.setBody("微信支付订单");
-        wxPayUnifiedOrderRequest.setOutTradeNo(orderNo);
-        wxPayUnifiedOrderRequest.setTotalFee(reqVO.getPrice());
-        wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
-        wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
-        wxPayUnifiedOrderRequest.setTradeType("JSAPI");
-        wxPayUnifiedOrderRequest.setOpenid(openId);
+        if (reqVO.getPrice() > 0) {
+            //需要微信下单  先获取到该用户的openId
+            String openId = socialUserApi.getUserOpenIdByType(reqVO.getUserId(), SocialTypeEnum.WECHAT_MINI_APP.getType());
+            if (ObjectUtils.isEmpty(openId)) {
+                throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
+            }
+            //生成微信支付的订单
+            WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
+            wxPayUnifiedOrderRequest.setBody("微信支付订单");
+            wxPayUnifiedOrderRequest.setOutTradeNo(orderNo);
+            wxPayUnifiedOrderRequest.setTotalFee(reqVO.getPrice());
+            wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
+            wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
+            wxPayUnifiedOrderRequest.setTradeType("JSAPI");
+            wxPayUnifiedOrderRequest.setOpenid(openId);
 //            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
 //            wxPayUnifiedOrderRequest.setTimeExpire()
-        try {
+            try {
 //                WxPayUnifiedOrderResult wxPayUnifiedOrderResult = wxService.unifiedOrder(wxPayUnifiedOrderRequest);
-            WxPayMpOrderResult wxPayMpOrderResult = wxPayService.createOrder(wxPayUnifiedOrderRequest);
-            respVO.setPkg(wxPayMpOrderResult.getPackageValue());
-            respVO.setAppId(wxPayMpOrderResult.getAppId());
-            respVO.setNonceStr(wxPayMpOrderResult.getNonceStr());
-            respVO.setPaySign(wxPayMpOrderResult.getPaySign());
-            respVO.setSignType("MD5");
-            respVO.setTimeStamp(wxPayMpOrderResult.getTimeStamp());
-        } catch (WxPayException e) {
-            e.printStackTrace();
+                WxPayMpOrderResult wxPayMpOrderResult = wxPayService.createOrder(wxPayUnifiedOrderRequest);
+                respVO.setPkg(wxPayMpOrderResult.getPackageValue());
+                respVO.setAppId(wxPayMpOrderResult.getAppId());
+                respVO.setNonceStr(wxPayMpOrderResult.getNonceStr());
+                respVO.setPaySign(wxPayMpOrderResult.getPaySign());
+                respVO.setSignType("MD5");
+                respVO.setTimeStamp(wxPayMpOrderResult.getTimeStamp());
+            } catch (WxPayException e) {
+                e.printStackTrace();
 //                throw new RuntimeException(e);
-            throw exception(USER_WEIXIN_PAY_ERROR);
+                throw exception(USER_WEIXIN_PAY_ERROR);
+            }
+            payOrderService.create(reqVO.getUserId(), orderNo, reqVO.getStoreId(), "余额充值订单", reqVO.getPrice());
+            //把订单号存到redis 如果已经充值了 就移除这个订单号
+            redisTemplate.opsForSet().add(PAY_ORDER_REDIS_SET, orderNo);
         }
-        payOrderService.create(reqVO.getUserId(), orderNo, reqVO.getStoreId(), "余额充值订单", reqVO.getPrice());
-        //把订单号存到redis 如果已经充值了 就移除这个订单号
-        redisTemplate.opsForSet().add(PAY_ORDER_REDIS_SET, orderNo);
         return respVO;
     }
 
