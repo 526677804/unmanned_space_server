@@ -870,18 +870,33 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //对于通宵场，开始时间只能在23：00以后
                 if (orderInfoDO.getStartTime().getHours() == 23 && orderInfoDO.getStartTime().getMinutes() == 0 && orderInfoDO.getEndTime().getHours() == 8 && orderInfoDO.getEndTime().getMinutes() == 0) {
                     //通宵场
-                    throw exception(TONGXIAO_ORDER_START_ERROR);
+                    //判断是否具备提前开始的条件，23点及以后 或者4点以前
+                    Calendar calendar=Calendar.getInstance();
+                    calendar.set(Calendar.HOUR_OF_DAY, 8); // 设置小时为8
+                    calendar.set(Calendar.MINUTE, 0); // 设置分钟为0
+                    calendar.set(Calendar.SECOND, 0); // 设置秒钟为0
+                    calendar.set(Calendar.MILLISECOND, 0); // 设置毫秒为0
+                    if (now.getHours() >= 23) {
+                        //今日23时之后开始 开始时间就等于现在  结束时间等于次日8时
+                        calendar.add(Calendar.DAY_OF_MONTH, 1); // 加一天
+                        orderInfoDO.setEndTime(calendar.getTime());
+                    } else if (now.getHours() < 4) {
+                        //次日4点以前开始 开始时间就等于现在  结束时间等于今日8时
+                        orderInfoDO.setEndTime(calendar.getTime());
+                    } else {
+                        throw exception(TONGXIAO_ORDER_START_ERROR);
+                    }
                 } else {
                     //新的结束时间 等于当前时间加上订单的时长
                     long l = now.getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime());
                     Date endTime = new Date(l);
-                    //校验时间冲突
-                    preOrder(orderInfoDO.getRoomId(), now, endTime, null, orderId, false);
-                    //校验通过 更改订单的开始和完成时间
-                    orderInfoDO.setStartTime(now);
+                    //更改订单的开始和完成时间
                     orderInfoDO.setEndTime(endTime);
                     log.info("订单：{}，提前开始消费！", orderInfoDO.getOrderNo());
                 }
+                orderInfoDO.setStartTime(now);
+                //校验时间冲突
+                preOrder(orderInfoDO.getRoomId(), now, orderInfoDO.getEndTime(), null, orderId, false);
             }
             //开始订单
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
