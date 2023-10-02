@@ -91,11 +91,12 @@ public class AppClearServiceImpl implements AppClearService {
                             break;
                         case 3:
                             //取消订单 只有已接单状态才能取消
-                            clearInfoDO.setUserId(null);
+
                             if (clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.JIEDAN.getValue()) != 0) {
                                 throw exception(CLEAR_ORDER_STATUS_ERROR);
                             }
-                            clearInfoDO.setStatus(AppEnum.clear_info_status.CANCEL.getValue());
+                            clearInfoDO.setUserId(null);
+                            clearInfoDO.setStatus(AppEnum.clear_info_status.DEFAULT.getValue());
                             break;
                     }
                     clearInfoMapper.updateById(clearInfoDO);
