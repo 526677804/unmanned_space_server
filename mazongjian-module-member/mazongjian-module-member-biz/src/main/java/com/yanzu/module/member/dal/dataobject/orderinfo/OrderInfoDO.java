@@ -71,6 +71,10 @@ public class OrderInfoDO extends BaseDO {
      */
     private BigDecimal payPrice;
     /**
+     * 团购支付价格
+     */
+    private BigDecimal groupPayPrice;
+    /**
      * 退款价格
      */
     private BigDecimal refundPrice;

@@ -140,10 +140,10 @@ public class AppOrderServiceImpl implements AppOrderService {
         Date now = new Date();
         //参数校验
         if (startTime.before(now)) {
-            //开始时间在当前之前，不能超过5分钟  不然间隔太久了  通宵场的例外 23-08时
+            //开始时间在当前之前，不能超过5分钟  不然间隔太久了  通宵场的例外 开始时间大于23时小于4时-结束时间等于08时
             long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
-            if (startTime.getHours() == 23 && startTime.getMinutes() == 0 && endTime.getHours() == 8 && endTime.getMinutes() == 0) {
-                // 通宵场  不校验开始时间是否早于当前时间 但是如果有有用优惠券  要判断优惠券可不可用
+            if ((startTime.getHours() >= 23 || startTime.getHours() < 4) && endTime.getHours() == 8 && endTime.getMinutes() == 0) {
+                // 通宵场  不校验开始时间是否早于当前时间 但是如果有用通宵优惠券  要判断优惠券可不可用
                 if (!ObjectUtils.isEmpty(couponInfoDO)) {
                     if (couponInfoDO.getCouponName().indexOf("通宵") != -1) {
                         throw exception(TONGXIAO_COUPON_USE_ERROR);
@@ -348,6 +348,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //定义一些参数 备用
         String orderNo = reqVO.getOrderNo();
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
+        BigDecimal groupPayPrice = BigDecimal.ZERO;
         BigDecimal oldPrice = BigDecimal.valueOf(l / 60.0).multiply(roomInfoDO.getPrice());//原价
         CouponInfoDO couponInfoDO = null;
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
@@ -365,12 +366,15 @@ public class AppOrderServiceImpl implements AppOrderService {
             JSONObject chaxun = meituanService.prepare(storeInfoDO.getStoreId(), reqVO.getGroupPayNo());
             //套餐id，退款的时候要用
             String deal_id = chaxun.getStr("deal_id");
+            //套餐售价
+            double deal_price = chaxun.getDouble("deal_price");
+            groupPayPrice = new BigDecimal(deal_price);
             //取出标题 并按|进行分割,格式为： 包间类型|自定义名称|时间 首位是包间类型，尾部是时间  如：大包|极品房间|4小时
             String dealTitle = chaxun.getStr("deal_title");
             //团购券的名称 如果包含 “通宵”两个字，说明是通宵场 23-8时
             if (dealTitle.indexOf("通宵") > 0) {
-                //通宵场  判断开始时间必须等于23:00 结束时间必须等于08:00
-                if (reqVO.getStartTime().getHours() != 23 && reqVO.getStartTime().getMinutes() != 0) {
+                //通宵场  判断开始时间必须大于23:00 小于4:00   结束时间必须等于08:00
+                if ((reqVO.getStartTime().getHours() >= 23 || reqVO.getStartTime().getHours() < 4)) {
                     throw exception(GROUP_NO_CHECK_TONGXIAO_TIME_ERROR);
                 }
                 if (reqVO.getEndTime().getHours() != 8 || reqVO.getEndTime().getMinutes() != 0) {
@@ -523,6 +527,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         orderInfoDO.setRefundPrice(BigDecimal.ZERO);
         orderInfoDO.setPayType(reqVO.getPayType());
         orderInfoDO.setGroupPayNo(reqVO.getGroupPayNo());
+        orderInfoDO.setGroupPayPrice(groupPayPrice);
         orderInfoDO.setCouponId(reqVO.getCouponId());
         orderInfoMapper.insert(orderInfoDO);
         //如果房间状态不是进行中，就改成已预定
@@ -877,8 +882,9 @@ public class AppOrderServiceImpl implements AppOrderService {
             //判断当前的时间是否在订单开始时间之前
             if (now.before(orderInfoDO.getStartTime())) {
                 //早于开始时间 判断一下是否能提前开始
-                //对于通宵场，开始时间只能在23：00以后
-                if (orderInfoDO.getStartTime().getHours() == 23 && orderInfoDO.getStartTime().getMinutes() == 0 && orderInfoDO.getEndTime().getHours() == 8 && orderInfoDO.getEndTime().getMinutes() == 0) {
+                //对于通宵场，开始时间只能在23时以后 4时之前
+                if ((orderInfoDO.getStartTime().getHours() >= 23 || orderInfoDO.getStartTime().getHours()< 4)
+                        && orderInfoDO.getEndTime().getHours() == 8 && orderInfoDO.getEndTime().getMinutes() == 0) {
                     //通宵场
                     //判断是否具备提前开始的条件，23点及以后 或者4点以前
                     Calendar calendar = Calendar.getInstance();
