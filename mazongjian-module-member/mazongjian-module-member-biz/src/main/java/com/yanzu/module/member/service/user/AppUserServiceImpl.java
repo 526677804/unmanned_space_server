@@ -359,17 +359,6 @@ public class AppUserServiceImpl implements AppUserService {
             PageHelper.startPage(reqVO);
             List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
             PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
-            //再查一下门店名称
-            if (!CollectionUtils.isEmpty(page.getList())) {
-                Set<String> storeIdSet = Arrays.stream(page.getList().stream().map(x -> x.getStoreIds()).collect(Collectors.joining(",")).split(",")).collect(Collectors.toSet());
-                List<KeyValue<Long, String>> storeNameInfo = storeInfoService.getNameMapByIds(storeIdSet);
-                Map<String, String> storeNameMap = new HashMap<>(storeNameInfo.size());
-                storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
-                //依次设置名称
-                page.getList().stream().forEach(x -> {
-                    x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).filter(v -> storeNameMap.containsKey(v)).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
-                });
-            }
             return new PageResult<>(page.getList(), page.getTotal());
         } else {
             //提交订单页查询
@@ -377,15 +366,9 @@ public class AppUserServiceImpl implements AppUserService {
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
             BigDecimal price = roomInfoDO.getPrice().multiply(reqVO.getOrderHour());
             List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
-            //再查一下门店名称
+            //计算是否可用
             if (!CollectionUtils.isEmpty(list)) {
-                Set<String> storeIdSet = Arrays.stream(list.stream().map(x -> x.getStoreIds()).collect(Collectors.joining(",")).split(",")).collect(Collectors.toSet());
-                List<KeyValue<Long, String>> storeNameInfo = storeInfoService.getNameMapByIds(storeIdSet);
-                Map<String, String> storeNameMap = new HashMap<>(storeNameInfo.size());
-                storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
-                //依次设置名称
                 list.stream().forEach(x -> {
-                    x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).filter(v -> storeNameMap.containsKey(v)).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
                     boolean f1 = false;
                     if (x.getType().compareTo(AppEnum.coupon_type.DIKOU.getValue()) == 0) {
                         //抵扣时长

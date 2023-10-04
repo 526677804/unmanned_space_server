@@ -10,8 +10,10 @@ import com.yanzu.module.member.dal.mysql.clearbill.ClearBillMapper;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
+import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -46,14 +48,15 @@ public class AppClearServiceImpl implements AppClearService {
     @Resource
     private RoomInfoMapper roomInfoMapper;
 
+    @Resource
+    private StoreInfoService storeInfoService;
+
+    @Resource
+    private StoreUserMapper storeUserMapper;
+
     @Override
     public PageResult<AppClearPageRespVO> getClearPage(AppClearPageReqVO reqVO) {
-        if (!ObjectUtils.isEmpty(reqVO.getStatus())) {
-            //如果是查询待接单的，那就不用过滤userId
-            if (reqVO.getStatus().intValue() != 0) {
-                reqVO.setUserId(getLoginUserId());
-            }
-        }
+        reqVO.setUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
         List<AppClearPageRespVO> list = orderInfoMapper.getClearPage(reqVO);
         PageInfo<AppClearPageRespVO> page = new PageInfo<>(list);
@@ -67,8 +70,10 @@ public class AppClearServiceImpl implements AppClearService {
         //接单1/开始2/取消3
         switch (status) {
             case 1:
-                //没有被别人接单，才能接单
-                if (ObjectUtils.isEmpty(clearInfoDO.getUserId())) {
+                //在自己权限下的单子 才能接单
+                storeInfoService.checkPermisson(clearInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.CLEAR.getValue());
+                //没有被别人接单，才能接单 并且状态是待接单
+                if (ObjectUtils.isEmpty(clearInfoDO.getUserId()) && clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.DEFAULT.getValue()) == 0) {
                     clearInfoDO.setUserId(getLoginUserId());
                     clearInfoDO.setCreateTime(LocalDateTime.now());
                     clearInfoDO.setStatus(status);
@@ -91,7 +96,6 @@ public class AppClearServiceImpl implements AppClearService {
                             break;
                         case 3:
                             //取消订单 只有已接单状态才能取消
-
                             if (clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.JIEDAN.getValue()) != 0) {
                                 throw exception(CLEAR_ORDER_STATUS_ERROR);
                             }
@@ -186,7 +190,7 @@ public class AppClearServiceImpl implements AppClearService {
             Integer orderCount = orderInfoMapper.countByRoomIdGtNow(clearInfoDO.getRoomId());
             if (orderCount > 0) {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), clearInfoDO.getRoomId());
-            }else{
+            } else {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), clearInfoDO.getRoomId());
             }
         } else {

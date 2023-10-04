@@ -44,7 +44,7 @@ public class AppChartController {
 
 
     @PostMapping("/getBusinessStatistics")
-    @Operation(summary = "获取经营统计数据（累积收入、订单数、下单人数）")
+    @Operation(summary = "获取经营统计数据（微信，团购收入、订单数、下单人数）")
     @PreAuthenticated
     public CommonResult<AppBusinessStatisticsRespVO> getBusinessStatistics(@RequestBody AppChartDataReqVO reqVO) {
         return success(appMangerService.getBusinessStatistics(reqVO));
@@ -91,7 +91,7 @@ public class AppChartController {
     @PostMapping("/getRoomUseStatistics")
     @Operation(summary = "获取房间使用率统计")
     @PreAuthenticated
-    public CommonResult<List<KeyValue<String, Double>>> getRoomUseStatistics(@RequestBody AppChartDataReqVO reqVO) {
+    public CommonResult<List<KeyValue<String, String>>> getRoomUseStatistics(@RequestBody AppChartDataReqVO reqVO) {
         return success(appMangerService.getRoomUseStatistics(reqVO));
     }
 

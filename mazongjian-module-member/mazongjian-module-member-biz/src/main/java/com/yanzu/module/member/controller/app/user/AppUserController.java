@@ -1,6 +1,8 @@
 package com.yanzu.module.member.controller.app.user;
 
 import cn.hutool.json.JSONObject;
+import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
+import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
@@ -145,13 +147,22 @@ public class AppUserController {
         return success(userService.getCouponPage(reqVO));
     }
 
-//    @Autowired
+    //    @Autowired
 //    private MeituanClient meituanClient;
+//    @Autowired
+//    WxPayService wxPayService;
 
 //    @GetMapping("/test")
 //    @Operation(summary = "test")
-//
-//    public CommonResult<Boolean> test() throws IllegalAccessException {
+//    public CommonResult<Boolean> test() throws Exception {
+//        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+//        refundRequest.setOutTradeNo("2023092805192951");
+//        refundRequest.setOutRefundNo("TK2023092805192951" );
+//        refundRequest.setTotalFee(1000);
+//        refundRequest.setRefundFee(1000);
+//        wxPayService.refund(refundRequest);
+//        return success(true);
+//    }
 //  /*      MeituanPrepareReqVO reqVO = new MeituanPrepareReqVO();
 //        reqVO.setApp_key("022008863ebef333");
 //        reqVO.setOpen_shop_uuid("6eb50f3547e1195d43eb447b8ab62449");

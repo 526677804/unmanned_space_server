@@ -472,20 +472,22 @@ public class AppMangerServiceImpl implements AppMangerService {
 
 
     @Override
-    public List<KeyValue<String, Double>> getRoomUseStatistics(AppChartDataReqVO reqVO) {
+    public List<KeyValue<String, String>> getRoomUseStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         List<KeyValue<String, Long>> roomUseStatistics = orderInfoMapper.getRoomUseStatistics(reqVO);
-        List<KeyValue<String, Double>> resultList = new ArrayList<>();
+        List<KeyValue<String, String>> resultList = new ArrayList<>();
         //再查一下总共的房间数量，算出使用率
         if (!CollectionUtils.isEmpty(roomUseStatistics)) {
             Integer count = roomInfoMapper.countByStoreIdAndUserId(reqVO.getStoreId(), reqVO.getUserId());
+            //%.2f  %.表示 小数点前任意位数   2 表示两位小数 格式后的结果为f 表示浮点型
+            System.out.println();
             for (KeyValue<String, Long> vo : roomUseStatistics) {
 //                vo.setValue(vo.getValue() / (count * 1.0));
-                KeyValue<String, Double> kv = new KeyValue();
+                KeyValue<String, String> kv = new KeyValue();
                 kv.setKey(vo.getKey());
-                kv.setValue(vo.getValue().doubleValue() / count);
+                kv.setValue(String.format("%.2f", vo.getValue().doubleValue() / count * 100.0));
                 resultList.add(kv);
             }
         }

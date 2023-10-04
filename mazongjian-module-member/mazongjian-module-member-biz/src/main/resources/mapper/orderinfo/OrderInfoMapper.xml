@@ -53,15 +53,10 @@
         left join member_store_info s ON s.store_id = c.store_id
         left join member_order_info o ON c.order_id = o.order_id
         left join member_room_info r ON r.room_id = o.room_id
-        where o.deleted = 0 and o.status in(1,2)
+        where o.deleted = 0 and o.status !=3 and c.store_id in (select store_id from member_store_user where
+        user_id=#{userId} and type=14 and deleted=0)
         <if test="null!=storeId and storeId!=''">
             and o.store_id=#{storeId}
-        </if>
-        <if test="null!=userId and userId!=''">
-            and ( c.user_id=#{userId} or c.user_id is null)
-        </if>
-        <if test="null==userId">
-            and c.user_id is null
         </if>
         <if test="null!=startTime and null!=endTime">
             and to_days(o.create_time) >= to_days(#{startTime})
@@ -69,6 +64,12 @@
         </if>
         <if test="null!=status">
             and c.status=#{status}
+            <if test="status==0">
+                and ( c.user_id=#{userId} or c.user_id is null)
+            </if>
+            <if test="status!=0">
+                and c.user_id=#{userId}
+            </if>
         </if>
         order by c.create_time desc
     </select>
@@ -169,7 +170,7 @@
     </select>
     <select id="getBusinessStatistics"
             resultType="com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO">
-        select ifnull(sum(pay_price), 0) money, count(1) orderCount, count(distinct user_id) memberCount
+        select ifnull(sum(pay_price), 0) money, ifnull(sum(group_pay_price), 0) tgMoney,count(1) orderCount
         from member_order_info
         where deleted = 0
         and status in (0, 1, 2)

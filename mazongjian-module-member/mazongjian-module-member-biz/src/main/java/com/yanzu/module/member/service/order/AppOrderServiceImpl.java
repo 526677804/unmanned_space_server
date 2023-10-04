@@ -139,20 +139,25 @@ public class AppOrderServiceImpl implements AppOrderService {
     public WxPayOrderRespVO preOrder(Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, Long ignoreOrderId, boolean wxpay) {
         Date now = new Date();
         //参数校验
-        if (startTime.before(now)) {
-            //开始时间在当前之前，不能超过5分钟  不然间隔太久了  通宵场的例外 开始时间大于23时小于4时-结束时间等于08时
-            long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
-            if ((startTime.getHours() >= 23 || startTime.getHours() < 4) && endTime.getHours() == 8 && endTime.getMinutes() == 0) {
-                // 通宵场  不校验开始时间是否早于当前时间 但是如果有用通宵优惠券  要判断优惠券可不可用
-                if (!ObjectUtils.isEmpty(couponInfoDO)) {
-                    if (couponInfoDO.getCouponName().indexOf("通宵") != -1) {
-                        throw exception(TONGXIAO_COUPON_USE_ERROR);
-                    }
+        if (checkTongxiao(startTime, endTime)) {
+            // 通宵场  不校验开始时间是否早于当前时间 但是如果有用通宵优惠券  要判断优惠券可不可用
+            if (!ObjectUtils.isEmpty(couponInfoDO)) {
+                if (couponInfoDO.getCouponName().indexOf("通宵") == -1) {
+                    throw exception(TONGXIAO_COUPON_USE_ERROR);
                 }
-            } else {
-                //不能超过5分钟
+            }
+        } else {
+            if (startTime.before(now)) {
+                //开始时间在当前之前，不能超过5分钟  不然间隔太久了
+                long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
                 if (l > 6) {
                     throw exception(ORDER_START_TIME_LT_NOW_ERROR);
+                }
+            }
+            //普通场 不能使用通宵券
+            if (!ObjectUtils.isEmpty(couponInfoDO)) {
+                if (couponInfoDO.getCouponName().indexOf("通宵") != -1) {
+                    throw exception(TONGXIAO_COUPON_USE_ERROR);
                 }
             }
         }
@@ -273,10 +278,6 @@ public class AppOrderServiceImpl implements AppOrderService {
         BigDecimal totalPrice = price.multiply(hour);
         //判断使用优惠券的情况
         if (!ObjectUtils.isEmpty(couponInfoDO)) {
-            //有使用
-            if (ObjectUtils.isEmpty(couponInfoDO)) {
-                throw exception(COUPON_NOT_FOUND_ERROR);
-            }
             //判断类型
             switch (couponInfoDO.getType()) {
                 case 1://1抵扣券
@@ -336,6 +337,11 @@ public class AppOrderServiceImpl implements AppOrderService {
         userMoneyBillMapper.insert(userMoneyBillDO);
     }
 
+    private boolean checkTongxiao(Date startTime, Date endTime) {
+        return (startTime.getHours() >= 23 || startTime.getHours() < 4)
+                && endTime.getHours() == 8 && endTime.getMinutes() == 0;
+    }
+
     @Override
     @Transactional
     public Long save(OrderSaveReqVO reqVO) {
@@ -374,13 +380,11 @@ public class AppOrderServiceImpl implements AppOrderService {
             //团购券的名称 如果包含 “通宵”两个字，说明是通宵场 23-8时
             if (dealTitle.indexOf("通宵") > 0) {
                 //通宵场  判断开始时间必须大于23:00 小于4:00   结束时间必须等于08:00
-                if ((reqVO.getStartTime().getHours() >= 23 || reqVO.getStartTime().getHours() < 4)) {
-                    throw exception(GROUP_NO_CHECK_TONGXIAO_TIME_ERROR);
-                }
-                if (reqVO.getEndTime().getHours() != 8 || reqVO.getEndTime().getMinutes() != 0) {
+                if (checkTongxiao(reqVO.getStartTime(), reqVO.getEndTime())) {
                     throw exception(GROUP_NO_CHECK_TONGXIAO_TIME_ERROR);
                 }
             } else {
+                //普通券
                 String[] split = new String[0];
                 try {
                     split = dealTitle.split("\\|");
@@ -392,7 +396,6 @@ public class AppOrderServiceImpl implements AppOrderService {
                     throw exception(GROUP_NO_CHECK_ERROR);
                 }
                 String roomTypeName = split[0];
-                //普通券
                 Integer timeHour = Integer.valueOf(split[split.length - 1].replace("小时", ""));
                 String roomNameByType = getRoomNameByType(roomInfoDO.getType());
                 if (!roomNameByType.equals(roomTypeName)) {
@@ -421,15 +424,12 @@ public class AppOrderServiceImpl implements AppOrderService {
                     if (!couponInfoDO.getStoreIds().equals(String.valueOf(roomInfoDO.getStoreId()))) {
                         exception(COUPON_USE_CHECK_ERROR);
                     }
-                    //通宵券 开始时间必须是23时 结束时间必须是8时
+                    //通宵券 开始时间必须是大于23时  小于 4时 结束时间必须是8时
                     if (couponInfoDO.getCouponName().indexOf("通宵") != -1) {
-                        if (reqVO.getStartTime().getHours() != 23 || reqVO.getStartTime().getMinutes() != 0 || reqVO.getEndTime().getHours() != 8 || reqVO.getEndTime().getMinutes() != 0) {
+                        if (!checkTongxiao(reqVO.getStartTime(), reqVO.getEndTime())) {
                             throw exception(TONGXIAO_COUPON_USE_ERROR);
                         }
                     }
-//                if (!Arrays.asList(couponInfoDO.getStoreIds().split(",")).contains(roomInfoDO.getStoreId().toString())) {
-//                    exception(COUPON_USE_CHECK_ERROR);
-//                }
                 }
                 //判断限制房间类型
 //            if (!ObjectUtils.isEmpty(couponInfoDO.getRoomType())) {
@@ -440,78 +440,80 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //use
                 couponInfoDO.setStatus(AppEnum.coupon_status.USED.getValue());
                 couponInfoMapper.updateById(couponInfoDO);
-
             }
-            switch (reqVO.getPayType()) {
-                case 1://微信
-                    if (ObjectUtils.isEmpty(reqVO.getOrderNo())) {
-                        throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    }
-                    // 从redis查询 存在的情况才处理，防止重复验证
-                    if (redisTemplate.opsForSet().isMember(PAY_ORDER_REDIS_SET, reqVO.getOrderNo())) {
-                        //有支付单号，再验证支付是否成功
-                        PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
-                        if (ObjectUtils.isEmpty(payOrderDO)) {
-                            throw exception(ORDER_WEIXIN_PAY_ERROR);
-                        } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), wxPayOrderRespVO.getPrice())) {
-                            throw exception(ORDER_WEIXIN_PAY_ERROR);
-                        } else if (!payOrderDO.getPayStatus()) {
+            //订单价格为0  就不需要扣费了
+            if (totalPrice.compareTo(BigDecimal.ZERO) > 0) {
+                switch (reqVO.getPayType()) {
+                    case 1://微信
+                        if (ObjectUtils.isEmpty(reqVO.getOrderNo())) {
                             throw exception(ORDER_WEIXIN_PAY_ERROR);
                         }
-                        //对比实际支付的价格 和订单应支付的价格是否一致
-                        if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
-                            throw exception(ORDER_WEIXIN_PAY_ERROR);
-                        }
-                        //如果已经验证成功了 就移除这个订单号
-                        redisTemplate.opsForSet().remove(PAY_ORDER_REDIS_SET, reqVO.getOrderNo());
-                    } else {
-                        throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    }
-                    //
-                    break;
-                case 2://余额
-                    //先扣钱包余额
-                    MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
-                    if (memberUserDO.getBalance().compareTo(totalPrice) >= 0) {
-                        //钱够 直接扣
-                        synchronized (this) {
-                            memberUserDO.setBalance(memberUserDO.getBalance().subtract(totalPrice));
-                            memberUserMapper.updateById(memberUserDO);
-                        }
-                        //增加付款记录
-                        addPayRecord(totalPrice, AppEnum.user_money_bill_type.PAY.getValue(), 1, memberUserDO.getBalance(), null, "订单：" + orderNo + ",支付", userId);
-                    } else {
-                        //钱不够  看看有没有赠送余额 加起来判断够不够
-                        StoreUserDO byUserIdAndStoreId = storeUserMapper.getByUserIdAndStoreId(userId, roomInfoDO.getStoreId());
-                        if (ObjectUtils.isEmpty(byUserIdAndStoreId)) {
-                            //没有 报错余额不足
-                            throw exception(MEMBER_BALANCE_MIN_ERROR);
+                        // 从redis查询 存在的情况才处理，防止重复验证
+                        if (redisTemplate.opsForSet().isMember(PAY_ORDER_REDIS_SET, reqVO.getOrderNo())) {
+                            //有支付单号，再验证支付是否成功
+                            PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
+                            if (ObjectUtils.isEmpty(payOrderDO)) {
+                                throw exception(ORDER_WEIXIN_PAY_ERROR);
+                            } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), wxPayOrderRespVO.getPrice())) {
+                                throw exception(ORDER_WEIXIN_PAY_ERROR);
+                            } else if (!payOrderDO.getPayStatus()) {
+                                throw exception(ORDER_WEIXIN_PAY_ERROR);
+                            }
+                            //对比实际支付的价格 和订单应支付的价格是否一致
+                            if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
+                                throw exception(ORDER_WEIXIN_PAY_ERROR);
+                            }
+                            //如果已经验证成功了 就移除这个订单号
+                            redisTemplate.opsForSet().remove(PAY_ORDER_REDIS_SET, reqVO.getOrderNo());
                         } else {
-                            BigDecimal userBalance = memberUserDO.getBalance();
-                            BigDecimal added = memberUserDO.getBalance().add(byUserIdAndStoreId.getGiftBalance());
-                            //有 加起余额一起判断
-                            if (added.compareTo(totalPrice) >= 0) {
-                                //钱够 先扣赠送余额 再扣余额
-                                BigDecimal subtract = totalPrice.subtract(memberUserDO.getBalance());//要从赠送余额扣的钱
-                                memberUserDO.setBalance(BigDecimal.ZERO);
-                                byUserIdAndStoreId.setGiftBalance(byUserIdAndStoreId.getGiftBalance().subtract(subtract));
-                                synchronized (this) {
-                                    memberUserMapper.updateById(memberUserDO);
-                                    storeUserMapper.updateById(byUserIdAndStoreId);
-                                }
-                                //增加付款记录
-                                if (userBalance.compareTo(BigDecimal.ZERO) > 0) {
-                                    addPayRecord(userBalance, AppEnum.user_money_bill_type.PAY.getValue(), AppEnum.user_money_type.MONEY.getValue(), BigDecimal.ZERO, null, "订单：" + orderNo + ",支付", userId);
-                                }
-                                addPayRecord(subtract, AppEnum.user_money_bill_type.PAY.getValue(), AppEnum.user_money_type.GIFT_MONEY.getValue(), null, byUserIdAndStoreId.getGiftBalance(), "订单：" + orderNo + ",支付", userId);
-                            } else {
+                            throw exception(ORDER_WEIXIN_PAY_ERROR);
+                        }
+                        //
+                        break;
+                    case 2://余额
+                        //先扣钱包余额
+                        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+                        if (memberUserDO.getBalance().compareTo(totalPrice) >= 0) {
+                            //钱够 直接扣
+                            synchronized (this) {
+                                memberUserDO.setBalance(memberUserDO.getBalance().subtract(totalPrice));
+                                memberUserMapper.updateById(memberUserDO);
+                            }
+                            //增加付款记录
+                            addPayRecord(totalPrice, AppEnum.user_money_bill_type.PAY.getValue(), 1, memberUserDO.getBalance(), null, "订单：" + orderNo + ",支付", userId);
+                        } else {
+                            //钱不够  看看有没有赠送余额 加起来判断够不够
+                            StoreUserDO byUserIdAndStoreId = storeUserMapper.getByUserIdAndStoreId(userId, roomInfoDO.getStoreId());
+                            if (ObjectUtils.isEmpty(byUserIdAndStoreId)) {
+                                //没有 报错余额不足
                                 throw exception(MEMBER_BALANCE_MIN_ERROR);
+                            } else {
+                                BigDecimal userBalance = memberUserDO.getBalance();
+                                BigDecimal added = memberUserDO.getBalance().add(byUserIdAndStoreId.getGiftBalance());
+                                //有 加起余额一起判断
+                                if (added.compareTo(totalPrice) >= 0) {
+                                    //钱够 先扣赠送余额 再扣余额
+                                    BigDecimal subtract = totalPrice.subtract(memberUserDO.getBalance());//要从赠送余额扣的钱
+                                    memberUserDO.setBalance(BigDecimal.ZERO);
+                                    byUserIdAndStoreId.setGiftBalance(byUserIdAndStoreId.getGiftBalance().subtract(subtract));
+                                    synchronized (this) {
+                                        memberUserMapper.updateById(memberUserDO);
+                                        storeUserMapper.updateById(byUserIdAndStoreId);
+                                    }
+                                    //增加付款记录
+                                    if (userBalance.compareTo(BigDecimal.ZERO) > 0) {
+                                        addPayRecord(userBalance, AppEnum.user_money_bill_type.PAY.getValue(), AppEnum.user_money_type.MONEY.getValue(), BigDecimal.ZERO, null, "订单：" + orderNo + ",支付", userId);
+                                    }
+                                    addPayRecord(subtract, AppEnum.user_money_bill_type.PAY.getValue(), AppEnum.user_money_type.GIFT_MONEY.getValue(), null, byUserIdAndStoreId.getGiftBalance(), "订单：" + orderNo + ",支付", userId);
+                                } else {
+                                    throw exception(MEMBER_BALANCE_MIN_ERROR);
+                                }
                             }
                         }
-                    }
-                    break;
-                default:
-                    throw exception(PAY_TYPE_ERROR);
+                        break;
+                    default:
+                        throw exception(PAY_TYPE_ERROR);
+                }
             }
         }
         //生成订单，并修改房间状态
@@ -776,70 +778,73 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //团购支付的，操作团购退款
                 JSONObject reverseconsume = meituanService.reverseconsume(orderInfoDO.getStoreId(), orderInfoDO.getUserId(), split[0], split[1]);
             } else {
-                if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
-                    //微信退款
-                    PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
-                    WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-                    refundRequest.setOutTradeNo(orderInfoDO.getOrderNo());
-                    refundRequest.setOutRefundNo("TK" + orderInfoDO.getOrderNo());
-                    refundRequest.setTotalFee(payOrderDO.getPrice());
-                    refundRequest.setRefundFee(payOrderDO.getPrice());
-                    try {
-                        wxPayService.refund(refundRequest);
-                        payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
-                        payOrderDO.setRefundPrice(payOrderDO.getPrice());
-                        payOrderDO.setRefundTime(LocalDateTime.now());
-                        payOrderMapper.updateById(payOrderDO);
-                    } catch (WxPayException e) {
-                        e.printStackTrace();
+                //实际支付金额为0  就不退款了
+                if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {
+                    if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
+                        //微信退款
+                        PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
+                        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+                        refundRequest.setOutTradeNo(orderInfoDO.getOrderNo());
+                        refundRequest.setOutRefundNo("TK" + orderInfoDO.getOrderNo());
+                        refundRequest.setTotalFee(payOrderDO.getPrice());
+                        refundRequest.setRefundFee(payOrderDO.getPrice());
+                        try {
+                            wxPayService.refund(refundRequest);
+                            payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
+                            payOrderDO.setRefundPrice(payOrderDO.getPrice());
+                            payOrderDO.setRefundTime(LocalDateTime.now());
+                            payOrderMapper.updateById(payOrderDO);
+                        } catch (WxPayException e) {
+                            e.printStackTrace();
 //                        throw new RuntimeException(e);
-                        throw exception(USER_WEIXIN_PAY_REFUND_ERROR);
-                    }
-                } else {
-                    //余额退款  把支付记录找出来
-                    List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
-                    if (!org.springframework.util.CollectionUtils.isEmpty(userMoneyBillDOList)) {
-                        for (UserMoneyBillDO billDO : userMoneyBillDOList) {
-                            UserMoneyBillDO newUserMoneyBillDO = new UserMoneyBillDO();
-                            BeanUtils.copyProperties(billDO, newUserMoneyBillDO);
-                            newUserMoneyBillDO.setId(null);
-                            newUserMoneyBillDO.setCreateTime(null);
-                            newUserMoneyBillDO.setCreator(null);
-                            newUserMoneyBillDO.setUpdateTime(null);
-                            newUserMoneyBillDO.setUpdater(null);
-                            newUserMoneyBillDO.setType(AppEnum.user_money_bill_type.REFUND.getValue());//改成退款状态
-                            newUserMoneyBillDO.setRemark(newUserMoneyBillDO.getRemark().replace("支付", "退款"));
-                            if (billDO.getMoneyType().intValue() == 1) {
-                                //账户余额  加回去
-                                MemberUserDO memberUserDO = memberUserMapper.selectById(orderInfoDO.getUserId());
-                                memberUserDO.setBalance(memberUserDO.getBalance().add(billDO.getMoney()));
-                                synchronized (this) {
-                                    memberUserMapper.updateById(memberUserDO);
+                            throw exception(USER_WEIXIN_PAY_REFUND_ERROR);
+                        }
+                    } else {
+                        //余额退款  把支付记录找出来
+                        List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
+                        if (!org.springframework.util.CollectionUtils.isEmpty(userMoneyBillDOList)) {
+                            for (UserMoneyBillDO billDO : userMoneyBillDOList) {
+                                UserMoneyBillDO newUserMoneyBillDO = new UserMoneyBillDO();
+                                BeanUtils.copyProperties(billDO, newUserMoneyBillDO);
+                                newUserMoneyBillDO.setId(null);
+                                newUserMoneyBillDO.setCreateTime(null);
+                                newUserMoneyBillDO.setCreator(null);
+                                newUserMoneyBillDO.setUpdateTime(null);
+                                newUserMoneyBillDO.setUpdater(null);
+                                newUserMoneyBillDO.setType(AppEnum.user_money_bill_type.REFUND.getValue());//改成退款状态
+                                newUserMoneyBillDO.setRemark(newUserMoneyBillDO.getRemark().replace("支付", "退款"));
+                                if (billDO.getMoneyType().intValue() == 1) {
+                                    //账户余额  加回去
+                                    MemberUserDO memberUserDO = memberUserMapper.selectById(orderInfoDO.getUserId());
+                                    memberUserDO.setBalance(memberUserDO.getBalance().add(billDO.getMoney()));
+                                    synchronized (this) {
+                                        memberUserMapper.updateById(memberUserDO);
+                                    }
+                                    newUserMoneyBillDO.setTotalMoney(memberUserDO.getBalance());
+                                } else if (billDO.getMoneyType().intValue() == 2) {
+                                    //赠送余额  加回去
+                                    StoreUserDO byUserIdAndStoreId = storeUserMapper.getByUserIdAndStoreId(orderInfoDO.getUserId(), orderInfoDO.getStoreId());
+                                    byUserIdAndStoreId.setGiftBalance(byUserIdAndStoreId.getGiftBalance().add(billDO.getMoney()));
+                                    synchronized (this) {
+                                        storeUserMapper.updateById(byUserIdAndStoreId);
+                                    }
+                                    newUserMoneyBillDO.setTotalGiftMoney(byUserIdAndStoreId.getGiftBalance());
+                                } else {
+                                    throw exception(OPRATION_ERROR);
                                 }
-                                newUserMoneyBillDO.setTotalMoney(memberUserDO.getBalance());
-                            } else if (billDO.getMoneyType().intValue() == 2) {
-                                //赠送余额  加回去
-                                StoreUserDO byUserIdAndStoreId = storeUserMapper.getByUserIdAndStoreId(orderInfoDO.getUserId(), orderInfoDO.getStoreId());
-                                byUserIdAndStoreId.setGiftBalance(byUserIdAndStoreId.getGiftBalance().add(billDO.getMoney()));
-                                synchronized (this) {
-                                    storeUserMapper.updateById(byUserIdAndStoreId);
-                                }
-                                newUserMoneyBillDO.setTotalGiftMoney(byUserIdAndStoreId.getGiftBalance());
-                            } else {
-                                throw exception(OPRATION_ERROR);
+                                userMoneyBillMapper.insert(newUserMoneyBillDO);
                             }
-                            userMoneyBillMapper.insert(newUserMoneyBillDO);
                         }
                     }
-                    //退还优惠券
-                    if (!ObjectUtils.isEmpty(orderInfoDO.getCouponId())) {
-                        CouponInfoDO couponInfoDO = couponInfoMapper.selectById(orderInfoDO.getCouponId());
-                        if (couponInfoDO.getExpriceTime().after(new Date())) {
-                            couponInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
-                            couponInfoMapper.updateById(couponInfoDO);
-                        }
+                }
+                //退还优惠券
+                if (!ObjectUtils.isEmpty(orderInfoDO.getCouponId())) {
+                    CouponInfoDO couponInfoDO = couponInfoMapper.selectById(orderInfoDO.getCouponId());
+                    if (couponInfoDO.getExpriceTime().after(new Date())) {
+                        couponInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
+                        couponInfoMapper.updateById(couponInfoDO);
+                    }
 
-                    }
                 }
                 orderInfoDO.setRefundPrice(orderInfoDO.getPayPrice());
             }
@@ -883,8 +888,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (now.before(orderInfoDO.getStartTime())) {
                 //早于开始时间 判断一下是否能提前开始
                 //对于通宵场，开始时间只能在23时以后 4时之前
-                if ((orderInfoDO.getStartTime().getHours() >= 23 || orderInfoDO.getStartTime().getHours()< 4)
-                        && orderInfoDO.getEndTime().getHours() == 8 && orderInfoDO.getEndTime().getMinutes() == 0) {
+                if (checkTongxiao(orderInfoDO.getStartTime(), orderInfoDO.getEndTime())) {
                     //通宵场
                     //判断是否具备提前开始的条件，23点及以后 或者4点以前
                     Calendar calendar = Calendar.getInstance();

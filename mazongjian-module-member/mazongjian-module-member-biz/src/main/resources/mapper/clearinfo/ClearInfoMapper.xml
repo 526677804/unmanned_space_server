@@ -78,7 +78,7 @@
         left join member_order_info o ON c.order_id = o.order_id
         left join member_room_info r ON r.room_id = o.room_id
         left join member_store_user su ON su.store_id=c.store_id and su.user_id=c.user_id
-        where o.deleted = 0 and o.status in(1,2)
+        where o.deleted = 0 and o.status !=3
         <if test="null!=storeId and storeId!=''">
             and o.store_id=#{storeId}
         </if>

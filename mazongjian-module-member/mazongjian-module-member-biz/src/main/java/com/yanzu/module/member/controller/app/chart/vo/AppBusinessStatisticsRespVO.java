@@ -16,13 +16,13 @@ import java.math.BigDecimal;
 @Data
 @ToString(callSuper = true)
 public class AppBusinessStatisticsRespVO {
-    @Schema(description = "累积收入")
+    @Schema(description = "微信收入")
     private BigDecimal money;
+
+    @Schema(description = "团购收入")
+    private BigDecimal tgMoney;
 
     @Schema(description = "累积订单数")
     private Integer orderCount;
-
-    @Schema(description = "下单会员数")
-    private Integer memberCount;
 
 }
