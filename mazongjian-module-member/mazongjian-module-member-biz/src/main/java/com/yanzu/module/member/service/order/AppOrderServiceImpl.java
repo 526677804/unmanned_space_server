@@ -380,7 +380,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //团购券的名称 如果包含 “通宵”两个字，说明是通宵场 23-8时
             if (dealTitle.indexOf("通宵") > 0) {
                 //通宵场  判断开始时间必须大于23:00 小于4:00   结束时间必须等于08:00
-                if (checkTongxiao(reqVO.getStartTime(), reqVO.getEndTime())) {
+                if (!checkTongxiao(reqVO.getStartTime(), reqVO.getEndTime())) {
                     throw exception(GROUP_NO_CHECK_TONGXIAO_TIME_ERROR);
                 }
             } else {
