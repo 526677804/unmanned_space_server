@@ -1,24 +1,16 @@
 package com.yanzu.module.member.controller.app.user;
 
-import cn.hutool.json.JSONObject;
-import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
-import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
-import com.yanzu.module.member.forest.MeituanClient;
-import com.yanzu.module.member.service.meituan.MeituanConstants;
-import com.yanzu.module.member.service.meituan.MeituanSignUtils;
-import com.yanzu.module.member.service.meituan.vo.MeituanReverseconsumeReqVO;
 import com.yanzu.module.member.service.user.AppUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
@@ -91,18 +82,39 @@ public class AppUserController {
     public CommonResult<BigDecimal> getGiftBalance(@PathVariable("storeId") Long storeId) {
         return success(userService.getGiftBalance(storeId));
     }
+    @GetMapping("/getStoreBalance/{storeId}")
+    @Operation(summary = "获取用户在指定门店的余额")
+    @PreAuthenticated
+    @Parameter(name = "storeId")
+    public CommonResult<AppStoreBalanceRespVO> getStoreBalance(@PathVariable("storeId") Long storeId) {
+        return success(userService.getStoreBalance(storeId));
+    }
 
     @PostMapping("/getBalancePage")
     @Operation(summary = "获取用户账单明细分页列表")
     @PreAuthenticated
-    public CommonResult<PageResult<AppUserMoneyBillRespVO>> getOrderPage(@RequestBody @Valid AppUserMoneyBillPageReqVO reqVO) {
-        return success(userService.getOrderPage(reqVO));
+    public CommonResult<PageResult<AppUserMoneyBillRespVO>> getBalancePage(@RequestBody @Valid AppUserMoneyBillPageReqVO reqVO) {
+        return success(userService.getBalancePage(reqVO));
+    }
+
+    @PostMapping("/getMoneyBillPage")
+    @Operation(summary = "获取用户账单明细分页列表")
+    @PreAuthenticated
+    public CommonResult<PageResult<AppUserMoneyBillRespVO>> getMoneyBillPage(@RequestBody @Valid AppUserMoneyBillPageReqVO reqVO) {
+        return success(userService.getBalancePage(reqVO));
     }
 
     @GetMapping("/getGiftBalanceList")
     @Operation(summary = "获取赠送余额列表")
     @PreAuthenticated
     public CommonResult<List<AppGiftBalanceListRespVO>> getGiftBalanceList() {
+        return success(userService.getGiftBalanceList());
+    }
+
+    @GetMapping("/getUserBalanceList")
+    @Operation(summary = "获取用户余额列表")
+    @PreAuthenticated
+    public CommonResult<List<AppGiftBalanceListRespVO>> getUserBalanceList() {
         return success(userService.getGiftBalanceList());
     }
 

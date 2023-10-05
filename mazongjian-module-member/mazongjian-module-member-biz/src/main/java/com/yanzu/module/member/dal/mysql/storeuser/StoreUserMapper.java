@@ -42,4 +42,6 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
     List<AppAdminUserPageRespVO> getAdminUserPage(String storeIds);
 
     int deleteAdminUser(@Param("storeId") Long storeId, @Param("userId") Long userId);
+
+    StoreUserDO getTotalBalance(Long userId);
 }

@@ -19,6 +19,9 @@ public class AppGiftBalanceListRespVO {
     @Schema(description = "门店名称", example = "总店")
     private String storeName;
 
+    @Schema(description = "余额", example = "2319.01")
+    private BigDecimal balance;
+
     @Schema(description = "赠送余额", example = "2319.01")
     private BigDecimal giftBalance;
 

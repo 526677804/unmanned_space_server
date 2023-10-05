@@ -325,8 +325,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         return "";
     }
 
-    private void addPayRecord(BigDecimal price, Integer type, Integer moneyType, BigDecimal totalMoney, BigDecimal totalGiftMoney, String remark, Long userId) {
+    private void addPayRecord(Long storeId, BigDecimal price, Integer type, Integer moneyType, BigDecimal totalMoney, BigDecimal totalGiftMoney, String remark, Long userId) {
         UserMoneyBillDO userMoneyBillDO = new UserMoneyBillDO();
+        userMoneyBillDO.setStoreId(storeId);
         userMoneyBillDO.setMoney(price);
         userMoneyBillDO.setType(type);
         userMoneyBillDO.setMoneyType(moneyType);
@@ -472,43 +473,40 @@ public class AppOrderServiceImpl implements AppOrderService {
                         //
                         break;
                     case 2://余额
+                        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, roomInfoDO.getStoreId());
+                        if (ObjectUtils.isEmpty(storeUserDO)) {
+                            //没有余额 报错余额不足
+                            throw exception(MEMBER_BALANCE_MIN_ERROR);
+                        }
                         //先扣钱包余额
-                        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
-                        if (memberUserDO.getBalance().compareTo(totalPrice) >= 0) {
+                        if (storeUserDO.getBalance().compareTo(totalPrice) >= 0) {
                             //钱够 直接扣
+                            storeUserDO.setBalance(storeUserDO.getBalance().subtract(totalPrice));
                             synchronized (this) {
-                                memberUserDO.setBalance(memberUserDO.getBalance().subtract(totalPrice));
-                                memberUserMapper.updateById(memberUserDO);
+                                storeUserMapper.updateById(storeUserDO);
                             }
                             //增加付款记录
-                            addPayRecord(totalPrice, AppEnum.user_money_bill_type.PAY.getValue(), 1, memberUserDO.getBalance(), null, "订单：" + orderNo + ",支付", userId);
+                            addPayRecord(roomInfoDO.getStoreId(), totalPrice, AppEnum.user_money_bill_type.PAY.getValue(), 1, storeUserDO.getBalance(), null, "订单：" + orderNo + ",支付", userId);
                         } else {
                             //钱不够  看看有没有赠送余额 加起来判断够不够
-                            StoreUserDO byUserIdAndStoreId = storeUserMapper.getByUserIdAndStoreId(userId, roomInfoDO.getStoreId());
-                            if (ObjectUtils.isEmpty(byUserIdAndStoreId)) {
-                                //没有 报错余额不足
-                                throw exception(MEMBER_BALANCE_MIN_ERROR);
-                            } else {
-                                BigDecimal userBalance = memberUserDO.getBalance();
-                                BigDecimal added = memberUserDO.getBalance().add(byUserIdAndStoreId.getGiftBalance());
-                                //有 加起余额一起判断
-                                if (added.compareTo(totalPrice) >= 0) {
-                                    //钱够 先扣赠送余额 再扣余额
-                                    BigDecimal subtract = totalPrice.subtract(memberUserDO.getBalance());//要从赠送余额扣的钱
-                                    memberUserDO.setBalance(BigDecimal.ZERO);
-                                    byUserIdAndStoreId.setGiftBalance(byUserIdAndStoreId.getGiftBalance().subtract(subtract));
-                                    synchronized (this) {
-                                        memberUserMapper.updateById(memberUserDO);
-                                        storeUserMapper.updateById(byUserIdAndStoreId);
-                                    }
-                                    //增加付款记录
-                                    if (userBalance.compareTo(BigDecimal.ZERO) > 0) {
-                                        addPayRecord(userBalance, AppEnum.user_money_bill_type.PAY.getValue(), AppEnum.user_money_type.MONEY.getValue(), BigDecimal.ZERO, null, "订单：" + orderNo + ",支付", userId);
-                                    }
-                                    addPayRecord(subtract, AppEnum.user_money_bill_type.PAY.getValue(), AppEnum.user_money_type.GIFT_MONEY.getValue(), null, byUserIdAndStoreId.getGiftBalance(), "订单：" + orderNo + ",支付", userId);
-                                } else {
-                                    throw exception(MEMBER_BALANCE_MIN_ERROR);
+                            BigDecimal userBalance = storeUserDO.getBalance();
+                            BigDecimal added = storeUserDO.getBalance().add(storeUserDO.getGiftBalance());
+                            //有 加起余额一起判断
+                            if (added.compareTo(totalPrice) >= 0) {
+                                //钱够 先扣完余额 再扣赠送余额
+                                BigDecimal subtract = totalPrice.subtract(storeUserDO.getBalance());//要从赠送余额扣的钱
+                                storeUserDO.setBalance(BigDecimal.ZERO);
+                                storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().subtract(subtract));
+                                synchronized (this) {
+                                    storeUserMapper.updateById(storeUserDO);
                                 }
+                                //增加付款记录
+                                if (userBalance.compareTo(BigDecimal.ZERO) > 0) {
+                                    addPayRecord(roomInfoDO.getStoreId(), userBalance, AppEnum.user_money_bill_type.PAY.getValue(), AppEnum.user_money_type.MONEY.getValue(), BigDecimal.ZERO, null, "订单：" + orderNo + ",支付", userId);
+                                }
+                                addPayRecord(roomInfoDO.getStoreId(), subtract, AppEnum.user_money_bill_type.PAY.getValue(), AppEnum.user_money_type.GIFT_MONEY.getValue(), null, storeUserDO.getGiftBalance(), "订单：" + orderNo + ",支付", userId);
+                            } else {
+                                throw exception(MEMBER_BALANCE_MIN_ERROR);
                             }
                         }
                         break;
@@ -615,41 +613,38 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
                 break;
             case 2://余额
+                StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, roomInfoDO.getStoreId());
+                if (ObjectUtils.isEmpty(storeUserDO)) {
+                    //没有余额 报错余额不足
+                    throw exception(MEMBER_BALANCE_MIN_ERROR);
+                }
                 //先扣钱包余额
-                MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
-                if (memberUserDO.getBalance().compareTo(totalPrice) >= 0) {
+                if (storeUserDO.getBalance().compareTo(totalPrice) >= 0) {
                     //钱够 直接扣
+                    storeUserDO.setBalance(storeUserDO.getBalance().subtract(totalPrice));
                     synchronized (this) {
-                        memberUserDO.setBalance(memberUserDO.getBalance().subtract(totalPrice));
-                        memberUserMapper.updateById(memberUserDO);
+                        storeUserMapper.updateById(storeUserDO);
                     }
                     //增加付款记录
-                    addPayRecord(totalPrice, AppEnum.user_money_bill_type.PAY.getValue(), 1, memberUserDO.getBalance(), null, "订单：" + orderInfoDO.getOrderNo() + ",续费", userId);
+                    addPayRecord(roomInfoDO.getStoreId(), totalPrice, AppEnum.user_money_bill_type.PAY.getValue(), 1, storeUserDO.getBalance(), null, "订单：" + orderInfoDO.getOrderNo() + ",续费", userId);
                 } else {
                     //钱不够  看看有没有赠送余额 加起来判断够不够
-                    StoreUserDO byUserIdAndStoreId = storeUserMapper.getByUserIdAndStoreId(userId, roomInfoDO.getStoreId());
-                    if (ObjectUtils.isEmpty(byUserIdAndStoreId)) {
-                        //没有 报错余额不足
-                        throw exception(MEMBER_BALANCE_MIN_ERROR);
-                    } else {
-                        BigDecimal userBalance = memberUserDO.getBalance();
-                        //有 加起余额一起判断
-                        BigDecimal added = memberUserDO.getBalance().add(byUserIdAndStoreId.getGiftBalance());
-                        if (added.compareTo(totalPrice) >= 0) {
-                            //钱够 先扣赠送余额 再扣余额
-                            BigDecimal subtract = totalPrice.subtract(memberUserDO.getBalance());//要从赠送余额扣的钱
-                            memberUserDO.setBalance(BigDecimal.ZERO);
-                            byUserIdAndStoreId.setGiftBalance(byUserIdAndStoreId.getGiftBalance().subtract(subtract));
-                            synchronized (this) {
-                                memberUserMapper.updateById(memberUserDO);
-                                storeUserMapper.updateById(byUserIdAndStoreId);
-                            }
-                            //增加付款记录
-                            addPayRecord(userBalance, AppEnum.user_money_bill_type.PAY.getValue(), 1, BigDecimal.ZERO, null, "订单：" + orderInfoDO.getOrderNo() + ",续费", userId);
-                            addPayRecord(subtract, AppEnum.user_money_bill_type.PAY.getValue(), 2, byUserIdAndStoreId.getGiftBalance(), null, "订单：" + orderInfoDO.getOrderNo() + ",续费", userId);
-                        } else {
-                            throw exception(MEMBER_BALANCE_MIN_ERROR);
+                    BigDecimal userBalance = storeUserDO.getBalance();
+                    //有 加起余额一起判断
+                    BigDecimal added = storeUserDO.getBalance().add(storeUserDO.getGiftBalance());
+                    if (added.compareTo(totalPrice) >= 0) {
+                        //钱够 先扣赠送余额 再扣余额
+                        BigDecimal subtract = totalPrice.subtract(storeUserDO.getBalance());//要从赠送余额扣的钱
+                        storeUserDO.setBalance(BigDecimal.ZERO);
+                        storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().subtract(subtract));
+                        synchronized (this) {
+                            storeUserMapper.updateById(storeUserDO);
                         }
+                        //增加付款记录
+                        addPayRecord(roomInfoDO.getStoreId(), userBalance, AppEnum.user_money_bill_type.PAY.getValue(), 1, BigDecimal.ZERO, null, "订单：" + orderInfoDO.getOrderNo() + ",续费", userId);
+                        addPayRecord(roomInfoDO.getStoreId(), subtract, AppEnum.user_money_bill_type.PAY.getValue(), 2, storeUserDO.getGiftBalance(), null, "订单：" + orderInfoDO.getOrderNo() + ",续费", userId);
+                    } else {
+                        throw exception(MEMBER_BALANCE_MIN_ERROR);
                     }
                 }
                 break;
@@ -790,6 +785,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                             throw exception(USER_WEIXIN_PAY_REFUND_ERROR);
                         }
                     } else {
+                        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(loginUserId, orderInfoDO.getStoreId());
                         //余额退款  把支付记录找出来
                         List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
                         if (!org.springframework.util.CollectionUtils.isEmpty(userMoneyBillDOList)) {
@@ -805,20 +801,18 @@ public class AppOrderServiceImpl implements AppOrderService {
                                 newUserMoneyBillDO.setRemark(newUserMoneyBillDO.getRemark().replace("支付", "退款"));
                                 if (billDO.getMoneyType().intValue() == 1) {
                                     //账户余额  加回去
-                                    MemberUserDO memberUserDO = memberUserMapper.selectById(orderInfoDO.getUserId());
-                                    memberUserDO.setBalance(memberUserDO.getBalance().add(billDO.getMoney()));
+                                    storeUserDO.setBalance(storeUserDO.getBalance().add(billDO.getMoney()));
                                     synchronized (this) {
-                                        memberUserMapper.updateById(memberUserDO);
+                                        storeUserMapper.updateById(storeUserDO);
                                     }
-                                    newUserMoneyBillDO.setTotalMoney(memberUserDO.getBalance());
+                                    newUserMoneyBillDO.setTotalMoney(storeUserDO.getBalance());
                                 } else if (billDO.getMoneyType().intValue() == 2) {
                                     //赠送余额  加回去
-                                    StoreUserDO byUserIdAndStoreId = storeUserMapper.getByUserIdAndStoreId(orderInfoDO.getUserId(), orderInfoDO.getStoreId());
-                                    byUserIdAndStoreId.setGiftBalance(byUserIdAndStoreId.getGiftBalance().add(billDO.getMoney()));
+                                    storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().add(billDO.getMoney()));
                                     synchronized (this) {
-                                        storeUserMapper.updateById(byUserIdAndStoreId);
+                                        storeUserMapper.updateById(storeUserDO);
                                     }
-                                    newUserMoneyBillDO.setTotalGiftMoney(byUserIdAndStoreId.getGiftBalance());
+                                    newUserMoneyBillDO.setTotalGiftMoney(storeUserDO.getGiftBalance());
                                 } else {
                                     throw exception(OPRATION_ERROR);
                                 }

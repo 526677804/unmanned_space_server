@@ -22,7 +22,10 @@
         m.nickname,
         m.avatar,
         m.mobile,
-        m.balance,
+        ifnull((select sum(balance)
+        from member_store_user
+        where deleted = 0
+        and user_id = m.id),0) balance,
         ifnull((select sum(gift_balance)
         from member_store_user
         where deleted = 0

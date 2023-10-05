@@ -34,6 +34,7 @@ public class UserMoneyBillDO extends BaseDO {
      * 用户ID
      */
     private Long userId;
+    private Long storeId;
     /**
      * 类型
      *

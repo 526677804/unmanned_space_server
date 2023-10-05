@@ -674,6 +674,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                             throw exception(USER_WEIXIN_PAY_REFUND_ERROR);
                         }
                     } else {
+                        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(loginUserId, orderInfoDO.getStoreId());
                         //余额退款  把支付记录找出来
                         List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
                         if (!org.springframework.util.CollectionUtils.isEmpty(userMoneyBillDOList)) {
@@ -689,20 +690,18 @@ public class AppMangerServiceImpl implements AppMangerService {
                                 newUserMoneyBillDO.setRemark(newUserMoneyBillDO.getRemark().replace("支付", "退款"));
                                 if (billDO.getMoneyType().intValue() == 1) {
                                     //账户余额  加回去
-                                    MemberUserDO memberUserDO = memberUserMapper.selectById(orderInfoDO.getUserId());
-                                    memberUserDO.setBalance(memberUserDO.getBalance().add(billDO.getMoney()));
+                                    storeUserDO.setBalance(storeUserDO.getBalance().add(billDO.getMoney()));
                                     synchronized (this) {
-                                        memberUserMapper.updateById(memberUserDO);
+                                        storeUserMapper.updateById(storeUserDO);
                                     }
-                                    newUserMoneyBillDO.setTotalMoney(memberUserDO.getBalance());
+                                    newUserMoneyBillDO.setTotalMoney(storeUserDO.getBalance());
                                 } else if (billDO.getMoneyType().intValue() == 2) {
                                     //赠送余额  加回去
-                                    StoreUserDO byUserIdAndStoreId = storeUserMapper.getByUserIdAndStoreId(orderInfoDO.getUserId(), orderInfoDO.getStoreId());
-                                    byUserIdAndStoreId.setGiftBalance(byUserIdAndStoreId.getGiftBalance().add(billDO.getMoney()));
+                                    storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().add(billDO.getMoney()));
                                     synchronized (this) {
-                                        storeUserMapper.updateById(byUserIdAndStoreId);
+                                        storeUserMapper.updateById(storeUserDO);
                                     }
-                                    newUserMoneyBillDO.setTotalGiftMoney(byUserIdAndStoreId.getGiftBalance());
+                                    newUserMoneyBillDO.setTotalGiftMoney(storeUserDO.getGiftBalance());
                                 } else {
                                     throw exception(OPRATION_ERROR);
                                 }

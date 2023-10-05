@@ -9,7 +9,6 @@ import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.annotations.VisibleForTesting;
-import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.infra.api.file.FileApi;
@@ -228,18 +227,25 @@ public class AppUserServiceImpl implements AppUserService {
     public AppUserInfoRespVO getUserInfo(Long loginUserId) {
         MemberUserDO memberUserDO = memberUserMapper.selectById(loginUserId);
         AppUserInfoRespVO respVO = UserConvert.INSTANCE.convert(memberUserDO);
-        //查询赠送余额
-        respVO.setGiftBalance(storeUserMapper.getGiftBalanceByUserId(loginUserId));
+        //查询余额
+        StoreUserDO storeUserDO = storeUserMapper.getTotalBalance(loginUserId);
+        if (ObjectUtils.isEmpty(storeUserDO)) {
+            respVO.setBalance(BigDecimal.ZERO);
+            respVO.setGiftBalance(BigDecimal.ZERO);
+        } else {
+            respVO.setBalance(storeUserDO.getBalance());
+            respVO.setGiftBalance(storeUserDO.getGiftBalance());
+        }
         //查询可用优惠券数量
         respVO.setCouponCount(couponInfoMapper.countByUserId(loginUserId));
         return respVO;
     }
 
     @Override
-    public PageResult<AppUserMoneyBillRespVO> getOrderPage(AppUserMoneyBillPageReqVO reqVO) {
+    public PageResult<AppUserMoneyBillRespVO> getBalancePage(AppUserMoneyBillPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
-        List<AppUserMoneyBillRespVO> list = userMoneyBillMapper.getOrderPage(reqVO);
+        List<AppUserMoneyBillRespVO> list = userMoneyBillMapper.getBalancePage(reqVO);
         PageInfo<AppUserMoneyBillRespVO> page = new PageInfo<>(list);
         return new PageResult<>(page.getList(), page.getTotal());
 //        // 构建分页对象
@@ -279,51 +285,51 @@ public class AppUserServiceImpl implements AppUserService {
                 throw exception(ORDER_WEIXIN_PAY_ERROR);
             }
             //增加账户余额
-            BigDecimal bigDecimal = new BigDecimal(reqVO.getPrice() / 100.0);
-            if (bigDecimal.compareTo(BigDecimal.ZERO) <= 0) {
+            BigDecimal addMoney = new BigDecimal(reqVO.getPrice() / 100.0);
+            if (addMoney.compareTo(BigDecimal.ZERO) <= 0) {
                 throw exception(OPRATION_ERROR);
             }
-            MemberUserDO memberUserDO = memberUserMapper.selectById(reqVO.getUserId());
-            memberUserDO.setBalance(memberUserDO.getBalance().add(bigDecimal));
-            memberUserMapper.updateById(memberUserDO);
-            //增加充值明细
+            StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(reqVO.getUserId(), reqVO.getStoreId());
+            if (ObjectUtils.isEmpty(storeUserDO)) {
+                //如果是会员第一次在门店充值，关系可能是不存在的 要先添加关系
+                storeUserDO = new StoreUserDO();
+                storeUserDO.setStoreId(reqVO.getStoreId());
+                storeUserDO.setUserId(reqVO.getUserId());
+                storeUserDO.setType(AppEnum.member_user_type.MEMBER.getValue());
+                storeUserDO.setBalance(BigDecimal.ZERO);
+                storeUserDO.setGiftBalance(BigDecimal.ZERO);
+                storeUserMapper.insert(storeUserDO);
+            }
+            storeUserDO.setBalance(storeUserDO.getBalance().add(addMoney));
+            //增加余额充值明细
             UserMoneyBillDO userMoneyBillDO = new UserMoneyBillDO();
-            userMoneyBillDO.setMoney(bigDecimal);
+            userMoneyBillDO.setStoreId(reqVO.getStoreId());
+            userMoneyBillDO.setMoney(addMoney);
             userMoneyBillDO.setUserId(reqVO.getUserId());
             userMoneyBillDO.setRemark("在线余额充值");
             userMoneyBillDO.setMoneyType(AppEnum.user_money_type.MONEY.getValue());
-            userMoneyBillDO.setTotalMoney(memberUserDO.getBalance());
+            userMoneyBillDO.setTotalMoney(storeUserDO.getBalance());
             userMoneyBillDO.setType(AppEnum.user_money_bill_type.RECHARGE.getValue());
             userMoneyBillMapper.insert(userMoneyBillDO);
             //增加赠送余额 先查询出该门店，该充值金额的最大赠送金额
-            BigDecimal gift = discountRulesMapper.getMaxGiftByStoreIdAndPrice(reqVO.getStoreId(), bigDecimal);
-            log.info("用户:{},充值门店:{},充值:{}元，赠送:{}元", reqVO.getUserId(), reqVO.getStoreId(), bigDecimal, gift);
+            BigDecimal gift = discountRulesMapper.getMaxGiftByStoreIdAndPrice(reqVO.getStoreId(), addMoney);
+            log.info("用户:{},充值门店:{},充值:{}元，赠送:{}元", reqVO.getUserId(), reqVO.getStoreId(), addMoney, gift);
             if (!ObjectUtils.isEmpty(gift) && gift.compareTo(BigDecimal.ZERO) > 0) {
-                StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(reqVO.getUserId(), reqVO.getStoreId());
-                if (ObjectUtils.isEmpty(storeUserDO)) {
-                    //如果是会员第一次在门店充值，关系可能是不存在的 要先添加关系
-                    storeUserDO = new StoreUserDO();
-                    storeUserDO.setStoreId(reqVO.getStoreId());
-                    storeUserDO.setUserId(reqVO.getUserId());
-                    storeUserDO.setType(AppEnum.member_user_type.MEMBER.getValue());
-                    storeUserDO.setGiftBalance(gift);
-                    storeUserMapper.insert(storeUserDO);
-                } else {
-                    storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().add(gift));
-                    storeUserMapper.updateById(storeUserDO);
-                }
+                storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().add(gift));
                 userMoneyBillDO = new UserMoneyBillDO();
+                userMoneyBillDO.setStoreId(reqVO.getStoreId());
                 userMoneyBillDO.setMoney(gift);
                 userMoneyBillDO.setUserId(reqVO.getUserId());
-                userMoneyBillDO.setRemark("充值优惠余额赠送");
+                userMoneyBillDO.setRemark("充值余额赠送");
                 userMoneyBillDO.setMoneyType(AppEnum.user_money_type.GIFT_MONEY.getValue());
                 userMoneyBillDO.setTotalMoney(storeUserDO.getGiftBalance());
                 userMoneyBillDO.setType(AppEnum.user_money_bill_type.GIFT.getValue());
                 userMoneyBillMapper.insert(userMoneyBillDO);
             }
+            storeUserMapper.updateById(storeUserDO);
             //如果已经验证成功了 就移除这个订单号
             redisTemplate.opsForSet().remove(PAY_ORDER_REDIS_SET, reqVO.getOrderNo());
-            workWxService.sendRechargeMsg(reqVO.getStoreId(), getLoginUserId(), bigDecimal, gift);
+            workWxService.sendRechargeMsg(reqVO.getStoreId(), getLoginUserId(), addMoney, gift);
         } else {
             throw exception(ORDER_WEIXIN_PAY_ERROR);
         }
@@ -450,6 +456,15 @@ public class AppUserServiceImpl implements AppUserService {
         } else {
             return storeUserDO.getGiftBalance();
         }
+    }
+
+    @Override
+    public AppStoreBalanceRespVO getStoreBalance(Long storeId) {
+        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(getLoginUserId(), storeId);
+        if (ObjectUtils.isEmpty(storeUserDO)) {
+            return new AppStoreBalanceRespVO(BigDecimal.ZERO, BigDecimal.ZERO);
+        }
+        return new AppStoreBalanceRespVO(storeUserDO.getBalance(), storeUserDO.getGiftBalance());
     }
 
     private String getOrderNo() {

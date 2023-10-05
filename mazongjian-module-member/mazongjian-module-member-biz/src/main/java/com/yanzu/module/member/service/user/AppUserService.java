@@ -1,6 +1,5 @@
 package com.yanzu.module.member.service.user;
 
-import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.validation.Mobile;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
@@ -106,7 +105,7 @@ public interface AppUserService {
 
     AppUserInfoRespVO getUserInfo(Long loginUserId);
 
-    PageResult<AppUserMoneyBillRespVO> getOrderPage(AppUserMoneyBillPageReqVO reqVO);
+    PageResult<AppUserMoneyBillRespVO> getBalancePage(AppUserMoneyBillPageReqVO reqVO);
 
     List<AppGiftBalanceListRespVO> getGiftBalanceList();
 
@@ -123,4 +122,6 @@ public interface AppUserService {
     WxPayOrderRespVO preRechargeBalance(AppPreRechargeBalanceReqVO reqVO);
 
     BigDecimal getGiftBalance(Long storeId);
+
+    AppStoreBalanceRespVO getStoreBalance(Long storeId);
 }

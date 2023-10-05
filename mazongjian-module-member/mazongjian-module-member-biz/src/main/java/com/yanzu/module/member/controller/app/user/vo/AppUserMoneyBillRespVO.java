@@ -14,13 +14,16 @@ import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 @Schema(description = "miniapp - 用户账单明细 Response VO")
 @Data
 @ToString(callSuper = true)
-public class AppUserMoneyBillRespVO  {
+public class AppUserMoneyBillRespVO {
 
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "25644")
     private Long id;
 
     @Schema(description = "用户ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "10013")
     private Long userId;
+
+    @Schema(description = "门店名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "测试店铺")
+    private String storeName;
 
     @Schema(description = "类型 值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer type;
