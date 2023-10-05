@@ -44,7 +44,10 @@ public class StoreUserDO extends BaseDO {
      * 枚举 {member_store_user_type 对应的类}
      */
     private Integer type;
-
+    /**
+     * 余额
+     */
+    private BigDecimal balance;
     /**
      * 赠送余额
      */

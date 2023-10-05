@@ -70,4 +70,6 @@ public interface AppMangerService {
     void renew(OrderRenewalReqVO reqVO);
 
     PageResult<AppClearPageRespVO> getClearManagerPage(AppClearPageReqVO reqVO);
+
+    void cancelOrder(Long orderId);
 }

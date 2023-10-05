@@ -16,11 +16,11 @@ public class AppStartClearReqVO {
     private Long id;
 
     @Schema(description = "纬度")
-    @NotNull(message = "定位信息不能为空")
+//    @NotNull(message = "定位信息不能为空")
     private Double lat;
 
     @Schema(description = "经度")
-    @NotNull(message = "定位信息不能为空")
+//    @NotNull(message = "定位信息不能为空")
     private Double lon;
 
     @Schema(description = "任务图片url 逗号分隔")

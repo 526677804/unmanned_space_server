@@ -372,9 +372,9 @@ public class AppOrderServiceImpl implements AppOrderService {
             JSONObject chaxun = meituanService.prepare(storeInfoDO.getStoreId(), reqVO.getGroupPayNo());
             //套餐id，退款的时候要用
             String deal_id = chaxun.getStr("deal_id");
-            //套餐售价
-            double deal_price = chaxun.getDouble("deal_price");
-            groupPayPrice = new BigDecimal(deal_price);
+            //支付金额
+            JSONObject paymentDetail = (JSONObject) chaxun.getJSONArray("payment_detail").get(0);
+            groupPayPrice = paymentDetail.getBigDecimal("amount");
             //取出标题 并按|进行分割,格式为： 包间类型|自定义名称|时间 首位是包间类型，尾部是时间  如：大包|极品房间|4小时
             String dealTitle = chaxun.getStr("deal_title");
             //团购券的名称 如果包含 “通宵”两个字，说明是通宵场 23-8时
@@ -407,6 +407,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             //检验通过  把团购券给使用了
             JSONObject consume = meituanService.consume(roomInfoDO.getStoreId(), userId, reqVO.getGroupPayNo());
+
             //记录下来
             reqVO.setGroupPayNo(reqVO.getGroupPayNo() + "-" + deal_id);
             //团购消费的  支付价格设置为0
@@ -749,19 +750,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
         Long loginUserId = getLoginUserId();
         boolean cancelFlag = true;//默认允许取消订单
-        if (getLoginUserType() != AppEnum.member_user_type.MEMBER.getValue()) {
-            if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
-                //对于管理员 可以取消自己管理门店的订单
-                List<String> storeIds = storeUserMapper.getIdsByUserId(loginUserId);
-                if (CollectionUtils.isAnyEmpty(storeIds) || !storeIds.contains(String.valueOf(orderInfoDO.getStoreId()))) {
-                    throw exception(OPRATION_ERROR);
-                }
-            }
-        } else {
-            //对于用户  只能取消自己的订单
-            if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
-                throw exception(OPRATION_ERROR);
-            }
+        //对于用户  只能取消自己的订单
+        if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
+            throw exception(OPRATION_ERROR);
         }
         //未开始和进行中的订单  并且订单创建时间在5分钟内  都可以取消  其他则不能
         cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
@@ -775,7 +766,6 @@ public class AppOrderServiceImpl implements AppOrderService {
             //判断支付方式
             if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
                 String[] split = orderInfoDO.getGroupPayNo().split("-");//团购码在前   deal_id在后
-                //团购支付的，操作团购退款
                 JSONObject reverseconsume = meituanService.reverseconsume(orderInfoDO.getStoreId(), orderInfoDO.getUserId(), split[0], split[1]);
             } else {
                 //实际支付金额为0  就不退款了
@@ -1009,7 +999,6 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (!org.springframework.util.CollectionUtils.isEmpty(list1)) {
             List<String> roomIds = new ArrayList<>();
             List<String> orderIds = new ArrayList<>();
-
             list1.forEach(x -> {
                 log.info("未开始订单：{}，开始时间:{}", x.getOrderNo(), DateUtils.dateToStr(x.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
                 //开始时间 小于 当前的时间，则开始订单
@@ -1026,6 +1015,8 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
                 orderInfoMapper.updateStatusByIds(AppEnum.order_status.START.getValue(), orderIds.stream().collect(Collectors.joining(",")));
                 roomInfoMapper.updateStatusByIds(AppEnum.room_status.USED.getValue(), roomIds.stream().collect(Collectors.joining(",")));
+                //取消掉存在的保洁订单
+                clearInfoMapper.cancelByRoomIds(roomIds.stream().collect(Collectors.joining(",")));
             }
         }
         log.info("==========     订单定时检查任务执行完成     ==========");

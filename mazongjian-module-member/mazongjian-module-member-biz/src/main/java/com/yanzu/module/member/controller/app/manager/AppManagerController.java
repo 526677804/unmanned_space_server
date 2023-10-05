@@ -105,6 +105,16 @@ public class AppManagerController {
         return success(appMangerService.getClearManagerPage(reqVO));
     }
 
+    @PostMapping("/cancelOrder/{orderId}")
+    @Operation(summary = "管理员取消订单 ", description = "我的订单使用")
+    @PreAuthenticated
+    @Parameter(name = "orderId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> cancelOrder(@PathVariable("orderId") Long orderId) {
+        appMangerService.cancelOrder(orderId);
+        return success(true);
+    }
+
     @PostMapping("/saveCouponDetail")
     @Operation(summary = "管理员保存优惠券详情")
     @PreAuthenticated

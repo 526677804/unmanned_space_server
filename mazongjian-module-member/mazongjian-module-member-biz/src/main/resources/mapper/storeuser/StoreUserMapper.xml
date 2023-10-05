@@ -82,6 +82,7 @@
              , su.store_id
              , s.store_name
              , m.nickname
+             , m.avatar
              , su.name
              , m.mobile
              , su.status

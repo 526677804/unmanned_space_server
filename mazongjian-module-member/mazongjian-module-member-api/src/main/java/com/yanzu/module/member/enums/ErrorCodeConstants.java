@@ -45,7 +45,7 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_STATUS_FINISH_OPRATION_ERROR = new ErrorCode(1004004017, "订单完成已超过5分钟，不支持续费！请重新下单");
     ErrorCode ORDER_START_OPRATION_ERROR = new ErrorCode(1004004018, "无法开始消费当前订单！");
     ErrorCode ORDER_CANCEL_OPRATION_ERROR = new ErrorCode(1004004019, "无法取消当前订单！仅允许取消下单不超过5分钟，且状态为未开始、进行中的订单！");
-    ErrorCode ORDER_CANCEL_TIMEOUT_ERROR = new ErrorCode(1004004020, "距离预定开始时间不足60分钟，无法取消订单！特殊情况请联系客服");
+    ErrorCode ADMIN_ORDER_CANCEL_OPRATION_ERROR = new ErrorCode(1004004020, "无法取消当前订单!管理员仅允许取消状态为未开始、进行中的订单！");
     ErrorCode ORDER_START_TIME_LT_NOW_ERROR = new ErrorCode(1004004021, "您选择的开始时间已经小于当前时间5分钟，请重新选择开始时间！");
     ErrorCode ORDER_MAX_END_TIME_ERROR = new ErrorCode(1004004022, "订单总时长不能超过24小时，请重新选择预订时间！");
     ErrorCode DISCOUNTRULE_REPETITION_ERROR = new ErrorCode(1004004024, "该充值金额已存在其他规则中，不允许重复添加！");
