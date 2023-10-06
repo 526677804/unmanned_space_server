@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 public interface WorkWxService {
-    void sendOrderMsg(Long storeId, Long userId,String roomName,BigDecimal price,Integer payType,String orderNo,Date startTime,Date endTime);
+    void sendOrderMsg(Long storeId, Long userId, String roomName, BigDecimal price, Integer payType, String orderNo, Date startTime, Date endTime);
 
-    void sendOrderCancelMsg(Long storeId, Long userId,Long roomId,BigDecimal price,Integer payType,String orderNoe);
+    void sendOrderCancelMsg(Long storeId, Long userId, Long roomId, BigDecimal price, Integer payType, String orderNoe);
 
     void sendGameMsg(Long storeId, String content);
 
@@ -15,6 +15,8 @@ public interface WorkWxService {
     void sendRenewMsg(Long storeId, Long userId, String roomName, BigDecimal price, Integer payType, String orderNo, Date endTime, boolean isAdmin);
 
     void sendRechargeMsg(Long storeId, Long userId, BigDecimal price, BigDecimal giftPrice);
+
+    void sendGiftCouponMsg(Long storeId, Long userId, String couponName);
 
 
 }

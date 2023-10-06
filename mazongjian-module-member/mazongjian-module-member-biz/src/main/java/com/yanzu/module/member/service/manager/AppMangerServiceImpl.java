@@ -521,6 +521,8 @@ public class AppMangerServiceImpl implements AppMangerService {
             newCouponInfoDO.setCouponId(null);
             newCouponInfoDO.setUserId(reqVO.getUserId());
             couponInfoMapper.insert(newCouponInfoDO);
+            //异步发送微信通知
+            workWxService.sendGiftCouponMsg(Long.valueOf(couponInfoDO.getStoreIds()),reqVO.getUserId(),couponInfoDO.getCouponName());
         }
 
     }

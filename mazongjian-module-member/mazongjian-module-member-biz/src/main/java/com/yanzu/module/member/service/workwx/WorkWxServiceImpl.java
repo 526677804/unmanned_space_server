@@ -198,6 +198,29 @@ public class WorkWxServiceImpl implements WorkWxService {
         workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
     }
 
+    @Override
+    public void sendGiftCouponMsg(Long storeId, Long userId, String couponName) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+        //异步发送微信通知
+        StringBuffer sb = new StringBuffer();
+        sb.append("管理员赠送卡券通知\n");
+        sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">用户手机号:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
+        sb.append(">适用门店:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">卡券名称:<font color=\"warning\">").append(couponName).append("</font>\n");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+    }
+
     private String getPayTypeStr(Integer type) {
         switch (type) {
             case 1:
