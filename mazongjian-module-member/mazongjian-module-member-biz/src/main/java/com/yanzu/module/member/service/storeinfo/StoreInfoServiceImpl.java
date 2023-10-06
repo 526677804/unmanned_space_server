@@ -365,4 +365,15 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         deviceService.closeRoomDoor(roomId, null, 4);
     }
 
+    @Override
+    @Transactional
+    public void finishRoomOrder(Long roomId) {
+        //查询出该房间正在进行中的订单
+        OrderInfoDO orderInfoDO = orderInfoMapper.getByRoomCurrent(roomId);
+        if (!ObjectUtils.isEmpty(orderInfoDO)) {
+            orderInfoDO.setEndTime(new Date());
+            orderInfoMapper.updateById(orderInfoDO);
+        }
+    }
+
 }

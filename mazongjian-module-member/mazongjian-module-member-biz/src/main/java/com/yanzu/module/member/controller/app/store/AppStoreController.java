@@ -190,4 +190,12 @@ public class AppStoreController {
         storeInfoService.clearAndFinish(roomId);
         return success(true);
     }
+    @GetMapping("/finishRoomOrder/{roomId}")
+    @Operation(summary = "管理员对指定房间结单")
+    @PreAuthenticated
+    @Parameter(name = "roomId")
+    public CommonResult<Boolean> finishRoomOrder(@PathVariable("roomId") Long roomId) {
+        storeInfoService.finishRoomOrder(roomId);
+        return success(true);
+    }
 }

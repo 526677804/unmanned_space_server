@@ -91,7 +91,9 @@
         <if test="null!=storeId and storeId!=''">
             and o.store_id=#{storeId}
         </if>
-
+        <if test="null!=userId and userId!=''">
+                and c.user_id=#{userId}
+        </if>
         <if test="null!=startTime and null!=endTime">
             and to_days(o.create_time) >= to_days(#{startTime})
             and to_days(o.create_time) &lt;= to_days(#{endTime})

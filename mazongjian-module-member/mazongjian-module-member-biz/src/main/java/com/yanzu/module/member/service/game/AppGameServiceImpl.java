@@ -93,6 +93,7 @@ public class AppGameServiceImpl implements AppGameService {
         AppUserDO appUserDO = appUserMapper.selectById(userId);
         StringBuffer sb = new StringBuffer();
         sb.append("在线组局信息\n");
+//        sb.append(">门店名称:<font color=\"warning\">").append(appUserDO.getNickname()).append("</font>\n");
         sb.append(">发起用户:<font color=\"warning\">").append(appUserDO.getNickname()).append("</font>\n");
         sb.append(">玩法规则:<font color=\"warning\">").append(reqVO.getRuleDesc()).append("</font>\n");
         sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(reqVO.getStartTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
