@@ -337,16 +337,12 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         //只有状态为进行中 或 待清洁，才能处理
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) == 0) {
             //使用中  订单结束时间改为当前  房间状态改为空闲
-            List<OrderInfoDO> orderList = orderInfoMapper.getByRoomId(roomId, null);
-            if (!CollectionUtils.isEmpty(orderList)) {
-                //因为是排序后的列表 所以第一条就是当前的订单
-                OrderInfoDO currentOrder = orderList.get(0);
+            OrderInfoDO orderInfoDO = orderInfoMapper.getByRoomCurrent(roomId);
+            if (!ObjectUtils.isEmpty(orderInfoDO)) {
                 Date now = new Date();
-                if (currentOrder.getStartTime().before(now) && currentOrder.getEndTime().after(now)) {
-                    currentOrder.setEndTime(now);
-                    currentOrder.setStatus(AppEnum.order_status.FINISH.getValue());
-                    orderInfoMapper.updateById(currentOrder);
-                }
+                orderInfoDO.setEndTime(now);
+                orderInfoDO.setStatus(AppEnum.order_status.FINISH.getValue());
+                orderInfoMapper.updateById(orderInfoDO);
             }
         } else if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {
             //待清洁  房间状态改为空闲
