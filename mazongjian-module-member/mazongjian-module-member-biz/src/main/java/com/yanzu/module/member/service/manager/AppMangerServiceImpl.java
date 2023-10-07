@@ -1,6 +1,5 @@
 package com.yanzu.module.member.service.manager;
 
-import cn.hutool.json.JSONObject;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
@@ -37,7 +36,6 @@ import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
-import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
@@ -59,7 +57,6 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -522,7 +519,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             newCouponInfoDO.setUserId(reqVO.getUserId());
             couponInfoMapper.insert(newCouponInfoDO);
             //异步发送微信通知
-            workWxService.sendGiftCouponMsg(Long.valueOf(couponInfoDO.getStoreIds()),reqVO.getUserId(),couponInfoDO.getCouponName());
+            workWxService.sendGiftCouponMsg(Long.valueOf(couponInfoDO.getStoreIds()), reqVO.getUserId(), couponInfoDO.getCouponName());
         }
 
     }
@@ -631,6 +628,11 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Override
     public PageResult<AppClearPageRespVO> getClearManagerPage(AppClearPageReqVO reqVO) {
+        //权限检查
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        //查询出账号权限的门店
+        List<String> storeIds = storeUserMapper.getIdsByUserId(getLoginUserId());
+        reqVO.setStoreIds(storeIds.stream().collect(Collectors.joining(",")));
         PageHelper.startPage(reqVO);
         List<AppClearPageRespVO> list = clearInfoMapper.getClearManagerPage(reqVO);
         PageInfo<AppClearPageRespVO> page = new PageInfo<>(list);

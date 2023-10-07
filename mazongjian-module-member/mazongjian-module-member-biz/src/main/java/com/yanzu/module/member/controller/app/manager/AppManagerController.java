@@ -99,7 +99,7 @@ public class AppManagerController {
         return success(true);
     }
     @PostMapping("/getClearManagerPage")
-    @Operation(summary = "管理员获取任务大厅分页列表")
+    @Operation(summary = "管理员获取保洁任务分页列表")
     @PreAuthenticated
     public CommonResult<PageResult<AppClearPageRespVO>> getClearManagerPage(@RequestBody @Valid AppClearPageReqVO reqVO) {
         return success(appMangerService.getClearManagerPage(reqVO));

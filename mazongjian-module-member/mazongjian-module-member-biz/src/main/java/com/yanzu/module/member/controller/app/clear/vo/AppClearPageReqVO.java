@@ -22,8 +22,8 @@ public class AppClearPageReqVO extends PageParam {
     @Schema(description = "门店Id")
     private Long storeId;
 
-//    @Schema(description = "门店Ids", hidden = true)
-//    private String storeIds;
+    @Schema(description = "门店Ids", hidden = true)
+    private String storeIds;
 
     @Schema(description = "状态 值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Integer status;
