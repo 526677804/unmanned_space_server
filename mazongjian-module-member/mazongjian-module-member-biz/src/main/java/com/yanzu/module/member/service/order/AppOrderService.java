@@ -37,6 +37,9 @@ public interface AppOrderService {
 
     List<AppDiscountRulesRespVO> getDiscountRules(Long storeId);
 
+    void executeMeituanRefreshTokenJob();
+
+
 
 //    void closeOrder(Long orderId);
 }

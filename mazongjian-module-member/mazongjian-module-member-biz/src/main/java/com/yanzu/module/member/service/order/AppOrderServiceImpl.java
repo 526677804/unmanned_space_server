@@ -17,6 +17,7 @@ import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
+import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
@@ -26,6 +27,7 @@ import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
@@ -127,6 +129,8 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Resource
+    private StoreMeituanInfoMapper storeMeituanInfoMapper;
 
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
@@ -385,7 +389,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Transactional
     public Long save(OrderSaveReqVO reqVO) {
         Long currentUserId = getLoginUserId();
-        if(ObjectUtils.isEmpty(reqVO.getUserId())){
+        if (ObjectUtils.isEmpty(reqVO.getUserId())) {
             reqVO.setUserId(currentUserId);
         }
         //二次检查 下单时时间是必须大于4小时的
@@ -1078,6 +1082,27 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Override
     public List<AppDiscountRulesRespVO> getDiscountRules(Long storeId) {
         return discountRulesMapper.getDiscountRulesByStoreId(storeId);
+    }
+
+    @Override
+    public void executeMeituanRefreshTokenJob() {
+        log.info("==========     开始执行美团授权定时刷新任务     ==========");
+        LocalDateTime now = LocalDateTime.now();
+        now.plusDays(1);//加一天  用来判断过期
+        List<StoreMeituanInfoDO> list = storeMeituanInfoMapper.selectList();
+        for (StoreMeituanInfoDO infoDO : list) {
+            if (infoDO.getRemainRefreshCount() <= 1) {
+                //提醒授权更新
+                workWxService.sendMeiTuanScopeMsg(infoDO.getStoreId());
+            }
+            //判断是否需要刷新token
+            if (now.isAfter(infoDO.getExpiresIn())) {
+                //需要刷新
+                meituanService.refreshToken(infoDO.getStoreId(), infoDO.getRefreshToken());
+            }
+        }
+        log.info("==========     美团授权定时刷新任务结束     ==========");
+
     }
 
 //    @Override

@@ -5,9 +5,7 @@ import com.yanzu.module.member.convert.user.UserConvert;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
-import lombok.Synchronized;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -57,6 +55,11 @@ public class MemberUserApiImpl implements MemberUserApi {
     public void executeOrderJob() {
         appOrderService.executeOrderJob();
 
+    }
+
+    @Override
+    public void executeMeituanRefreshTokenJob() {
+        appOrderService.executeMeituanRefreshTokenJob();
     }
 
 }

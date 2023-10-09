@@ -20,5 +20,6 @@ public interface WorkWxService {
 
     void sendGiftCouponMsg(Long storeId, Long userId, String couponName);
 
+    void sendMeiTuanScopeMsg(Long storeId);
 
 }

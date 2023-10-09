@@ -78,7 +78,7 @@ public class WorkWxServiceImpl implements WorkWxService {
 
     @Override
     @Async
-    public void sendOrderCancelMsg(Long storeId, Long userId, Long roomId, BigDecimal price,CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType,String orderNo) {
+    public void sendOrderCancelMsg(Long storeId, Long userId, Long roomId, BigDecimal price, CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType, String orderNo) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
         if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
@@ -128,6 +128,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     }
 
     @Override
+    @Async
     public void sendClearMsg(String webhookUrl, String content) {
         if (!ObjectUtils.isEmpty(webhookUrl)) {
             log.info("发送清洁消息到配置的企业微信:{}", content);
@@ -153,6 +154,7 @@ public class WorkWxServiceImpl implements WorkWxService {
      * @param isAdmin
      */
     @Override
+    @Async
     public void sendRenewMsg(Long storeId, Long userId, String roomName, BigDecimal price, Integer payType, String orderNo, Date endTime, boolean isAdmin) {
 //        String storeName=storeInfoMapper.getNameById(storeId);
         //查询出webhook的地址
@@ -187,6 +189,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     }
 
     @Override
+    @Async
     public void sendRechargeMsg(Long storeId, Long userId, BigDecimal price, BigDecimal giftPrice) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
@@ -211,6 +214,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     }
 
     @Override
+    @Async
     public void sendGiftCouponMsg(Long storeId, Long userId, String couponName) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
@@ -233,6 +237,26 @@ public class WorkWxServiceImpl implements WorkWxService {
         workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
     }
 
+    @Override
+    @Async
+    public void sendMeiTuanScopeMsg(Long storeId) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        //异步发送微信通知
+        StringBuffer sb = new StringBuffer();
+        sb.append("美团授权需要更新通知\n");
+        sb.append(">门店:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+    }
+
     private String getPayTypeStr(Integer type) {
         switch (type) {
             case 1:
@@ -244,6 +268,7 @@ public class WorkWxServiceImpl implements WorkWxService {
         }
         return "";
     }
+
     private String getGroupPayTypeStr(Integer type) {
         switch (type) {
             case 1:
