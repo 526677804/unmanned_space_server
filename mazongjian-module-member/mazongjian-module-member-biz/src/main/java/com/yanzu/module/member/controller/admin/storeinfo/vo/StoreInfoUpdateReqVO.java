@@ -25,7 +25,7 @@ public class StoreInfoUpdateReqVO extends StoreInfoBaseVO {
     @NotNull(message = "城市名称不能为空")
     private String cityName;
 
-    @Schema(description = "门店富文本详情")
+    @Schema(description = "门店介绍")
     private String content;
 
     @Schema(description = "门店公告")
@@ -55,5 +55,8 @@ public class StoreInfoUpdateReqVO extends StoreInfoBaseVO {
 
     @Schema(description = "组局通知webhook")
     private String gameWebhook;
+
+    @Schema(description = "抖音poiId")
+    private String douyinPoiId;
 
 }

@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 @Schema(description = "miniapp - 门店信息保存 Response VO")
@@ -29,8 +27,12 @@ public class AppStoreInfoReqVO {
     private String headImg;
 
     @Schema(description = "门店风采图片url")
-    @NotNull(message = "门店风采图片url不能为空")
+//    @NotNull(message = "门店风采图片url不能为空")
     private String storeEnvImg;
+
+    @Schema(description = "banner图片url")
+    @NotNull(message = "banner图片url不能为空")
+    private String bannerImg;
 
     @Schema(description = "门店公告")
     @NotNull(message = "门店公告不能为空")

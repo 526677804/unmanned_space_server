@@ -23,6 +23,9 @@ public class StoreInfoRespVO extends StoreInfoBaseVO {
     @Schema(description = "城市名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "张三")
     private String cityName;
 
+    @Schema(description = "门店介绍")
+    private String content;
+
     @Schema(description = "门店公告")
     private String notice;
 
@@ -49,6 +52,9 @@ public class StoreInfoRespVO extends StoreInfoBaseVO {
 
     @Schema(description = "组局通知webhook")
     private String gameWebhook;
+
+    @Schema(description = "抖音poiId")
+    private String douyinPoiId;
 
     @Schema(description = "房间数量")
     private Integer roomNum;

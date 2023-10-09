@@ -66,6 +66,9 @@ public class OrderListRespVO {
     @Schema(description = "订单时长 单位/小时", requiredMode = Schema.RequiredMode.REQUIRED, example = "4.0")
     private Float orderHour;
 
+    @Schema(description = "使用卡券名称", example = "测试卡券")
+    private String couponName;
+
     @Schema(description = "实际支付价格", example = "6888")
     private BigDecimal payPrice;
 

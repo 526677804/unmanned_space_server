@@ -123,9 +123,12 @@
         <el-form-item label="订单通知webhook" prop="orderWebhook">
           <el-input v-model="form.orderWebhook" placeholder="请输入订单通知webhook地址" />
         </el-form-item>
-         <el-form-item label="组局通知webhook" prop="gameWebhook">
-                  <el-input v-model="form.gameWebhook" placeholder="请输入组局通知webhook地址" />
-                </el-form-item>
+        <el-form-item label="组局通知webhook" prop="gameWebhook">
+          <el-input v-model="form.gameWebhook" placeholder="请输入组局通知webhook地址" />
+        </el-form-item>
+        <el-form-item label="抖音poi_id" prop="douyinPoiId">
+          <el-input v-model="form.douyinPoiId" placeholder="请输入抖音poi_id" />
+        </el-form-item>
         <!-- <el-form-item label="美团店铺uuid" prop="meituanOpenShopUuid">
           <el-input v-model="form.meituanOpenShopUuid" placeholder="请输入美团店铺uuid" />
         </el-form-item>

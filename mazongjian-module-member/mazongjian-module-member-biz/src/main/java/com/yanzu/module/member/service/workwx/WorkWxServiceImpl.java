@@ -3,6 +3,7 @@ package com.yanzu.module.member.service.workwx;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.common.util.date.DateUtils;
+import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
@@ -42,7 +43,7 @@ public class WorkWxServiceImpl implements WorkWxService {
 
     @Override
     @Async
-    public void sendOrderMsg(Long storeId, Long userId,String roomName,BigDecimal price,Integer payType,String orderNo,Date startTime,Date endTime) {
+    public void sendOrderMsg(Long storeId, Long userId, String roomName, BigDecimal price, CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType, String orderNo, Date startTime, Date endTime) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
         if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
@@ -59,6 +60,12 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
         sb.append(">订单金额:<font color=\"warning\">").append(price).append("</font>\n");
         sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(payType)).append("</font>\n");
+        if (!ObjectUtils.isEmpty(couponInfoDO)) {
+            sb.append(">使用卡券:<font color=\"warning\">").append(couponInfoDO.getCouponName()).append("</font>\n");
+        }
+        if (!ObjectUtils.isEmpty(groupPayType)) {
+            sb.append(">团购平台:<font color=\"warning\">").append(getGroupPayTypeStr(groupPayType)).append("</font>\n");
+        }
         sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(startTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
         sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(endTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         JSONObject msg = new JSONObject();
@@ -71,7 +78,7 @@ public class WorkWxServiceImpl implements WorkWxService {
 
     @Override
     @Async
-    public void sendOrderCancelMsg(Long storeId, Long userId,Long roomId,BigDecimal price,Integer payType,String orderNo) {
+    public void sendOrderCancelMsg(Long storeId, Long userId, Long roomId, BigDecimal price,CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType,String orderNo) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
         if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
@@ -88,7 +95,13 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
         sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
         sb.append(">订单金额:<font color=\"warning\">").append(price).append("</font>\n");
-        sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(payType)).append("</font>");
+        sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(payType)).append("</font>\n");
+        if (!ObjectUtils.isEmpty(couponInfoDO)) {
+            sb.append(">使用卡券:<font color=\"warning\">").append(couponInfoDO.getCouponName()).append("</font>\n");
+        }
+        if (!ObjectUtils.isEmpty(groupPayType)) {
+            sb.append(">团购平台:<font color=\"warning\">").append(getGroupPayTypeStr(groupPayType)).append("</font>\n");
+        }
         JSONObject msg = new JSONObject();
         msg.put("msgtype", "markdown");
         JSONObject markdown = new JSONObject();
@@ -132,7 +145,6 @@ public class WorkWxServiceImpl implements WorkWxService {
     }
 
     /**
-     *
      * @param storeId
      * @param userId
      * @param roomName
@@ -141,7 +153,7 @@ public class WorkWxServiceImpl implements WorkWxService {
      * @param isAdmin
      */
     @Override
-    public void sendRenewMsg(Long storeId, Long userId, String roomName, BigDecimal price,Integer payType, String orderNo, Date endTime,boolean isAdmin) {
+    public void sendRenewMsg(Long storeId, Long userId, String roomName, BigDecimal price, Integer payType, String orderNo, Date endTime, boolean isAdmin) {
 //        String storeName=storeInfoMapper.getNameById(storeId);
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
@@ -151,16 +163,16 @@ public class WorkWxServiceImpl implements WorkWxService {
         String userName = appUserMapper.getNameById(userId);
         //异步发送微信通知
         StringBuffer sb = new StringBuffer();
-        if(isAdmin){
+        if (isAdmin) {
             sb.append("管理员续费通知\n");
-        }else{
+        } else {
             sb.append("续费通知\n");
         }
         sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
         sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
         sb.append(">用户昵称:<font color=\"warning\">").append(userName).append("</font>\n");
         sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
-        if(!isAdmin){
+        if (!isAdmin) {
             sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(payType)).append("</font>\n");
             sb.append(">续费金额:<font color=\"warning\">").append(price).append("</font>\n");
         }
@@ -229,6 +241,17 @@ public class WorkWxServiceImpl implements WorkWxService {
                 return "余额";
             case 3:
                 return "团购";
+        }
+        return "";
+    }
+    private String getGroupPayTypeStr(Integer type) {
+        switch (type) {
+            case 1:
+                return "美团";
+            case 2:
+                return "抖音";
+//            case 3:
+//                return "团购";
         }
         return "";
     }

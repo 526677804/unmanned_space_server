@@ -644,6 +644,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     public void cancelOrder(Long orderId) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
         Long loginUserId = getLoginUserId();
+        CouponInfoDO couponInfoDO = null;
         //权限检查
         storeInfoService.checkPermisson(orderInfoDO.getStoreId(), loginUserId, null, AppEnum.member_user_type.ADMIN.getValue());
         boolean cancelFlag = true;//默认允许取消订单
@@ -653,8 +654,6 @@ public class AppMangerServiceImpl implements AppMangerService {
             //判断支付方式
             if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
                 //团购支付的  管理员取消 不退团购券
-                String[] split = orderInfoDO.getGroupPayNo().split("-");//团购码在前   deal_id在后
-//                JSONObject reverseconsume = meituanService.reverseconsume(orderInfoDO.getStoreId(), orderInfoDO.getUserId(), split[0], split[1]);
             } else {
                 //实际支付金额为0  就不退款了
                 if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {
@@ -716,12 +715,13 @@ public class AppMangerServiceImpl implements AppMangerService {
                 }
                 //退还优惠券
                 if (!ObjectUtils.isEmpty(orderInfoDO.getCouponId())) {
-                    CouponInfoDO couponInfoDO = couponInfoMapper.selectById(orderInfoDO.getCouponId());
+                    couponInfoDO = couponInfoMapper.selectById(orderInfoDO.getCouponId());
                     if (couponInfoDO.getExpriceTime().after(new Date())) {
                         couponInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
-                        couponInfoMapper.updateById(couponInfoDO);
+                    }else{
+                        couponInfoDO.setStatus(AppEnum.coupon_status.EXPIRE.getValue());
                     }
-
+                    couponInfoMapper.updateById(couponInfoDO);
                 }
                 orderInfoDO.setRefundPrice(orderInfoDO.getPayPrice());
             }
@@ -739,7 +739,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             }
             orderInfoMapper.updateById(orderInfoDO);
             //异步发送微信通知
-            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), orderInfoDO.getPayType(), orderInfoDO.getOrderNo());
+            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(),couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(),orderInfoDO.getOrderNo());
         } else {
             throw exception(ADMIN_ORDER_CANCEL_OPRATION_ERROR);
         }

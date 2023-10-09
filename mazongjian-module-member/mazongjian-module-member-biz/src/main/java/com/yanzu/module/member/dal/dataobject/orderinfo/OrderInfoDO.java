@@ -1,18 +1,13 @@
 package com.yanzu.module.member.dal.dataobject.orderinfo;
 
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 import lombok.*;
 
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
 import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-
-import com.baomidou.mybatisplus.annotation.*;
-import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import java.util.Date;
 
 /**
  * 订单管理 DO
@@ -88,6 +83,11 @@ public class OrderInfoDO extends BaseDO {
      * 团购券码
      */
     private String groupPayNo;
+
+    /**
+     * 团购券类型
+     */
+    private Integer groupPayType;
     /**
      * 优惠券Id
      */

@@ -4,9 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
 
-import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 
 @Schema(description = "miniapp - 门店信息详情 Response VO")
 @Data
@@ -27,6 +25,9 @@ public class AppStoreInfoRespVO {
 
     @Schema(description = "门店风采图片url 逗号分隔")
     private String storeEnvImg;
+
+    @Schema(description = "banner url 逗号分隔")
+    private String bannerImg;
 
     @Schema(description = "门店公告")
     private String notice;

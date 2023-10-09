@@ -2,7 +2,6 @@ package com.yanzu.module.member.controller.app.index.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.util.Date;
@@ -30,6 +29,9 @@ public class AppIndexStoreInfoRespVO  {
 
     @Schema(description = "门店环境/门店风采照片url 逗号分隔")
     private String storeEnvImg;
+
+    @Schema(description = "banner url 逗号分隔")
+    private String bannerImg;
 
     @Schema(description = "门店公告")
     private String notice;

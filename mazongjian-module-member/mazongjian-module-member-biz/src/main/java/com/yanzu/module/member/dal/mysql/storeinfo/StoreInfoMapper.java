@@ -69,4 +69,6 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
 
     String getNameById(Long storeId);
 
+    String getDouyinPoiId(Long storeId);
+
 }

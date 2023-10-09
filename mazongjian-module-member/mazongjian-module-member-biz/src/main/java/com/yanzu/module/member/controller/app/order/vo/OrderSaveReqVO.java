@@ -57,5 +57,7 @@ public class OrderSaveReqVO {
     @Schema(description = "优惠券Id", example = "31071")
     private Long couponId;
 
+    @Schema(description = "代下单时传的userId", example = "266")
+    private Long userId;
 
 }

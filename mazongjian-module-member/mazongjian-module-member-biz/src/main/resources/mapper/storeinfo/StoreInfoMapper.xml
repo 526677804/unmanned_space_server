@@ -166,5 +166,11 @@
         where deleted = 0
           and store_id = #{storeId}
     </select>
+    <select id="getDouyinPoiId" resultType="java.lang.String">
+        select douyin_poi_id
+        from member_store_info
+        where deleted = 0
+          and store_id = #{storeId}
+    </select>
 
 </mapper>

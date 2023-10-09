@@ -48,6 +48,8 @@ public class StoreInfoDO extends BaseDO {
      * 门店环境照片
      */
     private String storeEnvImg;
+
+    private String bannerImg;
     /**
      * 门店公告
      */
@@ -90,6 +92,9 @@ public class StoreInfoDO extends BaseDO {
 
     /*组局通知webhook*/
     private String gameWebhook;
+
+    /*抖音poiId*/
+    private String douyinPoiId;
     /**
      * 房间数量
      */

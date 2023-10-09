@@ -1,12 +1,14 @@
 package com.yanzu.module.member.service.workwx;
 
+import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
 public interface WorkWxService {
-    void sendOrderMsg(Long storeId, Long userId, String roomName, BigDecimal price, Integer payType, String orderNo, Date startTime, Date endTime);
+    void sendOrderMsg(Long storeId, Long userId, String roomName, BigDecimal price, CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType, String orderNo, Date startTime, Date endTime);
 
-    void sendOrderCancelMsg(Long storeId, Long userId, Long roomId, BigDecimal price, Integer payType, String orderNoe);
+    void sendOrderCancelMsg(Long storeId, Long userId, Long roomId, BigDecimal price, CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType, String orderNoe);
 
     void sendGameMsg(Long storeId, String content);
 

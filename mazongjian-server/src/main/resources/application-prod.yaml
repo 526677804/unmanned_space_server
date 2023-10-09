@@ -222,3 +222,15 @@ justauth:
     prefix: 'social_auth_state:' # 缓存前缀，目前只对 Redis 缓存生效，默认 JUSTAUTH::STATE::
     timeout: 24h # 超时时长，目前只对 Redis 缓存生效，默认 3 分钟
 
+# 微信支付回调
+wx:
+  pay:
+    #支付回调通知地址
+    returnUrl: https://api.scyanzu.com/app-api/callback/wxpay/update
+# 美团回调
+meituan:
+  redirectUrl: https://api.scyanzu.com/app-api/callback/meituan
+
+# 抖音回调
+douyin:
+  redirectUrl: https://api.scyanzu.com/app-api/callback/douyin

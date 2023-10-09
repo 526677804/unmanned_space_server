@@ -123,11 +123,11 @@ public class MeituanService {
     }
 
     //查询美团券信息
-    public JSONObject prepare(Long storeId, String receiptCode) {
+    public MeituanPrepareRespVO prepare(Long storeId, String receiptCode) {
         //查询出店铺id
         StoreMeituanInfoDO meituan = storeMeituanInfoMapper.getByStoreId(storeId);
         if (ObjectUtils.isEmpty(meituan) || ObjectUtils.isEmpty(meituan.getOpenShopUuid())) {
-            throw exception(STORE_TUANGOU_PAY_ERROR);
+            throw exception(STORE_MT_TUANGOU_PAY_ERROR);
         }
         MeituanPrepareReqVO reqVO = new MeituanPrepareReqVO();
         reqVO.setApp_key(appKey);
@@ -142,7 +142,13 @@ public class MeituanService {
         if (prepare.getInt("code") != 200) {
             throw exception(GROUP_NO_CHECK_ERROR);
         }
-        return prepare.getJSONObject("data");
+        JSONObject data = prepare.getJSONObject("data");
+        MeituanPrepareRespVO respVO = new MeituanPrepareRespVO();
+        respVO.setTitle(data.getStr("deal_title"));
+        respVO.setDealId(data.getStr("deal_id"));
+        JSONObject paymentDetail = (JSONObject) data.getJSONArray("payment_detail").get(0);
+        respVO.setPayAmount(paymentDetail.getBigDecimal("amount"));
+        return respVO;
     }
 
 
@@ -150,7 +156,7 @@ public class MeituanService {
         //查询出店铺id
         StoreMeituanInfoDO meituan = storeMeituanInfoMapper.getByStoreId(storeId);
         if (ObjectUtils.isEmpty(meituan) || ObjectUtils.isEmpty(meituan.getOpenShopUuid())) {
-            throw exception(STORE_TUANGOU_PAY_ERROR);
+            throw exception(STORE_MT_TUANGOU_PAY_ERROR);
         }
         MeituanConsumeReqVO reqVO = new MeituanConsumeReqVO();
         reqVO.setApp_key(appKey);
@@ -174,7 +180,7 @@ public class MeituanService {
         //查询出店铺id
         StoreMeituanInfoDO meituan = storeMeituanInfoMapper.getByStoreId(storeId);
         if (ObjectUtils.isEmpty(meituan) || ObjectUtils.isEmpty(meituan.getOpenShopUuid())) {
-            throw exception(STORE_TUANGOU_PAY_ERROR);
+            throw exception(STORE_MT_TUANGOU_PAY_ERROR);
         }
         MeituanReverseconsumeReqVO reqVO = new MeituanReverseconsumeReqVO();
         reqVO.setApp_deal_id(dealId);

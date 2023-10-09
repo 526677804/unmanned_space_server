@@ -188,16 +188,18 @@ wx:
     #    subAppId: #服务商模式下的子商户公众账号ID
     #    subMchId: #服务商模式下的子商户号
     keyPath: classpath:apiclient_cert.p12 # p12证书的位置，可以指定绝对路径，也可以指定类路径（以classpath:开头）
-    #支付回调通知地址
-    returnUrl: https://api.scyanzu.com/app-api/callback/wxpay/update
+
 
 meituan:
   appKey: 022008863ebef333
   secret: 8c7729556cb497fcec48133dc760dd2808ba1399
-  redirectUrl: https://api.scyanzu.com/app-api/callback/meituan
+
+
+douyin:
+  appKey: awfftg1h15wwhu3n
+  secret: 51763320da7cc3a7f2a7e8c1758e6eef
 
 # 全局配置下，所有请求的默认重试信息按此配置进行
-
 forest:
   max-retry-count: 3     # 最大请求重试次数，默认为 0 次
   max-retry-interval: 10 # 为最大重试时间间隔, 单位为毫秒，默认为 0 毫秒

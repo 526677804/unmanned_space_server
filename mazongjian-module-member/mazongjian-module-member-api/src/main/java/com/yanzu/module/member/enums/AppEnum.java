@@ -11,6 +11,9 @@ public class AppEnum {
     @Getter
     public static final String PAY_ORDER_REDIS_SET = "PAY_ORDER_REDIS_SET";
 
+    @Getter
+    public static final String DOUYIN_CLIENT_TOKEN = "DOUYIN_CLIENT_TOKEN";
+
     //miniapp广告类型
     @Getter
     @AllArgsConstructor
@@ -283,4 +286,15 @@ public class AppEnum {
 
         private final Integer value;
     }
+
+    //miniapp团购券类型
+    @Getter
+    @AllArgsConstructor
+    public enum member_group_no_type {
+        MEITUAN(1),
+        DOUYIN(2);
+
+        private final Integer value;
+    }
+
 }
