@@ -19,8 +19,20 @@ public class AppRevenueChartRespVO {
 
     @Schema(description = "收入")
     private BigDecimal money;
-    @Schema(description = "可提现")
+
+    @Schema(description = "微信总收入")
+    private BigDecimal wxTotalMoney;
+
+    @Schema(description = "团购总收入")
+    private BigDecimal groupTotalMoney;
+
+    @Schema(description = "总收入")
     private BigDecimal totalMoney;
+
+    @Schema(description = "总订单数")
+    private Integer totalOrder;
+
+
     @Schema(description = "已提现")
     private BigDecimal withdrawalMoney;
 

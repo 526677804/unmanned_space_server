@@ -430,12 +430,18 @@ public class AppMangerServiceImpl implements AppMangerService {
     public AppRevenueChartRespVO getRevenueChart() {
         //仅管理员使用
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
-        MemberUserDO memberUserDO = memberUserMapper.selectById(getLoginUserId());
+        List<String> storeIds = storeUserMapper.getIdsByUserId(getLoginUserId());
+        Integer wxTotalMoney = orderInfoMapper.getWxTotalMoney(storeIds);
+        BigDecimal wxMoney = new BigDecimal(String.valueOf(wxTotalMoney / 100.0));
+        BigDecimal groupTotalMoney = orderInfoMapper.getGroupTotalMoney(storeIds);
+        Integer count = orderInfoMapper.countByStoreIds(storeIds);
         AppRevenueChartRespVO respVO = new AppRevenueChartRespVO();
-        respVO.setMoney(memberUserDO.getMoney());
-        respVO.setWithdrawalMoney(memberUserDO.getWithdrawalMoney());
-        respVO.setTotalMoney(memberUserDO.getMoney().add(memberUserDO.getWithdrawalMoney()));
+        respVO.setTotalMoney(wxMoney.add(groupTotalMoney));
+        respVO.setTotalOrder(count);
+        respVO.setWxTotalMoney(wxMoney);
+        respVO.setGroupTotalMoney(groupTotalMoney);
         return respVO;
+
     }
 
     @Override
@@ -622,8 +628,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         }
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
-        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), getLoginUserId(), roomInfoDO.getRoomName(), BigDecimal.ZERO, reqVO.getPayType(),
-                orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), true);
+        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), getLoginUserId(), roomInfoDO.getRoomName(), BigDecimal.ZERO, reqVO.getPayType(), orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), true);
     }
 
     @Override
@@ -718,7 +723,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                     couponInfoDO = couponInfoMapper.selectById(orderInfoDO.getCouponId());
                     if (couponInfoDO.getExpriceTime().after(new Date())) {
                         couponInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
-                    }else{
+                    } else {
                         couponInfoDO.setStatus(AppEnum.coupon_status.EXPIRE.getValue());
                     }
                     couponInfoMapper.updateById(couponInfoDO);
@@ -739,7 +744,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             }
             orderInfoMapper.updateById(orderInfoDO);
             //异步发送微信通知
-            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(),couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(),orderInfoDO.getOrderNo());
+            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
         } else {
             throw exception(ADMIN_ORDER_CANCEL_OPRATION_ERROR);
         }

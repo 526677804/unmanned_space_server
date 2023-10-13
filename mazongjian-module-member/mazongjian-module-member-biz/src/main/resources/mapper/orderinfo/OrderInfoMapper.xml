@@ -188,7 +188,7 @@
         </if>
     </select>
     <select id="getRevenueStatistics" resultType="com.yanzu.framework.common.core.KeyValue">
-        select DATE_FORMAT(create_time, '%Y-%m-%d') `key`,ifnull(sum(pay_price),0) `value`
+        select DATE_FORMAT(create_time, '%Y-%m-%d') `key`,ifnull(sum(pay_price+group_pay_price),0) `value`
         from member_order_info
         where deleted = 0
         and status in (0, 1, 2)
@@ -333,6 +333,29 @@
           and room_id = #{roomId}
           and start_time &lt; now()
           and end_time > now() limit 1
+    </select>
+    <select id="getWxTotalMoney"
+            resultType="java.lang.Integer">
+        select ifnull(sum(price),0) from member_pay_order where deleted=0 AND pay_status=1 AND refund_price=0
+        AND store_id IN
+        <foreach collection="collection" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+
+    </select>
+    <select id="getGroupTotalMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(group_pay_price),0) from member_order_info where deleted=0 AND status!=3 AND pay_type=3
+        AND store_id IN
+        <foreach collection="collection" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="countByStoreIds" resultType="java.lang.Integer">
+        select count(1) from member_order_info where deleted=0 AND status!=3
+        AND store_id IN
+        <foreach collection="collection" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </select>
 
 </mapper>

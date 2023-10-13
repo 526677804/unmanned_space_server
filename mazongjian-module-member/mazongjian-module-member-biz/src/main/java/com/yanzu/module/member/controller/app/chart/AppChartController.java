@@ -36,7 +36,7 @@ public class AppChartController {
     private AppMangerService appMangerService;
 
     @GetMapping("/getRevenueChart")
-    @Operation(summary = "获取营业额数据 （收入、提现、待提现）")
+    @Operation(summary = "获取营业额数据 （总收入、总订单数）")
     @PreAuthenticated
     public CommonResult<AppRevenueChartRespVO> getRevenueChart() {
         return success(appMangerService.getRevenueChart());
