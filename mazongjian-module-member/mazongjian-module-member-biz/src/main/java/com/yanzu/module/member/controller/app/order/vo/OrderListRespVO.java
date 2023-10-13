@@ -69,6 +69,9 @@ public class OrderListRespVO {
     @Schema(description = "使用卡券名称", example = "测试卡券")
     private String couponName;
 
+    @Schema(description = "支付方式", example = "6888")
+    private Integer payType;
+
     @Schema(description = "实际支付价格", example = "6888")
     private BigDecimal payPrice;
 

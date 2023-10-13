@@ -100,6 +100,7 @@
         , o.end_time
         , ROUND(TIMESTAMPDIFF(SECOND, o.start_time,o.end_time) / 3600, 1) AS orderHour
         , o.pay_price
+        , o.pay_type
         , coupon.coupon_name
         , o.refund_price
         , o.status
@@ -115,6 +116,9 @@
         </if>
         <if test="null!=storeIds and storeIds!=''">
             and o.store_id in (${storeIds})
+        </if>
+        <if test="null!=storeId and storeId!=''">
+            and o.store_id=#{storeId}
         </if>
         <if test="null!=status">
             and o.status=#{status}

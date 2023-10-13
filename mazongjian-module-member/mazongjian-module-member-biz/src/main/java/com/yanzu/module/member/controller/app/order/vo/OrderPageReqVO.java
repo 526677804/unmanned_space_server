@@ -26,6 +26,9 @@ public class OrderPageReqVO extends PageParam {
     @Schema(description = "排序字段 传startTime 或 createTime")
     private String orderColumn;
 
+    @Schema(description = "门店Id")
+    private Long storeId;
+
     @Schema(hidden = true)
     private Long userId;
 
