@@ -15,7 +15,6 @@ import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
 import com.yanzu.module.member.convert.roominfo.RoomInfoConvert;
 import com.yanzu.module.member.convert.storeinfo.StoreInfoConvert;
-import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.discountrules.DiscountRulesDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
@@ -31,7 +30,6 @@ import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
@@ -351,11 +349,19 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         }
         //取消掉该房间 未完成的所有保洁订单
         clearInfoMapper.cancelByRoomId(roomId);
-        //如果房间后面没有订单了 就改成空闲  否则改成已预定
-        if (orderInfoMapper.countByRoomId(roomId, null) > 0) {
-            roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), roomId);
+        //取消后  如果有未完成的保洁订单 状态就是待保洁
+        int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(roomInfoDO.getRoomId());
+        if (countCurrentByRoomId > 0) {
+            roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), roomInfoDO.getRoomId());
+        } else if (orderInfoMapper.countByRoomCurrent(roomInfoDO.getRoomId()) > 0) {
+            // 如果当前有订单进行 就改成进行中
+            roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
+        } else if (orderInfoMapper.countByRoomId(roomInfoDO.getRoomId(), null) > 0) {
+            // 如果后面还有预约 就改成已预定
+            roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), roomInfoDO.getRoomId());
         } else {
-            roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomId);
+            // 否则 改成空闲
+            roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomInfoDO.getRoomId());
         }
         //关电
         deviceService.closeRoomDoor(roomId, null, 4);

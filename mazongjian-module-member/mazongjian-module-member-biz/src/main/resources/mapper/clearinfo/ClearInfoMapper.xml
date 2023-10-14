@@ -106,4 +106,8 @@
         </if>
         order by c.create_time desc
     </select>
+    <select id="countCurrentByRoomId" resultType="java.lang.Integer">
+        select count(1) from    member_clear_info where deleted=0 and room_id=#{roomId} and status IN (0,1,2)
+
+    </select>
 </mapper>

@@ -62,6 +62,8 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     OrderInfoDO getByRoomCurrent(Long roomId);
 
+    int countByRoomCurrent(Long roomId);
+
     Integer getWxTotalMoney(List<String> storeIds);
 
     BigDecimal getGroupTotalMoney(List<String> storeIds);

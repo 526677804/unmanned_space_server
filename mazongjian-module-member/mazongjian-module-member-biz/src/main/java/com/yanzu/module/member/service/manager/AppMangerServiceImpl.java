@@ -736,10 +736,18 @@ public class AppMangerServiceImpl implements AppMangerService {
             }
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
-            //取消后  如果后面没有预约了，把房间状态改回空闲
-            if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
+            //取消后  如果有未完成的保洁订单 状态就是待保洁
+            int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(orderInfoDO.getRoomId());
+            if (countCurrentByRoomId > 0) {
+                roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), orderInfoDO.getRoomId());
+            } else if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId()) > 0) {
+                // 如果当前有订单进行 就改成进行中
+                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
+            } else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
+                // 如果后面还有预约 就改成已预定
                 roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), orderInfoDO.getRoomId());
             } else {
+                // 否则 改成空闲
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), orderInfoDO.getRoomId());
             }
             orderInfoMapper.updateById(orderInfoDO);
