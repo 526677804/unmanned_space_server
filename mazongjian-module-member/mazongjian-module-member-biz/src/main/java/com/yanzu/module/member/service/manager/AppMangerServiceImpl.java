@@ -740,7 +740,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(orderInfoDO.getRoomId());
             if (countCurrentByRoomId > 0) {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), orderInfoDO.getRoomId());
-            } else if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId()) > 0) {
+            } else if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId(),orderId) > 0) {
                 // 如果当前有订单进行 就改成进行中
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
             } else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {

@@ -190,7 +190,7 @@ public class AppClearServiceImpl implements AppClearService {
             int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(clearInfoDO.getRoomId());
             if (countCurrentByRoomId > 0) {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), clearInfoDO.getRoomId());
-            } else if (orderInfoMapper.countByRoomCurrent(clearInfoDO.getRoomId()) > 0) {
+            } else if (orderInfoMapper.countByRoomCurrent(clearInfoDO.getRoomId(),null) > 0) {
                 // 如果当前有订单进行 就改成进行中
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), clearInfoDO.getRoomId());
             } else if (orderInfoMapper.countByRoomId(clearInfoDO.getRoomId(), null) > 0) {

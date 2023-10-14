@@ -353,9 +353,6 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(roomInfoDO.getRoomId());
         if (countCurrentByRoomId > 0) {
             roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), roomInfoDO.getRoomId());
-        } else if (orderInfoMapper.countByRoomCurrent(roomInfoDO.getRoomId()) > 0) {
-            // 如果当前有订单进行 就改成进行中
-            roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
         } else if (orderInfoMapper.countByRoomId(roomInfoDO.getRoomId(), null) > 0) {
             // 如果后面还有预约 就改成已预定
             roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), roomInfoDO.getRoomId());

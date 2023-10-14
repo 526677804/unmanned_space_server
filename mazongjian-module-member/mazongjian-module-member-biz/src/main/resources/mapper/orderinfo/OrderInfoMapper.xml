@@ -365,10 +365,13 @@
         select count(1)
         from member_order_info
         where deleted = 0
-          and status = 1
-          and room_id = #{roomId}
-          and start_time &lt;= now()
-          and end_time > now()
+        and status = 1
+        and room_id = #{roomId}
+        <if test="null!=ignoreOrderId and ignoreOrderId!=''">
+            and order_id !=#{ignoreOrderId}
+        </if>
+        and start_time &lt;= now()
+        and end_time > now()
     </select>
 
 </mapper>

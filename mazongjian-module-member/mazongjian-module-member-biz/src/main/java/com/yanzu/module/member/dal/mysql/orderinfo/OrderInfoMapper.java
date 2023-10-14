@@ -62,7 +62,7 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     OrderInfoDO getByRoomCurrent(Long roomId);
 
-    int countByRoomCurrent(Long roomId);
+    int countByRoomCurrent(@Param("roomId") Long roomId, @Param("ignoreOrderId") Long ignoreOrderId);
 
     Integer getWxTotalMoney(List<String> storeIds);
 

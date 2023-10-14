@@ -355,11 +355,31 @@ public class AppOrderServiceImpl implements AppOrderService {
     private void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType) {
         //标题 按|进行分割,格式为： 包间类型|自定义名称|时间 首位是包间类型，尾部是时间  如：大包|极品房间|4小时
         //团购券的名称 如果包含 “通宵”两个字，说明是通宵场 23-8时
-        if (title.indexOf("通宵") > 0) {
+        if (title.indexOf("通宵") != -1) {
             //通宵场  判断开始时间必须大于23:00 小于4:00   结束时间必须等于08:00
             if (!checkTongxiao(startTime, endTime)) {
                 throw exception(GROUP_NO_CHECK_TONGXIAO_TIME_ERROR);
             }
+        } else if (title.indexOf("周") != -1) {
+            //仅工作日周一 周四可用
+            Calendar sc = Calendar.getInstance();
+            sc.setTime(startTime);
+            int scDayOfWeek = sc.get(Calendar.DAY_OF_WEEK);
+            switch (scDayOfWeek) {
+                case Calendar.SUNDAY:
+                case Calendar.FRIDAY:
+                case Calendar.SATURDAY:
+                    throw exception(GROUP_PAY_WORK_CHECK_ERROR);
+            }
+//            Calendar ec = Calendar.getInstance();
+//            ec.setTime(endTime);
+//            int ecDayOfWeek = ec.get(Calendar.DAY_OF_WEEK);
+//            switch (ecDayOfWeek) {
+//                case Calendar.SUNDAY:
+//                case Calendar.FRIDAY:
+//                case Calendar.SATURDAY:
+//                    throw exception(GROUP_PAY_WORK_CHECK_ERROR);
+//            }
         } else {
             //普通券
             String[] split = new String[0];
@@ -879,7 +899,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(orderInfoDO.getRoomId());
             if (countCurrentByRoomId > 0) {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), orderInfoDO.getRoomId());
-            } else if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId()) > 0) {
+            } else if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId(), orderId) > 0) {
                 // 如果当前有订单进行 就改成进行中
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
             } else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
