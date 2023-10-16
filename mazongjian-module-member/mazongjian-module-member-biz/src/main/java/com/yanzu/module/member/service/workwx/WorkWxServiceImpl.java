@@ -67,7 +67,8 @@ public class WorkWxServiceImpl implements WorkWxService {
             sb.append(">团购平台:<font color=\"warning\">").append(getGroupPayTypeStr(groupPayType)).append("</font>\n");
         }
         sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(startTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
-        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(endTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(endTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         JSONObject msg = new JSONObject();
         msg.put("msgtype", "markdown");
         JSONObject markdown = new JSONObject();
@@ -102,6 +103,7 @@ public class WorkWxServiceImpl implements WorkWxService {
         if (!ObjectUtils.isEmpty(groupPayType)) {
             sb.append(">团购平台:<font color=\"warning\">").append(getGroupPayTypeStr(groupPayType)).append("</font>\n");
         }
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         JSONObject msg = new JSONObject();
         msg.put("msgtype", "markdown");
         JSONObject markdown = new JSONObject();
@@ -204,7 +206,8 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append(">用户手机号:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
         sb.append(">充值门店:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
         sb.append(">充值金额:<font color=\"warning\">").append(price).append("</font>\n");
-        sb.append(">赠送金额:<font color=\"warning\">").append(giftPrice).append("</font>");
+        sb.append(">赠送金额:<font color=\"warning\">").append(giftPrice).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         JSONObject msg = new JSONObject();
         msg.put("msgtype", "markdown");
         JSONObject markdown = new JSONObject();
@@ -229,6 +232,7 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append(">用户手机号:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
         sb.append(">适用门店:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
         sb.append(">卡券名称:<font color=\"warning\">").append(couponName).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         JSONObject msg = new JSONObject();
         msg.put("msgtype", "markdown");
         JSONObject markdown = new JSONObject();
@@ -249,6 +253,35 @@ public class WorkWxServiceImpl implements WorkWxService {
         StringBuffer sb = new StringBuffer();
         sb.append("美团授权需要更新通知\n");
         sb.append(">门店:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+    }
+
+    @Override
+    public void sendChangeRoomMsg(Long storeId, String orderNo, Date startTime, Date endTime, String oldRoomName, String newRoomName, Long userId) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+        //异步发送微信通知
+        StringBuffer sb = new StringBuffer();
+        sb.append("用户订单更换房间通知\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">原房间:<font color=\"warning\">").append(oldRoomName).append("</font>\n");
+        sb.append(">新房间:<font color=\"warning\">").append(newRoomName).append("</font>\n");
+        sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
+        sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(startTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(endTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">用户手机号:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         JSONObject msg = new JSONObject();
         msg.put("msgtype", "markdown");
         JSONObject markdown = new JSONObject();

@@ -22,4 +22,5 @@ public interface WorkWxService {
 
     void sendMeiTuanScopeMsg(Long storeId);
 
+    void sendChangeRoomMsg(Long storeId, String orderNo, Date startTime, Date endTime, String oldRoomName, String newRoomName, Long userId);
 }

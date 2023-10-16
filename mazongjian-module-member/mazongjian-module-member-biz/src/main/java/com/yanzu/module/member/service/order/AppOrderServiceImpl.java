@@ -59,7 +59,6 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -755,9 +754,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         //只有未开始的订单才能更换房间
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
             //只能更换到小于等于当前房间级别的
-            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
-            RoomInfoDO roomInfoDO1 = roomInfoMapper.selectById(orderInfoDO.getRoomId());
-            if (roomInfoDO.getType() > roomInfoDO1.getType()) {
+            RoomInfoDO newRoomInfo = roomInfoMapper.selectById(roomId);
+            RoomInfoDO oldRoomInfo = roomInfoMapper.selectById(orderInfoDO.getRoomId());
+            if (newRoomInfo.getType() > oldRoomInfo.getType()) {
                 throw exception(ORDER_CHANGE_ROOM_ERROR);
             } else {
                 //检查是否可用
@@ -766,19 +765,28 @@ public class AppOrderServiceImpl implements AppOrderService {
                 orderInfoDO.setRoomId(roomId);
                 orderInfoMapper.updateById(orderInfoDO);
                 //改新房间的状态  如果房间是空闲，则改成已预订
-                if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.ENABLE.getValue()) == 0) {
-                    roomInfoDO.setStatus(AppEnum.room_status.PENDDING.getValue());
+                if (newRoomInfo.getStatus().compareTo(AppEnum.room_status.ENABLE.getValue()) == 0) {
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomId);
                 }
-                //改旧房间的状态  如果房间没有其他订单，则改回空闲
-//                if (roomInfoDO1.getStatus().compareTo(AppEnum.room_status.PENDDING.getValue()) == 0) {
-                if (orderInfoMapper.countByRoomId(roomInfoDO1.getRoomId(), orderId) > 0) {
-                    roomInfoDO1.setStatus(AppEnum.room_status.PENDDING.getValue());
-                    roomInfoMapper.updateById(roomInfoDO1);
+                //改旧房间的状态
+                Long oldRoomId = oldRoomInfo.getRoomId();
+                //如果有未完成的保洁订单 状态就是待保洁
+                int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(oldRoomId);
+                if (countCurrentByRoomId > 0) {
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), oldRoomId);
+                } else if (orderInfoMapper.countByRoomCurrent(oldRoomId, orderId) > 0) {
+                    // 如果当前有订单进行 就改成进行中
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), oldRoomId);
+                } else if (orderInfoMapper.countByRoomId(oldRoomId, orderId) > 0) {
+                    // 如果后面还有预约 就改成已预定
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), oldRoomId);
                 } else {
-                    roomInfoDO1.setStatus(AppEnum.room_status.ENABLE.getValue());
-                    roomInfoMapper.updateById(roomInfoDO1);
+                    // 否则 改成空闲
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), oldRoomId);
                 }
-//                }
+                //发送消息到企业微信
+                workWxService.sendChangeRoomMsg(orderInfoDO.getStoreId(),orderInfoDO.getOrderNo(),orderInfoDO.getStartTime()
+                        ,orderInfoDO.getEndTime(),oldRoomInfo.getRoomName(),newRoomInfo.getRoomName(),loginUserId);
             }
         } else {
             throw exception(CLEAR_ORDER_STATUS_ERROR);
@@ -799,8 +807,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         //未开始和进行中的订单  并且订单创建时间在5分钟内  都可以取消  其他则不能
         cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         LocalDateTime currentDateTime = LocalDateTime.now(); // 当前时间
-        LocalDateTime fiveMinutesAfter = currentDateTime.plus(5, ChronoUnit.MINUTES); // 当前时间5分钟后的时间
-        if (orderInfoDO.getCreateTime().isAfter(fiveMinutesAfter)) {
+        LocalDateTime fiveMinutesAfter = orderInfoDO.getCreateTime().plusMinutes(6);// 订单开始时间5分钟后的时间 多一分钟 给点缓冲时间
+        if (currentDateTime.isAfter(fiveMinutesAfter)) {
             //订单创建时间超过了当前时间5分钟
             cancelFlag = false;
         }
