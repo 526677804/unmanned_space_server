@@ -624,6 +624,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) != 0) {
                 roomInfoDO.setStatus(AppEnum.room_status.USED.getValue());
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
+                clearInfoMapper.cancelByRoomId(roomInfoDO.getRoomId());
             }
         }
         orderInfoMapper.updateById(orderInfoDO);

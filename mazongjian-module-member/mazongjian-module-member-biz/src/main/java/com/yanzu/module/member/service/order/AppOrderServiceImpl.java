@@ -707,7 +707,9 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) != 0) {
                 roomInfoDO.setStatus(AppEnum.room_status.USED.getValue());
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
+                clearInfoMapper.cancelByRoomId(roomInfoDO.getRoomId());
             }
+
         }
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
@@ -785,8 +787,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                     roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), oldRoomId);
                 }
                 //发送消息到企业微信
-                workWxService.sendChangeRoomMsg(orderInfoDO.getStoreId(),orderInfoDO.getOrderNo(),orderInfoDO.getStartTime()
-                        ,orderInfoDO.getEndTime(),oldRoomInfo.getRoomName(),newRoomInfo.getRoomName(),loginUserId);
+                workWxService.sendChangeRoomMsg(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getStartTime()
+                        , orderInfoDO.getEndTime(), oldRoomInfo.getRoomName(), newRoomInfo.getRoomName(), loginUserId);
             }
         } else {
             throw exception(CLEAR_ORDER_STATUS_ERROR);
@@ -978,6 +980,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //开始订单
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
             orderInfoMapper.updateById(orderInfoDO);
+            //todo.. 如果房间状态是待保洁  则赠送一张1小时优惠券给会员
             //房间改为进行中
             roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
             //将该房间历史的保洁订单，未开始的  改成取消
