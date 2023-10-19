@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.meituan;
 
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
@@ -146,8 +147,16 @@ public class MeituanService {
         MeituanPrepareRespVO respVO = new MeituanPrepareRespVO();
         respVO.setTitle(data.getStr("deal_title"));
         respVO.setDealId(data.getStr("deal_id"));
-        JSONObject paymentDetail = (JSONObject) data.getJSONArray("payment_detail").get(0);
-        respVO.setPayAmount(paymentDetail.getBigDecimal("amount"));
+        //10，23，25，26表示用户支付；其余为平台优惠
+        JSONArray paymentDetail = data.getJSONArray("payment_detail");
+        for (Object obj : paymentDetail) {
+            JSONObject jsonObj = (JSONObject) obj;
+            Integer type = jsonObj.getInt("type");
+            if (type == 10 || type == 23 || type == 25 || type == 26) {
+                respVO.setPayAmount(jsonObj.getBigDecimal("amount"));
+                break;
+            }
+        }
         return respVO;
     }
 

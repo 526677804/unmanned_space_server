@@ -17,8 +17,8 @@ import java.math.BigDecimal;
 @ToString(callSuper = true)
 public class AppRevenueChartRespVO {
 
-    @Schema(description = "收入")
-    private BigDecimal money;
+//    @Schema(description = "收入")
+//    private BigDecimal money;
 
     @Schema(description = "微信总收入")
     private BigDecimal wxTotalMoney;
@@ -33,8 +33,8 @@ public class AppRevenueChartRespVO {
     private Integer totalOrder;
 
 
-    @Schema(description = "已提现")
-    private BigDecimal withdrawalMoney;
+//    @Schema(description = "已提现")
+//    private BigDecimal withdrawalMoney;
 
 
 }

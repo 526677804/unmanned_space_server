@@ -505,7 +505,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     }
 
     @Override
-    public List<KeyValue<String, Double>> getRoomUseHourStatistics(AppChartDataReqVO reqVO) {
+    public List<KeyValue<String, BigDecimal>> getRoomUseHourStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());

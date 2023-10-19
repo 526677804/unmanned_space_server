@@ -176,10 +176,10 @@
     </select>
     <select id="getBusinessStatistics"
             resultType="com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO">
-        select ifnull(sum(pay_price), 0) money, ifnull(sum(group_pay_price), 0) tgMoney,count(1) orderCount
+        select  ifnull(sum(group_pay_price), 0) tgMoney,count(1) orderCount
         from member_order_info
         where deleted = 0
-        and status in (0, 1, 2)
+        and status !=3
         <if test="null!=startTime and null!=endTime">
             and to_days(create_time) >= to_days(#{startTime})
             and to_days(create_time) &lt;= to_days(#{endTime})
@@ -192,10 +192,19 @@
         </if>
     </select>
     <select id="getRevenueStatistics" resultType="com.yanzu.framework.common.core.KeyValue">
-        select DATE_FORMAT(create_time, '%m-%d') `key`,ifnull(sum(pay_price+group_pay_price),0) `value`
-        from member_order_info
-        where deleted = 0
-        and status in (0, 1, 2)
+        SELECT
+        `key`,
+        ifnull( SUM( price ), 0 ) `value`
+        FROM
+        (
+        SELECT
+        DATE_FORMAT( create_time, '%m-%d' ) `key`,
+        ifnull( sum( group_pay_price ), 0 ) `price`
+        FROM
+        member_order_info
+        WHERE
+        deleted = 0
+        AND STATUS IN ( 0, 1, 2 )
         <if test="null!=startTime and null!=endTime">
             and to_days(create_time) >= to_days(#{startTime})
             and to_days(create_time) &lt;= to_days(#{endTime})
@@ -206,8 +215,52 @@
         <if test="null==storeId or storeId==''">
             and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})
         </if>
-        group by DATE_FORMAT(create_time, '%m-%d')
-        order by create_time asc
+        GROUP BY
+        DATE_FORMAT( create_time, '%m-%d' ) UNION
+        SELECT
+        DATE_FORMAT( create_time, '%m-%d' ) `key`,
+        ifnull( sum( price / 100.0 ), 0 ) `price`
+        FROM
+        member_pay_order
+        WHERE
+        deleted = 0
+        AND pay_status = 1
+        AND refund_price = 0
+        <if test="null!=startTime and null!=endTime">
+            and to_days(create_time) >= to_days(#{startTime})
+            and to_days(create_time) &lt;= to_days(#{endTime})
+        </if>
+        <if test="null!=storeId and storeId!=''">
+            and store_id=#{storeId}
+        </if>
+        <if test="null==storeId or storeId==''">
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})
+        </if>
+        GROUP BY
+        DATE_FORMAT( create_time, '%m-%d' )
+        ) t
+        GROUP BY
+        `key`
+        ORDER BY
+        `key`
+
+
+<!--        select DATE_FORMAT(create_time, '%m-%d') `key`,ifnull(sum(pay_price+group_pay_price),0) `value`-->
+<!--        from member_order_info-->
+<!--        where deleted = 0-->
+<!--        and status in (0, 1, 2)-->
+<!--        <if test="null!=startTime and null!=endTime">-->
+<!--            and to_days(create_time) >= to_days(#{startTime})-->
+<!--            and to_days(create_time) &lt;= to_days(#{endTime})-->
+<!--        </if>-->
+<!--        <if test="null!=storeId and storeId!=''">-->
+<!--            and store_id=#{storeId}-->
+<!--        </if>-->
+<!--        <if test="null==storeId or storeId==''">-->
+<!--            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})-->
+<!--        </if>-->
+<!--        group by DATE_FORMAT(create_time, '%m-%d')-->
+<!--        order by create_time asc-->
 
     </select>
     <select id="getOrderStatistics" resultType="com.yanzu.framework.common.core.KeyValue">
