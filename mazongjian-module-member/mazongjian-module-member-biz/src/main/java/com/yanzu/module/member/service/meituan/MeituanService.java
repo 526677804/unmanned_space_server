@@ -151,7 +151,7 @@ public class MeituanService {
         JSONArray paymentDetail = data.getJSONArray("payment_detail");
         for (Object obj : paymentDetail) {
             JSONObject jsonObj = (JSONObject) obj;
-            Integer type = jsonObj.getInt("type");
+            Integer type = jsonObj.getInt("amount_type");
             if (type == 10 || type == 23 || type == 25 || type == 26) {
                 respVO.setPayAmount(jsonObj.getBigDecimal("amount"));
                 break;
