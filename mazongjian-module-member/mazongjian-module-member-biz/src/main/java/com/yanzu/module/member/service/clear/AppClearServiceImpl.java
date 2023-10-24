@@ -117,7 +117,7 @@ public class AppClearServiceImpl implements AppClearService {
         ClearInfoDO clearInfoDO = clearInfoMapper.selectById(id);
         //只有是自己的订单 才能开门
         if (clearInfoDO.getUserId().compareTo(getLoginUserId()) == 0) {
-            deviceService.openRoomDoor(clearInfoDO.getRoomId(), null, 3);
+            deviceService.openStoreDoor(clearInfoDO.getStoreId(), null, 3);
         } else {
             throw exception(CLEAR_OPEN_DOOR_ERROR);
         }

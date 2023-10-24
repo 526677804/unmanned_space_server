@@ -6,13 +6,11 @@ import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
-import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.user.AppUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -166,17 +164,17 @@ public class AppUserController {
 //    @Autowired
 //    WxPayService wxPayService;
 
-    @Autowired
-    private DouyinService douyinService;
+//    @Autowired
+//    private DouyinService douyinService;
 
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
 //        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-//        refundRequest.setOutTradeNo("2023092805192951");
-//        refundRequest.setOutRefundNo("TK2023092805192951" );
-//        refundRequest.setTotalFee(1000);
-//        refundRequest.setRefundFee(1000);
+//        refundRequest.setOutTradeNo("2023102323361547");
+//        refundRequest.setOutRefundNo("TK2023102323361547" );
+//        refundRequest.setTotalFee(6000);
+//        refundRequest.setRefundFee(6000);
 //        wxPayService.refund(refundRequest);
         //https://v.douyin.com/idjm1eB4/
 //        DouyinPrepareRespVO prepare = douyinService.prepare("https://v.douyin.com/idjm1eB4/");
