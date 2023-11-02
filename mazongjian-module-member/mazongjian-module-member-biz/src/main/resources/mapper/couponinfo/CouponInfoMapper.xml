@@ -21,19 +21,13 @@
         c.*,o.order_id,s.store_name
         FROM
         member_coupon_info c
-        left join member_store_info s ON s.store_id=c.store_ids
+        left join member_store_info s ON s.store_id=c.store_id
         left join member_order_info o ON o.coupon_id=c.coupon_id  and o.status!=3
         WHERE
         c.deleted =0 and c.user_id=#{userId}
         <if test="null != status">
             and c.status=#{status}
         </if>
-<!--        <if test="null != roomType">-->
-<!--            and (c.room_type=#{roomType} or c.room_type is null)-->
-<!--        </if>-->
-<!--        <if test="null != storeId and storeId != null">-->
-<!--            and #{storeId} in (c.store_ids)-->
-<!--        </if>-->
     </select>
     <select id="getByUserIdAndCouponId"
             resultType="com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO">
@@ -47,26 +41,28 @@
     <select id="getCouponPageByAdmin"
             resultType="com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO">
         SELECT
-        c.*
+        c.*,s.store_name
         FROM
         member_coupon_info c
+        left join member_store_info s ON s.store_id=c.store_id
         WHERE
         c.deleted =0 and c.user_id is null
-          and CONCAT(',', c.store_ids, ',') REGEXP #{storeIds}
+        and c.store_id IN (${storeIds})
         <if test="null != reqVO">
             <if test="null != reqVO.type and reqVO.type != ''">
                 and c.type=#{reqVO.type}
             </if>
             <if test="null != reqVO.storeId and reqVO.storeId != ''">
-                and #{reqVO.storeId} in (c.store_ids)
+                and c.store_id=#{reqVO.storeId}
             </if>
         </if>
         order by c.price asc
     </select>
     <select id="getCouponDetail"
             resultType="com.yanzu.module.member.controller.app.manager.vo.AppCouponDetailRespVO">
-        SELECT c.*
+        SELECT c.*, s.store_name
         FROM member_coupon_info c
+                 left join member_store_info s ON c.store_id = s.store_id
         WHERE c.deleted = 0
           and c.coupon_id = #{couponId}
 

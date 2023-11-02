@@ -33,7 +33,11 @@ public class OrderRenewalReqVO {
     @NotNull(message = "支付方式不能为空")
     private Integer payType;
 
-    @Schema(description = "订单号 微信支付时必传", requiredMode = Schema.RequiredMode.REQUIRED, example = "20231123123123123123")
+    @Schema(description = "订单号 预下单接口返回的", requiredMode = Schema.RequiredMode.REQUIRED, example = "")
+    @NotNull(message = "订单号不能为空")
     private String orderNo;
+
+    @Schema(description = "下单的userId", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long userId;
 
 }

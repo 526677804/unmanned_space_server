@@ -38,9 +38,8 @@ public class AppCallbackController {
     @Resource
     private DeviceService deviceService;
 
-
     @PostMapping("/wxpay/update")
-    @Operation(summary = "更新订单为已支付")
+    @Operation(summary = "微信支付回调")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     @Parameter(name = "xmlData")
@@ -50,7 +49,7 @@ public class AppCallbackController {
 
 
     @PostMapping("/wxpay/urefunded")
-    @Operation(summary = "更新订单为已退款")
+    @Operation(summary = "微信退款回调")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public String updateOrderRefunded(@RequestParam(required = false) Map<String, String> params,

@@ -12,6 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.infra.api.file.FileApi;
+import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.convert.franchiseinfo.FranchiseInfoConvert;
@@ -56,14 +57,17 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.util.servlet.ServletUtils.getClientIP;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getTenantId;
-import static com.yanzu.module.member.enums.AppEnum.PAY_ORDER_REDIS_SET;
+import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
@@ -248,14 +252,6 @@ public class AppUserServiceImpl implements AppUserService {
         List<AppUserMoneyBillRespVO> list = userMoneyBillMapper.getBalancePage(reqVO);
         PageInfo<AppUserMoneyBillRespVO> page = new PageInfo<>(list);
         return new PageResult<>(page.getList(), page.getTotal());
-//        // 构建分页对象
-//        IPage<AppUserMoneyBillRespVO> page = new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-//        // 调用查询方法
-//        IPage<AppUserMoneyBillRespVO> roadSectionIPage = userMoneyBillMapper.selectPage(page, reqVO);
-//        // 从分页对象中取出查询结果
-//        List<RoadSectionVO> records = roadSectionIPage.getRecords();
-
-//        return null;
     }
 
     @Override
@@ -266,11 +262,11 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     @Transactional
     public void eechargeBalance(AppRechargeBalanceReqVO reqVO) {
-        if (ObjectUtils.isEmpty(reqVO.getUserId()) || reqVO.getUserId().compareTo(0L) == 0) {
-            reqVO.setUserId(getLoginUserId());
-        }
+        String redisKey = String.format(WX_PAY_ORDER, reqVO.getOrderNo());
         // 从redis查询 存在的情况才处理，防止重复验证充值
-        if (redisTemplate.opsForSet().isMember(PAY_ORDER_REDIS_SET, reqVO.getOrderNo())) {
+        if (redisTemplate.hasKey(redisKey)) {
+            //如果已经验证了 就移除这个订单号
+            redisTemplate.opsForSet().remove(redisKey);
             //有支付单号，验证支付是否成功
             PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
             if (ObjectUtils.isEmpty(payOrderDO)) {
@@ -327,9 +323,7 @@ public class AppUserServiceImpl implements AppUserService {
                 userMoneyBillMapper.insert(userMoneyBillDO);
             }
             storeUserMapper.updateById(storeUserDO);
-            //如果已经验证成功了 就移除这个订单号
-            redisTemplate.opsForSet().remove(PAY_ORDER_REDIS_SET, reqVO.getOrderNo());
-            workWxService.sendRechargeMsg(reqVO.getStoreId(), getLoginUserId(), addMoney, gift);
+            workWxService.sendRechargeMsg(reqVO.getStoreId(), reqVO.getUserId(), addMoney, gift);
         } else {
             throw exception(ORDER_WEIXIN_PAY_ERROR);
         }
@@ -384,8 +378,10 @@ public class AppUserServiceImpl implements AppUserService {
                         f1 = price.compareTo(x.getMinUsePrice()) >= 0;
                     }
                     //判断门店
-                    boolean f2 = x.getStoreIds().equals(String.valueOf(roomInfoDO.getStoreId()));
-                    x.setEnable(f1 && f2);
+                    boolean f2 = x.getStoreId().compareTo(roomInfoDO.getStoreId()) == 0;
+                    //判断房间类型的限制
+                    boolean f3 = ObjectUtils.isEmpty(x.getRoomType()) || x.getRoomType().compareTo(roomInfoDO.getType()) == 0;
+                    x.setEnable(f1 && f2 && f3);
                 });
             }
             return new PageResult<>(list.stream().sorted((x1, x2) -> String.valueOf(x2.isEnable()).compareTo(String.valueOf(x1.isEnable()))).collect(Collectors.toList()), Long.valueOf(list.size()));
@@ -403,9 +399,7 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     @Transactional
     public WxPayOrderRespVO preRechargeBalance(AppPreRechargeBalanceReqVO reqVO) {
-        if (ObjectUtils.isEmpty(reqVO.getUserId()) || reqVO.getUserId().compareTo(0L) == 0) {
-            reqVO.setUserId(getLoginUserId());
-        }
+        reqVO.setUserId(getLoginUserId());
         String orderNo = getOrderNo();
         WxPayOrderRespVO respVO = new WxPayOrderRespVO();
         respVO.setPrice(reqVO.getPrice());
@@ -443,7 +437,8 @@ public class AppUserServiceImpl implements AppUserService {
             }
             payOrderService.create(reqVO.getUserId(), orderNo, reqVO.getStoreId(), "余额充值订单", reqVO.getPrice());
             //把订单号存到redis 如果已经充值了 就移除这个订单号
-            redisTemplate.opsForSet().add(PAY_ORDER_REDIS_SET, orderNo);
+            String redisKey = String.format(WX_PAY_ORDER, orderNo);
+            redisTemplate.opsForValue().set(redisKey, new WxPayOrderInfo(orderNo, reqVO.getUserId(), reqVO.getStoreId(), reqVO.getPrice()), 1, TimeUnit.DAYS);
         }
         return respVO;
     }

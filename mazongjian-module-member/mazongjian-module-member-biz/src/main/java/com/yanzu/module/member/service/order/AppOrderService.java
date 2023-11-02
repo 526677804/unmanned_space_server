@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface AppOrderService {
 
-    WxPayOrderRespVO preOrder(Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, Long ignoreOrderId, boolean wxpay);
+    WxPayOrderRespVO preOrder(Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, Long ignoreOrderId, boolean tongxiao, boolean wxpay);
 
     BigDecimal mathPrice(BigDecimal price, Date startTime, Date endTime, CouponInfoDO couponInfoDO);
 
@@ -38,7 +38,6 @@ public interface AppOrderService {
     List<AppDiscountRulesRespVO> getDiscountRules(Long storeId);
 
     void executeMeituanRefreshTokenJob();
-
 
 
 //    void closeOrder(Long orderId);

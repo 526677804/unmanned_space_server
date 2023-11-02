@@ -17,7 +17,8 @@ import javax.validation.constraints.NotNull;
 @ToString(callSuper = true)
 public class AppRechargeBalanceReqVO {
 
-    @Schema(description = "用户Id 管理员代为充值的时候才传", example = "1")
+    @Schema(description = "用户Id", example = "1")
+    @NotNull(message = "用户Id不能为空")
     private Long userId;
 
 

@@ -98,6 +98,7 @@ public class AppManagerController {
         appMangerService.renew(reqVO);
         return success(true);
     }
+
     @PostMapping("/getClearManagerPage")
     @Operation(summary = "管理员获取保洁任务分页列表")
     @PreAuthenticated
@@ -155,6 +156,7 @@ public class AppManagerController {
         appMangerService.saveAdminUser(reqVO);
         return success(true);
     }
+
     @PostMapping("/deleteClearUser/{storeId}/{userId}")
     @Operation(summary = "管理员删除保洁员")
     @PreAuthenticated
@@ -203,6 +205,22 @@ public class AppManagerController {
     @PreAuthenticated
     public CommonResult<PageResult<AppWithdrawalPageRespVO>> getWithdrawalPage(@RequestBody @Validated AppWithdrawalPageReqVO reqVO) {
         return success(appMangerService.getWithdrawalPage(reqVO));
+    }
+
+    @PostMapping("/useGroupNo")
+    @Operation(summary = "管理员团购验券")
+    @PreAuthenticated
+    public CommonResult<Boolean> useGroupNo(@RequestBody @Validated AppUseGroupNoReqVO reqVO) {
+        appMangerService.useGroupNo(reqVO);
+        return success(true);
+    }
+
+    @PostMapping("/changeOrderUser")
+    @Operation(summary = "管理员修改订单用户")
+    @PreAuthenticated
+    public CommonResult<Boolean> changeOrderUser(@RequestBody @Validated AppChangeOrderUserReqVO reqVO) {
+        appMangerService.changeOrderUser(reqVO);
+        return success(true);
     }
 
 

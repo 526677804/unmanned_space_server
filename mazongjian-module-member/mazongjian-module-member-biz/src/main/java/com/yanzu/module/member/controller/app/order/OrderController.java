@@ -58,16 +58,16 @@ public class OrderController {
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
         }
-        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, reqVO.getOrderId(), true));
+        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), true));
     }
 
-    @GetMapping("/queryWxOrder/{orderNo}")
+    /*@GetMapping("/queryWxOrder/{orderNo}")
     @Operation(summary = "主动查询微信支付订单是否支付", description = "下单使用")
     @PreAuthenticated
     @Parameter(name = "orderNo")
     public CommonResult<Boolean> queryWxOrder(@PathVariable("orderNo") String orderNo) {
         return success(appOrderService.queryWxOrder(orderNo));
-    }
+    }*/
 
 
     @PostMapping("/save")
@@ -86,7 +86,6 @@ public class OrderController {
         appOrderService.renew(reqVO);
         return success(true);
     }
-
 
     @PostMapping("/getOrderPage")
     @Operation(summary = "获取订单列表分页", description = "我的订单使用")

@@ -54,6 +54,10 @@ public class OrderInfoDO extends BaseDO {
      */
     private Date endTime;
     /**
+     * 是否通宵
+     */
+    private Boolean nightLong;
+    /**
      * 订单价格
      */
     private BigDecimal price;

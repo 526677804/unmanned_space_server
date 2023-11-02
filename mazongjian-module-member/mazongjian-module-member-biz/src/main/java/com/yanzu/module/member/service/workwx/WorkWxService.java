@@ -1,6 +1,7 @@
 package com.yanzu.module.member.service.workwx;
 
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
+import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -18,9 +19,13 @@ public interface WorkWxService {
 
     void sendRechargeMsg(Long storeId, Long userId, BigDecimal price, BigDecimal giftPrice);
 
-    void sendGiftCouponMsg(Long storeId, Long userId, String couponName);
+    void sendGiftCouponMsg(Long storeId, Long userId, String couponName, Integer roomType);
 
     void sendMeiTuanScopeMsg(Long storeId);
 
     void sendChangeRoomMsg(Long storeId, String orderNo, Date startTime, Date endTime, String oldRoomName, String newRoomName, Long userId);
+
+    void sendOrderChangeUserMsg(Long storeId, String orderNo, Long roomId, Date startTime, Date endTime, Long userId);
+
+    void sendUseGroupNoMsg(GroupPayInfoDO groupPayInfoDO, Long userId);
 }

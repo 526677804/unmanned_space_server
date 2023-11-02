@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -22,7 +23,7 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CouponInfoDO extends BaseDO {
+public class CouponInfoDO extends BaseDO implements Serializable {
 
     /**
      * 优惠券ID
@@ -54,9 +55,9 @@ public class CouponInfoDO extends BaseDO {
      */
     private BigDecimal price;
     /**
-     * 使用门店Ids
+     * 使用门店Id
      */
-    private String storeIds;
+    private Long storeId;
     /**
      * 使用房间类型
      */

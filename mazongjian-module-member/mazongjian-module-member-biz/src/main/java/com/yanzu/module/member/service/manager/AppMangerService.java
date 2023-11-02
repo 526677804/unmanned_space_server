@@ -72,4 +72,9 @@ public interface AppMangerService {
     PageResult<AppClearPageRespVO> getClearManagerPage(AppClearPageReqVO reqVO);
 
     void cancelOrder(Long orderId);
+
+    void useGroupNo(AppUseGroupNoReqVO reqVO);
+
+    void changeOrderUser(AppChangeOrderUserReqVO reqVO);
+
 }

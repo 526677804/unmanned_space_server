@@ -2,7 +2,6 @@ package com.yanzu.module.member.dal.mysql.orderinfo;
 
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
-import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
@@ -37,8 +36,6 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     OrderInfoAppRespVO getOrderInfo(@Param("orderId") Long orderId, @Param("userId") Long userId);
 
-    AppBusinessStatisticsRespVO getBusinessStatistics(AppChartDataReqVO reqVO);
-
     List<KeyValue<String, BigDecimal>> getRevenueStatistics(AppChartDataReqVO reqVO);
 
     List<KeyValue<String, Integer>> getOrderStatistics(AppChartDataReqVO reqVO);
@@ -66,8 +63,9 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     Integer getWxTotalMoney(List<String> storeIds);
 
-    BigDecimal getGroupTotalMoney(List<String> storeIds);
-
     Integer countByStoreIds(List<String> storeIds);
 
+    int changeOrderUser(@Param("orderId") Long orderId, @Param("userId") Long userId);
+
+    Integer getCountOrder(AppChartDataReqVO reqVO);
 }

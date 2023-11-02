@@ -23,6 +23,7 @@ import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
 import com.yanzu.module.member.dal.dataobject.clearbill.ClearBillDO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
+import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
@@ -33,6 +34,7 @@ import com.yanzu.module.member.dal.dataobject.userwithdrawal.UserWithdrawalDO;
 import com.yanzu.module.member.dal.mysql.clearbill.ClearBillMapper;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
+import com.yanzu.module.member.dal.mysql.groupPay.GroupPayInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
@@ -43,6 +45,10 @@ import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.dal.mysql.userwithdrawal.UserWithdrawalMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.douyin.DouyinService;
+import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
+import com.yanzu.module.member.service.meituan.MeituanService;
+import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import com.yanzu.module.member.service.workwx.WorkWxService;
@@ -115,6 +121,15 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Resource
     private WxPayService wxPayService;
 
+    @Resource
+    private MeituanService meituanService;
+
+    @Resource
+    private DouyinService douyinService;
+
+    @Resource
+    private GroupPayInfoMapper groupPayInfoMapper;
+
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
         // 校验用户类型
@@ -169,34 +184,16 @@ public class AppMangerServiceImpl implements AppMangerService {
         // 校验用户类型
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //仅限查看当前用户所在门店的优惠券列表
-        String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining("|"));
+        String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining(","));
         PageHelper.startPage(reqVO.getPageNo(), reqVO.getPageSize());
-        List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPageByAdmin(reqVO, "," + storeIds + ",");
+        List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPageByAdmin(reqVO, storeIds);
         PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
-        //再查一下门店名称
-        if (!CollectionUtils.isEmpty(page.getList())) {
-            Set<String> storeIdSet = Arrays.stream(page.getList().stream().map(x -> x.getStoreIds()).collect(Collectors.joining(",")).split(",")).collect(Collectors.toSet());
-            List<KeyValue<Long, String>> storeNameInfo = storeInfoService.getNameMapByIds(storeIdSet);
-            Map<String, String> storeNameMap = new HashMap<>(storeNameInfo.size());
-            storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
-            //依次设置名称
-            page.getList().stream().forEach(x -> {
-                x.setStoreName(Arrays.stream(x.getStoreIds().split(",")).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
-            });
-        }
         return new PageResult<>(page.getList(), page.getTotal());
     }
 
     @Override
     public AppCouponDetailRespVO getCouponDetail(Long couponId) {
         AppCouponDetailRespVO couponDetail = couponInfoMapper.getCouponDetail(couponId);
-        if (!ObjectUtils.isEmpty(couponDetail)) {
-            Set<String> collect = Arrays.stream(couponDetail.getStoreIds().split(",")).collect(Collectors.toSet());
-            List<KeyValue<Long, String>> storeNameInfo = storeInfoService.getNameMapByIds(collect);
-            Map<String, String> storeNameMap = new HashMap<>(storeNameInfo.size());
-            storeNameInfo.forEach(x -> storeNameMap.put(String.valueOf(x.getKey()), x.getValue()));
-            couponDetail.setStoreName(Arrays.stream(couponDetail.getStoreIds().split(",")).map(y -> storeNameMap.get(y)).collect(Collectors.joining(",")));
-        }
         return couponDetail;
     }
 
@@ -205,18 +202,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     public void saveCouponDetail(AppCouponDetailReqVO reqVO) {
         Long loginUserId = getLoginUserId();
         //检查权限
-        storeInfoService.checkPermisson(Long.valueOf(reqVO.getStoreIds()), loginUserId, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
-//        List<String> storeIds = storeUserMapper.getIdsByUserId(loginUserId);
-//        if (ObjectUtils.isEmpty(reqVO.getStoreIds())) {
-//            reqVO.setStoreIds(storeIds.stream().collect(Collectors.joining(",")));
-//        } else {
-//            String[] split = reqVO.getStoreIds().split(",");
-//            for (String s : split) {
-//                if (!storeIds.contains(s)) {
-//                    throw exception(CHECK_STORE_PROMISSION_ERROR);
-//                }
-//            }
-//        }
+        storeInfoService.checkPermisson(reqVO.getStoreId(), loginUserId, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
         //保存进去
         if (ObjectUtils.isEmpty(reqVO.getCouponId())) {
             CouponInfoDO couponInfoDO = new CouponInfoDO();
@@ -225,9 +211,9 @@ public class AppMangerServiceImpl implements AppMangerService {
             couponInfoDO.setCreateUserId(loginUserId);
             couponInfoDO.setPrice(reqVO.getPrice());
             couponInfoDO.setMinUsePrice(reqVO.getMinUsePrice());
-            couponInfoDO.setStoreIds(reqVO.getStoreIds());
+            couponInfoDO.setStoreId(reqVO.getStoreId());
             couponInfoDO.setExpriceTime(reqVO.getExpriceTime());
-//        couponInfoDO.setRoomType(reqVO.getRoomType());
+            couponInfoDO.setRoomType(reqVO.getRoomType());
             couponInfoMapper.insert(couponInfoDO);
         } else {
             CouponInfoDO couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
@@ -239,9 +225,9 @@ public class AppMangerServiceImpl implements AppMangerService {
             couponInfoDO.setCreateUserId(loginUserId);
             couponInfoDO.setPrice(reqVO.getPrice());
             couponInfoDO.setMinUsePrice(reqVO.getMinUsePrice());
-            couponInfoDO.setStoreIds(reqVO.getStoreIds());
+            couponInfoDO.setStoreId(reqVO.getStoreId());
             couponInfoDO.setExpriceTime(reqVO.getExpriceTime());
-//        couponInfoDO.setRoomType(reqVO.getRoomType());
+            couponInfoDO.setRoomType(reqVO.getRoomType());
             couponInfoMapper.updateById(couponInfoDO);
         }
 
@@ -433,7 +419,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         List<String> storeIds = storeUserMapper.getIdsByUserId(getLoginUserId());
         Integer wxTotalMoney = orderInfoMapper.getWxTotalMoney(storeIds);
         BigDecimal wxMoney = new BigDecimal(String.valueOf(wxTotalMoney / 100.0));
-        BigDecimal groupTotalMoney = orderInfoMapper.getGroupTotalMoney(storeIds);
+        BigDecimal groupTotalMoney = groupPayInfoMapper.getGroupTotalMoney(storeIds);
         Integer count = orderInfoMapper.countByStoreIds(storeIds);
         AppRevenueChartRespVO respVO = new AppRevenueChartRespVO();
         respVO.setTotalMoney(wxMoney.add(groupTotalMoney));
@@ -449,11 +435,17 @@ public class AppMangerServiceImpl implements AppMangerService {
         //仅管理员使用
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
-        AppBusinessStatisticsRespVO businessStatistics = orderInfoMapper.getBusinessStatistics(reqVO);
-        //查收入
+        //订单数
+        Integer orderNum = orderInfoMapper.getCountOrder(reqVO);
+        //团购收入
+        BigDecimal tgMoney = groupPayInfoMapper.getBusinessStatistics(reqVO);
+        //微信支付收入
         BigDecimal money = payOrderMapper.getMoney(reqVO);
-        businessStatistics.setMoney(money);
-        return businessStatistics;
+        AppBusinessStatisticsRespVO respVO = new AppBusinessStatisticsRespVO();
+        respVO.setOrderCount(orderNum);
+        respVO.setTgMoney(tgMoney);
+        respVO.setMoney(money);
+        return respVO;
     }
 
     @Override
@@ -525,7 +517,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             newCouponInfoDO.setUserId(reqVO.getUserId());
             couponInfoMapper.insert(newCouponInfoDO);
             //异步发送微信通知
-            workWxService.sendGiftCouponMsg(Long.valueOf(couponInfoDO.getStoreIds()), reqVO.getUserId(), couponInfoDO.getCouponName());
+            workWxService.sendGiftCouponMsg(Long.valueOf(couponInfoDO.getStoreId()), reqVO.getUserId(), couponInfoDO.getCouponName(), couponInfoDO.getRoomType());
         }
 
     }
@@ -614,7 +606,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
         //管理员下单  不需要算钱了，但是要校验时间冲突
         Date endTime = DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes());
-        appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), endTime, null, reqVO.getOrderId(), false);
+        appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), endTime, null, reqVO.getOrderId(), false, false);
         //增加订单的结束时间
         orderInfoDO.setEndTime(DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes()));
         //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
@@ -649,10 +641,10 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Transactional
     public void cancelOrder(Long orderId) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
-        Long loginUserId = getLoginUserId();
+        Long userId = orderInfoDO.getUserId();
         CouponInfoDO couponInfoDO = null;
         //权限检查
-        storeInfoService.checkPermisson(orderInfoDO.getStoreId(), loginUserId, null, AppEnum.member_user_type.ADMIN.getValue());
+        storeInfoService.checkPermisson(orderInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         boolean cancelFlag = true;//默认允许取消订单
         //对于管理员 未开始和进行中的订单  都可以取消  不判断下单时间  但是团购下单的不退团购券
         cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
@@ -683,7 +675,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                             throw exception(USER_WEIXIN_PAY_REFUND_ERROR);
                         }
                     } else {
-                        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(loginUserId, orderInfoDO.getStoreId());
+                        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, orderInfoDO.getStoreId());
                         //余额退款  把支付记录找出来
                         List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
                         if (!org.springframework.util.CollectionUtils.isEmpty(userMoneyBillDOList)) {
@@ -741,7 +733,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(orderInfoDO.getRoomId());
             if (countCurrentByRoomId > 0) {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), orderInfoDO.getRoomId());
-            } else if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId(),orderId) > 0) {
+            } else if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId(), orderId) > 0) {
                 // 如果当前有订单进行 就改成进行中
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
             } else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
@@ -753,9 +745,73 @@ public class AppMangerServiceImpl implements AppMangerService {
             }
             orderInfoMapper.updateById(orderInfoDO);
             //异步发送微信通知
-            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
+            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), userId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
         } else {
             throw exception(ADMIN_ORDER_CANCEL_OPRATION_ERROR);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void useGroupNo(AppUseGroupNoReqVO reqVO) {
+        reqVO.setGroupPayNo(reqVO.getGroupPayNo().replaceAll(" ",""));
+        GroupPayInfoDO groupPayInfoDO = new GroupPayInfoDO();
+        groupPayInfoDO.setGroupNo(reqVO.getGroupPayNo());
+        groupPayInfoDO.setStoreId(reqVO.getStoreId());
+        //判断是抖音券还是美团券
+        if (reqVO.getGroupPayNo().length() <= 12) {
+            //美团券
+            groupPayInfoDO.setGroupPayType(AppEnum.member_group_no_type.MEITUAN.getValue());
+            MeituanPrepareRespVO prepare = meituanService.prepare(reqVO.getStoreId(), reqVO.getGroupPayNo());
+            groupPayInfoDO.setGroupName(prepare.getTitle());
+            groupPayInfoDO.setGroupPayPrice(prepare.getPayAmount());
+            groupPayInfoDO.setGroupShopId(prepare.getDealId());
+            //使用
+            meituanService.consume(reqVO.getStoreId(), getLoginUserId(), reqVO.getGroupPayNo());
+        } else {
+            //抖音券
+            groupPayInfoDO.setGroupPayType(AppEnum.member_group_no_type.DOUYIN.getValue());
+            DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
+            groupPayInfoDO.setGroupName(prepare.getTitle());
+            groupPayInfoDO.setGroupPayPrice(BigDecimal.valueOf(prepare.getPayAmount() / 100.0));
+            //检验通过  把团购券给使用了
+            String verify = douyinService.verify(reqVO.getStoreId(), getLoginUserId(), prepare);
+            //记录下来
+            groupPayInfoDO.setGroupNo(verify);
+        }
+        groupPayInfoMapper.insert(groupPayInfoDO);
+        //设置回去  主要是避免发送微信通知的时候编码识别不了
+        groupPayInfoDO.setGroupNo(reqVO.getGroupPayNo());
+        //异步发送微信通知
+        workWxService.sendUseGroupNoMsg(groupPayInfoDO,getLoginUserId());
+    }
+
+    @Override
+    @Transactional
+    public void changeOrderUser(AppChangeOrderUserReqVO reqVO) {
+        MemberUserDO memberUserDO = memberUserMapper.selectByMobile(reqVO.getMobile());
+        if (ObjectUtils.isEmpty(memberUserDO)) {
+            throw exception(USER_NOT_EXISTS);
+        }
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(reqVO.getOrderId());
+        if (!ObjectUtils.isEmpty(orderInfoDO)) {
+            //权限检查
+            storeInfoService.checkPermisson(orderInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+            if (orderInfoDO.getUserId().compareTo(memberUserDO.getId()) == 0) {
+                return;
+            }
+            //订单状态检查
+            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
+                    || orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 1) {
+                //只有未开始和进行中可以更换用户  其他状态也没有更换的必要
+                orderInfoMapper.changeOrderUser(reqVO.getOrderId(), memberUserDO.getId());
+                //发送企业微信通知
+                workWxService.sendOrderChangeUserMsg(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getRoomId()
+                        , orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), memberUserDO.getId());
+            } else {
+                throw exception(CLEAR_ORDER_STATUS_ERROR);
+            }
+
         }
     }
 }

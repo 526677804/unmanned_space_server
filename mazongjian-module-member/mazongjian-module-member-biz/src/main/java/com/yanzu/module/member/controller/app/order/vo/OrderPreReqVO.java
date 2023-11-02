@@ -50,5 +50,7 @@ public class OrderPreReqVO {
     private Date endTime;
 
 
+    @Schema(description = "是否通宵局", example = "false")
+    private boolean nightLong;
 
 }

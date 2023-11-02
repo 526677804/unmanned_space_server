@@ -147,16 +147,19 @@ public class MeituanService {
         MeituanPrepareRespVO respVO = new MeituanPrepareRespVO();
         respVO.setTitle(data.getStr("deal_title"));
         respVO.setDealId(data.getStr("deal_id"));
+        respVO.setPayAmount(data.getBigDecimal("deal_price"));
         //10，23，25，26表示用户支付；其余为平台优惠
         JSONArray paymentDetail = data.getJSONArray("payment_detail");
-        for (Object obj : paymentDetail) {
-            JSONObject jsonObj = (JSONObject) obj;
-            Integer type = jsonObj.getInt("amount_type");
-            if (type == 10 || type == 23 || type == 25 || type == 26) {
-                respVO.setPayAmount(jsonObj.getBigDecimal("amount"));
-                break;
-            }
-        }
+        JSONObject amount = (JSONObject) paymentDetail.get(0);
+        respVO.setPayAmount(amount.getBigDecimal("amount"));
+//        for (Object obj : paymentDetail) {
+//            JSONObject jsonObj = (JSONObject) obj;
+//            Integer type = jsonObj.getInt("amount_type");
+//            if (type == 10 || type == 23 || type == 25 || type == 26) {
+//                respVO.setPayAmount(jsonObj.getBigDecimal("amount"));
+//                break;
+//            }
+//        }
         return respVO;
     }
 
@@ -205,10 +208,10 @@ public class MeituanService {
         JSONObject reverseconsume = meituanClient.reverseconsume(reqVO);
         log.info("美团退款:{}", reverseconsume);
         if (reverseconsume.getInt("code") != 200) {
-            if (reverseconsume.getInt("code") == 1029) {
-                throw exception(GROUP_NO_CANCEL_TIMEOUT_ERROR);
-            }
-            throw exception(GROUP_NO_CHECK_ERROR);
+//            if (reverseconsume.getInt("code") == 1029) {
+//                throw exception(GROUP_NO_CANCEL_TIMEOUT_ERROR);
+//            }
+            throw exception(GROUP_NO_CANCEL_TIMEOUT_ERROR);
         }
         return (JSONObject) reverseconsume.getJSONArray("data").get(0);
     }

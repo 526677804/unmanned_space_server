@@ -8,8 +8,11 @@ import lombok.Getter;
 public class AppEnum {
 
 
+//    @Getter
+//    public static final String PAY_ORDER_REDIS_SET = "PAY_ORDER_REDIS_SET";
+
     @Getter
-    public static final String PAY_ORDER_REDIS_SET = "PAY_ORDER_REDIS_SET";
+    public static final String WX_PAY_ORDER = "WX_PAY_ORDER_%s";
 
     @Getter
     public static final String DOUYIN_CLIENT_TOKEN = "DOUYIN_CLIENT_TOKEN";
@@ -143,13 +146,15 @@ public class AppEnum {
     public enum order_status {
         //未开始	0
         //进行中	1
-        //已完成 	2
+        //已完成 2
         //已取消	3
+        //待支付	4
 
         PENDING(0),
         START(1),
         FINISH(2),
         CANCEL(3),
+        UNPAID(4),
         ;
 
 

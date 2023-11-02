@@ -2,28 +2,24 @@ package com.yanzu.module.member.service.payorder;
 
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
-import com.github.binarywang.wxpay.bean.result.BaseWxPayResult;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
-import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
-import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
-import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
-import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
+import com.yanzu.module.member.service.user.AppUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -45,9 +41,9 @@ public class PayOrderServiceImpl implements PayOrderService {
     @Autowired
     private WxPayService wxPayService;
     @Resource
-    private OrderInfoMapper orderInfoMapper;
+    private AppUserService appUserService;
     @Resource
-    private AppUserMapper appUserMapper;
+    private RedisTemplate redisTemplate;
 
     @Override
     public PayOrderDO getPayOrder(Long id) {
@@ -78,31 +74,49 @@ public class PayOrderServiceImpl implements PayOrderService {
     @Transactional
     public String updateOrder(String xmlData) {
         log.info("收到微信支付回调body：{}", xmlData);
-//        log.info("收到微信支付回调params：{}",params);
         try {
-//            String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
             WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(xmlData);
             // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
             String orderNo = result.getOutTradeNo();
-            PayOrderDO orderDO = payOrderMapper.getByOrderNo(orderNo);
-            if (!ObjectUtils.isEmpty(orderDO) && !orderDO.getPayStatus()) {
-                String totalFee = BaseWxPayResult.fenToYuan(result.getTotalFee());
-                String tradeNo = result.getTransactionId();
-                if (String.valueOf(orderDO.getPrice()).equals(totalFee)) {
-                    return WxPayNotifyResponse.fail("实际支付金额与订单应支付金额不匹配！");
-                }
-//                //如果收到的回调  里面的订单号，是不存在的  就返还用户余额（注意续费订单问题）
-//                OrderInfoDO orderInfoDO = orderInfoMapper.getByOrderNo(orderNo);
-//                if (ObjectUtils.isEmpty(orderInfoDO)) {
-//                    AppUserDO appUserDO = appUserMapper.selectById(orderDO.getUserId());
-//                    appUserDO.setBalance(appUserDO.getBalance().add(new BigDecimal(orderDO.getPrice() / 100.0)));
+//            PayOrderDO orderDO = payOrderMapper.getByOrderNo(orderNo);
+//            if(ObjectUtils.isEmpty(orderDO))
+//            if (!ObjectUtils.isEmpty(orderDO) && !orderDO.getPayStatus()) {
+//                String totalFee = BaseWxPayResult.fenToYuan(result.getTotalFee());
+//                String tradeNo = result.getTransactionId();
+//                if (String.valueOf(orderDO.getPrice()).equals(totalFee)) {
+//                    return WxPayNotifyResponse.fail("实际支付金额与订单应支付金额不匹配！");
 //                }
-                orderDO.setPayOrderNo(tradeNo);
-                orderDO.setPayStatus(true);
-                orderDO.setPayTime(LocalDateTime.now());
-                payOrderMapper.updateById(orderDO);
+              /*  //从redis中取出
+                String redisKey = String.format(WX_PAY_ORDER, orderNo);
+                if (redisTemplate.hasKey(redisKey)) {
+                    WxPayOrderInfo wxPayOrderInfo = (WxPayOrderInfo) redisTemplate.opsForValue().get(redisKey);
+                    //没有房间id 就是充值
+                    if (ObjectUtils.isEmpty(wxPayOrderInfo.getRoomId())) {
+                        //充值
+                        AppRechargeBalanceReqVO reqVO = new AppRechargeBalanceReqVO();
+                        reqVO.setUserId(wxPayOrderInfo.getUserId());
+                        reqVO.setOrderNo(orderNo);
+                        reqVO.setStoreId(wxPayOrderInfo.getStoreId());
+                        reqVO.setPrice(orderDO.getPrice());
+                        appUserService.eechargeBalance(reqVO);
+                    } else {
+                        //没有IgnoreOrderId 就是下单 (因为续费的时候要传当前订单 用来跳过时间冲突判断)
+                        if (ObjectUtils.isEmpty(wxPayOrderInfo.getIgnoreOrderId())) {
+                            //下单
 
-            }
+                        }else{
+                            //续费
+
+                        }
+                    }
+                }*/
+                //这里不用更新 因为在checkWxOrder时有更新
+//                orderDO.setPayOrderNo(tradeNo);
+//                orderDO.setPayStatus(true);
+//                orderDO.setPayTime(LocalDateTime.now());
+//                payOrderMapper.updateById(orderDO);
+
+//            }
             return WxPayNotifyResponse.success("处理成功!");
         } catch (Exception e) {
             e.printStackTrace();
@@ -140,6 +154,7 @@ public class PayOrderServiceImpl implements PayOrderService {
         log.info("检查订单：{}，微信支付状态！", orderNo);
         try {
             WxPayOrderQueryResult wxPayOrderQueryResult = wxPayService.queryOrder(null, orderNo);
+            String tradeNo = wxPayOrderQueryResult.getTransactionId();
             String tradeState = wxPayOrderQueryResult.getTradeState();
             String returnCode = wxPayOrderQueryResult.getReturnCode();
             Integer cashFee = wxPayOrderQueryResult.getTotalFee();//支付金额
@@ -159,6 +174,7 @@ public class PayOrderServiceImpl implements PayOrderService {
                 if (!payOrderDO.getPayStatus()) {
                     //更新状态、支付订单号 和支付金额
                     payOrderDO.setPrice(cashFee);
+                    payOrderDO.setPayOrderNo(tradeNo);
                     payOrderDO.setPayOrderNo(transactionId);
                     payOrderDO.setPayStatus(true);
                     payOrderDO.setPayTime(LocalDateTime.now());
@@ -171,6 +187,5 @@ public class PayOrderServiceImpl implements PayOrderService {
             return false;
         }
     }
-
 
 }

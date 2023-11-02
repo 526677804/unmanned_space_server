@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
+import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
@@ -218,7 +219,7 @@ public class WorkWxServiceImpl implements WorkWxService {
 
     @Override
     @Async
-    public void sendGiftCouponMsg(Long storeId, Long userId, String couponName) {
+    public void sendGiftCouponMsg(Long storeId, Long userId, String couponName, Integer roomType) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
         if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
@@ -231,6 +232,7 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
         sb.append(">用户手机号:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
         sb.append(">适用门店:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">适用包间:<font color=\"warning\">").append(ObjectUtils.isEmpty(roomType) ? "不限" : getRoomTypeStr(roomType)).append("</font>\n");
         sb.append(">卡券名称:<font color=\"warning\">").append(couponName).append("</font>\n");
         sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         JSONObject msg = new JSONObject();
@@ -263,6 +265,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     }
 
     @Override
+    @Async
     public void sendChangeRoomMsg(Long storeId, String orderNo, Date startTime, Date endTime, String oldRoomName, String newRoomName, Long userId) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
@@ -290,6 +293,62 @@ public class WorkWxServiceImpl implements WorkWxService {
         workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
     }
 
+    @Override
+    @Async
+    public void sendOrderChangeUserMsg(Long storeId, String orderNo, Long roomId, Date startTime, Date endTime, Long userId) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+        String roomName = roomInfoMapper.getNameById(roomId);
+        //异步发送微信通知
+        StringBuffer sb = new StringBuffer();
+        sb.append("管理员订单转移通知\n");
+        sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
+        sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(startTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(endTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">目标昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">用户手机号:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+    }
+
+    @Override
+    @Async
+    public void sendUseGroupNoMsg(GroupPayInfoDO groupPayInfoDO, Long userId) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(groupPayInfoDO.getStoreId());
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+        log.info("发送订单消息到配置的企业微信");
+        StringBuffer sb = new StringBuffer();
+        sb.append("管理员团购验券通知\n");
+        sb.append(">券码名称:<font color=\"warning\">").append(groupPayInfoDO.getGroupName()).append("</font>\n");
+        sb.append(">券码编号:<font color=\"warning\">").append(groupPayInfoDO.getGroupNo()).append("</font>\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">团购平台:<font color=\"warning\">").append(getGroupPayTypeStr(groupPayInfoDO.getGroupPayType())).append("</font>\n");
+        sb.append(">销售价格:<font color=\"warning\">").append(groupPayInfoDO.getGroupPayPrice()).append("</font>\n");
+        sb.append(">管理员:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+    }
+
     private String getPayTypeStr(Integer type) {
         switch (type) {
             case 1:
@@ -298,6 +357,18 @@ public class WorkWxServiceImpl implements WorkWxService {
                 return "余额";
             case 3:
                 return "团购";
+        }
+        return "";
+    }
+
+    private String getRoomTypeStr(Integer type) {
+        switch (type) {
+            case 1:
+                return "小包";
+            case 2:
+                return "中包";
+            case 3:
+                return "大包";
         }
         return "";
     }
