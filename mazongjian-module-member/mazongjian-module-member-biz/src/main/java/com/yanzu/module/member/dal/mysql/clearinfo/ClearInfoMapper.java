@@ -4,6 +4,7 @@ import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearInfoRespVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
+import com.yanzu.module.member.controller.app.manager.vo.AppSettlementClearUserReqVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -36,4 +37,7 @@ public interface ClearInfoMapper extends BaseMapperX<ClearInfoDO> {
 
     int countCurrentByRoomId(Long roomId);
 
+    List<Long> getSettlementList(AppSettlementClearUserReqVO reqVO);
+
+    int settlementByIds(List<Long> ids);
 }

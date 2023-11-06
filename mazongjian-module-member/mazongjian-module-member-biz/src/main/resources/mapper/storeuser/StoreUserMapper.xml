@@ -103,11 +103,13 @@
         from member_store_user su
                  left join member_user m
                            ON su.user_id = m.id
-                 left join member_clear_bill cb ON cb.user_id = su.user_id
                  left join member_store_info s ON s.store_id = su.store_id
         where su.store_id in (${storeIds})
           and su.deleted = 0
           and su.type = 14
+            <if test="null!=storeId and storeId!=''">
+                AND su.store_id=#{storeId}
+            </if>
 
 
     </select>

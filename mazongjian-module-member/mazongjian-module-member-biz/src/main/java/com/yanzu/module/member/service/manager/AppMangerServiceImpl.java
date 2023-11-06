@@ -311,29 +311,22 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     @Transactional
     public void settlementClearUser(AppSettlementClearUserReqVO reqVO) {
-        // 校验用户类型
-        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
-
-        //查询出本用户的门店权限
-        String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining(","));
-        //查询出保洁员在这些门店下   有没有可结算的订单
-        List<ClearInfoDO> list = clearInfoMapper.getByUserIdAndStatusAndStoreIds(reqVO.getUserId(), AppEnum.clear_info_status.FINISH.getValue(), storeIds);
+        // 校验权限
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        //查询出保洁员在门店下 有没有可结算的订单
+        List<Long> list = clearInfoMapper.getSettlementList(reqVO);
         if (CollectionUtils.isEmpty(list)) {
             throw exception(NOT_FINISH_CLEAR_IONF_ERROR);
         }
         //有订单 则结算
-        list.forEach(x -> {
-            x.setStatus(AppEnum.clear_info_status.JIESUAN.getValue());
-            x.setSettlementTime(LocalDateTime.now());
-        });
-        clearInfoMapper.updateBatch(list);
+        clearInfoMapper.settlementByIds(list);
         //增加结算记录
         ClearBillDO clearBillDO = new ClearBillDO();
         clearBillDO.setUserId(reqVO.getUserId());
         clearBillDO.setMoney(reqVO.getMoney());
         clearBillDO.setStoreId(reqVO.getStoreId());
         clearBillDO.setOrderNum(list.size());
-        clearBillDO.setOrderIds(list.stream().map(x -> x.getOrderId().toString()).collect(Collectors.joining(",")));
+        clearBillDO.setOrderIds(list.stream().map(x -> x.toString()).collect(Collectors.joining(",")));
         clearBillMapper.insert(clearBillDO);
     }
 
@@ -754,7 +747,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     @Transactional
     public void useGroupNo(AppUseGroupNoReqVO reqVO) {
-        reqVO.setGroupPayNo(reqVO.getGroupPayNo().replaceAll(" ",""));
+        reqVO.setGroupPayNo(reqVO.getGroupPayNo().replaceAll(" ", ""));
         GroupPayInfoDO groupPayInfoDO = new GroupPayInfoDO();
         groupPayInfoDO.setGroupNo(reqVO.getGroupPayNo());
         groupPayInfoDO.setStoreId(reqVO.getStoreId());
@@ -783,7 +776,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         //设置回去  主要是避免发送微信通知的时候编码识别不了
         groupPayInfoDO.setGroupNo(reqVO.getGroupPayNo());
         //异步发送微信通知
-        workWxService.sendUseGroupNoMsg(groupPayInfoDO,getLoginUserId());
+        workWxService.sendUseGroupNoMsg(groupPayInfoDO, getLoginUserId());
     }
 
     @Override

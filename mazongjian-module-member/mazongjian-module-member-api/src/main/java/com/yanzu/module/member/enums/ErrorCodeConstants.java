@@ -69,7 +69,7 @@ public interface ErrorCodeConstants {
     ErrorCode CHECK_STORE_PROMISSION_ERROR = new ErrorCode(1004004050, "选择的门店中包含未授权的门店！");
     ErrorCode MEMBER_PAGE_PARAM_ERROR = new ErrorCode(1004004060, "参数错误！");
     ErrorCode ORDER_PAGE_PARAM_ERROR = new ErrorCode(1004004061, "参数错误！");
-    ErrorCode NOT_FINISH_CLEAR_IONF_ERROR = new ErrorCode(1004004062, "当前门店权限下没有可结算的订单！");
+    ErrorCode NOT_FINISH_CLEAR_IONF_ERROR = new ErrorCode(1004004062, "该条件下没有可结算的订单！");
     ErrorCode CLEAR_INFO_STATUS_OPRATION_ERROR = new ErrorCode(1004004063, "当前状态不能操作！");
     ErrorCode CLEAR_IMAGE_NOT_FOUNT_ERROR = new ErrorCode(1004004064, "请上传清洁完成的图片！");
     ErrorCode CLEAR_OPEN_DOOR_ERROR = new ErrorCode(1004004065, "只有状态为已开始的任务才能操作开门，请先开始任务！");
