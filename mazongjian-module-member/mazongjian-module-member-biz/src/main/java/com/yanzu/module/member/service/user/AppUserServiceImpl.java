@@ -266,7 +266,7 @@ public class AppUserServiceImpl implements AppUserService {
         // 从redis查询 存在的情况才处理，防止重复验证充值
         if (redisTemplate.hasKey(redisKey)) {
             //如果已经验证了 就移除这个订单号
-            redisTemplate.opsForSet().remove(redisKey);
+            redisTemplate.delete(redisKey);
             //有支付单号，验证支付是否成功
             PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
             if (ObjectUtils.isEmpty(payOrderDO)) {

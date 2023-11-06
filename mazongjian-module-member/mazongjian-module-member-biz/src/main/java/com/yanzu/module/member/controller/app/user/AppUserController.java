@@ -171,10 +171,10 @@ public class AppUserController {
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
 //        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-//        refundRequest.setOutTradeNo("2023102323361547");
-//        refundRequest.setOutRefundNo("TK2023102323361547" );
-//        refundRequest.setTotalFee(6000);
-//        refundRequest.setRefundFee(6000);
+//        refundRequest.setOutTradeNo("CZ2023110588532254");
+//        refundRequest.setOutRefundNo("CZ2023110588532254" );
+//        refundRequest.setTotalFee(10000);
+//        refundRequest.setRefundFee(10000);
 //        wxPayService.refund(refundRequest);
         //https://v.douyin.com/idjm1eB4/
 //        DouyinPrepareRespVO prepare = douyinService.prepare("https://v.douyin.com/idjm1eB4/");
