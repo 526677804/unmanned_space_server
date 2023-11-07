@@ -6,13 +6,21 @@ import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.tenant.core.util.TenantUtils;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
+import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
+import com.yanzu.module.member.controller.app.order.vo.OrderSaveReqVO;
+import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
+import com.yanzu.module.member.controller.app.user.vo.AppRechargeBalanceReqVO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
+import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +32,8 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
 
 /**
  * 支付订单 Service 实现类
@@ -41,7 +51,11 @@ public class PayOrderServiceImpl implements PayOrderService {
     @Autowired
     private WxPayService wxPayService;
     @Resource
+    @Lazy // 延迟，避免循环依赖报错
     private AppUserService appUserService;
+    @Resource
+    @Lazy // 延迟，避免循环依赖报错
+    private AppOrderService appOrderService;
     @Resource
     private RedisTemplate redisTemplate;
 
@@ -71,53 +85,60 @@ public class PayOrderServiceImpl implements PayOrderService {
     }
 
     @Override
-    @Transactional
+//    @Transactional
     public String updateOrder(String xmlData) {
         log.info("收到微信支付回调body：{}", xmlData);
         try {
             WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(xmlData);
             // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
             String orderNo = result.getOutTradeNo();
-//            PayOrderDO orderDO = payOrderMapper.getByOrderNo(orderNo);
-//            if(ObjectUtils.isEmpty(orderDO))
-//            if (!ObjectUtils.isEmpty(orderDO) && !orderDO.getPayStatus()) {
-//                String totalFee = BaseWxPayResult.fenToYuan(result.getTotalFee());
-//                String tradeNo = result.getTransactionId();
-//                if (String.valueOf(orderDO.getPrice()).equals(totalFee)) {
-//                    return WxPayNotifyResponse.fail("实际支付金额与订单应支付金额不匹配！");
-//                }
-              /*  //从redis中取出
+            PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderNo);
+            if (!ObjectUtils.isEmpty(payOrderDO)) {
+                //从redis中取出
                 String redisKey = String.format(WX_PAY_ORDER, orderNo);
                 if (redisTemplate.hasKey(redisKey)) {
                     WxPayOrderInfo wxPayOrderInfo = (WxPayOrderInfo) redisTemplate.opsForValue().get(redisKey);
-                    //没有房间id 就是充值
-                    if (ObjectUtils.isEmpty(wxPayOrderInfo.getRoomId())) {
-                        //充值
-                        AppRechargeBalanceReqVO reqVO = new AppRechargeBalanceReqVO();
-                        reqVO.setUserId(wxPayOrderInfo.getUserId());
-                        reqVO.setOrderNo(orderNo);
-                        reqVO.setStoreId(wxPayOrderInfo.getStoreId());
-                        reqVO.setPrice(orderDO.getPrice());
-                        appUserService.eechargeBalance(reqVO);
-                    } else {
-                        //没有IgnoreOrderId 就是下单 (因为续费的时候要传当前订单 用来跳过时间冲突判断)
-                        if (ObjectUtils.isEmpty(wxPayOrderInfo.getIgnoreOrderId())) {
-                            //下单
-
-                        }else{
-                            //续费
-
+                    //模拟租户 处理支付订单
+                    TenantUtils.execute(wxPayOrderInfo.getTenantId(), () -> {
+                        //没有房间id 就是充值
+                        if (ObjectUtils.isEmpty(wxPayOrderInfo.getRoomId())) {
+                            //充值
+                            AppRechargeBalanceReqVO reqVO = new AppRechargeBalanceReqVO();
+                            reqVO.setUserId(wxPayOrderInfo.getUserId());
+                            reqVO.setOrderNo(orderNo);
+                            reqVO.setStoreId(wxPayOrderInfo.getStoreId());
+                            reqVO.setPrice(payOrderDO.getPrice());
+                            appUserService.eechargeBalance(reqVO);
+                        } else {
+                            //没有IgnoreOrderId 就是下单 (因为续费的时候要传当前订单 用来跳过时间冲突判断)
+                            if (ObjectUtils.isEmpty(wxPayOrderInfo.getIgnoreOrderId())) {
+                                //下单
+                                OrderSaveReqVO reqVO = new OrderSaveReqVO();
+                                reqVO.setOrderNo(orderNo);
+                                reqVO.setPayType(AppEnum.order_pay_type.WEIXIN.getValue());
+                                reqVO.setCouponId(wxPayOrderInfo.getCouponId());
+                                reqVO.setNightLong(wxPayOrderInfo.getNightLong());
+                                reqVO.setRoomId(wxPayOrderInfo.getRoomId());
+                                reqVO.setStartTime(wxPayOrderInfo.getStartTime());
+                                reqVO.setEndTime(wxPayOrderInfo.getEndTime());
+                                reqVO.setUserId(wxPayOrderInfo.getUserId());
+                                appOrderService.save(reqVO);
+                            } else {
+                                //续费
+                                OrderRenewalReqVO reqVO = new OrderRenewalReqVO();
+                                reqVO.setOrderId(wxPayOrderInfo.getIgnoreOrderId());
+                                reqVO.setOrderNo(wxPayOrderInfo.getOrderNo());
+                                reqVO.setEndTime(wxPayOrderInfo.getEndTime());
+                                reqVO.setPayType(AppEnum.order_pay_type.WEIXIN.getValue());
+                                reqVO.setUserId(wxPayOrderInfo.getUserId());
+                                appOrderService.renew(reqVO);
+                            }
                         }
-                    }
-                }*/
-                //这里不用更新 因为在checkWxOrder时有更新
-//                orderDO.setPayOrderNo(tradeNo);
-//                orderDO.setPayStatus(true);
-//                orderDO.setPayTime(LocalDateTime.now());
-//                payOrderMapper.updateById(orderDO);
+                    });
 
-//            }
-            return WxPayNotifyResponse.success("处理成功!");
+                }
+            }
+            return WxPayNotifyResponse.success("接收成功!");
         } catch (Exception e) {
             e.printStackTrace();
             log.error("微信回调结果异常,异常原因{}", e.getMessage());
@@ -128,9 +149,9 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     public String updateOrderRefunded(Map<String, String> params, String body) {
-        log.info("收到微信支付回调body：{}", body);
-        log.info("收到微信支付回调params：{}", params);
-        return WxPayNotifyResponse.success("处理成功!");
+        log.info("收到微信支付退款回调body：{}", body);
+        log.info("收到微信支付退款回调params：{}", params);
+        return WxPayNotifyResponse.success("接收成功!");
     }
 
     @Override
@@ -161,10 +182,7 @@ public class PayOrderServiceImpl implements PayOrderService {
             String resultCode = wxPayOrderQueryResult.getResultCode();
             log.info("tradeState:{},returnCode:{},resultCode:{}", tradeState, returnCode, resultCode);
             //判断支付结果
-            boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
-            if (!ObjectUtils.isEmpty(price) && cashFee.compareTo(price) != 0) {
-                flag = false;
-            }
+            boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS") && price.compareTo(cashFee) == 0;
             log.info("订单：{}，微信支付状态为：{}", orderNo, flag);
             if (flag) {
                 String transactionId = wxPayOrderQueryResult.getTransactionId();//微信支付订单号

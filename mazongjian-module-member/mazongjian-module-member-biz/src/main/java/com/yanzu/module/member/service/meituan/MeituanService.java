@@ -99,6 +99,7 @@ public class MeituanService {
     }
 
     public String refreshToken(Long storeId, String refreshToken) {
+        log.info("刷新美团授权，storeId：{}", storeId);
         MeituanRefreshTokenReqVO reqVO = new MeituanRefreshTokenReqVO();
         reqVO.setApp_key(appKey);
         reqVO.setApp_secret(secret);
@@ -108,11 +109,13 @@ public class MeituanService {
         if (result.getInt("code").intValue() == 200) {
             StoreMeituanInfoDO storeMeituanInfoDO = storeMeituanInfoMapper.getByStoreId(storeId);
             String access_token = result.getStr("access_token");
+            String refresh_token = result.getStr("access_token");
             Integer remain_refresh_count = result.getInt("remain_refresh_count");
             Long expires_in = result.getLong("expires_in");
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime expiresDate = now.plusSeconds(expires_in);
             storeMeituanInfoDO.setAccessToken(access_token);
+            storeMeituanInfoDO.setRefreshToken(refresh_token);
             storeMeituanInfoDO.setRemainRefreshCount(remain_refresh_count);
             storeMeituanInfoDO.setExpiresIn(expiresDate);
             storeMeituanInfoMapper.updateById(storeMeituanInfoDO);

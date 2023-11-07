@@ -11,6 +11,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.annotations.VisibleForTesting;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
@@ -281,7 +282,7 @@ public class AppUserServiceImpl implements AppUserService {
                 throw exception(ORDER_WEIXIN_PAY_ERROR);
             }
             //增加账户余额
-            BigDecimal addMoney = new BigDecimal(reqVO.getPrice() / 100.0);
+            BigDecimal addMoney = new BigDecimal(String.valueOf(reqVO.getPrice() / 100.0));
             if (addMoney.compareTo(BigDecimal.ZERO) <= 0) {
                 throw exception(OPRATION_ERROR);
             }
@@ -438,7 +439,8 @@ public class AppUserServiceImpl implements AppUserService {
             payOrderService.create(reqVO.getUserId(), orderNo, reqVO.getStoreId(), "余额充值订单", reqVO.getPrice());
             //把订单号存到redis 如果已经充值了 就移除这个订单号
             String redisKey = String.format(WX_PAY_ORDER, orderNo);
-            redisTemplate.opsForValue().set(redisKey, new WxPayOrderInfo(orderNo, reqVO.getUserId(), reqVO.getStoreId(), reqVO.getPrice()), 1, TimeUnit.DAYS);
+            redisTemplate.opsForValue().set(redisKey, new WxPayOrderInfo(orderNo, reqVO.getUserId(), TenantContextHolder.getTenantId()
+                    , reqVO.getStoreId(), reqVO.getPrice()), 1, TimeUnit.DAYS);
         }
         return respVO;
     }

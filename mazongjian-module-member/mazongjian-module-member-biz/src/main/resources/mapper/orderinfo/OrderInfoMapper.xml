@@ -177,7 +177,7 @@
             and o.user_id=#{userId}
             and o.end_time>now()
             and o.status in (0,1)
-            order by o.end_time asc
+            order by o.create_time DESC
             limit 1
         </if>
     </select>

@@ -7,7 +7,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
@@ -63,7 +62,10 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -579,9 +581,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         //权限校验
 //        Long userId = getLoginUserId();
         storeInfoService.checkPermisson(orderInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
-        if (reqVO.getMinutes() < 1 || reqVO.getMinutes() % 30 != 0) {
-            throw exception(TIME_UNIT_ERROR);
-        }
+//        if (reqVO.getMinutes() < 1 || reqVO.getMinutes() % 30 != 0) {
+//            throw exception(TIME_UNIT_ERROR);
+//        }
         //未开始=0 进行中=1  已完成=2  已取消=3
         switch (orderInfoDO.getStatus()) {
             case 0:
@@ -598,10 +600,10 @@ public class AppMangerServiceImpl implements AppMangerService {
         }
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
         //管理员下单  不需要算钱了，但是要校验时间冲突
-        Date endTime = DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes());
+        Date endTime = reqVO.getEndTime();
         appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), endTime, null, reqVO.getOrderId(), false, false);
         //增加订单的结束时间
-        orderInfoDO.setEndTime(DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes()));
+        orderInfoDO.setEndTime(endTime);
         //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());

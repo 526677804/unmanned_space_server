@@ -71,7 +71,6 @@ public class AppCallbackController {
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public void weimenjin(@RequestBody(required = false) JSONObject body) {
         log.info("收到智能硬件回调:{}",body);
-        System.out.println(body);
          deviceService.weimenjin(body);
     }
 }

@@ -256,14 +256,16 @@ public class DeviceServiceImpl implements DeviceService {
         if (body.getString("cmd").equals("notify")) {
             JSONObject info = body.getJSONObject("info");
             Integer state = info.getInteger("state");
-            if (state == 1) {
-                //上线
-                log.info("智能硬件，上线，设备:{}", device_sn);
-                deviceInfoMapper.updateStatusBySN(device_sn, 1);
-            } else {
-                //下线
-                log.info("智能硬件，离线，设备:{}", device_sn);
-                deviceInfoMapper.updateStatusBySN(device_sn, 0);
+            if(!ObjectUtils.isEmpty(state)){
+                if (state == 1) {
+                    //上线
+                    log.info("智能硬件，上线，设备:{}", device_sn);
+                    deviceInfoMapper.updateStatusBySN(device_sn, 1);
+                } else {
+                    //下线
+                    log.info("智能硬件，离线，设备:{}", device_sn);
+                    deviceInfoMapper.updateStatusBySN(device_sn, 0);
+                }
             }
         }
 
