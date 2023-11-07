@@ -914,6 +914,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                     reqVO.setCertificate_id(split[1]);
                     douyinService.cancel(reqVO);
                 }
+                //删除团购券记录
+                groupPayInfoMapper.deleteById(groupPayInfoDO.getId());
             } else {
                 //实际支付金额为0  就不退款了
                 if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {

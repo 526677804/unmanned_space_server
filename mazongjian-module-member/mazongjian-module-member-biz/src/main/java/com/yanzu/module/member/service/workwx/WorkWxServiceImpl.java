@@ -23,6 +23,8 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
+
 @Service
 @Validated
 @Slf4j
@@ -90,7 +92,11 @@ public class WorkWxServiceImpl implements WorkWxService {
         String roomName = roomInfoMapper.getNameById(roomId);
         log.info("发送订单消息到配置的企业微信");
         StringBuffer sb = new StringBuffer();
-        sb.append("订单取消通知\n");
+        if (userId.compareTo(getLoginUserId()) == 0) {
+            sb.append("订单取消通知\n");
+        }else{
+            sb.append("管理员取消订单通知\n");
+        }
         sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
         sb.append(">手机号码:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
         sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
