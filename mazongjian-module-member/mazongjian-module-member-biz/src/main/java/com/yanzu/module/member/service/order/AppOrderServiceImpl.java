@@ -720,7 +720,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 //        Date endTime = DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes());
         WxPayOrderRespVO wxPayOrderRespVO = preOrder(orderInfoDO.getRoomId(), startTime, endTime, null, reqVO.getOrderId(), false, false);
         //订单价格
-        BigDecimal totalPrice = BigDecimal.valueOf(wxPayOrderRespVO.getPrice() / 100.0);
+        BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
         switch (reqVO.getPayType()) {
             case 1://微信
                 // 从redis查询 存在的情况才处理，防止重复验证充值
@@ -776,8 +776,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                             storeUserMapper.updateById(storeUserDO);
                         }
                         //增加付款记录
-                        addPayRecord(roomInfoDO.getStoreId(), userBalance, AppEnum.user_money_bill_type.PAY.getValue(), 1, BigDecimal.ZERO, null, "订单：" + orderInfoDO.getOrderNo() + ",续费", userId);
                         addPayRecord(roomInfoDO.getStoreId(), subtract, AppEnum.user_money_bill_type.PAY.getValue(), 2, storeUserDO.getGiftBalance(), null, "订单：" + orderInfoDO.getOrderNo() + ",续费", userId);
+                        if (userBalance.compareTo(BigDecimal.ZERO) > 0) {
+                            addPayRecord(roomInfoDO.getStoreId(), userBalance, AppEnum.user_money_bill_type.PAY.getValue(), 1, BigDecimal.ZERO, null, "订单：" + orderInfoDO.getOrderNo() + ",续费", userId);
+                        }
                     } else {
                         throw exception(MEMBER_BALANCE_MIN_ERROR);
                     }
