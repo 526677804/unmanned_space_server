@@ -740,7 +740,8 @@ public class AppMangerServiceImpl implements AppMangerService {
             }
             orderInfoMapper.updateById(orderInfoDO);
             //异步发送微信通知
-            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), userId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
+            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), userId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice()
+                    , couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo(), true);
         } else {
             throw exception(ADMIN_ORDER_CANCEL_OPRATION_ERROR);
         }

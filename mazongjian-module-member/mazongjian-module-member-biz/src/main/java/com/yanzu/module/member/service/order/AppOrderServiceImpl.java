@@ -647,9 +647,12 @@ public class AppOrderServiceImpl implements AppOrderService {
             groupPayInfoDO.setOrderId(orderInfoDO.getOrderId());
             groupPayInfoDO.setGroupPayType(groupType);
             groupPayInfoMapper.insert(groupPayInfoDO);
+            //异步发送微信通知
+            workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), groupPrice, couponInfoDO, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
+        } else {
+            //异步发送微信通知
+            workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), totalPrice, couponInfoDO, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         }
-        //异步发送微信通知
-        workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), totalPrice, couponInfoDO, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         return orderInfoDO.getOrderId();
 
     }
@@ -1011,7 +1014,8 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             orderInfoMapper.updateById(orderInfoDO);
             //异步发送微信通知
-            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
+            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice()
+                    , couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo(), false);
         } else {
             throw exception(ORDER_CANCEL_OPRATION_ERROR);
         }
