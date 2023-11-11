@@ -1,16 +1,19 @@
 package com.yanzu.module.member.service.meituan;
 
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
 import com.yanzu.module.member.forest.MeituanClient;
 import com.yanzu.module.member.service.meituan.vo.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.math3.fraction.BigFraction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -149,19 +152,33 @@ public class MeituanService {
         MeituanPrepareRespVO respVO = new MeituanPrepareRespVO();
         respVO.setTitle(data.getStr("deal_title"));
         respVO.setDealId(data.getStr("deal_id"));
-        respVO.setPayAmount(data.getBigDecimal("deal_price"));
-        //10，23，25，26表示用户支付；其余为平台优惠
-//        JSONArray paymentDetail = data.getJSONArray("payment_detail");
+        //商品的售价
+        BigDecimal dealPrice = data.getBigDecimal("deal_price");
+        JSONArray paymentDetail = data.getJSONArray("payment_detail");
+        //用户实际支付的价格
+        BigDecimal payPrice = BigDecimal.ZERO;
+        //所有优惠的价格
+        BigDecimal coupinPrice = BigDecimal.ZERO;
+        for (Object obj : paymentDetail) {
+            // amount_type = 10，23，25，26时(表示用户支付)，amount = 实际支付金额
+            //amount_type = 8，17，18，22，24或其他时（表示商家优惠，其余为平台优惠），amount = 优惠的金额
+            JSONObject jsonObj = (JSONObject) obj;
+            Integer type = jsonObj.getInt("amount_type");
+            if (type == 10 || type == 23 || type == 25 || type == 26) {
+                payPrice = payPrice.add(jsonObj.getBigDecimal("amount"));
+            } else if (type == 8 || type == 17 || type == 18 || type == 22 || type == 24) {
+                coupinPrice = coupinPrice.add(jsonObj.getBigDecimal("amount"));
+            }
+        }
+        //总价
+        BigDecimal totalPrice = payPrice.add(coupinPrice);
+        //数量
+        BigDecimal saleCount = totalPrice.divide(dealPrice);
+        //计算客户这张券的实际单价
+        BigDecimal price = payPrice.divide(saleCount);
+        respVO.setPayAmount(price);
 //        JSONObject amount = (JSONObject) paymentDetail.get(0);
 //        respVO.setPayAmount(amount.getBigDecimal("amount"));
-//        for (Object obj : paymentDetail) {
-//            JSONObject jsonObj = (JSONObject) obj;
-//            Integer type = jsonObj.getInt("amount_type");
-//            if (type == 10 || type == 23 || type == 25 || type == 26) {
-//                respVO.setPayAmount(jsonObj.getBigDecimal("amount"));
-//                break;
-//            }
-//        }
         return respVO;
     }
 

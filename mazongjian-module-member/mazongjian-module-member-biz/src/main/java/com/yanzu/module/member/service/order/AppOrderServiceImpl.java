@@ -708,11 +708,13 @@ public class AppOrderServiceImpl implements AppOrderService {
             case 1:
                 //未开始和进行中  直接续费
                 break;
-            case 2://已完成，5分钟内可以续费，超过5分钟只能重新下单
-                if (((new Date().getTime() - orderInfoDO.getEndTime().getTime()) / 1000 / 60) > 5) {
-                    throw exception(ORDER_STATUS_FINISH_OPRATION_ERROR);
-                }
-                break;
+            case 2:
+                //完成 不支持续费
+                throw exception(ORDER_STATUS_FINISH_OPRATION_ERROR);
+                //已完成，5分钟内可以续费，超过5分钟只能重新下单
+//                if (((new Date().getTime() - orderInfoDO.getEndTime().getTime()) / 1000 / 60) > 5) {
+//                    throw exception(ORDER_STATUS_FINISH_OPRATION_ERROR);
+//                }
             case 3://已经取消，不能续费
                 throw exception(ORDER_STATUS_CANCEL_OPRATION_ERROR);
         }

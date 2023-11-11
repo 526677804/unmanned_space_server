@@ -42,7 +42,7 @@ public interface ErrorCodeConstants {
     ErrorCode MEMBER_BALANCE_MIN_ERROR = new ErrorCode(1004004014, "账户余额不足，请充值后重试！");
     ErrorCode ORDER_WEIXIN_PAY_ERROR = new ErrorCode(1004004015, "微信支付失败！");
     ErrorCode ORDER_STATUS_CANCEL_OPRATION_ERROR = new ErrorCode(1004004016, "订单已取消，不支持续费！");
-    ErrorCode ORDER_STATUS_FINISH_OPRATION_ERROR = new ErrorCode(1004004017, "订单完成已超过5分钟，不支持续费！请重新下单");
+    ErrorCode ORDER_STATUS_FINISH_OPRATION_ERROR = new ErrorCode(1004004017, "订单已结束，不支持续费！请重新下单");
     ErrorCode ORDER_START_OPRATION_ERROR = new ErrorCode(1004004018, "无法开始消费当前订单！");
     ErrorCode ORDER_CANCEL_OPRATION_ERROR = new ErrorCode(1004004019, "无法取消当前订单！仅允许取消下单不超过5分钟，且状态为未开始、进行中的订单！");
     ErrorCode ADMIN_ORDER_CANCEL_OPRATION_ERROR = new ErrorCode(1004004020, "无法取消当前订单!管理员仅允许取消状态为未开始、进行中的订单！");

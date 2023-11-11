@@ -1,5 +1,7 @@
 package com.yanzu.module.member.controller.app.user;
 
+import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
+import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
@@ -11,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -171,10 +174,10 @@ public class AppUserController {
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
 //        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-//        refundRequest.setOutTradeNo("CZ2023110588532254");
-//        refundRequest.setOutRefundNo("CZ2023110588532254" );
-//        refundRequest.setTotalFee(10000);
-//        refundRequest.setRefundFee(10000);
+//        refundRequest.setOutTradeNo("2023111113910920");
+//        refundRequest.setOutRefundNo("2023111113910920" );
+//        refundRequest.setTotalFee(600);
+//        refundRequest.setRefundFee(600);
 //        wxPayService.refund(refundRequest);
         //https://v.douyin.com/idjm1eB4/
 //        DouyinPrepareRespVO prepare = douyinService.prepare("https://v.douyin.com/idjm1eB4/");
