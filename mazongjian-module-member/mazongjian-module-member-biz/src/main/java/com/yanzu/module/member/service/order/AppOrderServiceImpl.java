@@ -499,7 +499,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //下单之前仍然再检查一遍 并计算出应付总金额
         WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, null, reqVO.getNightLong(), false);
-        BigDecimal totalPrice = BigDecimal.valueOf(wxPayOrderRespVO.getPrice() / 100.0);
+        BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
         //判断是否有填团购券  先预声明一些团购要的字段
         String groupName = "";
         String groupShopId = "";
@@ -529,7 +529,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 groupType = AppEnum.member_group_no_type.DOUYIN.getValue();
                 DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
                 groupName = prepare.getTitle();
-                groupPrice = BigDecimal.valueOf(prepare.getPayAmount() / 100.0);
+                groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
                 checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong());
                 //检验通过  把团购券给使用了
                 String verify = douyinService.verify(roomInfoDO.getStoreId(), reqVO.getUserId(), prepare);

@@ -769,7 +769,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             groupPayInfoDO.setGroupPayType(AppEnum.member_group_no_type.DOUYIN.getValue());
             DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
             groupPayInfoDO.setGroupName(prepare.getTitle());
-            groupPayInfoDO.setGroupPayPrice(BigDecimal.valueOf(prepare.getPayAmount() / 100.0));
+            groupPayInfoDO.setGroupPayPrice(new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0)));
             //检验通过  把团购券给使用了
             String verify = douyinService.verify(reqVO.getStoreId(), getLoginUserId(), prepare);
             //记录下来

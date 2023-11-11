@@ -180,10 +180,10 @@ public class PayOrderServiceImpl implements PayOrderService {
             String returnCode = wxPayOrderQueryResult.getReturnCode();
             Integer cashFee = wxPayOrderQueryResult.getTotalFee();//支付金额
             String resultCode = wxPayOrderQueryResult.getResultCode();
-            log.info("tradeState:{},returnCode:{},resultCode:{}", tradeState, returnCode, resultCode);
+            log.info("tradeState:{},returnCode:{},resultCode:{},", tradeState, returnCode, resultCode);
             //判断支付结果
-            boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS") && price.compareTo(cashFee) == 0;
-            log.info("订单：{}，微信支付状态为：{}", orderNo, flag);
+            boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
+            log.info("订单：{}，微信支付状态为：{},cashFee:{}", orderNo, flag, cashFee);
             if (flag) {
                 String transactionId = wxPayOrderQueryResult.getTransactionId();//微信支付订单号
                 String outTradeNo = wxPayOrderQueryResult.getOutTradeNo();//商家订单号
