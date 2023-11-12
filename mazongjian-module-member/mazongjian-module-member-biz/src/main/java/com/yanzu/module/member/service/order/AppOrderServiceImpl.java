@@ -565,9 +565,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                                 throw exception(ORDER_WEIXIN_PAY_ERROR);
                             }
                             //对比实际支付的价格 和订单应支付的价格是否一致
-                            if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
-                                throw exception(ORDER_WEIXIN_PAY_ERROR);
-                            }
+//                            if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
+//                                throw exception(ORDER_WEIXIN_PAY_ERROR);
+//                            }
                         } else {
                             throw exception(ORDER_WEIXIN_PAY_ERROR);
                         }
@@ -743,9 +743,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
                     }
                     //对比实际支付的价格 和订单应支付的价格是否一致
-                    if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
-                        throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    }
+//                    if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
+//                        throw exception(ORDER_WEIXIN_PAY_ERROR);
+//                    }
                     //是微信支付的  增加已支付的金额
                     orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
                 } else {

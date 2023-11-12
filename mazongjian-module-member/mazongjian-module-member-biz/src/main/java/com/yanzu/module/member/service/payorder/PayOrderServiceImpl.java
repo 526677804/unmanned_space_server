@@ -199,8 +199,9 @@ public class PayOrderServiceImpl implements PayOrderService {
                     payOrderDO.setPayTime(LocalDateTime.now());
                     payOrderMapper.updateById(payOrderDO);
                 }
+                return true;
             }
-            return flag;
+            return false;
         } catch (WxPayException e) {
 //            throw new RuntimeException(e);
             return false;
