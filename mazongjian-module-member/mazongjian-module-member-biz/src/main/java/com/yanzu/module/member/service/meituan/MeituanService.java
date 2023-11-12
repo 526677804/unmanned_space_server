@@ -166,7 +166,7 @@ public class MeituanService {
             Integer type = jsonObj.getInt("amount_type");
             if (type == 10 || type == 23 || type == 25 || type == 26) {
                 payPrice = payPrice.add(jsonObj.getBigDecimal("amount"));
-            } else if (type == 8 || type == 17 || type == 18 || type == 22 || type == 24) {
+            } else {
                 coupinPrice = coupinPrice.add(jsonObj.getBigDecimal("amount"));
             }
         }
