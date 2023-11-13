@@ -433,13 +433,14 @@ public class AppMangerServiceImpl implements AppMangerService {
         //订单数
         Integer orderNum = orderInfoMapper.getCountOrder(reqVO);
         //团购收入
-        BigDecimal tgMoney = groupPayInfoMapper.getBusinessStatistics(reqVO);
+        BigDecimal tgMoney = groupPayInfoMapper.getBusinessStatistics(reqVO).setScale(2, BigDecimal.ROUND_HALF_UP);
         //微信支付收入
-        BigDecimal money = payOrderMapper.getMoney(reqVO);
+        BigDecimal money = payOrderMapper.getMoney(reqVO).setScale(2, BigDecimal.ROUND_HALF_UP);
         AppBusinessStatisticsRespVO respVO = new AppBusinessStatisticsRespVO();
         respVO.setOrderCount(orderNum);
         respVO.setTgMoney(tgMoney);
         respVO.setMoney(money);
+        respVO.setTotal(money.add(tgMoney));
         return respVO;
     }
 

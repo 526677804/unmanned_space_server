@@ -564,10 +564,6 @@ public class AppOrderServiceImpl implements AppOrderService {
                             } else if (!payOrderDO.getPayStatus()) {
                                 throw exception(ORDER_WEIXIN_PAY_ERROR);
                             }
-                            //对比实际支付的价格 和订单应支付的价格是否一致
-//                            if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
-//                                throw exception(ORDER_WEIXIN_PAY_ERROR);
-//                            }
                         } else {
                             throw exception(ORDER_WEIXIN_PAY_ERROR);
                         }
@@ -721,7 +717,10 @@ public class AppOrderServiceImpl implements AppOrderService {
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
         //续费之前仍然再检查一遍 并计算出应付总金额
         Date startTime = orderInfoDO.getEndTime();
+        //把秒给设置为0 否则价格可能会计算错误
+        startTime.setSeconds(0);
         Date endTime = reqVO.getEndTime();
+        endTime.setSeconds(0);
 //        Date endTime = DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes());
         WxPayOrderRespVO wxPayOrderRespVO = preOrder(orderInfoDO.getRoomId(), startTime, endTime, null, reqVO.getOrderId(), false, false);
         //订单价格
@@ -742,10 +741,6 @@ public class AppOrderServiceImpl implements AppOrderService {
                     } else if (!payOrderDO.getPayStatus()) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
                     }
-                    //对比实际支付的价格 和订单应支付的价格是否一致
-//                    if (payOrderDO.getPrice().compareTo(wxPayOrderRespVO.getPrice()) != 0) {
-//                        throw exception(ORDER_WEIXIN_PAY_ERROR);
-//                    }
                     //是微信支付的  增加已支付的金额
                     orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
                 } else {

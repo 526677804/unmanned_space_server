@@ -277,10 +277,6 @@ public class AppUserServiceImpl implements AppUserService {
             } else if (!payOrderDO.getPayStatus()) {
                 throw exception(ORDER_WEIXIN_PAY_ERROR);
             }
-            //对比实际支付的价格 和订单应支付的价格是否一致
-            if (payOrderDO.getPrice().compareTo(reqVO.getPrice()) != 0) {
-                throw exception(ORDER_WEIXIN_PAY_ERROR);
-            }
             //增加账户余额
             BigDecimal addMoney = new BigDecimal(String.valueOf(reqVO.getPrice() / 100.0));
             if (addMoney.compareTo(BigDecimal.ZERO) <= 0) {

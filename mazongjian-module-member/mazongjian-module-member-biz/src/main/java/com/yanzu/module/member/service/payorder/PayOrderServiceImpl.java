@@ -183,6 +183,7 @@ public class PayOrderServiceImpl implements PayOrderService {
             log.info("tradeState:{},returnCode:{},resultCode:{},", tradeState, returnCode, resultCode);
             //判断支付结果
             boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
+            //对比实际支付的价格 和订单应支付的价格是否一致
             boolean checkPrice = cashFee >= price;
             log.info("订单：{}，微信支付状态为：{},price:{},cashFee:{}", orderNo, flag, price, cashFee);
             if (flag && checkPrice) {
