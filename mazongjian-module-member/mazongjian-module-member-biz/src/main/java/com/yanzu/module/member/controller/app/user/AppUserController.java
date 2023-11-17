@@ -1,20 +1,16 @@
 package com.yanzu.module.member.controller.app.user;
 
-import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
-import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
-import com.yanzu.module.member.service.iot.SmyooService;
 import com.yanzu.module.member.service.user.AppUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,6 +82,7 @@ public class AppUserController {
     public CommonResult<BigDecimal> getGiftBalance(@PathVariable("storeId") Long storeId) {
         return success(userService.getGiftBalance(storeId));
     }
+
     @GetMapping("/getStoreBalance/{storeId}")
     @Operation(summary = "获取用户在指定门店的余额")
     @PreAuthenticated
@@ -163,73 +160,22 @@ public class AppUserController {
         return success(userService.getCouponPage(reqVO));
     }
 
-    //    @Autowired
-//    private MeituanClient meituanClient;
 //    @Autowired
 //    WxPayService wxPayService;
 
-//    @Autowired
-//    private DouyinService douyinService;
 
-    @Resource
-    private SmyooService smyooService;
-
-    @GetMapping("/test")
-    @Operation(summary = "test")
-    public CommonResult<String> test() throws Exception {
-//        String login = smyooService.login();
-            smyooService.runYunlaba("50B229EE48D0833182F6639B9B79BB08",
-                    "您的订单剩余时间已不足三十分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！");
+//    @GetMapping("/test")
+//    @Operation(summary = "test")
+//    public CommonResult<String> test() throws Exception {
 //        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
 //        refundRequest.setOutTradeNo("2023111113910920");
 //        refundRequest.setOutRefundNo("2023111113910920" );
 //        refundRequest.setTotalFee(600);
 //        refundRequest.setRefundFee(600);
 //        wxPayService.refund(refundRequest);
-        //https://v.douyin.com/idjm1eB4/
-//        DouyinPrepareRespVO prepare = douyinService.prepare("https://v.douyin.com/idjm1eB4/");
-//        douyinService.verify(5L,1L,prepare);
-        return success("1");
-    }
-//  /*      MeituanPrepareReqVO reqVO = new MeituanPrepareReqVO();
-//        reqVO.setApp_key("022008863ebef333");
-//        reqVO.setOpen_shop_uuid("6eb50f3547e1195d43eb447b8ab62449");
-//        reqVO.setSession("cc7a13ae967015e42ae1cd6484f3663766e1f09d");
-//        reqVO.setReceipt_code("5571630793");
-//        Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
-//        String sign = MeituanSignUtils.generateSign(paramMap, "8c7729556cb497fcec48133dc760dd2808ba1399", MeituanConstants.SIGN_METHOD_MD5);
-//        reqVO.setSign(sign);
-//        JSONObject prepare = meituanClient.prepare(reqVO);
-//        log.info("prepare:{}", prepare);*/
-//
-//       /* MeituanConsumeReqVO reqVO=new MeituanConsumeReqVO();
-//        reqVO.setApp_key("022008863ebef333");
-//        reqVO.setOpen_shop_uuid("6eb50f3547e1195d43eb447b8ab62449");
-//        reqVO.setSession("cc7a13ae967015e42ae1cd6484f3663766e1f09d");
-//        reqVO.setReceipt_code("5571630793");
-//        reqVO.setApp_shop_account("1");
-//        reqVO.setApp_shop_accountname("user");
-//        Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
-//        String sign = MeituanSignUtils.generateSign(paramMap, "8c7729556cb497fcec48133dc760dd2808ba1399", MeituanConstants.SIGN_METHOD_MD5);
-//        reqVO.setSign(sign);
-//        JSONObject consume = meituanClient.consume(reqVO);
-//        log.info("consume:{}", consume);*/
-//
-//        MeituanReverseconsumeReqVO reqVO=new MeituanReverseconsumeReqVO();
-//        reqVO.setApp_key("022008863ebef333");
-//        reqVO.setOpen_shop_uuid("6eb50f3547e1195d43eb447b8ab62449");
-//        reqVO.setSession("cc7a13ae967015e42ae1cd6484f3663766e1f09d");
-//        reqVO.setReceipt_code("5571630793");
-//        reqVO.setApp_deal_id("993507556");
-//        reqVO.setApp_shop_account("1");
-//        reqVO.setApp_shop_accountname("user");
-//        Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
-//        String sign = MeituanSignUtils.generateSign(paramMap, "8c7729556cb497fcec48133dc760dd2808ba1399", MeituanConstants.SIGN_METHOD_MD5);
-//        reqVO.setSign(sign);
-//        JSONObject reverseconsume = meituanClient.reverseconsume(reqVO);
-//        log.info("reverseconsume:{}", reverseconsume);
-//        return success(true);
+//        return success("1");
 //    }
+
 
 }
 
