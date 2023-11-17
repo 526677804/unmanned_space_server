@@ -8,6 +8,7 @@ import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
+import com.yanzu.module.member.service.iot.SmyooService;
 import com.yanzu.module.member.service.user.AppUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -170,9 +171,15 @@ public class AppUserController {
 //    @Autowired
 //    private DouyinService douyinService;
 
+    @Resource
+    private SmyooService smyooService;
+
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
+//        String login = smyooService.login();
+            smyooService.runYunlaba("50B229EE48D0833182F6639B9B79BB08",
+                    "您的订单剩余时间已不足三十分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！");
 //        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
 //        refundRequest.setOutTradeNo("2023111113910920");
 //        refundRequest.setOutRefundNo("2023111113910920" );

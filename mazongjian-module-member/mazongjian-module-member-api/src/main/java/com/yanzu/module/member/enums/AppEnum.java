@@ -17,6 +17,9 @@ public class AppEnum {
     @Getter
     public static final String DOUYIN_CLIENT_TOKEN = "DOUYIN_CLIENT_TOKEN";
 
+    @Getter
+    public static final String SMYOO_IOT_TOKEN = "SMYOO_IOT_TOKEN";
+
     //miniapp广告类型
     @Getter
     @AllArgsConstructor
