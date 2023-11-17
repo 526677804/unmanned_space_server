@@ -644,7 +644,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             groupPayInfoDO.setGroupPayType(groupType);
             groupPayInfoMapper.insert(groupPayInfoDO);
             //异步发送微信通知
-            workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), groupPrice, couponInfoDO, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
+            workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), groupPrice, null, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         } else {
             //异步发送微信通知
             workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), totalPrice, couponInfoDO, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
