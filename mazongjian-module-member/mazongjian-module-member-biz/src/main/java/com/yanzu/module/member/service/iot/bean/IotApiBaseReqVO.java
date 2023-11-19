@@ -13,7 +13,7 @@ public class IotApiBaseReqVO {
 
     private String appid="wmj_LJjdyQZUOuf";
 
-    private String appsecret="bxgjdjVP7g4IOPdoMOUKgNewz3Sj71CC";
+    private String appsecret="hz4NZmaTaRQWlcuH3R87rfXmaVaIzlza";
 
     private String sn;//设备序列号
 }
