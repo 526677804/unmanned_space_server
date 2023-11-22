@@ -1,4 +1,4 @@
-package com.yanzu.module.member.service.workwx;
+package com.yanzu.module.member.service.wx;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;

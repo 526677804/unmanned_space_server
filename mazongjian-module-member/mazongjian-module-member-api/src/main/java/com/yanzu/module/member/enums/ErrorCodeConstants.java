@@ -94,6 +94,9 @@ public interface ErrorCodeConstants {
     ErrorCode CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004093, "通宵场时间为23时以后~次日8时！请修改预定时间后重试！");
 
     ErrorCode GROUP_NO_USE_CHECK_ERROR = new ErrorCode(1004004084, "您输入的团购券不符合订单使用条件！");
+
+
+    ErrorCode STORE_WX_PAY_CONFIG_NOT_FOUND = new ErrorCode(1004004999, "该门店暂不支持微信支付！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");
     ErrorCode DATA_EXISTS_ERROR = new ErrorCode(1004005001, "数据已存在，请不要重复保存！");
     ErrorCode OPRATION_ERROR = new ErrorCode(1004005002, "非法操作");

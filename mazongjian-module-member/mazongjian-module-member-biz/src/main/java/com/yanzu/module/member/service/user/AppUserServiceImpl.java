@@ -34,7 +34,8 @@ import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
-import com.yanzu.module.member.service.workwx.WorkWxService;
+import com.yanzu.module.member.service.wx.MyWxPayService;
+import com.yanzu.module.member.service.wx.WorkWxService;
 import com.yanzu.module.system.api.sms.SmsCodeApi;
 import com.yanzu.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
 import com.yanzu.module.system.api.social.SocialUserApi;
@@ -122,7 +123,7 @@ public class AppUserServiceImpl implements AppUserService {
     private String returnUrl;
 
     @Autowired
-    private WxPayService wxPayService;
+    private MyWxPayService myWxPayService;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -263,6 +264,7 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     @Transactional
     public void eechargeBalance(AppRechargeBalanceReqVO reqVO) {
+        reqVO.setUserId(getLoginUserId());
         String redisKey = String.format(WX_PAY_ORDER, reqVO.getOrderNo());
         // 从redis查询 存在的情况才处理，防止重复验证充值
         if (redisTemplate.hasKey(redisKey)) {
@@ -272,7 +274,7 @@ public class AppUserServiceImpl implements AppUserService {
             PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
             if (ObjectUtils.isEmpty(payOrderDO)) {
                 throw exception(ORDER_WEIXIN_PAY_ERROR);
-            } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), reqVO.getPrice())) {
+            } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), reqVO.getStoreId(), reqVO.getPrice())) {
                 throw exception(ORDER_WEIXIN_PAY_ERROR);
             } else if (!payOrderDO.getPayStatus()) {
                 throw exception(ORDER_WEIXIN_PAY_ERROR);
@@ -407,6 +409,8 @@ public class AppUserServiceImpl implements AppUserService {
             if (ObjectUtils.isEmpty(openId)) {
                 throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
             }
+            //创建微信支付实例
+            WxPayService wxPayService = myWxPayService.init(reqVO.getStoreId());
             //生成微信支付的订单
             WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
             wxPayUnifiedOrderRequest.setBody("微信支付订单");

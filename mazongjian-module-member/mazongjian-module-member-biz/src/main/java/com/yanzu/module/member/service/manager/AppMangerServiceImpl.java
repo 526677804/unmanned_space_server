@@ -7,6 +7,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.member.api.user.MemberUserApi;
 import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
@@ -50,7 +51,8 @@ import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
-import com.yanzu.module.member.service.workwx.WorkWxService;
+import com.yanzu.module.member.service.wx.MyWxPayService;
+import com.yanzu.module.member.service.wx.WorkWxService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -121,7 +123,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     private WorkWxService workWxService;
 
     @Resource
-    private WxPayService wxPayService;
+    private MyWxPayService myWxPayService;
 
     @Resource
     private MeituanService meituanService;
@@ -131,6 +133,9 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Resource
     private GroupPayInfoMapper groupPayInfoMapper;
+
+    @Resource
+    private MemberUserApi memberUserApi;
 
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
@@ -284,6 +289,11 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.MEMBER.getValue()) != 0 && memberUserDO.getUserType().compareTo(AppEnum.member_user_type.CLEAR.getValue()) != 0) {
             throw exception(USER_TYPE_CHECK_ERROR);
         }
+        //如果用户之前不是保洁员角色 则改成保洁员的用户类型
+        if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.CLEAR.getValue()) != 0) {
+            memberUserDO.setUserType(AppEnum.member_user_type.CLEAR.getValue());
+            memberUserMapper.updateById(memberUserDO);
+        }
         //已经绑定的门店不能再绑定
         StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(memberUserDO.getId(), reqVO.getStoreId());
         if (ObjectUtils.isEmpty(storeUserDO)) {
@@ -297,11 +307,6 @@ public class AppMangerServiceImpl implements AppMangerService {
                 storeUserDO.setStoreId(reqVO.getStoreId());
                 storeUserDO.setName(reqVO.getName());
                 storeUserMapper.insert(storeUserDO);
-                //如果用户之前不是保洁员角色 则改成保洁员的用户类型
-                if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.CLEAR.getValue()) != 0) {
-                    memberUserDO.setUserType(AppEnum.member_user_type.CLEAR.getValue());
-                    memberUserMapper.updateById(memberUserDO);
-                }
             } else {
                 throw exception(AUTH_PROMISSION_ERROR);
             }
@@ -559,13 +564,19 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.CLEAR.getValue()) == 0) {
             throw exception(USER_TYPE_CHECK_ERROR);
         }
-        //如果已经存在门店与用户的关系 就修改
+        //不是管理员角色 则改成管理员
+        if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+            memberUserDO.setUserType(AppEnum.member_user_type.ADMIN.getValue());
+            memberUserMapper.updateById(memberUserDO);
+        }
+        //如果已经存在门店与用户的关系 就修改关系
         StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(memberUserDO.getId(), reqVO.getStoreId());
         if (!ObjectUtils.isEmpty(storeUserDO)) {
             storeUserDO.setType(AppEnum.member_user_type.ADMIN.getValue());
             storeUserDO.setName(reqVO.getName());
             storeUserMapper.updateById(storeUserDO);
         } else {
+            //不存在就添加
             storeUserDO = new StoreUserDO();
             storeUserDO.setUserId(memberUserDO.getId());
             storeUserDO.setType(AppEnum.member_user_type.ADMIN.getValue());
@@ -652,6 +663,8 @@ public class AppMangerServiceImpl implements AppMangerService {
                 //实际支付金额为0  就不退款了
                 if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {
                     if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
+                        //创建微信支付实例
+                        WxPayService wxPayService = myWxPayService.init(orderInfoDO.getStoreId());
                         //微信退款
                         PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
                         WxPayRefundRequest refundRequest = new WxPayRefundRequest();

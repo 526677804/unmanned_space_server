@@ -1,4 +1,4 @@
-package com.yanzu.module.member.service.workwx;
+package com.yanzu.module.member.service.wx;
 
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;

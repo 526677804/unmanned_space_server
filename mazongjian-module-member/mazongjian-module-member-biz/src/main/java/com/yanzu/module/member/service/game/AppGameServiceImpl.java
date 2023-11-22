@@ -16,7 +16,7 @@ import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
-import com.yanzu.module.member.service.workwx.WorkWxService;
+import com.yanzu.module.member.service.wx.WorkWxService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;

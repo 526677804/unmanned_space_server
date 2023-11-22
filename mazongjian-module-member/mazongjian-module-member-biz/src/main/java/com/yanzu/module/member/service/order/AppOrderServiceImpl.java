@@ -43,7 +43,8 @@ import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.payorder.PayOrderService;
-import com.yanzu.module.member.service.workwx.WorkWxService;
+import com.yanzu.module.member.service.wx.MyWxPayService;
+import com.yanzu.module.member.service.wx.WorkWxService;
 import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.Synchronized;
@@ -108,7 +109,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     private PayOrderService payOrderService;
 
     @Autowired
-    private WxPayService wxPayService;
+    private MyWxPayService myWxPayService;
 
     @Resource
     private MeituanService meituanService;
@@ -250,6 +251,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (ObjectUtils.isEmpty(openId)) {
                     throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
                 }
+                //创建微信支付实例
+                WxPayService wxPayService = myWxPayService.init(roomInfoDO.getStoreId());
                 //生成微信支付的订单
                 WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
                 wxPayUnifiedOrderRequest.setBody("微信支付订单");
@@ -328,8 +331,17 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Override
     public BigDecimal mathPrice(BigDecimal price, Date startTime, Date endTime, CouponInfoDO couponInfoDO) {
-        long l = (endTime.getTime() - startTime.getTime()) / 1000 / 60;
-        BigDecimal hour = BigDecimal.valueOf(l / 60.0);
+        // 将秒字段设置为0，保持其他字段不变
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTime(startTime);
+        cal1.set(Calendar.SECOND, 0);
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTime(endTime);
+        cal2.set(Calendar.SECOND, 0);
+        // 计算两个日期的分钟差值
+        long diff = Math.abs(cal2.getTimeInMillis() - cal1.getTimeInMillis());
+        long minutes = diff / (60 * 1000);
+        BigDecimal hour = new BigDecimal(String.valueOf(minutes / 60.0));
         //计算价格 单价*时长
         BigDecimal totalPrice = price.multiply(hour);
         //判断使用优惠券的情况
@@ -559,7 +571,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                             PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
                             if (ObjectUtils.isEmpty(payOrderDO)) {
                                 throw exception(ORDER_WEIXIN_PAY_ERROR);
-                            } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), wxPayOrderRespVO.getPrice())) {
+                            } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), payOrderDO.getStoreId(), wxPayOrderRespVO.getPrice())) {
                                 throw exception(ORDER_WEIXIN_PAY_ERROR);
                             } else if (!payOrderDO.getPayStatus()) {
                                 throw exception(ORDER_WEIXIN_PAY_ERROR);
@@ -717,11 +729,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
         //续费之前仍然再检查一遍 并计算出应付总金额
         Date startTime = orderInfoDO.getEndTime();
-        //把秒给设置为0 否则价格可能会计算错误
-        startTime.setSeconds(0);
         Date endTime = reqVO.getEndTime();
-        endTime.setSeconds(0);
-//        Date endTime = DateUtils.addDate(orderInfoDO.getEndTime(), Calendar.MINUTE, reqVO.getMinutes());
+        log.info("订单:{},续费开始时间:{}，结束时间：{}", orderInfoDO.getOrderId(), startTime, endTime);
         WxPayOrderRespVO wxPayOrderRespVO = preOrder(orderInfoDO.getRoomId(), startTime, endTime, null, reqVO.getOrderId(), false, false);
         //订单价格
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
@@ -736,7 +745,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
                     if (ObjectUtils.isEmpty(payOrderDO)) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), wxPayOrderRespVO.getPrice())) {
+                    } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), payOrderDO.getStoreId(), wxPayOrderRespVO.getPrice())) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
                     } else if (!payOrderDO.getPayStatus()) {
                         throw exception(ORDER_WEIXIN_PAY_ERROR);
@@ -922,6 +931,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //实际支付金额为0  就不退款了
                 if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {
                     if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
+                        //创建微信支付实例
+                        WxPayService wxPayService = myWxPayService.init(orderInfoDO.getStoreId());
                         //微信退款
                         PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
                         WxPayRefundRequest refundRequest = new WxPayRefundRequest();

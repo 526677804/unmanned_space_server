@@ -18,6 +18,7 @@ import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
+import com.yanzu.module.member.service.wx.MyWxPayService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -49,7 +50,7 @@ public class PayOrderServiceImpl implements PayOrderService {
     private PayOrderMapper payOrderMapper;
 
     @Autowired
-    private WxPayService wxPayService;
+    private MyWxPayService myWxPayService;
     @Resource
     @Lazy // 延迟，避免循环依赖报错
     private AppUserService appUserService;
@@ -89,7 +90,8 @@ public class PayOrderServiceImpl implements PayOrderService {
     public String updateOrder(String xmlData) {
         log.info("收到微信支付回调body：{}", xmlData);
         try {
-            WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(xmlData);
+            WxPayOrderNotifyResult result = WxPayOrderNotifyResult.fromXML(xmlData);
+//            WxPayOrderNotifyResult result = new WxPayServiceImpl().parseOrderNotifyResult(xmlData);
             // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
             String orderNo = result.getOutTradeNo();
             PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderNo);
@@ -171,8 +173,10 @@ public class PayOrderServiceImpl implements PayOrderService {
         return payOrderMapper.getByOrderNo(orderNo);
     }
 
-    public boolean checkWxOrder(String orderNo, Integer price) {
+    public boolean checkWxOrder(String orderNo, Long storeId, Integer price) {
         log.info("检查订单：{}，微信支付状态！", orderNo);
+        //创建微信支付实例
+        WxPayService wxPayService = myWxPayService.init(storeId);
         try {
             WxPayOrderQueryResult wxPayOrderQueryResult = wxPayService.queryOrder(null, orderNo);
             String tradeNo = wxPayOrderQueryResult.getTransactionId();

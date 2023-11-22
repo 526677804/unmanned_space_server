@@ -60,5 +60,5 @@ public interface PayOrderService {
 
     PayOrderDO getByOrderNo(String orderNo);
 
-    boolean checkWxOrder(String orderNo, Integer price);
+    boolean checkWxOrder(String orderNo,Long storeId, Integer price);
 }
