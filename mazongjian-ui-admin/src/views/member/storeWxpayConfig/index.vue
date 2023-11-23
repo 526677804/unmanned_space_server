@@ -12,7 +12,7 @@
         <el-input v-model="queryParams.appId" placeholder="请输入小程序id" clearable @keyup.enter.native="handleQuery"/>
       </el-form-item>
       <el-form-item label="商户号" prop="mchId">
-        <el-input v-model="queryParams.mchId" placeholder="请输入微信支付商户号" clearable @keyup.enter.native="handleQuery"/>
+        <el-input v-model="queryParams.mchId" placeholder="请输入商户号" clearable @keyup.enter.native="handleQuery"/>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">搜索</el-button>
@@ -38,8 +38,7 @@
       <el-table-column label="ID" align="center" prop="id" />
       <el-table-column label="门店" align="center" prop="storeName" />
       <el-table-column label="小程序id" align="center" prop="appId" />
-      <el-table-column label="微信支付商户号" align="center" prop="mchId" />
-      <el-table-column label="微信支付商户密钥" align="center" prop="mchKey" />
+      <el-table-column label="商户号" align="center" prop="mchId" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
@@ -64,17 +63,8 @@
         <el-form-item label="小程序id" prop="appId">
           <el-input v-model="form.appId" placeholder="请输入小程序id" />
         </el-form-item>
-        <el-form-item label="微信支付商户号" prop="mchId">
-          <el-input v-model="form.mchId" placeholder="请输入微信支付商户号" />
-        </el-form-item>
-        <el-form-item label="微信支付商户密钥" prop="mchKey">
-          <el-input v-model="form.mchKey" placeholder="请输入微信支付商户密钥" />
-        </el-form-item>
-        <el-form-item label="证书key" prop="apiclientKey">
-          <el-input v-model="form.apiclientKey" placeholder="请输入证书key" />
-        </el-form-item>
-        <el-form-item label="证书cert" prop="apiclientCert">
-          <el-input v-model="form.apiclientCert" placeholder="请输入证书cert" />
+        <el-form-item label="商户号" prop="mchId">
+          <el-input v-model="form.mchId" placeholder="请输入商户号" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -122,11 +112,7 @@ export default {
       // 表单校验
       rules: {
         storeId: [{ required: true, message: "门店不能为空", trigger: "change" }],
-        appId: [{ required: true, message: "小程序id不能为空", trigger: "blur" }],
-        mchId: [{ required: true, message: "微信支付商户号不能为空", trigger: "blur" }],
-        mchKey: [{ required: true, message: "微信支付商户密钥不能为空", trigger: "blur" }],
-        apiclientKey: [{ required: true, message: "证书key不能为空", trigger: "blur" }],
-        apiclientCert: [{ required: true, message: "证书cert不能为空", trigger: "blur" }],
+        mchId: [{ required: true, message: "商户号不能为空", trigger: "blur" }],
       }
     };
   },
@@ -157,11 +143,7 @@ export default {
       this.form = {
         id: undefined,
         storeId: undefined,
-        appId: undefined,
         mchId: undefined,
-        mchKey: undefined,
-        apiclientKey: undefined,
-        apiclientCert: undefined,
       };
       this.resetForm("form");
     },

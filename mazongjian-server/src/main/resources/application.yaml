@@ -192,13 +192,9 @@ forest:
 wx:
   pay:
     appId: wx9727cb1c69b545a7 #微信公众号或者小程序等的appid
-    mchId: 1660250968 #微信支付商户号
-    mchKey: 25f3ab3858f654cacd7d3737a9a97e80 #微信支付商户密钥
-#    #    subAppId: #服务商模式下的子商户公众账号ID
-#    #    subMchId: #服务商模式下的子商户号
+    mchId: 1660250968 #微信支付服务商的商户号
+    mchKey: 25f3ab3858f654cacd7d3737a9a97e80 #微信支付服务商的v2密钥
     keyPath: classpath:apiclient_cert.p12 # p12证书的位置，可以指定绝对路径，也可以指定类路径（以classpath:开头）
-    privateKeyPath: classpath:apiclient_key.pem
-    privateCertPath: classpath:apiclient_cert.pem
 
 #美团北极星平台开发者配置
 meituan:

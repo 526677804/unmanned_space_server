@@ -25,9 +25,6 @@
         <if test="null!=mchId and mchId!=''">
             and locate(#{mchId},sw.mch_id)>0
         </if>
-        <if test="null!=mchKey and mchKey!=''">
-            and locate(#{mchKey},sw.mch_key)>0
-        </if>
     </select>
     <select id="getConfigByStoreId"
             resultType="com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO">

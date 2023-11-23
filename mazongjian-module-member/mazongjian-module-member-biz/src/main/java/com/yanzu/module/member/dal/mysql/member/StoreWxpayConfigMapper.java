@@ -24,7 +24,6 @@ public interface StoreWxpayConfigMapper extends BaseMapperX<StoreWxpayConfigDO> 
                 .eqIfPresent(StoreWxpayConfigDO::getStoreId, reqVO.getStoreId())
                 .likeIfPresent(StoreWxpayConfigDO::getAppId, reqVO.getAppId())
                 .likeIfPresent(StoreWxpayConfigDO::getMchId, reqVO.getMchId())
-                .likeIfPresent(StoreWxpayConfigDO::getMchKey, reqVO.getMchKey())
                 .orderByDesc(StoreWxpayConfigDO::getId));
     }
 
@@ -33,7 +32,6 @@ public interface StoreWxpayConfigMapper extends BaseMapperX<StoreWxpayConfigDO> 
                 .eqIfPresent(StoreWxpayConfigDO::getStoreId, reqVO.getStoreId())
                 .likeIfPresent(StoreWxpayConfigDO::getAppId, reqVO.getAppId())
                 .likeIfPresent(StoreWxpayConfigDO::getMchId, reqVO.getMchId())
-                .likeIfPresent(StoreWxpayConfigDO::getMchKey, reqVO.getMchKey())
                 .orderByDesc(StoreWxpayConfigDO::getId));
     }
 

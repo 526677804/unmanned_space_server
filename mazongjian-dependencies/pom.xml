@@ -71,7 +71,7 @@
         <justauth.version>1.0.1</justauth.version>
         <jimureport.version>1.5.8</jimureport.version>
         <xercesImpl.version>2.12.2</xercesImpl.version>
-        <wx-java-mp.version>4.5.0</wx-java-mp.version>
+        <wx-java-mp.version>4.5.7.B</wx-java-mp.version>
     </properties>
 
     <dependencyManagement>

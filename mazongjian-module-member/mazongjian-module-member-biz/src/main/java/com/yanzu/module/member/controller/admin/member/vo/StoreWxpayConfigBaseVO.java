@@ -1,11 +1,9 @@
 package com.yanzu.module.member.controller.admin.member.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import javax.validation.constraints.*;
+import lombok.Data;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * 门店微信支付配置 Base VO，提供给添加、修改、详细的子 VO 使用
@@ -19,15 +17,11 @@ public class StoreWxpayConfigBaseVO {
     private Long storeId;
 
     @Schema(description = "小程序id", requiredMode = Schema.RequiredMode.REQUIRED, example = "25462")
-    @NotNull(message = "小程序id不能为空")
     private String appId;
 
     @Schema(description = "微信支付商户号", requiredMode = Schema.RequiredMode.REQUIRED, example = "23018")
     @NotNull(message = "微信支付商户号不能为空")
     private String mchId;
 
-    @Schema(description = "微信支付商户密钥", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "微信支付商户密钥不能为空")
-    private String mchKey;
 
 }

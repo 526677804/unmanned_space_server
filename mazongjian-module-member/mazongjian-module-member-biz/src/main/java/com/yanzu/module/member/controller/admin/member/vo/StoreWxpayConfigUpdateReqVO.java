@@ -15,12 +15,4 @@ public class StoreWxpayConfigUpdateReqVO extends StoreWxpayConfigBaseVO {
     @NotNull(message = "ID不能为空")
     private Long id;
 
-    @Schema(description = "证书key", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "证书key不能为空")
-    private String apiclientKey;
-
-    @Schema(description = "证书cert", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "证书cert不能为空")
-    private String apiclientCert;
-
 }

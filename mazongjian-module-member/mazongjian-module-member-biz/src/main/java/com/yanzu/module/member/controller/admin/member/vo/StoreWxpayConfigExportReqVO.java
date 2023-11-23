@@ -1,9 +1,7 @@
 package com.yanzu.module.member.controller.admin.member.vo;
 
-import lombok.*;
-import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
-import com.yanzu.framework.common.pojo.PageParam;
+import lombok.Data;
 
 @Schema(description = "管理后台 - 门店微信支付配置 Excel 导出 Request VO，参数和 StoreWxpayConfigPageReqVO 是一致的")
 @Data
@@ -18,7 +16,5 @@ public class StoreWxpayConfigExportReqVO {
     @Schema(description = "微信支付商户号", example = "23018")
     private String mchId;
 
-    @Schema(description = "微信支付商户密钥")
-    private String mchKey;
 
 }

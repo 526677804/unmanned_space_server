@@ -1,11 +1,10 @@
 package com.yanzu.module.member.dal.dataobject.member;
 
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import lombok.*;
 
 /**
  * 门店微信支付配置 DO
@@ -39,17 +38,6 @@ public class StoreWxpayConfigDO extends BaseDO {
      * 微信支付商户号
      */
     private String mchId;
-    /**
-     * 微信支付商户密钥
-     */
-    private String mchKey;
-    /**
-     * 证书key
-     */
-    private String apiclientKey;
-    /**
-     * 证书cert
-     */
-    private String apiclientCert;
+
 
 }

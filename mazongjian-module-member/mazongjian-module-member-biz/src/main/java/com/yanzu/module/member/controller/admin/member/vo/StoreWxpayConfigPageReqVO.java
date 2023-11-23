@@ -1,9 +1,10 @@
 package com.yanzu.module.member.controller.admin.member.vo;
 
-import lombok.*;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import com.yanzu.framework.common.pojo.PageParam;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Schema(description = "管理后台 - 门店微信支付配置分页 Request VO")
 @Data
@@ -20,7 +21,5 @@ public class StoreWxpayConfigPageReqVO extends PageParam {
     @Schema(description = "微信支付商户号", example = "23018")
     private String mchId;
 
-    @Schema(description = "微信支付商户密钥")
-    private String mchKey;
 
 }

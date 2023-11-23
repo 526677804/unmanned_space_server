@@ -28,7 +28,5 @@ public class StoreWxpayConfigExcelVO {
     @ExcelProperty("微信支付商户号")
     private String mchId;
 
-    @ExcelProperty("微信支付商户密钥")
-    private String mchKey;
 
 }
