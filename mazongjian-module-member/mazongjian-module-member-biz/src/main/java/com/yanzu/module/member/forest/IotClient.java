@@ -3,7 +3,7 @@ package com.yanzu.module.member.forest;
 import com.dtflys.forest.annotation.Body;
 import com.dtflys.forest.annotation.JSONBody;
 import com.dtflys.forest.annotation.Post;
-import com.yanzu.module.member.service.iot.bean.*;
+import com.yanzu.module.member.service.iot.iotbean.*;
 
 public interface IotClient {
 

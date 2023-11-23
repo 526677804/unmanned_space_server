@@ -1,4 +1,4 @@
-package com.yanzu.module.member.service.iot.bean;
+package com.yanzu.module.member.service.iot.iotbean;
 
 import lombok.Data;
 

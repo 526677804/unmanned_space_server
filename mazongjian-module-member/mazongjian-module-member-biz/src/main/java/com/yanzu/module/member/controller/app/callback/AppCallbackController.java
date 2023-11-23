@@ -3,6 +3,7 @@ package com.yanzu.module.member.controller.app.callback;
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +39,11 @@ public class AppCallbackController {
     @Resource
     private DeviceService deviceService;
 
+
+    @Resource
+    private EwlService ewlService;
+
+
     @PostMapping("/wxpay/update")
     @Operation(summary = "微信支付回调")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
@@ -62,7 +68,8 @@ public class AppCallbackController {
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public String meituan(@RequestParam("auth_code") String auth_code, @RequestParam("state") String state) {
-        return meituanService.getToken(auth_code, state);
+        meituanService.getToken(auth_code, state);
+        return "success";
     }
 
     @PostMapping(value = "/weimenjin")
@@ -70,7 +77,17 @@ public class AppCallbackController {
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public void weimenjin(@RequestBody(required = false) JSONObject body) {
-        log.info("收到智能硬件回调:{}",body);
-         deviceService.weimenjin(body);
+        log.info("收到智能硬件回调:{}", body);
+        deviceService.weimenjin(body);
     }
+
+    @GetMapping(value = "/eweilink")
+    @Operation(summary = "易微联回调")
+    @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
+    @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
+    public void eweilink(@RequestParam("code") String code, @RequestParam("state") String state) {
+        log.info("收到易微联授权回调,code:{}", code);
+        ewlService.getToken(code,state);
+    }
+
 }

@@ -1,7 +1,6 @@
-package com.yanzu.module.member.service.iot.bean;
+package com.yanzu.module.member.service.iot.iotbean;
 
 import lombok.Data;
-import org.apache.poi.ss.formula.functions.T;
 
 /**
  * @PACKAGE_NAME: com.yanzu.iot.bean
