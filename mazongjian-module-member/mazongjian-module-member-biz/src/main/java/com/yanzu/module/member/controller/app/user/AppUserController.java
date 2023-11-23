@@ -1,5 +1,7 @@
 package com.yanzu.module.member.controller.app.user;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
@@ -7,6 +9,8 @@ import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.service.iot.EwlService;
+import com.yanzu.module.member.service.iot.MyWebSocketClient;
+import com.yanzu.module.member.service.iot.ewlbean.EwlSwitchReqVO;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxPayService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +37,11 @@ import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getL
 @Validated
 @Slf4j
 public class AppUserController {
+
+
+    @Resource
+    private MyWebSocketClient myWebSocketClient;
+
 
     @Resource
     private AppUserService userService;
@@ -172,11 +181,18 @@ public class AppUserController {
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
-        ewlService.getAuthUrl();
+//        ewlService.getAuthUrl();
 
 //        ewlService.getToken("9be670fa-026c-4595-b7c8-2871557ed372","state");
-        ewlService.getThing();
+//        ewlService.getThing();
 //        ewlService.login();
+        EwlSwitchReqVO reqVO = new EwlSwitchReqVO();
+        reqVO.setDeviceid("1001fbe910");
+        reqVO.setApikey("f3bfc723-56e6-4f98-a69f-1a1ab94f3e87");
+        JSONObject param = new JSONObject();
+        param.put("switch", "off");
+        reqVO.setParams(param);
+        myWebSocketClient.sendToServer(JSON.toJSONString(reqVO));
 
 //        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
 //        refundRequest.setOutTradeNo("2023112253399475");

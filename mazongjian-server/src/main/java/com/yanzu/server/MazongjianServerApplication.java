@@ -1,8 +1,10 @@
 package com.yanzu.server;
 
 import com.dtflys.forest.springboot.annotation.ForestScan;
+import com.yanzu.module.member.service.iot.MyWebSocketClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
 import java.util.TimeZone;
 
@@ -21,10 +23,6 @@ import java.util.TimeZone;
 public class MazongjianServerApplication {
 
     public static void main(String[] args) {
-        // 如果你碰到启动的问题，请认真阅读 https://doc.iocoder.cn/quick-start/ 文章
-        // 如果你碰到启动的问题，请认真阅读 https://doc.iocoder.cn/quick-start/ 文章
-        // 如果你碰到启动的问题，请认真阅读 https://doc.iocoder.cn/quick-start/ 文章
-
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
         SpringApplication.run(MazongjianServerApplication.class, args);
 //        new SpringApplicationBuilder(MazongjianServerApplication.class)
@@ -32,8 +30,10 @@ public class MazongjianServerApplication {
 //                .run(args);
 
         // 如果你碰到启动的问题，请认真阅读 https://doc.iocoder.cn/quick-start/ 文章
-        // 如果你碰到启动的问题，请认真阅读 https://doc.iocoder.cn/quick-start/ 文章
-        // 如果你碰到启动的问题，请认真阅读 https://doc.iocoder.cn/quick-start/ 文章
+    }
+    @Bean
+    public MyWebSocketClient myWebSocketClient() {
+        return new MyWebSocketClient();
     }
 
 }

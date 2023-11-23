@@ -40,7 +40,6 @@
 
         <module>mazongjian-spring-boot-starter-flowable</module>
         <module>mazongjian-spring-boot-starter-captcha</module>
-        <module>mazongjian-spring-boot-starter-websocket</module>
         <module>mazongjian-spring-boot-starter-desensitize</module>
     </modules>
 
