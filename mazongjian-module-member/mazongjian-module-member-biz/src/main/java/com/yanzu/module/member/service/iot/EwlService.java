@@ -87,7 +87,8 @@ public class EwlService {
                 String apiKey=itemData.getString("apiKey");
                 JSONObject extra = itemData.getJSONObject("extra");
                 String ui=extra.getString("ui");
-                log.info("name:{},deviceid:{},apiKey:{},ui:{}",name,deviceid,apiKey,ui);
+                String uiid=extra.getString("uiid");
+                log.info("name:{},deviceid:{},apiKey:{},uiid:{},ui:{}",name,deviceid,apiKey,uiid,ui);
             });
         } else {
             log.error("获取eweilink设备列表失败！data:{}", thing);

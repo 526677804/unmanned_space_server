@@ -114,17 +114,20 @@ public class MyWebSocketClient {
                 public void onMessage(String s) {
                     log.info("WebSocket【易微联】收到来自服务端的消息：{}", s);
                     JSONObject data = JSONObject.parseObject(s);
-                    if (data.getInteger("error") == 0) {
-                        //启动时 握手认证的回复
-                        JSONObject config = data.getJSONObject("config");
-                        if (!ObjectUtils.isEmpty(config)) {
-                            if (!ObjectUtils.isEmpty(config.getInteger("hbInterval"))) {
-                                hbInterval = config.getInteger("hbInterval");
+                    Integer error = data.getInteger("error");
+                    if (!ObjectUtils.isEmpty(error)) {
+                        if (error == 0) {
+                            //启动时 握手认证的回复
+                            JSONObject config = data.getJSONObject("config");
+                            if (!ObjectUtils.isEmpty(config)) {
+                                if (!ObjectUtils.isEmpty(config.getInteger("hbInterval"))) {
+                                    hbInterval = config.getInteger("hbInterval");
+                                }
+                                startHeartbeat();
                             }
-                            startHeartbeat();
                         }
                     }
-                   //离线在线通知
+                    //离线在线通知
                     String action = data.getString("action");
                     if (!ObjectUtils.isEmpty(action)) {
                         String deviceid = data.getString("deviceid");
@@ -153,10 +156,12 @@ public class MyWebSocketClient {
             return null;
         }
     }
-    private  double generateRandomDouble(double min, double max) {
+
+    private double generateRandomDouble(double min, double max) {
         Random random = new Random();
         return min + (max - min) * random.nextDouble();
     }
+
     private void startHeartbeat() {
         heartbeatTimer = new Timer(true);
         int v = (int) (hbInterval * generateRandomDouble(0.8, 1.0) * 1000);

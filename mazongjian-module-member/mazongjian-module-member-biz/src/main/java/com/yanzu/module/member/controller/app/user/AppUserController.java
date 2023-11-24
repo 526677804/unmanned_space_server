@@ -1,6 +1,7 @@
 package com.yanzu.module.member.controller.app.user;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
@@ -25,6 +26,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -186,13 +188,28 @@ public class AppUserController {
 //        ewlService.getToken("9be670fa-026c-4595-b7c8-2871557ed372","state");
 //        ewlService.getThing();
 //        ewlService.login();
-        EwlSwitchReqVO reqVO = new EwlSwitchReqVO();
-        reqVO.setDeviceid("1001fbe910");
-        reqVO.setApikey("f3bfc723-56e6-4f98-a69f-1a1ab94f3e87");
-        JSONObject param = new JSONObject();
-        param.put("switch", "off");
-        reqVO.setParams(param);
-        myWebSocketClient.sendToServer(JSON.toJSONString(reqVO));
+//        EwlSwitchReqVO reqVO = new EwlSwitchReqVO();
+//        reqVO.setDeviceid("1001fbe910");
+//        reqVO.setApikey("f3bfc723-56e6-4f98-a69f-1a1ab94f3e87");
+//        JSONObject param = new JSONObject();
+//        param.put("switch", "on");
+//        reqVO.setParams(param);
+
+        JSONObject data=new JSONObject();
+        data.put("action","update");
+        data.put("deviceid","1001fbe910");
+        data.put("apikey","f3bfc723-56e6-4f98-a69f-1a1ab94f3e87");
+        data.put("userAgent","app");
+        data.put("sequence",new Date().getTime()+"");
+        JSONObject params = new JSONObject();
+        JSONArray switches=new JSONArray();
+        JSONObject v=new JSONObject();
+        v.put("switch", "off");
+        v.put("outlet", 0);
+        switches.add(v);
+        params.put("switches",switches);
+        data.put("params",params);
+        myWebSocketClient.sendToServer(JSON.toJSONString(data));
 
 //        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
 //        refundRequest.setOutTradeNo("2023112253399475");
