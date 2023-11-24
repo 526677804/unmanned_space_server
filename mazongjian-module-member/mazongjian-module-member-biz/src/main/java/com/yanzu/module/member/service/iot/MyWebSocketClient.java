@@ -30,7 +30,7 @@ public class MyWebSocketClient {
 
     @Value("${ewelink.appid}")
     private String appid;
-//    @Value("${ewelink.token:1}")
+    //    @Value("${ewelink.token:1}")
 //    private String token;
     @Value("${ewelink.apiKey}")
     private String apiKey;
@@ -173,7 +173,7 @@ public class MyWebSocketClient {
         }, v, v);
     }
 
-    public void hand(){
+    public void hand() {
         String token = ewlService.getToken();
         EwlHandReqVO reqVO = new EwlHandReqVO();
         reqVO.setAppid(appid);
@@ -188,8 +188,8 @@ public class MyWebSocketClient {
             webSocketClient.send(body);
             log.info("WebSocket【易微联】已发送消息到服务端：{}", body);
         } else {
+            init();
             log.info("WebSocket【易微联】连接未打开");
-
         }
     }
 
