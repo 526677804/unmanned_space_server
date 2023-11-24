@@ -110,7 +110,7 @@ public class DeviceServiceImpl implements DeviceService {
         if (!ObjectUtils.isEmpty(sn)) {
             boolean flag;
             //判断硬件平台类型 W开头是微门禁 其他则是易微联
-            if (sn.substring(0).equals("W")) {
+            if (sn.startsWith("W")) {
                 flag = iotService.runDoorV1(sn);
             } else {
                 flag = ewlService.runKongkai(sn, "on");
@@ -127,7 +127,7 @@ public class DeviceServiceImpl implements DeviceService {
         if (!ObjectUtils.isEmpty(sn)) {
             boolean flag;
             //判断硬件平台类型 W开头是微门禁 其他则是易微联
-            if (sn.substring(0).equals("W")) {
+            if (sn.startsWith("W")) {
                 flag = iotService.runKongkai(sn, "turnon");
 
             } else {
@@ -145,7 +145,7 @@ public class DeviceServiceImpl implements DeviceService {
         if (!ObjectUtils.isEmpty(sn)) {
             boolean flag;
             //判断硬件平台类型 W开头是微门禁 其他则是易微联
-            if (sn.substring(0).equals("W")) {
+            if (sn.startsWith("W")) {
                 flag = iotService.runKongkai(sn, "turnoff");
 
             } else {
