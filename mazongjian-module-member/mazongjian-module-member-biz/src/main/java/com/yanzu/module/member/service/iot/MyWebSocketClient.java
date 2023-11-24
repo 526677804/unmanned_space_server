@@ -3,12 +3,12 @@ package com.yanzu.module.member.service.iot;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.yanzu.module.member.forest.EwlClient;
 import com.yanzu.module.member.service.iot.ewlbean.EwlHandReqVO;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.PostConstruct;
@@ -28,36 +28,30 @@ import java.util.TimerTask;
 @Slf4j
 public class MyWebSocketClient {
 
-    private String appid = "iSQwkQ8PfVRB75jaOgsPJtwfAdG1678f";
-    private String token = "28e3579792d46a0e00e323d0ced05d9e97691782";
-    private String apiKey = "f3bfc723-56e6-4f98-a69f-1a1ab94f3e87";
+    @Value("${ewelink.appid}")
+    private String appid;
+//    @Value("${ewelink.token:1}")
+//    private String token;
+    @Value("${ewelink.apiKey}")
+    private String apiKey;
     @Resource
-    private EwlClient ewlClient;
+    private EwlService ewlService;
     private Timer heartbeatTimer;
     private Integer hbInterval = 60;
-
     private WebSocketClient webSocketClient;
+
 
     @SneakyThrows
     @PostConstruct
     public void init() {
-        // 获取WebSocket连接地址
-        JSONObject socketUrl = ewlClient.getSocketUrl();
-        String serverUrl = "";
-        if (socketUrl != null && socketUrl.getInteger("error") == 0) {
-            serverUrl = String.format("wss://%s:%s/api/ws", socketUrl.getString("IP"), socketUrl.getString("port"));
-        } else {
-            //默认给一个地址
-            serverUrl = "wss://52.80.9.35:8080/api/ws";
+        if (webSocketClient != null && webSocketClient.isOpen()) {
+            webSocketClient.close();
         }
-        webSocketClient = createWebSocketClient(serverUrl);
+        String socketUrl = ewlService.getSocketUrl();
+        webSocketClient = createWebSocketClient(socketUrl);
         webSocketClient.connectBlocking();
         //握手
-        EwlHandReqVO reqVO = new EwlHandReqVO();
-        reqVO.setAppid(appid);
-        reqVO.setApikey(apiKey);
-        reqVO.setAt(token);
-        webSocketClient.send(JSON.toJSONString(reqVO));
+        hand();
     }
 
     public WebSocketClient createWebSocketClient(String serverUrl) {
@@ -141,7 +135,7 @@ public class MyWebSocketClient {
                 @Override
                 public void onClose(int i, String s, boolean b) {
                     log.info("WebSocket【易微联】关闭连接");
-                    log.info("关闭连接:::" + "i = " + i + ":::s = " + s + ":::b = " + b);
+                    log.info("WebSocket关闭连接:::" + "i = " + i + ":::s = " + s + ":::b = " + b);
                 }
 
                 @Override
@@ -164,6 +158,7 @@ public class MyWebSocketClient {
 
     private void startHeartbeat() {
         heartbeatTimer = new Timer(true);
+        String token = ewlService.getToken();
         int v = (int) (hbInterval * generateRandomDouble(0.8, 1.0) * 1000);
         heartbeatTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -178,12 +173,23 @@ public class MyWebSocketClient {
         }, v, v);
     }
 
+    public void hand(){
+        String token = ewlService.getToken();
+        EwlHandReqVO reqVO = new EwlHandReqVO();
+        reqVO.setAppid(appid);
+        reqVO.setApikey(apiKey);
+        reqVO.setAt(token);
+        webSocketClient.send(JSON.toJSONString(reqVO));
+    }
+
+
     public void sendToServer(String body) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             webSocketClient.send(body);
-            System.out.println("WebSocket【易微联】已发送消息到服务端：" + body);
+            log.info("WebSocket【易微联】已发送消息到服务端：{}", body);
         } else {
-            System.out.println("WebSocket【易微联】连接未打开，无法发送消息");
+            log.info("WebSocket【易微联】连接未打开");
+
         }
     }
 

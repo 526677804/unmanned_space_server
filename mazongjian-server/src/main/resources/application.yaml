@@ -206,4 +206,9 @@ douyin:
   appKey: awfftg1h15wwhu3n
   secret: 51763320da7cc3a7f2a7e8c1758e6eef
 
-
+#易微联平台配置
+ewelink:
+  appid: iSQwkQ8PfVRB75jaOgsPJtwfAdG1678f
+  secret: y0guc89GZnkcbbRDRzOL3HCh7LaXNpgw
+  redirectUrl: https://api-dev.scyanzu.com/app-api/callback/ewelink
+  apiKey: f3bfc723-56e6-4f98-a69f-1a1ab94f3e87

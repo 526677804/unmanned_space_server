@@ -44,21 +44,21 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     @Transactional
     public Long createDeviceInfo(DeviceInfoCreateReqVO createReqVO) {
         //注册到平台
-        boolean flag = false;
-        switch (createReqVO.getType()) {
-            case 1:
-                //门禁
-                flag = iotService.regV1(createReqVO.getDeviceSn());
-                break;
-            case 2:
-            case 3:
-                //空开和云喇叭
-                flag = iotService.regV2(createReqVO.getDeviceSn());
-                break;
-        }
-        if (!flag) {
-            throw exception(DEVICE_REG_ERROR);
-        }
+//        boolean flag = false;
+//        switch (createReqVO.getType()) {
+//            case 1:
+//                //门禁
+//                flag = iotService.regV1(createReqVO.getDeviceSn());
+//                break;
+//            case 2:
+//            case 3:
+//                //空开和云喇叭
+//                flag = iotService.regV2(createReqVO.getDeviceSn());
+//                break;
+//        }
+//        if (!flag) {
+//            throw exception(DEVICE_REG_ERROR);
+//        }
         // 插入
         DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
         deviceInfoMapper.insert(deviceInfo);

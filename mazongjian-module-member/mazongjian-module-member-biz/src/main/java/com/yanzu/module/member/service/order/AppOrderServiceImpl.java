@@ -40,6 +40,7 @@ import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.douyin.vo.DouyinCancelReqVO;
 import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
+import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.payorder.PayOrderService;
@@ -133,6 +134,10 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Resource
     private WorkWxService workWxService;
+
+    @Resource
+    private EwlService ewlService;
+
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -1231,20 +1236,27 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
+    @Synchronized
+    @Transactional
     public void executeMeituanRefreshTokenJob() {
         log.info("==========     开始执行美团授权定时刷新任务     ==========");
         LocalDateTime now = LocalDateTime.now();
         now.plusDays(1);//加一天  用来判断过期
         List<StoreMeituanInfoDO> list = storeMeituanInfoMapper.selectList();
         for (StoreMeituanInfoDO infoDO : list) {
-            if (infoDO.getRemainRefreshCount() <= 1) {
-                //提醒授权更新
-                workWxService.sendMeiTuanScopeMsg(infoDO.getStoreId());
+            if (infoDO.getExpiresIn().isBefore(now)) {
                 //需要刷新
                 meituanService.refreshToken(infoDO.getStoreId(), infoDO.getRefreshToken());
+                if (infoDO.getRemainRefreshCount() == 1) {
+                    //提醒授权更新
+                    workWxService.sendMeiTuanScopeMsg(infoDO.getStoreId());
+                }
             }
         }
-        log.info("==========     美团授权定时刷新任务结束     ==========");
+        //处理ewelink
+        log.info("==========     开始执行易微联授权定时刷新任务     ==========");
+        ewlService.refushTokenCheck();
+        log.info("==========    美团/易微联授权定时刷新任务结束     ==========");
 
     }
 

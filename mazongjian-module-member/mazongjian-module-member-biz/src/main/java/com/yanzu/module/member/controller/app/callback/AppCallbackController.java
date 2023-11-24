@@ -81,13 +81,13 @@ public class AppCallbackController {
         deviceService.weimenjin(body);
     }
 
-    @GetMapping(value = "/eweilink")
-    @Operation(summary = "易微联回调")
+    @GetMapping(value = "/ewelink")
+    @Operation(summary = "易微联授权回调")
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public void eweilink(@RequestParam("code") String code, @RequestParam("state") String state) {
         log.info("收到易微联授权回调,code:{}", code);
-        ewlService.getToken(code,state);
+        ewlService.setToken(code,state);
     }
 
 }

@@ -28,4 +28,7 @@ public interface WorkWxService {
     void sendOrderChangeUserMsg(Long storeId, String orderNo, Long roomId, Date startTime, Date endTime, Long userId);
 
     void sendUseGroupNoMsg(GroupPayInfoDO groupPayInfoDO, Long userId);
+
+    void sendEwelinkRefushTokenMsg();
+
 }

@@ -1,8 +1,5 @@
 package com.yanzu.module.member.controller.app.user;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
@@ -11,7 +8,6 @@ import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.MyWebSocketClient;
-import com.yanzu.module.member.service.iot.ewlbean.EwlSwitchReqVO;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxPayService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +22,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -40,10 +35,8 @@ import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getL
 @Slf4j
 public class AppUserController {
 
-
     @Resource
     private MyWebSocketClient myWebSocketClient;
-
 
     @Resource
     private AppUserService userService;
@@ -183,10 +176,10 @@ public class AppUserController {
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
-//        ewlService.getAuthUrl();
+        String authUrl = ewlService.getAuthUrl();
 
 //        ewlService.getToken("9be670fa-026c-4595-b7c8-2871557ed372","state");
-//        ewlService.getThing();
+        ewlService.getThing();
 //        ewlService.login();
 //        EwlSwitchReqVO reqVO = new EwlSwitchReqVO();
 //        reqVO.setDeviceid("1001fbe910");
@@ -195,7 +188,7 @@ public class AppUserController {
 //        param.put("switch", "on");
 //        reqVO.setParams(param);
 
-        JSONObject data=new JSONObject();
+       /* JSONObject data=new JSONObject();
         data.put("action","update");
         data.put("deviceid","1001fbe910");
         data.put("apikey","f3bfc723-56e6-4f98-a69f-1a1ab94f3e87");
@@ -209,7 +202,7 @@ public class AppUserController {
         switches.add(v);
         params.put("switches",switches);
         data.put("params",params);
-        myWebSocketClient.sendToServer(JSON.toJSONString(data));
+        myWebSocketClient.sendToServer(JSON.toJSONString(data));*/
 
 //        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
 //        refundRequest.setOutTradeNo("2023112253399475");

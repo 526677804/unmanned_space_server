@@ -1,20 +1,16 @@
 package com.yanzu.module.member.service.iot.ewlbean;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.iot.ewlbean
  * @DESCRIPTION:
  * @USER: MrGuan  mrguan@aliyun.com
- * @DATE: 2023/11/23 12:16
+ * @DATE: 2023/11/24 14:22
  */
 @Data
-public class BaseReqVO {
-
-
-    private String Authorization;
-
-
-
-
+@AllArgsConstructor
+public class EwlRefreshTokenReqVO {
+    private String rt;//Refresh Token
 }

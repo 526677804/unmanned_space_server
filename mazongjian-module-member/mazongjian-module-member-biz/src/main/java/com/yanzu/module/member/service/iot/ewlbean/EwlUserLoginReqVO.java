@@ -12,7 +12,7 @@ import lombok.Data;
 public class EwlUserLoginReqVO {
 
     private String countryCode = "+86";//电话区号区号，必须以"+"开头，比如"+86"
-    private String phoneNumber = "17608045045";
-    private String password = "qq127981";
+    private String phoneNumber = "xxxx";
+    private String password = "xxxx";
 
 }

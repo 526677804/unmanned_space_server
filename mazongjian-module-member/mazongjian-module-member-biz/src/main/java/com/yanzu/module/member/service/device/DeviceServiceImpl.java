@@ -8,6 +8,7 @@ import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.IotService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,9 @@ public class DeviceServiceImpl implements DeviceService {
     @Resource
     private IotService iotService;
 
+    @Resource
+    private EwlService ewlService;
+
     @Override
     @Transactional
     public void openStoreDoor(Long storeId, Long orderId, int type) {
@@ -61,13 +65,13 @@ public class DeviceServiceImpl implements DeviceService {
                     if (ObjectUtils.isEmpty(orderInfoDO)) {
                         throw exception(NOT_START_ORDER);
                     } else {
-                        openStoreDoorV1(orderInfoDO.getStoreId());
+                        openStoreDoor(orderInfoDO.getStoreId());
                     }
                 } else {
                     //从订单开门的
                     OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
                     if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                        openStoreDoorV1(orderInfoDO.getStoreId());
+                        openStoreDoor(orderInfoDO.getStoreId());
                     } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
                         throw exception(ORDER_STATUS_NOT_START_ERROR);
                     }
@@ -78,7 +82,7 @@ public class DeviceServiceImpl implements DeviceService {
             case 2://2管理员开门
             case 3://3保洁开门
                 //这里是开门店的大门，所以随便开
-                openStoreDoorV1(storeId);
+                openStoreDoor(storeId);
                 //增加开门记录
                 saveDeviceUseRecord(getLoginUserId(), storeId, null, "openStoreDoor");
                 break;
@@ -100,22 +104,35 @@ public class DeviceServiceImpl implements DeviceService {
         deviceUseInfoMapper.insert(deviceUseInfoDO);
     }
 
-    private void openStoreDoorV1(Long storeId) {
+    private void openStoreDoor(Long storeId) {
         //获取大门的门禁sn
         String sn = deviceInfoMapper.getSnByStoreId(storeId);
         if (!ObjectUtils.isEmpty(sn)) {
-            boolean flag = iotService.runDoorV1(sn);
+            boolean flag;
+            //判断硬件平台类型 W开头是微门禁 其他则是易微联
+            if (sn.substring(0).equals("W")) {
+                flag = iotService.runDoorV1(sn);
+            } else {
+                flag = ewlService.runKongkai(sn, "on");
+            }
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }
         }
     }
 
-    private void openRoomDoorV2(Long roomId) {
+    private void openRoomDoor(Long roomId) {
         //获取设备的门禁sn
         String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
         if (!ObjectUtils.isEmpty(sn)) {
-            boolean flag = iotService.runKongkai(sn, "turnon");
+            boolean flag;
+            //判断硬件平台类型 W开头是微门禁 其他则是易微联
+            if (sn.substring(0).equals("W")) {
+                flag = iotService.runKongkai(sn, "turnon");
+
+            } else {
+                flag = ewlService.runKongkai(sn, "on");
+            }
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }
@@ -126,7 +143,14 @@ public class DeviceServiceImpl implements DeviceService {
         //获取设备的门禁sn
         String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
         if (!ObjectUtils.isEmpty(sn)) {
-            boolean flag = iotService.runKongkai(sn, "turnoff");
+            boolean flag;
+            //判断硬件平台类型 W开头是微门禁 其他则是易微联
+            if (sn.substring(0).equals("W")) {
+                flag = iotService.runKongkai(sn, "turnoff");
+
+            } else {
+                flag = ewlService.runKongkai(sn, "off");
+            }
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }
@@ -147,13 +171,13 @@ public class DeviceServiceImpl implements DeviceService {
                     if (ObjectUtils.isEmpty(orderInfoDO)) {
                         throw exception(NOT_START_ORDER);
                     } else {
-                        openRoomDoorV2(orderInfoDO.getRoomId());
+                        openRoomDoor(orderInfoDO.getRoomId());
                     }
                 } else {
                     //从订单开门的
                     OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
                     if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                        openRoomDoorV2(orderInfoDO.getRoomId());
+                        openRoomDoor(orderInfoDO.getRoomId());
                     } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
                         throw exception(ORDER_STATUS_NOT_START_ERROR);
                     }
@@ -164,12 +188,12 @@ public class DeviceServiceImpl implements DeviceService {
             case 2:
             case 3:
                 //管理员不限制 保洁开门权限在调用处控制 只能开待清洁的房间
-                openRoomDoorV2(roomId);
+                openRoomDoor(roomId);
                 //增加开门记录
                 saveDeviceUseRecord(getLoginUserId(), null, roomId, "openRoomDoor");
                 break;
             case 4:
-                openRoomDoorV2(roomId);
+                openRoomDoor(roomId);
                 //增加开门记录
                 saveDeviceUseRecord(null, null, roomId, "openRoomDoor");
                 break;
@@ -256,7 +280,7 @@ public class DeviceServiceImpl implements DeviceService {
         if (body.getString("cmd").equals("notify")) {
             JSONObject info = body.getJSONObject("info");
             Integer state = info.getInteger("state");
-            if(!ObjectUtils.isEmpty(state)){
+            if (!ObjectUtils.isEmpty(state)) {
                 if (state == 1) {
                     //上线
                     log.info("智能硬件，上线，设备:{}", device_sn);
