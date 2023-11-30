@@ -69,7 +69,7 @@ public interface DeviceInfoService {
      */
     List<DeviceInfoDO> getDeviceInfoList(DeviceInfoExportReqVO exportReqVO);
 
-    void configWifi(Long deviceId);
+    void configYunlaba(Long deviceId);
 
     void bind(DeviceInfoBindReqVO reqVO);
 }

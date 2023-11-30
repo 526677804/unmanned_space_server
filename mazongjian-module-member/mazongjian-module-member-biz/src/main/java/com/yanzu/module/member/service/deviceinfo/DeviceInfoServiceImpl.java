@@ -112,14 +112,15 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     }
 
     @Override
-    public void configWifi(Long deviceId) {
-        //获取设备的sn
-        String sn = deviceInfoMapper.selectById(deviceId).getDeviceSn();
-        if (!ObjectUtils.isEmpty(sn)) {
-            boolean flag = iotService.runKongkai(sn, "wifi_config");
-            if (!flag) {
-                throw exception(DEVICE_OPRATION_ERROR);
+    public void configYunlaba(Long deviceId) {
+        DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(deviceId);
+        if (!ObjectUtils.isEmpty(deviceInfoDO)) {
+            //目前只处理云喇叭
+            if (deviceInfoDO.getType().compareTo(AppEnum.device_type.SOUND.getValue()) == 0
+                    && deviceInfoDO.getDeviceSn().startsWith("W")) {
+                iotService.configYunlaba(deviceInfoDO.getDeviceSn());
             }
+
         }
     }
 

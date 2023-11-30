@@ -69,4 +69,5 @@ public interface StoreWxpayConfigService {
      */
     List<StoreWxpayConfigDO> getStoreWxpayConfigList(StoreWxpayConfigExportReqVO exportReqVO);
 
+    void profitsharing(Long id);
 }

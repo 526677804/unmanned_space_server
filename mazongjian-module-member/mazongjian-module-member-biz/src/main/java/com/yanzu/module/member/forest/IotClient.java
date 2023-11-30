@@ -44,6 +44,14 @@ public interface IotClient {
     @Post(url = "https://wdev.wmj.com.cn/deviceApi/mqtt/send")
     IotApiV2BaseRespVO<IotApiV2DataVO> runKongkai(@JSONBody IotApiV2BaseReqVO<KongkaiOpVO> reqVO);
 
+    /**
+     * 配置云喇叭
+     *
+     * @param reqVO
+     * @return
+     */
+    @Post(url = "https://wdev.wmj.com.cn/deviceApi/send")
+    IotApiV2BaseRespVO<IotApiV2DataVO> configYunlaba(@JSONBody IotApiV2BaseReqVO<YunlabaOpVO<YunlabaConfigReqVO>> reqVO);
 
     /**
      * 调用云喇叭
@@ -52,7 +60,7 @@ public interface IotClient {
      * @return
      */
     @Post(url = "https://wdev.wmj.com.cn/deviceApi/mqtt/send")
-    IotApiV2BaseRespVO<IotApiV2DataVO> runYunlaba(@JSONBody IotApiV2BaseReqVO<YunlabaOpVO> reqVO);
+    IotApiV2BaseRespVO<IotApiV2DataVO> runYunlaba(@JSONBody IotApiV2BaseReqVO<YunlabaOpVO<YunlabaInfoVO>> reqVO);
 
     /**
      * 查询v2设备的状态

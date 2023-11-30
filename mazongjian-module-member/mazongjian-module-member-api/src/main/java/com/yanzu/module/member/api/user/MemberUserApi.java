@@ -61,5 +61,6 @@ public interface MemberUserApi {
 
     void executeMeituanRefreshTokenJob();
 
+    void executeCouponExpire();
 
 }

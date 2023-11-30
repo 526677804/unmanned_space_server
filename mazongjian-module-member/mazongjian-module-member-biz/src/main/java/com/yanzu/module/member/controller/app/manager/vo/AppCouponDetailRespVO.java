@@ -27,8 +27,8 @@ public class AppCouponDetailRespVO {
     private String createUserId;
 
     @Schema(description = "过期时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = DateUtils.TIME_ZONE_DEFAULT)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY, timezone = DateUtils.TIME_ZONE_DEFAULT)
     private Date expriceTime;
 
 

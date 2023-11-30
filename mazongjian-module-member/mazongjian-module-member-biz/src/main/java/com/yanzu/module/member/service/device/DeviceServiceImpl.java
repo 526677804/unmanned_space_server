@@ -263,6 +263,9 @@ public class DeviceServiceImpl implements DeviceService {
                 case 4:
                     str = "您的订单剩余时间已不足五分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！";
                     break;
+                case 5:
+                    str = "尊敬的顾客您好！根据城市管理条例要求,请您在深夜消费时,注意控制噪音,以免影响到他人。感谢您的支持与理解！";
+                    break;
             }
             boolean flag = iotService.runYunlaba(sn, str);
             if (!flag) {

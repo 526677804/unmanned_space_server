@@ -87,20 +87,19 @@ public class DeviceInfoController {
     @Operation(summary = "导出设备管理 Excel")
     @PreAuthorize("@ss.hasPermission('member:device-info:export')")
     @OperateLog(type = EXPORT)
-    public void exportDeviceInfoExcel(@Valid DeviceInfoExportReqVO exportReqVO,
-                                      HttpServletResponse response) throws IOException {
+    public void exportDeviceInfoExcel(@Valid DeviceInfoExportReqVO exportReqVO, HttpServletResponse response) throws IOException {
         List<DeviceInfoDO> list = deviceInfoService.getDeviceInfoList(exportReqVO);
         // 导出 Excel
         List<DeviceInfoExcelVO> datas = DeviceInfoConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "设备管理.xls", "数据", DeviceInfoExcelVO.class, datas);
     }
 
-    @PutMapping("/configWifi/{deviceId}")
-    @Operation(summary = "设备配网")
+    @PutMapping("/configYunlaba/{deviceId}")
+    @Operation(summary = "初始化云喇叭设置")
     @Parameter(name = "deviceId", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('member:device-info:update')")
-    public CommonResult<Boolean> configWifi(@PathVariable(value = "deviceId",required = true) Long deviceId) {
-        deviceInfoService.configWifi(deviceId);
+    public CommonResult<Boolean> configYunlaba(@PathVariable(value = "deviceId", required = true) Long deviceId) {
+        deviceInfoService.configYunlaba(deviceId);
         return success(true);
     }
 

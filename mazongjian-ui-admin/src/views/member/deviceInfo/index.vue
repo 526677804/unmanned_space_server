@@ -76,8 +76,8 @@
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleBindStore(scope.row)"
             v-hasPermi="['member:device-info:update']">绑定</el-button>
           
-          <el-button size="mini" type="text" @click="handleConfigWifi(scope.row.deviceId)"
-            v-hasPermi="['member:device-info:update']">配网</el-button>
+          <el-button size="mini" type="text" @click="handleConfigYunlaba(scope.row.deviceId)"
+            v-hasPermi="['member:device-info:update']">初始化</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
             v-hasPermi="['member:device-info:delete']">删除</el-button>
         </template>
@@ -133,7 +133,7 @@
 </template>
 
 <script>
-import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, configWifi, getStoreList, getRoomList,bind } from "@/api/member/deviceInfo";
+import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, configYunlaba, getStoreList, getRoomList,bind } from "@/api/member/deviceInfo";
 
 export default {
   name: "DeviceInfo",
@@ -330,9 +330,9 @@ export default {
         });
       }
     },
-    handleConfigWifi(deviceId) {
-      this.$modal.confirm('是否确认设备编号为"' + deviceId + '"的数据项进行初始化配网操作?').then(function () {
-        return configWifi(deviceId);
+    handleConfigYunlaba(deviceId) {
+      this.$modal.confirm('是否确认设备编号为"' + deviceId + '"的数据项进行初始化操作?').then(function () {
+        return configYunlaba(deviceId);
       }).then(() => {
         this.$modal.msgSuccess("操作成功");
       }).catch(() => { });

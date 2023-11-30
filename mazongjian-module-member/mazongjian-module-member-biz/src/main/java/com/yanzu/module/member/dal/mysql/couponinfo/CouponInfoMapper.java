@@ -32,4 +32,6 @@ public interface CouponInfoMapper extends BaseMapperX<CouponInfoDO> {
 
     CouponInfoDO getByIdAndAdmin(Long couponId);
 
+    int executeCouponExpire();
+
 }

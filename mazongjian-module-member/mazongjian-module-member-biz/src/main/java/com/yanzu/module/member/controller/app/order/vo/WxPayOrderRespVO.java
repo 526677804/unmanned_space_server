@@ -33,5 +33,4 @@ public class WxPayOrderRespVO {
     private Integer price;
 
 
-
 }

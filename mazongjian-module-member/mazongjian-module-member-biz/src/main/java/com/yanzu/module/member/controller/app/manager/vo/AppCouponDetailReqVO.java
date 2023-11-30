@@ -28,8 +28,8 @@ public class AppCouponDetailReqVO {
     private String couponName;
 
     @Schema(description = "过期时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY, timezone = TIME_ZONE_DEFAULT)
     @NotNull(message = "过期时间不能为空")
     private Date expriceTime;
 

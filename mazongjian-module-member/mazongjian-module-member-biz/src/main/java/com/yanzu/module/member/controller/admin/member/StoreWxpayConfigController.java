@@ -44,6 +44,14 @@ public class StoreWxpayConfigController {
         return success(true);
     }
 
+    @GetMapping("/profitsharing")
+    @Operation(summary = "分账授权")
+    @PreAuthorize("@ss.hasPermission('member:store-wxpay-config:update')")
+    public CommonResult<Boolean> profitsharing(@RequestParam("id") Long id) {
+        storeWxpayConfigService.profitsharing(id);
+        return success(true);
+    }
+
     @DeleteMapping("/delete")
     @Operation(summary = "删除门店微信支付配置")
     @Parameter(name = "id", description = "编号", required = true)

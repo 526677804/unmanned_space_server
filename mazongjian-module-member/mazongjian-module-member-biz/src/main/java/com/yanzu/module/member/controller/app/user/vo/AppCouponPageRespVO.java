@@ -35,8 +35,8 @@ public class AppCouponPageRespVO {
 
     @Schema(description = "过期时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "过期时间不能为空")
-    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = DateUtils.TIME_ZONE_DEFAULT)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY, timezone = DateUtils.TIME_ZONE_DEFAULT)
     private Date expriceTime;
 
     @Schema(description = "优惠券名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "新人福利满50-10")

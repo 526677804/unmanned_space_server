@@ -9,11 +9,11 @@ import lombok.Data;
  * @DATE: 2023/7/17 14:47
  */
 @Data
-public class YunlabaOpVO extends IotApiV2BaseReqVO{
+public class YunlabaOpVO<T> extends IotApiV2BaseReqVO{
 
     private String cmd_type="play";//命令字
 
-    private YunlabaInfoVO info;
+    private T info;
 
 
 }

@@ -1,5 +1,8 @@
 package com.yanzu.module.member.service.member;
 
+import com.alibaba.fastjson.JSONObject;
+import com.github.binarywang.wxpay.bean.profitsharing.ProfitSharingReceiverRequest;
+import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
@@ -7,6 +10,8 @@ import com.yanzu.module.member.controller.admin.member.vo.*;
 import com.yanzu.module.member.convert.member.StoreWxpayConfigConvert;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.mysql.member.StoreWxpayConfigMapper;
+import com.yanzu.module.member.service.wx.MyWxPayService;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -29,6 +34,9 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
 
     @Resource
     private StoreWxpayConfigMapper storeWxpayConfigMapper;
+
+    @Resource
+    private MyWxPayService myWxPayService;
 
     @Override
     @Transactional
@@ -86,6 +94,26 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
     @Override
     public List<StoreWxpayConfigDO> getStoreWxpayConfigList(StoreWxpayConfigExportReqVO exportReqVO) {
         return storeWxpayConfigMapper.selectList(exportReqVO);
+    }
+
+    @Override
+    @SneakyThrows
+    public void profitsharing(Long id) {
+        StoreWxpayConfigDO configDO = storeWxpayConfigMapper.selectById(id);
+        ProfitSharingReceiverRequest request = new ProfitSharingReceiverRequest();
+//        示例值：{
+//            "type": "MERCHANT_ID",
+//                    "account": "190001001",
+//                    "name": "示例商户全称",
+//                    "relation_type": "STORE_OWNER"
+//        }
+        JSONObject json=new JSONObject();
+        json.put("type","MERCHANT_ID");
+        json.put("account","1660260848");
+        json.put("name","双流区麻总监贰号棋牌馆");
+        json.put("relation_type","SERVICE_PROVIDER");
+        WxPayService wxPayService = myWxPayService.init(id);
+        wxPayService.getProfitSharingService().addReceiver(request);
     }
 
 }

@@ -24,7 +24,7 @@ public class IotService {
         IotApiBaseReqVO vo = new IotApiBaseReqVO();
         vo.setSn(sn);
         IotApiBaseRespVO respVO = iotClient.regV1(vo);
-        log.info("data:{}",respVO);
+        log.info("data:{}", respVO);
         return respVO.getState() == 1 && respVO.getState_code() == 1;
     }
 
@@ -33,17 +33,30 @@ public class IotService {
         vo.setDevice_sn(sn);
         vo.setType(null);
         IotApiV2BaseRespVO respVO = iotClient.regV2(vo);
-        log.info("data:{}",respVO);
+        log.info("data:{}", respVO);
+        return respVO.getCode() == 0;
+
+    }
+
+    public boolean configYunlaba(String sn) {
+        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        vo.setDevice_sn(sn);
+        YunlabaOpVO<YunlabaConfigReqVO> data = new YunlabaOpVO();
+        YunlabaConfigReqVO info = new YunlabaConfigReqVO();
+        data.setInfo(info);
+        vo.setData(data);
+        IotApiV2BaseRespVO respVO = iotClient.configYunlaba(vo);
+        log.info("data:{}", respVO);
         return respVO.getCode() == 0;
 
     }
 
     public boolean runDoorV1(String sn) {
-        IotApiBaseReqVO vo=new IotApiBaseReqVO();
+        IotApiBaseReqVO vo = new IotApiBaseReqVO();
         vo.setSn(sn);
         IotApiBaseRespVO respVO = iotClient.runDoorV1(vo);
-        log.info("data:{}",respVO);
-        return respVO.getState_code() == 1&&respVO.getState_msg().equals("成功");
+        log.info("data:{}", respVO);
+        return respVO.getState_code() == 1 && respVO.getState_msg().equals("成功");
     }
 
 
@@ -54,7 +67,7 @@ public class IotService {
         data.setCmd_type(cmd);
         vo.setData(data);
         IotApiV2BaseRespVO respVO = iotClient.runKongkai(vo);
-        log.info("data:{}",respVO);
+        log.info("data:{}", respVO);
         return respVO.getCode() == 0;
     }
 
@@ -65,21 +78,21 @@ public class IotService {
         data.setCmd_type(cmd);
         vo.setData(data);
         IotApiV2BaseRespVO respVO = iotClient.runKongkai(vo);
-        log.info("data:{}",respVO);
+        log.info("data:{}", respVO);
         return respVO.getCode() == 0;
     }
 
     public boolean runYunlaba(String sn, String tts) {
         IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
-        YunlabaOpVO data = new YunlabaOpVO();
+        YunlabaOpVO<YunlabaInfoVO> data = new YunlabaOpVO();
         YunlabaInfoVO info = new YunlabaInfoVO();
         info.setTts(tts);
         info.setInner(10);
         data.setInfo(info);
         vo.setData(data);
         IotApiV2BaseRespVO respVO = iotClient.runYunlaba(vo);
-        log.info("data:{}",respVO);
+        log.info("data:{}", respVO);
         return respVO.getCode() == 0;
     }
 
@@ -87,7 +100,7 @@ public class IotService {
         IotApiBaseReqVO vo = new IotApiBaseReqVO();
         vo.setSn(sn);
         IotApiOnlineDataVO v1Status = iotClient.getV1Status(vo);
-        log.info("data:{}",v1Status);
+        log.info("data:{}", v1Status);
         if (v1Status.getState() == 1 && v1Status.getState_code() == 1) {
             return v1Status.getOnline();
         }
@@ -99,7 +112,7 @@ public class IotService {
     public Integer getV2Status(String sn) {
         IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
         IotApiV2BaseRespVO<IotApiV2OnlineDataVO> v2Status = iotClient.getV2Status(vo);
-        log.info("data:{}",v2Status);
+        log.info("data:{}", v2Status);
         if (v2Status.getCode() == 0) {
             return v2Status.getData().getOn_line();
         }

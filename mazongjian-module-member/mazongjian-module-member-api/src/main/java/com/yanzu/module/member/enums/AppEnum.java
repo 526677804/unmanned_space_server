@@ -229,8 +229,8 @@ public class AppEnum {
         //云喇叭	3
 
         DOOR(1),
-        ELECTRIC(1),
-        SOUND(2);
+        ELECTRIC(2),
+        SOUND(3);
 
 
         private final Integer value;

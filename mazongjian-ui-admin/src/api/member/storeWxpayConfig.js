@@ -33,6 +33,13 @@ export function getStoreWxpayConfig(id) {
     method: 'get'
   })
 }
+//分账授权
+export function profitsharing(id) {
+  return request({
+    url: '/member/store-wxpay-config/profitsharing?id=' + id,
+    method: 'get'
+  })
+}
 
 // 获得门店微信支付配置分页
 export function getStoreWxpayConfigPage(query) {

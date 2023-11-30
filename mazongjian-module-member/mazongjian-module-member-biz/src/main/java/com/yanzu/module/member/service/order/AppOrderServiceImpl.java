@@ -266,6 +266,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
                 wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
                 wxPayUnifiedOrderRequest.setTradeType("JSAPI");
+                wxPayUnifiedOrderRequest.setProfitSharing("Y");
                 wxPayUnifiedOrderRequest.setOpenid(openId);
 //            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
 //            wxPayUnifiedOrderRequest.setTimeExpire()
@@ -1116,6 +1117,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         log.info("==========     开始执行订单定时检查任务     ==========");
         Date now = new Date();
         log.info("当前时间:{}", DateUtils.dateToStr(now, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
+        boolean night = now.getHours() < 8 && now.getMinutes() == 0;
         //取出所有进行中的订单
         List<OrderInfoDO> listStart = orderInfoMapper.getByStatus(AppEnum.order_status.START.getValue());
         //如果存在结束时间已经小于现在的时间的 则把订单状态改为完成
@@ -1163,6 +1165,15 @@ public class AppOrderServiceImpl implements AppOrderService {
                         deviceService.runSound(x.getRoomId(), 3);
                     } else if (minutes == 5) {
                         deviceService.runSound(x.getRoomId(), 4);
+                    }
+                    //如果当前是 0-7点  整点 提醒夜间控制噪音  每笔订单只在第一个整点进行提醒
+                    if (night) {
+                        if (x.getStartTime().getHours() == 23 && now.getHours() == 0) {
+                            //0时提醒 前日23时开始的订单
+                            deviceService.runSound(x.getRoomId(), 5);
+                        } else if (x.getStartTime().getHours() + 1 == now.getHours()) {
+                            deviceService.runSound(x.getRoomId(), 5);
+                        }
                     }
                 }
             });
