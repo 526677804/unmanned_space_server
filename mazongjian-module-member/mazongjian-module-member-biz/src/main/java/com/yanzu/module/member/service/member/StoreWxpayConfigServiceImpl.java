@@ -112,7 +112,8 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
         json.put("account","1660260848");
         json.put("name","双流区麻总监贰号棋牌馆");
         json.put("relation_type","SERVICE_PROVIDER");
-        WxPayService wxPayService = myWxPayService.init(id);
+        request.setReceiver(json.toJSONString());
+        WxPayService wxPayService = myWxPayService.init(configDO.getStoreId());
         wxPayService.getProfitSharingService().addReceiver(request);
     }
 

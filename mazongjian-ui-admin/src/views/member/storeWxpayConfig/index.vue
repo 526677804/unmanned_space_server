@@ -78,7 +78,7 @@
 </template>
 
 <script>
-import { createStoreWxpayConfig, updateStoreWxpayConfig, deleteStoreWxpayConfig, getStoreWxpayConfig, getStoreWxpayConfigPage, getStoreList } from "@/api/member/storeWxpayConfig";
+import { createStoreWxpayConfig, updateStoreWxpayConfig, deleteStoreWxpayConfig, getStoreWxpayConfig, profitsharing,getStoreWxpayConfigPage, getStoreList } from "@/api/member/storeWxpayConfig";
 
 export default {
   name: "StoreWxpayConfig",
@@ -176,7 +176,6 @@ export default {
       });
     },
     handleProfitsharing(row) {
-      this.reset();
       const id = row.id;
       profitsharing(id).then(response => {
         this.$modal.msgSuccess("操作成功");
