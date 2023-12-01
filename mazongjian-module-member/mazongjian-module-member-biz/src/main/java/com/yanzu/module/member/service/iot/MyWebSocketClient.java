@@ -136,6 +136,9 @@ public class MyWebSocketClient {
                 public void onClose(int i, String s, boolean b) {
                     log.info("WebSocket【易微联】关闭连接");
                     log.info("WebSocket关闭连接:::" + "i = " + i + ":::s = " + s + ":::b = " + b);
+                    if (!ObjectUtils.isEmpty(heartbeatTimer)) {
+                        heartbeatTimer.cancel();
+                    }
                 }
 
                 @Override
@@ -159,18 +162,18 @@ public class MyWebSocketClient {
     private void startHeartbeat() {
         heartbeatTimer = new Timer(true);
         String token = ewlService.getToken();
-        int v = (int) (hbInterval * generateRandomDouble(0.8, 1.0) * 1000);
+        int v = (int) (hbInterval * generateRandomDouble(0.7, 0.9));
         heartbeatTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                log.info("WebSocket【易微联】发送心跳数据包！");
+                log.info("WebSocket【易微联】发送心跳数据包！心跳间隔:{}秒", v);
                 EwlHandReqVO reqVO = new EwlHandReqVO();
                 reqVO.setAppid(appid);
                 reqVO.setApikey(apiKey);
                 reqVO.setAt(token);
                 sendToServer(JSON.toJSONString(reqVO));
             }
-        }, v, v);
+        }, 0, v * 1000);
     }
 
     public void hand() {

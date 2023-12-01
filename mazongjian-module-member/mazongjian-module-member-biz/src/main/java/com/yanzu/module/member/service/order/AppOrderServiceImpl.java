@@ -1118,6 +1118,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         Date now = new Date();
         log.info("当前时间:{}", DateUtils.dateToStr(now, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
         boolean night = now.getHours() < 8 && now.getMinutes() == 0;
+        log.info("night:{}", night);
         //取出所有进行中的订单
         List<OrderInfoDO> listStart = orderInfoMapper.getByStatus(AppEnum.order_status.START.getValue());
         //如果存在结束时间已经小于现在的时间的 则把订单状态改为完成
@@ -1168,10 +1169,11 @@ public class AppOrderServiceImpl implements AppOrderService {
                     }
                     //如果当前是 0-7点  整点 提醒夜间控制噪音  每笔订单只在第一个整点进行提醒
                     if (night) {
-                        if (x.getStartTime().getHours() == 23 && now.getHours() == 0) {
-                            //0时提醒 前日23时开始的订单
+                        //开始时间是0点以后的  从1点开始提醒
+                        if (x.getStartTime().getHours() + 1 == now.getHours()) {
                             deviceService.runSound(x.getRoomId(), 5);
-                        } else if (x.getStartTime().getHours() + 1 == now.getHours()) {
+                        } else if (now.getHours() == 0) {
+                            //开始时间是其他 0时提醒 前日23时开始的订单
                             deviceService.runSound(x.getRoomId(), 5);
                         }
                     }
