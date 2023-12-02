@@ -118,6 +118,11 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             //目前只处理云喇叭
             if (deviceInfoDO.getType().compareTo(AppEnum.device_type.SOUND.getValue()) == 0
                     && deviceInfoDO.getDeviceSn().startsWith("W")) {
+                try {
+                    iotService.regV2(deviceInfoDO.getDeviceSn());
+                } catch (Exception e) {
+//                    throw new RuntimeException(e);
+                }
                 iotService.configYunlaba(deviceInfoDO.getDeviceSn());
             }
 

@@ -55,6 +55,6 @@
                 #{dateTime}
             </foreach>
         </if>
-        order by d.device_id desc
+        order by d.store_id,d.room_id
     </select>
 </mapper>

@@ -127,7 +127,9 @@ public class MyWebSocketClient {
                         String deviceid = data.getString("deviceid");
                         JSONObject params = data.getJSONObject("params");
                         Boolean online = params.getBoolean("online");
-                        log.info("WebSocket【易微联】设备:{},状态:{}", deviceid, online);
+                        if (!ObjectUtils.isEmpty(online)) {
+                            log.info("WebSocket【易微联】设备:{},状态:{}", deviceid, online);
+                        }
                     }
 
                 }

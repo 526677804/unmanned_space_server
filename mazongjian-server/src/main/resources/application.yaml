@@ -181,11 +181,11 @@ debug: false
 
 # 全局配置下，所有请求的默认重试信息按此配置进行
 forest:
-  max-retry-count: 3     # 最大请求重试次数，默认为 0 次
+  max-retry-count: 5     # 最大请求重试次数，默认为 0 次
   max-retry-interval: 10 # 为最大重试时间间隔, 单位为毫秒，默认为 0 毫秒
   connect-timeout: 10000
   max-connections: 500
-  read-timeout: 3000
+  read-timeout: 5000
 
 
 # 微信支付配置
