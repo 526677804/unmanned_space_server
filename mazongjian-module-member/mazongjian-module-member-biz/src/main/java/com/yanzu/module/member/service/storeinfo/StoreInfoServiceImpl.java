@@ -28,6 +28,7 @@ import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.wx.WorkWxService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -76,6 +77,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     private ClearInfoMapper clearInfoMapper;
     @Resource
     private FileApi fileApi;
+
+    @Resource
+    private WorkWxService workWxService;
 
     @Override
     public PageResult<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO) {
@@ -361,7 +365,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomInfoDO.getRoomId());
         }
         //关电
-        deviceService.closeRoomDoor(roomId,  4);
+        deviceService.closeRoomDoor(roomId, 4);
+        //发通知
+        workWxService.sendClearRoomMsg(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), getLoginUserId(),"设置房间空闲");
     }
 
     @Override
@@ -372,6 +378,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         if (!ObjectUtils.isEmpty(orderInfoDO)) {
             orderInfoDO.setEndTime(new Date());
             orderInfoMapper.updateById(orderInfoDO);
+            //发通知
+            workWxService.sendClearRoomMsg(orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), getLoginUserId(),"结束订单");
         }
     }
 

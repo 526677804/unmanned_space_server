@@ -31,4 +31,5 @@ public interface WorkWxService {
 
     void sendEwelinkRefushTokenMsg();
 
+    void sendClearRoomMsg(Long storeId, Long roomId, Long loginUserId, String type);
 }

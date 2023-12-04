@@ -63,6 +63,7 @@ public class AppStoreController {
         storeInfoService.save(reqVO);
         return success(true);
     }
+
     @PostMapping("/openStoreDoor/{storeId}")
     @Operation(summary = "开门店的大门", description = "门店管理使用")
     @PreAuthenticated
@@ -70,7 +71,7 @@ public class AppStoreController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openStoreDoor(@PathVariable("storeId") Long storeId) {
         //1用户开门 2管理员开门 3保洁开门
-        deviceService.openStoreDoor(storeId,  2);
+        deviceService.openStoreDoor(storeId, 2);
         return success(true);
     }
 
@@ -106,7 +107,7 @@ public class AppStoreController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户开门 2管理员开门 3保洁开门
-        deviceService.openRoomDoor(roomId,  2);
+        deviceService.openRoomDoor(roomId, 2);
         return success(true);
     }
 
@@ -117,7 +118,7 @@ public class AppStoreController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> closeRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户关门 2管理员关门 3保洁关门
-        deviceService.closeRoomDoor(roomId,  2);
+        deviceService.closeRoomDoor(roomId, 2);
         return success(true);
     }
 
@@ -171,7 +172,7 @@ public class AppStoreController {
     @PreAuthenticated
     public CommonResult<List<KeyValue<String, Long>>> getStoreList(@RequestParam(value = "name", required = false) String name
             , @RequestParam(value = "cityName", required = false) String cityName) {
-        return success(storeInfoService.getStoreList(name,cityName));
+        return success(storeInfoService.getStoreList(name, cityName));
     }
 
     @GetMapping("/getRoomList/{storeId}")
@@ -190,6 +191,7 @@ public class AppStoreController {
         storeInfoService.clearAndFinish(roomId);
         return success(true);
     }
+
     @GetMapping("/finishRoomOrder/{roomId}")
     @Operation(summary = "管理员对指定房间结单")
     @PreAuthenticated

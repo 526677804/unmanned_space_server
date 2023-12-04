@@ -290,8 +290,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     payOrderService.create(getLoginUserId(), orderNo, roomInfoDO.getStoreId(), "续费订单", price);
                 }
                 //把这个信息存储到redis，在回调处验证后删除 最长1天过期
-                WxPayOrderInfo wxPayOrderInfo = new WxPayOrderInfo(orderNo, getLoginUserId(), TenantContextHolder.getTenantId(), roomInfoDO.getStoreId(), roomId
-                        , startTime, endTime, ObjectUtils.isEmpty(couponInfoDO) ? null : couponInfoDO.getCouponId(), ignoreOrderId, price, nightLong);
+                WxPayOrderInfo wxPayOrderInfo = new WxPayOrderInfo(orderNo, getLoginUserId(), TenantContextHolder.getTenantId(), roomInfoDO.getStoreId(), roomId, startTime, endTime, ObjectUtils.isEmpty(couponInfoDO) ? null : couponInfoDO.getCouponId(), ignoreOrderId, price, nightLong);
                 redisTemplate.opsForValue().set(String.format(WX_PAY_ORDER, orderNo), wxPayOrderInfo, 1, TimeUnit.DAYS);
             }
         }
@@ -1008,7 +1007,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             //被取消的订单已开始了  那就触发一下关门
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.closeRoomDoor(orderInfoDO.getRoomId(),  4);
+                deviceService.closeRoomDoor(orderInfoDO.getRoomId(), 4);
             }
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
@@ -1028,8 +1027,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             orderInfoMapper.updateById(orderInfoDO);
             //异步发送微信通知
-            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice()
-                    , couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo(), false);
+            workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo(), false);
         } else {
             throw exception(ORDER_CANCEL_OPRATION_ERROR);
         }
@@ -1145,7 +1143,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     clearInfoDO.setRoomId(x.getRoomId());
                     clearInfoDOList.add(clearInfoDO);
                     //关门关电
-                    deviceService.closeRoomDoor(x.getRoomId(),  4);
+                    deviceService.closeRoomDoor(x.getRoomId(), 4);
                     storeIds.add(x.getStoreId().toString());
                 } else {
                     //如果订单结束时间  还剩30分钟，发送提醒
@@ -1276,12 +1274,49 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Override
     @Transactional
     public void openRoomDoor(Long orderId) {
-
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
+        if (!ObjectUtils.isEmpty(orderId)) {
+            //只能操作自己的订单
+            if (orderInfoDO.getUserId().compareTo(getLoginUserId()) != 0) {
+                throw exception(OPRATION_ERROR);
+            }
+            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
+                startOrder(orderId);
+                deviceService.openRoomDoor(orderInfoDO.getStoreId(), 1);
+            } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                deviceService.openRoomDoor(orderInfoDO.getStoreId(), 1);
+            } else {
+                throw exception(CLEAR_OPEN_DOOR_ERROR);
+            }
+        } else {
+            throw exception(ORDER_NOT_FOUND_ERROR);
+        }
     }
 
     @Override
     @Transactional
     public void openStoreDoor(Long orderId) {
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
+        if (!ObjectUtils.isEmpty(orderId)) {
+            //只能操作自己的订单
+            if (orderInfoDO.getUserId().compareTo(getLoginUserId()) != 0) {
+                throw exception(OPRATION_ERROR);
+            }
+            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
+                    || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                //只能提前6小时开门
+                Date now = new Date();
+                long l1 = (orderInfoDO.getStartTime().getTime() - now.getTime()) / 1000 / 60;
+                if (l1 > 360) {
+                    throw exception(ORDER_START_TIQIAN_ERROR);
+                }
+                deviceService.openStoreDoor(orderInfoDO.getStoreId(), 1);
+            } else {
+                throw exception(CLEAR_OPEN_DOOR_ERROR);
+            }
+        } else {
+            throw exception(ORDER_NOT_FOUND_ERROR);
+        }
 
     }
 

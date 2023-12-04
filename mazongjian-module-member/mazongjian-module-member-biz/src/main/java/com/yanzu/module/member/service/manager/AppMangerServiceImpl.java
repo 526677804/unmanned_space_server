@@ -619,7 +619,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
-            deviceService.openRoomDoor(roomInfoDO.getRoomId(),  1);
+            deviceService.openRoomDoor(roomInfoDO.getRoomId(), 1);
             if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) != 0) {
                 roomInfoDO.setStatus(AppEnum.room_status.USED.getValue());
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
@@ -734,7 +734,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             }
             //取消的订单已开始  那就触发一下关门
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.closeRoomDoor(orderInfoDO.getRoomId(),  4);
+                deviceService.closeRoomDoor(orderInfoDO.getRoomId(), 4);
             }
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
