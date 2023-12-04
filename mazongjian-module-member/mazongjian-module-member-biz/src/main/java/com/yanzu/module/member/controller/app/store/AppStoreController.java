@@ -70,7 +70,7 @@ public class AppStoreController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openStoreDoor(@PathVariable("storeId") Long storeId) {
         //1用户开门 2管理员开门 3保洁开门
-        deviceService.openStoreDoor(storeId, null, 2);
+        deviceService.openStoreDoor(storeId,  2);
         return success(true);
     }
 
@@ -106,7 +106,7 @@ public class AppStoreController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户开门 2管理员开门 3保洁开门
-        deviceService.openRoomDoor(roomId, null, 2);
+        deviceService.openRoomDoor(roomId,  2);
         return success(true);
     }
 
@@ -117,7 +117,7 @@ public class AppStoreController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> closeRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户关门 2管理员关门 3保洁关门
-        deviceService.closeRoomDoor(roomId, null, 2);
+        deviceService.closeRoomDoor(roomId,  2);
         return success(true);
     }
 

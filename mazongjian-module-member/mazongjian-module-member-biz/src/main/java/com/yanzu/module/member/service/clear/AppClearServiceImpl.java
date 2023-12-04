@@ -117,7 +117,7 @@ public class AppClearServiceImpl implements AppClearService {
         ClearInfoDO clearInfoDO = clearInfoMapper.selectById(id);
         //只有是自己的订单 才能开门
         if (clearInfoDO.getUserId().compareTo(getLoginUserId()) == 0) {
-            deviceService.openStoreDoor(clearInfoDO.getStoreId(), null, 3);
+            deviceService.openStoreDoor(clearInfoDO.getStoreId(),  3);
         } else {
             throw exception(CLEAR_OPEN_DOOR_ERROR);
         }
@@ -129,7 +129,7 @@ public class AppClearServiceImpl implements AppClearService {
         ClearInfoDO clearInfoDO = clearInfoMapper.selectById(id);
         //只有是自己的订单 并且状态是已开始 才能开门
         if (clearInfoDO.getUserId().compareTo(getLoginUserId()) == 0 && clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.START.getValue()) == 0) {
-            deviceService.openRoomDoor(clearInfoDO.getRoomId(), null, 3);
+            deviceService.openRoomDoor(clearInfoDO.getRoomId(),  3);
         } else {
             throw exception(CLEAR_OPEN_DOOR_ERROR);
         }
@@ -185,7 +185,7 @@ public class AppClearServiceImpl implements AppClearService {
             clearInfoDO.setFinishTime(LocalDateTime.now());
             clearInfoMapper.updateById(clearInfoDO);
             //任务完成了  要关闭房间电源
-            deviceService.closeRoomDoor(clearInfoDO.getRoomId(), null, 4);
+            deviceService.closeRoomDoor(clearInfoDO.getRoomId(),  4);
             //取消后  如果有未完成的保洁订单 状态就是待保洁
             int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(clearInfoDO.getRoomId());
             if (countCurrentByRoomId > 0) {

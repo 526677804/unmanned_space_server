@@ -53,7 +53,6 @@ public interface ErrorCodeConstants {
     ErrorCode COUPON_USED_ERROR = new ErrorCode(1004004025, "该优惠券已被使用！");
     ErrorCode COUPON_USE_CHECK_ERROR = new ErrorCode(1004004026, "该优惠券不符合使用条件！");
     ErrorCode COUPON_USE_CHECK_STORE_ERROR = new ErrorCode(1004004027, "该优惠券不能在当前门店使用！");
-
     ErrorCode USER_NO_MONEY_WITHDRAWAL_ERROR = new ErrorCode(1004004028, "您当前没有可提现的收入！");
     ErrorCode GAME_CREATE_NUM_MAX_ERROR = new ErrorCode(1004004030, "每日允许创建5条组局信息，请明天再试！");
     ErrorCode GAME_DELETE_USER_ERROR = new ErrorCode(1004004031, "只有组队中或未支付的对局才可以踢出玩家！");

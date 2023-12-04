@@ -361,7 +361,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomInfoDO.getRoomId());
         }
         //关电
-        deviceService.closeRoomDoor(roomId, null, 4);
+        deviceService.closeRoomDoor(roomId,  4);
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.IotService;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+
+import java.util.Date;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
@@ -54,44 +57,22 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional
-    public void openStoreDoor(Long storeId, Long orderId, int type) {
+    public void openStoreDoor(Long storeId, int type) {
         //1用户开门 2管理员开门 3保洁开门
         switch (type) {
             case 1://1用户开门
-                if (ObjectUtils.isEmpty(orderId)) {
-                    //没有传订单
-                    //找出用户进行中的订单
-                    OrderInfoDO orderInfoDO = orderInfoMapper.getByUserAndStatus(getLoginUserId(), AppEnum.order_status.START.getValue());
-                    if (ObjectUtils.isEmpty(orderInfoDO)) {
-                        throw exception(NOT_START_ORDER);
-                    } else {
-                        openStoreDoor(orderInfoDO.getStoreId());
-                    }
-                } else {
-                    //从订单开门的
-                    OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
-                    if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                        openStoreDoor(orderInfoDO.getStoreId());
-                    } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
-                        throw exception(ORDER_STATUS_NOT_START_ERROR);
-                    }
-                }
-                //增加开门记录
-                saveDeviceUseRecord(getLoginUserId(), storeId, null, "openStoreDoor");
+                openStoreDoor(storeId);
                 break;
             case 2://2管理员开门
             case 3://3保洁开门
                 //这里是开门店的大门，所以随便开
                 openStoreDoor(storeId);
-                //增加开门记录
-                saveDeviceUseRecord(getLoginUserId(), storeId, null, "openStoreDoor");
                 break;
             case 4:
-                //增加开门记录
-                saveDeviceUseRecord(null, storeId, null, "openStoreDoor");
                 break;
         }
-
+        //增加开门记录
+        saveDeviceUseRecord(null, storeId, null, "openStoreDoor");
     }
 
 
@@ -160,87 +141,44 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional
-    public void openRoomDoor(Long roomId, Long orderId, int type) {
+    public void openRoomDoor(Long roomId, int type) {
         //1用户开门 2管理员开门 3保洁开门 4系统开门
         switch (type) {
-            case 1://1用户开门
-                if (ObjectUtils.isEmpty(orderId)) {
-                    //没有传订单
-                    //找出用户进行中的订单
-                    OrderInfoDO orderInfoDO = orderInfoMapper.getByUserAndStatus(getLoginUserId(), AppEnum.order_status.START.getValue());
-                    if (ObjectUtils.isEmpty(orderInfoDO)) {
-                        throw exception(NOT_START_ORDER);
-                    } else {
-                        openRoomDoor(orderInfoDO.getRoomId());
-                    }
-                } else {
-                    //从订单开门的
-                    OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
-                    if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                        openRoomDoor(orderInfoDO.getRoomId());
-                    } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
-                        throw exception(ORDER_STATUS_NOT_START_ERROR);
-                    }
-                }
-                //增加开门记录
-                saveDeviceUseRecord(getLoginUserId(), null, roomId, "openRoomDoor");
+            case 1://1用户开门 这里的 roomId肯定不是空
+                openRoomDoor(roomId);
                 break;
             case 2:
             case 3:
                 //管理员不限制 保洁开门权限在调用处控制 只能开待清洁的房间
                 openRoomDoor(roomId);
-                //增加开门记录
-                saveDeviceUseRecord(getLoginUserId(), null, roomId, "openRoomDoor");
                 break;
             case 4:
                 openRoomDoor(roomId);
-                //增加开门记录
-                saveDeviceUseRecord(null, null, roomId, "openRoomDoor");
                 break;
         }
+        //增加开门记录
+        saveDeviceUseRecord(null, null, roomId, "openRoomDoor");
     }
 
     @Override
     @Transactional
-    public void closeRoomDoor(Long roomId, Long orderId, int type) {
+    public void closeRoomDoor(Long roomId, int type) {
         //1用户关门 2管理员关门 3保洁关门  4系统关门
         switch (type) {
             case 1://1用户关门
-                if (ObjectUtils.isEmpty(orderId)) {
-                    //没有传订单
-                    //找出用户进行中的订单
-                    OrderInfoDO orderInfoDO = orderInfoMapper.getByUserAndStatus(getLoginUserId(), AppEnum.order_status.START.getValue());
-                    if (ObjectUtils.isEmpty(orderInfoDO)) {
-                        throw exception(NOT_START_ORDER);
-                    } else {
-                        clouseRoomDoorV2(orderInfoDO.getRoomId());
-                    }
-                } else {
-                    //从订单关门的
-                    OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
-                    if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                        clouseRoomDoorV2(orderInfoDO.getRoomId());
-                    } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
-                        throw exception(ORDER_STATUS_NOT_START_ERROR);
-                    }
-                }
-                //增加记录
-                saveDeviceUseRecord(getLoginUserId(), null, roomId, "closeRoomDoor");
+                clouseRoomDoorV2(roomId);
                 break;
             case 2:
             case 3:
                 //管理员 保洁也不限制关门
                 clouseRoomDoorV2(roomId);
-                //增加记录
-                saveDeviceUseRecord(getLoginUserId(), null, roomId, "closeRoomDoor");
                 break;
             case 4:
                 clouseRoomDoorV2(roomId);
-                //增加记录
-                saveDeviceUseRecord(null, null, roomId, "closeRoomDoor");
                 break;
         }
-
+        //增加记录
+        saveDeviceUseRecord(null, null, roomId, "closeRoomDoor");
     }
 
     //提示语类型 1欢迎语 2结束时间30分钟提醒  3结束时间15分钟提示  4 结束时间5分钟提醒

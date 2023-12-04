@@ -44,9 +44,6 @@ public class OrderController {
     private AppOrderService appOrderService;
 
     @Resource
-    private DeviceService deviceService;
-
-    @Resource
     private CouponInfoMapper couponInfoMapper;
 
 
@@ -155,7 +152,7 @@ public class OrderController {
     @Parameter(name = "orderId", required = false)
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openStoreDoor(@PathVariable(value = "orderId") Long orderId) {
-        deviceService.openStoreDoor(null, orderId, 1);
+        appOrderService.openStoreDoor(orderId);
         return success(true);
     }
 
@@ -165,7 +162,7 @@ public class OrderController {
     @Parameter(name = "orderId")
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openRoomDoor(@PathVariable("orderId") Long orderId) {
-        deviceService.openRoomDoor(null, orderId, 1);
+        appOrderService.openRoomDoor(orderId);
         return success(true);
     }
 

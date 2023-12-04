@@ -810,7 +810,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
-            deviceService.openRoomDoor(roomInfoDO.getRoomId(), orderInfoDO.getOrderId(), 1);
+            deviceService.openRoomDoor(roomInfoDO.getRoomId(), 1);
             if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) != 0) {
                 roomInfoDO.setStatus(AppEnum.room_status.USED.getValue());
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
@@ -1006,9 +1006,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
                 orderInfoDO.setRefundPrice(orderInfoDO.getPayPrice());
             }
-            //取消的订单已开始  那就触发一下关门
+            //被取消的订单已开始了  那就触发一下关门
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.closeRoomDoor(orderInfoDO.getRoomId(), null, 4);
+                deviceService.closeRoomDoor(orderInfoDO.getRoomId(),  4);
             }
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
@@ -1098,7 +1098,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //将该房间历史的保洁订单，未开始的  改成取消
             clearInfoMapper.cancelByRoomId(orderInfoDO.getRoomId());
             //开门开电
-            deviceService.openRoomDoor(orderInfoDO.getRoomId(), null, 4);
+//            deviceService.openRoomDoor(orderInfoDO.getRoomId(), null, 4);
             //播放欢迎语
 //            deviceService.runSound(orderInfoDO.getRoomId(), 4);
         } else {
@@ -1145,7 +1145,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     clearInfoDO.setRoomId(x.getRoomId());
                     clearInfoDOList.add(clearInfoDO);
                     //关门关电
-                    deviceService.closeRoomDoor(x.getRoomId(), null, 4);
+                    deviceService.closeRoomDoor(x.getRoomId(),  4);
                     storeIds.add(x.getStoreId().toString());
                 } else {
                     //如果订单结束时间  还剩30分钟，发送提醒
@@ -1270,6 +1270,18 @@ public class AppOrderServiceImpl implements AppOrderService {
         log.info("==========     开始执行易微联授权定时刷新任务     ==========");
         ewlService.refushTokenCheck();
         log.info("==========    美团/易微联授权定时刷新任务结束     ==========");
+
+    }
+
+    @Override
+    @Transactional
+    public void openRoomDoor(Long orderId) {
+
+    }
+
+    @Override
+    @Transactional
+    public void openStoreDoor(Long orderId) {
 
     }
 

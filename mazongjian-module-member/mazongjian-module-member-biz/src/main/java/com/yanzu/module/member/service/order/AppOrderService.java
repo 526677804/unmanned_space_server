@@ -39,6 +39,11 @@ public interface AppOrderService {
 
     void executeMeituanRefreshTokenJob();
 
+    void openRoomDoor(Long orderId);
+
+    void openStoreDoor(Long orderId);
+
+
 
 //    void closeOrder(Long orderId);
 }
