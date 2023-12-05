@@ -1275,16 +1275,16 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Transactional
     public void openRoomDoor(Long orderId) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
-        if (!ObjectUtils.isEmpty(orderId)) {
+        if (!ObjectUtils.isEmpty(orderInfoDO)) {
             //只能操作自己的订单
             if (orderInfoDO.getUserId().compareTo(getLoginUserId()) != 0) {
                 throw exception(OPRATION_ERROR);
             }
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
                 startOrder(orderId);
-                deviceService.openRoomDoor(orderInfoDO.getStoreId(), 1);
+                deviceService.openRoomDoor(orderInfoDO.getRoomId(), 1);
             } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.openRoomDoor(orderInfoDO.getStoreId(), 1);
+                deviceService.openRoomDoor(orderInfoDO.getRoomId(), 1);
             } else {
                 throw exception(CLEAR_OPEN_DOOR_ERROR);
             }
@@ -1297,7 +1297,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Transactional
     public void openStoreDoor(Long orderId) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
-        if (!ObjectUtils.isEmpty(orderId)) {
+        if (!ObjectUtils.isEmpty(orderInfoDO)) {
             //只能操作自己的订单
             if (orderInfoDO.getUserId().compareTo(getLoginUserId()) != 0) {
                 throw exception(OPRATION_ERROR);
