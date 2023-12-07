@@ -195,6 +195,8 @@ wx:
     mchId: 1660250968 #微信支付服务商的商户号
     mchKey: 25f3ab3858f654cacd7d3737a9a97e80 #微信支付服务商的v2密钥
     keyPath: classpath:apiclient_cert.p12 # p12证书的位置，可以指定绝对路径，也可以指定类路径（以classpath:开头）
+    splitMchId: 1654622828 #接收分账的账户id
+    splitMchName: 双流区麻总监壹号棋牌馆 #接收分账的账户名称
 
 #美团北极星平台开发者配置
 meituan:

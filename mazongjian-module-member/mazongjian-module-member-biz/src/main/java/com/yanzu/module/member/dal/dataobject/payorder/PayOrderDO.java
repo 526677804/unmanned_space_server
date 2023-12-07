@@ -1,13 +1,12 @@
 package com.yanzu.module.member.dal.dataobject.payorder;
 
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 /**
  * 支付订单 DO
@@ -49,10 +48,15 @@ public class PayOrderDO extends BaseDO {
     private Integer price;
     /**
      * 是否已支付
-     *
+     * <p>
      * 枚举 {@link TODO infra_boolean_string 对应的类}
      */
     private Boolean payStatus;
+
+    /**
+     * 是否分账
+     */
+    private Boolean splitStatus;
     /**
      * 支付订单编号
      */

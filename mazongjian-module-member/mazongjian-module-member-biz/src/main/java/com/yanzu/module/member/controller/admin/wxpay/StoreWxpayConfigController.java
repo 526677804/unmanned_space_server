@@ -1,8 +1,8 @@
-package com.yanzu.module.member.controller.admin.member;
+package com.yanzu.module.member.controller.admin.wxpay;
 
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.module.member.controller.admin.member.vo.*;
+import com.yanzu.module.member.controller.admin.wxpay.vo.*;
 import com.yanzu.module.member.convert.member.StoreWxpayConfigConvert;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.service.member.StoreWxpayConfigService;

@@ -49,4 +49,8 @@ public interface PayOrderMapper extends BaseMapperX<PayOrderDO> {
     PayOrderDO getByOrderNo(String orderNo);
 
     BigDecimal getMoney(AppChartDataReqVO reqVO);
+
+    List<PayOrderDO> getPreSplit();
+
+    int finishSplit(List<Long> ids);
 }

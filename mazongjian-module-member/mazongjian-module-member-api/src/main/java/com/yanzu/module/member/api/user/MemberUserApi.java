@@ -63,4 +63,7 @@ public interface MemberUserApi {
 
     void executeCouponExpire();
 
+    void executeWxPaySplit();
+
+    
 }

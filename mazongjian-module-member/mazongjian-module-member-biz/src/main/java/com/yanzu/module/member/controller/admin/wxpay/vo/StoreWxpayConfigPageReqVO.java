@@ -1,4 +1,4 @@
-package com.yanzu.module.member.controller.admin.member.vo;
+package com.yanzu.module.member.controller.admin.wxpay.vo;
 
 import com.yanzu.framework.common.pojo.PageParam;
 import io.swagger.v3.oas.annotations.media.Schema;

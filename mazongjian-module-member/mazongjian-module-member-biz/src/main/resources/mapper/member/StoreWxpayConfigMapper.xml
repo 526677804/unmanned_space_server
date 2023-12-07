@@ -10,7 +10,7 @@
      -->
 
     <select id="getStoreWxpayConfigPage"
-            resultType="com.yanzu.module.member.controller.admin.member.vo.StoreWxpayConfigPageRespVO">
+            resultType="com.yanzu.module.member.controller.admin.wxpay.vo.StoreWxpayConfigPageRespVO">
         select sw.*, s.store_name
         from member_store_wxpay_config sw
         left join member_store_info s ON sw.store_id = s.store_id

@@ -6,7 +6,7 @@ import com.yanzu.framework.common.pojo.PageResult;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import com.yanzu.module.member.controller.admin.member.vo.*;
+import com.yanzu.module.member.controller.admin.wxpay.vo.*;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 
 /**

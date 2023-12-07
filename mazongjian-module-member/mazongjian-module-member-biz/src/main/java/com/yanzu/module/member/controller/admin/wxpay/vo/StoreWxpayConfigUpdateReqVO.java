@@ -1,8 +1,8 @@
-package com.yanzu.module.member.controller.admin.member.vo;
+package com.yanzu.module.member.controller.admin.wxpay.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-import java.util.*;
+
 import javax.validation.constraints.*;
 
 @Schema(description = "管理后台 - 门店微信支付配置更新 Request VO")

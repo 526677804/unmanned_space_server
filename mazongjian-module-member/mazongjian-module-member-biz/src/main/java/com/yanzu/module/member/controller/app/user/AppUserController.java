@@ -6,15 +6,12 @@ import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
-import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.MyWebSocketClient;
 import com.yanzu.module.member.service.user.AppUserService;
-import com.yanzu.module.member.service.wx.MyWxPayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -167,19 +164,25 @@ public class AppUserController {
         return success(userService.getCouponPage(reqVO));
     }
 
-    @Autowired
-    MyWxPayService myWxPayService;
+//    @Autowired
+//    MyWxPayService myWxPayService;
 
-    @Autowired
-    EwlService ewlService;
+//    @Autowired
+//    EwlService ewlService;
+
+//    @Autowired
+//    MemberUserApi memberUserApi;
+
 
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
-        String authUrl = ewlService.getAuthUrl();
+//        memberUserApi.executeWxPaySplit();
+
+//        String authUrl = ewlService.getAuthUrl();
 
 //        ewlService.getToken("9be670fa-026c-4595-b7c8-2871557ed372","state");
-        ewlService.getThing();
+//        ewlService.getThing();
 //        ewlService.login();
 //        EwlSwitchReqVO reqVO = new EwlSwitchReqVO();
 //        reqVO.setDeviceid("1001fbe910");

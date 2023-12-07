@@ -3,9 +3,9 @@ package com.yanzu.module.member.dal.mysql.member;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
-import com.yanzu.module.member.controller.admin.member.vo.StoreWxpayConfigExportReqVO;
-import com.yanzu.module.member.controller.admin.member.vo.StoreWxpayConfigPageReqVO;
-import com.yanzu.module.member.controller.admin.member.vo.StoreWxpayConfigPageRespVO;
+import com.yanzu.module.member.controller.admin.wxpay.vo.StoreWxpayConfigExportReqVO;
+import com.yanzu.module.member.controller.admin.wxpay.vo.StoreWxpayConfigPageReqVO;
+import com.yanzu.module.member.controller.admin.wxpay.vo.StoreWxpayConfigPageRespVO;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import org.apache.ibatis.annotations.Mapper;
 

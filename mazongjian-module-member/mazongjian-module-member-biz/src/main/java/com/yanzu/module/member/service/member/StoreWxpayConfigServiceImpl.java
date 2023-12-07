@@ -6,12 +6,13 @@ import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.module.member.controller.admin.member.vo.*;
+import com.yanzu.module.member.controller.admin.wxpay.vo.*;
 import com.yanzu.module.member.convert.member.StoreWxpayConfigConvert;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.mysql.member.StoreWxpayConfigMapper;
 import com.yanzu.module.member.service.wx.MyWxPayService;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +38,13 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
 
     @Resource
     private MyWxPayService myWxPayService;
+
+
+    @Value("${wx.pay.splitMchId}")
+    private String splitMchId;
+
+    @Value("${wx.pay.splitMchId}")
+    private String splitMchName;
 
     @Override
     @Transactional
@@ -107,11 +115,11 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
 //                    "name": "示例商户全称",
 //                    "relation_type": "STORE_OWNER"
 //        }
-        JSONObject json=new JSONObject();
-        json.put("type","MERCHANT_ID");
-        json.put("account","1660260848");
-        json.put("name","双流区麻总监贰号棋牌馆");
-        json.put("relation_type","SERVICE_PROVIDER");
+        JSONObject json = new JSONObject();
+        json.put("type", "MERCHANT_ID");
+        json.put("account", splitMchId);
+        json.put("name", splitMchName);
+        json.put("relation_type", "SERVICE_PROVIDER");
         request.setReceiver(json.toJSONString());
         WxPayService wxPayService = myWxPayService.init(configDO.getStoreId());
         wxPayService.getProfitSharingService().addReceiver(request);

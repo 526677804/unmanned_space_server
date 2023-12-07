@@ -1,20 +1,31 @@
 package com.yanzu.module.member.api.user;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.github.binarywang.wxpay.bean.profitsharing.ProfitSharingRequest;
+import com.github.binarywang.wxpay.exception.WxPayException;
+import com.github.binarywang.wxpay.service.ProfitSharingService;
+import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.module.member.api.user.dto.MemberUserRespDTO;
 import com.yanzu.module.member.convert.user.UserConvert;
+import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
+import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
+import com.yanzu.module.member.service.wx.MyWxPayService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 会员用户的 API 实现类
@@ -37,6 +48,15 @@ public class MemberUserApiImpl implements MemberUserApi {
 
     @Resource
     private DiscountRulesMapper discountRulesMapper;
+
+    @Resource
+    private MyWxPayService myWxPayService;
+
+    @Resource
+    private PayOrderMapper payOrderMapper;
+
+    @Value("${wx.pay.splitMchId}")
+    private String splitMchId;
 
 
     @Override
@@ -82,6 +102,50 @@ public class MemberUserApiImpl implements MemberUserApi {
         couponInfoMapper.executeCouponExpire();
         //处理过期的充值优惠规则
         discountRulesMapper.executeExpire();
+    }
+
+    @Override
+    public void executeWxPaySplit() {
+        log.info("==========     开始执行微信分账定时检查任务     ==========");
+        //获取今天之前的已支付但未分账的订单
+        List<PayOrderDO> preSplit = payOrderMapper.getPreSplit();
+        if (!CollectionUtils.isEmpty(preSplit)) {
+            List<Long> splitId = new ArrayList<>(preSplit.size());
+            //按storeId分组
+            Map<Long, List<PayOrderDO>> listMap = preSplit.stream().collect(Collectors.groupingBy(x -> x.getStoreId()));
+            for (Map.Entry<Long, List<PayOrderDO>> entry : listMap.entrySet()) {
+                //初始化微信支付
+                WxPayService wxPayService = myWxPayService.init(entry.getKey());
+                //初始化分账服务
+                ProfitSharingService profitSharingService = wxPayService.getProfitSharingService();
+                for (PayOrderDO payOrderDO : entry.getValue()) {
+                    try {
+                        ProfitSharingRequest req = new ProfitSharingRequest();
+                        req.setNonceStr(UUID.randomUUID().toString().substring(0, 16));
+                        req.setTransactionId(payOrderDO.getPayOrderNo());
+                        req.setOutOrderNo("P" + payOrderDO.getOrderNo());
+                        JSONArray jsonArr = new JSONArray();
+                        JSONObject json = new JSONObject();
+                        json.put("type", "MERCHANT_ID");
+                        json.put("account", splitMchId);
+                        json.put("amount", payOrderDO.getPrice() / 100);
+                        json.put("description", "支付服务费");
+                        jsonArr.add(json);
+                        req.setReceivers(jsonArr.toJSONString());
+                        profitSharingService.profitSharing(req);
+                        splitId.add(payOrderDO.getId());
+                    } catch (WxPayException e) {
+                        log.error("微信支付分账失败:{}", payOrderDO.getId());
+                        e.printStackTrace();
+//                        throw new RuntimeException(e);
+                        continue;
+                    }
+                }
+            }
+            if (!CollectionUtils.isEmpty(splitId)) {
+                payOrderMapper.finishSplit(splitId);
+            }
+        }
     }
 
 }
