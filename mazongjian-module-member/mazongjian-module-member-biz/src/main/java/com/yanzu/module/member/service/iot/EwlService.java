@@ -209,7 +209,7 @@ public class EwlService {
             String atExpiredTime = stringRedisTemplate.opsForValue().get("ewelink.atExpiredTime");
             String rtExpiredTime = stringRedisTemplate.opsForValue().get("ewelink.rtExpiredTime");
             LocalDateTime now = LocalDateTime.now();
-            now.plusDays(2);//加2天  用来判断过期
+            now = now.plusDays(2);//加2天  用来判断过期
             //时间戳转日期
             Instant instant = Instant.ofEpochMilli(Long.valueOf(atExpiredTime)); // 将时间戳转换为Instant对象
             LocalDateTime t1 = LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));

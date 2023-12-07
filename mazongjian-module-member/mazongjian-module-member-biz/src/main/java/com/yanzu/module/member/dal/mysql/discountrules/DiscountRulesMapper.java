@@ -32,4 +32,5 @@ public interface DiscountRulesMapper extends BaseMapperX<DiscountRulesDO> {
 
     BigDecimal getMaxGiftByStoreIdAndPrice(@Param("storeId") Long storeId, @Param("payMoney") BigDecimal payMoney);
 
+    int executeExpire();
 }

@@ -1252,7 +1252,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     public void executeMeituanRefreshTokenJob() {
         log.info("==========     开始执行美团授权定时刷新任务     ==========");
         LocalDateTime now = LocalDateTime.now();
-        now.plusDays(1);//加一天  用来判断过期
+        now = now.plusDays(1);//加一天  用来判断过期
         List<StoreMeituanInfoDO> list = storeMeituanInfoMapper.selectList();
         for (StoreMeituanInfoDO infoDO : list) {
             if (infoDO.getExpiresIn().isBefore(now)) {

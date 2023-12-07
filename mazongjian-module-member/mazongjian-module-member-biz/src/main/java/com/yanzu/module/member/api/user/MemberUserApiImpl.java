@@ -4,6 +4,7 @@ import com.yanzu.module.member.api.user.dto.MemberUserRespDTO;
 import com.yanzu.module.member.convert.user.UserConvert;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
+import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,9 @@ public class MemberUserApiImpl implements MemberUserApi {
 
     @Resource
     private CouponInfoMapper couponInfoMapper;
+
+    @Resource
+    private DiscountRulesMapper discountRulesMapper;
 
 
     @Override
@@ -76,6 +80,8 @@ public class MemberUserApiImpl implements MemberUserApi {
         log.info("==========     开始执行优惠券定时检查任务     ==========");
         //处理过期 但是未使用的优惠券
         couponInfoMapper.executeCouponExpire();
+        //处理过期的充值优惠规则
+        discountRulesMapper.executeExpire();
     }
 
 }
