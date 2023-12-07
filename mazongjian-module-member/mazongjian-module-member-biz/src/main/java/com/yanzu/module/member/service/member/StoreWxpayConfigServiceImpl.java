@@ -43,7 +43,7 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
     @Value("${wx.pay.splitMchId}")
     private String splitMchId;
 
-    @Value("${wx.pay.splitMchId}")
+    @Value("${wx.pay.splitMchName}")
     private String splitMchName;
 
     @Override
