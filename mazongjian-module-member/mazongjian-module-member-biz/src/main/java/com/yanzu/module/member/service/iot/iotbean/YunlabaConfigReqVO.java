@@ -16,8 +16,8 @@ public class YunlabaConfigReqVO {
 //            "launch_tts":" " // 网络连接成功后播报
 
     private Integer volume = 2;
-    private Integer speed = 4;
-    private Integer tone = 4;
+    private Integer speed = 3;
+    private Integer tone = 5;
     private String launch_tts = " ";
 
 }

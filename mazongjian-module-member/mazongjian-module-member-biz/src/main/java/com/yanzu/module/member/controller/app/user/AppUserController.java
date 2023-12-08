@@ -6,6 +6,8 @@ import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
+import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.MyWebSocketClient;
 import com.yanzu.module.member.service.user.AppUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -173,12 +175,16 @@ public class AppUserController {
 //    @Autowired
 //    MemberUserApi memberUserApi;
 
+    @Resource
+    private IotService iotService;
+
 
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
 //        memberUserApi.executeWxPaySplit();
-
+//        iotService.configYunlaba("W70F9783A44");
+//        iotService.runYunlaba("W70F9783A44", "尊敬的顾客您好,根据城市管理条例要求,请您在深夜消费时,注意控制噪音,以免影响到他人,感谢您的支持与理解！");
 //        String authUrl = ewlService.getAuthUrl();
 
 //        ewlService.getToken("9be670fa-026c-4595-b7c8-2871557ed372","state");
