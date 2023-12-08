@@ -21,7 +21,7 @@
         select m.id,
         m.nickname,
         m.avatar,
-        m.mobile,
+        REPLACE(m.mobile, SUBSTRING(m.mobile, 4, 4), '****') mobile,
         ifnull((select sum(balance)
         from member_store_user
         where deleted = 0

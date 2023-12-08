@@ -564,8 +564,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.CLEAR.getValue()) == 0) {
             throw exception(USER_TYPE_CHECK_ERROR);
         }
-        //不是管理员角色 则改成管理员
-        if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0) {
+        //不是管理员角色 则改成管理员 如果是加盟商  则身份不变
+        if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0
+                && memberUserDO.getUserType().compareTo(AppEnum.member_user_type.BOSS.getValue()) != 0) {
             memberUserDO.setUserType(AppEnum.member_user_type.ADMIN.getValue());
             memberUserMapper.updateById(memberUserDO);
         }
