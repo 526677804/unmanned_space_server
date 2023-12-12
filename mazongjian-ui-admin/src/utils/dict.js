@@ -62,6 +62,7 @@ export const DICT_TYPE = {
   MEMBER_USER_MONEY_TYPE:'member_user_money_type',//miniapp用户账单金额类型
   MEMBER_USER_TYPE:'member_user_type',//miniapp用户类型
   MEMBER_USER_WITHDRAWAL:'member_user_withdrawal',//miniapp用户提现记录状态
+  MEMBER_GROUP_NO_TYPE:'member_group_no_type',
 
   // ========== PAY 模块 ==========
   PAY_CHANNEL_WECHAT_VERSION: 'pay_channel_wechat_version', // 微信渠道版本

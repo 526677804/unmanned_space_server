@@ -77,7 +77,7 @@
             v-hasPermi="['member:device-info:update']">绑定</el-button>
           
           <el-button size="mini" type="text" @click="handleConfigYunlaba(scope.row.deviceId)"
-            v-hasPermi="['member:device-info:update']">初始化</el-button>
+            v-hasPermi="['member:device-info:update']" v-if="scope.row.type==3">初始化</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
             v-hasPermi="['member:device-info:delete']">删除</el-button>
         </template>
@@ -134,7 +134,7 @@
 
 <script>
 import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, configYunlaba, getStoreList, getRoomList,bind } from "@/api/member/deviceInfo";
-
+import { DICT_TYPE, getDictDatas} from "@/utils/dict";
 export default {
   name: "DeviceInfo",
   components: {

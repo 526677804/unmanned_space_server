@@ -34,6 +34,8 @@ public class MyWxPayService {
     private String mchKey;
     @Value("${wx.pay.keyPath}")
     private String keyPath;
+    @Value("${wx.pay.splitEnable}")
+    private Boolean splitEnable;
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
 
@@ -64,4 +66,8 @@ public class MyWxPayService {
         return wxPayService;
     }
 
+
+    public Boolean getSplitEnable() {
+        return this.splitEnable;
+    }
 }

@@ -209,7 +209,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     public void saveCouponDetail(AppCouponDetailReqVO reqVO) {
         Long loginUserId = getLoginUserId();
         //检查权限
-        storeInfoService.checkPermisson(reqVO.getStoreId(), loginUserId, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), loginUserId, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //保存进去
         if (ObjectUtils.isEmpty(reqVO.getCouponId())) {
             CouponInfoDO couponInfoDO = new CouponInfoDO();
@@ -342,7 +342,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     public void complaintClearInfo(AppComplaintClearInfoReqVO reqVO) {
         //权限校验：管理员和加盟商允许
         // 校验用户类型
-        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
 
         //先找出来
         ClearInfoDO clearInfoDO = clearInfoMapper.selectById(reqVO.getClearId());

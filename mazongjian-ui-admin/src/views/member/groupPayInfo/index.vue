@@ -3,25 +3,24 @@
 
     <!-- 搜索工作栏 -->
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="团购券名称" prop="groupName">
+      <el-form-item label="名称" prop="groupName">
         <el-input v-model="queryParams.groupName" placeholder="请输入团购券名称" clearable @keyup.enter.native="handleQuery"/>
       </el-form-item>
-      <el-form-item label="团购券编码" prop="groupNo">
+      <el-form-item label="券编码" prop="groupNo">
         <el-input v-model="queryParams.groupNo" placeholder="请输入团购券编码" clearable @keyup.enter.native="handleQuery"/>
       </el-form-item>
-      <el-form-item label="团购券类型" prop="groupPayType">
+      <el-form-item label="券类型" prop="groupPayType">
         <el-select v-model="queryParams.groupPayType" placeholder="请选择团购券类型" clearable size="small">
           <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_GROUP_NO_TYPE)"
                        :key="dict.value" :label="dict.label" :value="dict.value"/>
         </el-select>
       </el-form-item>
       <el-form-item label="门店" prop="storeId">
-        <el-input v-model="queryParams.storeId" placeholder="请输入门店" clearable @keyup.enter.native="handleQuery"/>
+        <el-select v-model="queryParams.storeId" placeholder="请选择门店" clearable size="small">
+          <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
+        </el-select>
       </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker v-model="queryParams.createTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
-                        range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']" />
-      </el-form-item>
+      
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
@@ -30,10 +29,10 @@
 
     <!-- 操作工具栏 -->
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+      <!-- <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
                    v-hasPermi="['member:group-pay-info:create']">新增</el-button>
-      </el-col>
+      </el-col> -->
       <el-col :span="1.5">
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport" :loading="exportLoading"
                    v-hasPermi="['member:group-pay-info:export']">导出</el-button>
@@ -44,16 +43,16 @@
     <!-- 列表 -->
     <el-table v-loading="loading" :data="list">
       <el-table-column label="id" align="center" prop="id" />
-      <el-table-column label="团购券名称" align="center" prop="groupName" />
-      <el-table-column label="团购券编码" align="center" prop="groupNo" />
+      <el-table-column label="名称" align="center" prop="groupName" />
+      <el-table-column label="券编码" align="center" prop="groupNo" />
       <el-table-column label="价格" align="center" prop="groupPayPrice" />
       <el-table-column label="团购券类型" align="center" prop="groupPayType">
         <template v-slot="scope">
           <dict-tag :type="DICT_TYPE.MEMBER_GROUP_NO_TYPE" :value="scope.row.groupPayType" />
         </template>
       </el-table-column>
-      <el-table-column label="门店" align="center" prop="storeId" />
-      <el-table-column label="订单" align="center" prop="orderId" />
+      <el-table-column label="门店" align="center" prop="storeName" />
+      <el-table-column label="订单ID" align="center" prop="orderId" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template v-slot="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
@@ -61,8 +60,8 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-                     v-hasPermi="['member:group-pay-info:update']">修改</el-button>
+          <!-- <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" -->
+                     <!-- v-hasPermi="['member:group-pay-info:update']">修改</el-button> -->
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
                      v-hasPermi="['member:group-pay-info:delete']">删除</el-button>
         </template>
@@ -85,7 +84,7 @@
 </template>
 
 <script>
-import { createGroupPayInfo, updateGroupPayInfo, deleteGroupPayInfo, getGroupPayInfo, getGroupPayInfoPage, exportGroupPayInfoExcel } from "@/api/member/groupPayInfo";
+import { createGroupPayInfo, updateGroupPayInfo, deleteGroupPayInfo, getGroupPayInfo, getGroupPayInfoPage, exportGroupPayInfoExcel,getStoreList, } from "@/api/member/groupPayInfo";
 
 export default {
   name: "GroupPayInfo",
@@ -103,6 +102,7 @@ export default {
       total: 0,
       // 团购支付信息列表
       list: [],
+      storeList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -126,6 +126,10 @@ export default {
   },
   created() {
     this.getList();
+    // 执行查询
+    getStoreList().then(response => {
+      this.storeList = response.data;
+    });
   },
   methods: {
     /** 查询列表 */

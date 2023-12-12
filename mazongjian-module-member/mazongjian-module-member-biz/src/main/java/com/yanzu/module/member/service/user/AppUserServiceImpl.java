@@ -419,7 +419,7 @@ public class AppUserServiceImpl implements AppUserService {
             wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
             wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
             wxPayUnifiedOrderRequest.setTradeType("JSAPI");
-            wxPayUnifiedOrderRequest.setProfitSharing("Y");
+            wxPayUnifiedOrderRequest.setProfitSharing(myWxPayService.getSplitEnable() ? "Y" : "N");
             wxPayUnifiedOrderRequest.setOpenid(openId);
 //            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
 //            wxPayUnifiedOrderRequest.setTimeExpire()

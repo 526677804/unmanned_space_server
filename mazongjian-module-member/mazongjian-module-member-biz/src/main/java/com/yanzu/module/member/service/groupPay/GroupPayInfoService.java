@@ -3,6 +3,7 @@ package com.yanzu.module.member.service.groupPay;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoPageReqVO;
+import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoRespVO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 
 import java.util.Collection;
@@ -38,7 +39,7 @@ public interface GroupPayInfoService {
      * @param pageReqVO 分页查询
      * @return 团购支付信息分页
      */
-    PageResult<GroupPayInfoDO> getGroupPayInfoPage(GroupPayInfoPageReqVO pageReqVO);
+    PageResult<GroupPayInfoRespVO> getGroupPayInfoPage(GroupPayInfoPageReqVO pageReqVO);
 
     /**
      * 获得团购支付信息列表, 用于 Excel 导出

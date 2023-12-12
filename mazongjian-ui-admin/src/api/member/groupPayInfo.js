@@ -52,3 +52,10 @@ export function exportGroupPayInfoExcel(query) {
     responseType: 'blob'
   })
 }
+// 获得门店下拉列表
+export function getStoreList() {
+  return request({
+    url: '/index/getStoreList',
+    method: 'get'
+  })
+}

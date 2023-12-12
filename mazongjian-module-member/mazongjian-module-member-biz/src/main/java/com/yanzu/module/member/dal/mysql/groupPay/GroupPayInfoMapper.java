@@ -5,6 +5,7 @@ import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoPageReqVO;
+import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import org.apache.ibatis.annotations.Mapper;
@@ -47,4 +48,7 @@ public interface GroupPayInfoMapper extends BaseMapperX<GroupPayInfoDO> {
     BigDecimal getBusinessStatistics(AppChartDataReqVO reqVO);
 
     GroupPayInfoDO getByOrderId(Long orderId);
+
+    List<GroupPayInfoRespVO> getPage(GroupPayInfoPageReqVO pageReqVO);
+
 }

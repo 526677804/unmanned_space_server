@@ -38,4 +38,22 @@
         from member_group_pay_info
         where order_id = #{orderId}
     </select>
+    <select id="getPage" resultType="com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoRespVO">
+        select g.*, s.store_name
+        from member_group_pay_info g
+        left join member_store_info s ON g.store_id = s.store_id
+        where g.deleted = 0
+        <if test="null!=groupName and groupName!=''">
+            and locate(#{groupName},g.group_name)>0
+        </if>
+        <if test="null!=groupNo and groupNo!=''">
+            and locate(#{groupNo},g.group_no)>0
+        </if>
+        <if test="null!=groupPayType and groupPayType!=''">
+            and g.group_pay_type=#{groupPayType}
+        </if>
+        <if test="null!=storeId and storeId!=''">
+            and g.store_id=#{storeId}
+        </if>
+    </select>
 </mapper>

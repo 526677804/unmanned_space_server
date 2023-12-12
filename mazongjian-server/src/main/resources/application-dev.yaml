@@ -223,6 +223,10 @@ wx:
   pay:
     #支付回调通知地址
     returnUrl: https://api-dev.scyanzu.com/app-api/callback/wxpay/update
+    #是否开启分账功能  如果为true 则需要填写接收分账的账户信息
+    splitEnable: false
+    splitMchId:  #接收分账的账户id 这里是开发环境  就不填
+    splitMchName:  #接收分账的账户名称  营业执照上的全称   这里是开发环境  就不填
 # 美团回调
 meituan:
   redirectUrl: https://api-dev.scyanzu.com/app-api/callback/meituan

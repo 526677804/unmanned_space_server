@@ -1,8 +1,11 @@
 package com.yanzu.module.member.service.groupPay;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoPageReqVO;
+import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoRespVO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.mysql.groupPay.GroupPayInfoMapper;
 import org.springframework.stereotype.Service;
@@ -35,8 +38,11 @@ public class GroupPayInfoServiceImpl implements GroupPayInfoService {
     }
 
     @Override
-    public PageResult<GroupPayInfoDO> getGroupPayInfoPage(GroupPayInfoPageReqVO pageReqVO) {
-        return groupPayInfoMapper.selectPage(pageReqVO);
+    public PageResult<GroupPayInfoRespVO> getGroupPayInfoPage(GroupPayInfoPageReqVO pageReqVO) {
+        PageHelper.startPage(pageReqVO);
+        List<GroupPayInfoRespVO> list = groupPayInfoMapper.getPage(pageReqVO);
+        PageInfo<GroupPayInfoRespVO> pageInfo = new PageInfo<>(list);
+        return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
     }
 
     @Override

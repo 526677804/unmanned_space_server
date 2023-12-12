@@ -32,6 +32,9 @@ public class GroupPayInfoRespVO extends GroupPayInfoBaseVO {
     @Schema(description = "门店", requiredMode = Schema.RequiredMode.REQUIRED, example = "15964")
     private Long storeId;
 
+    @Schema(description = "门店名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "15964")
+    private String storeName;
+
     @Schema(description = "订单", example = "31180")
     private Long orderId;
 

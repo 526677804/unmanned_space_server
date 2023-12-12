@@ -56,8 +56,7 @@ public class GroupPayInfoController {
     @Operation(summary = "获得团购支付信息分页")
     @PreAuthorize("@ss.hasPermission('member:group-pay-info:query')")
     public CommonResult<PageResult<GroupPayInfoRespVO>> getGroupPayInfoPage(@Valid GroupPayInfoPageReqVO pageVO) {
-        PageResult<GroupPayInfoDO> pageResult = groupPayInfoService.getGroupPayInfoPage(pageVO);
-        return success(GroupPayInfoConvert.INSTANCE.convertPage(pageResult));
+        return success(groupPayInfoService.getGroupPayInfoPage(pageVO));
     }
 
     @GetMapping("/export-excel")
