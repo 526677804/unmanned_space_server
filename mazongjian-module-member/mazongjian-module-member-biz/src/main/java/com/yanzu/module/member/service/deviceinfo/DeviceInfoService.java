@@ -72,4 +72,8 @@ public interface DeviceInfoService {
     void configYunlaba(Long deviceId);
 
     void bind(DeviceInfoBindReqVO reqVO);
+
+    String ewelinkScopre();
+
+
 }

@@ -10,6 +10,7 @@ import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.IotService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,8 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     private RoomInfoMapper roomInfoMapper;
     @Resource
     private IotService iotService;
+    @Resource
+    private EwlService ewlService;
 
     @Override
     @Transactional
@@ -149,6 +152,11 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             }
         }
 
+    }
+
+    @Override
+    public String ewelinkScopre() {
+        return ewlService.getAuthUrl();
     }
 
 }

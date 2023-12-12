@@ -107,22 +107,24 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
     @Override
     @SneakyThrows
     public void profitsharing(Long id) {
-        StoreWxpayConfigDO configDO = storeWxpayConfigMapper.selectById(id);
-        ProfitSharingReceiverRequest request = new ProfitSharingReceiverRequest();
+        if(myWxPayService.getSplitEnable()){
+            StoreWxpayConfigDO configDO = storeWxpayConfigMapper.selectById(id);
+            ProfitSharingReceiverRequest request = new ProfitSharingReceiverRequest();
 //        示例值：{
 //            "type": "MERCHANT_ID",
 //                    "account": "190001001",
 //                    "name": "示例商户全称",
 //                    "relation_type": "STORE_OWNER"
 //        }
-        JSONObject json = new JSONObject();
-        json.put("type", "MERCHANT_ID");
-        json.put("account", splitMchId);
-        json.put("name", splitMchName);
-        json.put("relation_type", "SERVICE_PROVIDER");
-        request.setReceiver(json.toJSONString());
-        WxPayService wxPayService = myWxPayService.init(configDO.getStoreId());
-        wxPayService.getProfitSharingService().addReceiver(request);
+            JSONObject json = new JSONObject();
+            json.put("type", "MERCHANT_ID");
+            json.put("account", splitMchId);
+            json.put("name", splitMchName);
+            json.put("relation_type", "SERVICE_PROVIDER");
+            request.setReceiver(json.toJSONString());
+            WxPayService wxPayService = myWxPayService.init(configDO.getStoreId());
+            wxPayService.getProfitSharingService().addReceiver(request);
+        }
     }
 
 }
