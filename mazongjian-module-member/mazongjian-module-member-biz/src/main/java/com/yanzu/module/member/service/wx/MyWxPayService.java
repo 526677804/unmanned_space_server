@@ -52,13 +52,14 @@ public class MyWxPayService {
         payConfig.setMchId(mchId);//服务商的商户号
         payConfig.setMchKey(mchKey);//服务商的v2秘钥
         payConfig.setKeyPath(keyPath);//服务商的证书文件
-        if (!ObjectUtils.isEmpty(config.getAppId())) {
-            payConfig.setSubAppId(config.getAppId());//服务商模式下的子商户公众账号ID
+        if(splitEnable){
+            if (!ObjectUtils.isEmpty(config.getAppId())) {
+                payConfig.setSubAppId(config.getAppId());//服务商模式下的子商户公众账号ID
+            }
+            payConfig.setSubMchId(config.getMchId());//服务商模式下的子商户号
         }
-        payConfig.setSubMchId(config.getMchId());//服务商模式下的子商户号
         payConfig.setTradeType("JSAPI");
         payConfig.setNotifyUrl(returnUrl);
-
         // 可以指定是否使用沙箱环境
         payConfig.setUseSandboxEnv(false);
         WxPayService wxPayService = new WxPayServiceImpl();
