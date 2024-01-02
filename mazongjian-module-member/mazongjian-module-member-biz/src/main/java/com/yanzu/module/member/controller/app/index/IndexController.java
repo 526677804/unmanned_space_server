@@ -53,7 +53,6 @@ public class IndexController {
         return success(indexService.getStorePageList(reqVO));
     }
 
-
     @GetMapping("/getStoreInfo/{storeId}")
     @Operation(summary = "首页获取门店信息详情")
     @Parameter(name = "storeId")

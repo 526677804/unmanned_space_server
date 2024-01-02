@@ -184,21 +184,18 @@ public class AppClearServiceImpl implements AppClearService {
             clearInfoDO.setStatus(AppEnum.clear_info_status.FINISH.getValue());
             clearInfoDO.setFinishTime(LocalDateTime.now());
             clearInfoMapper.updateById(clearInfoDO);
-            //任务完成了  要关闭房间电源
-            deviceService.closeRoomDoor(clearInfoDO.getRoomId(),  4);
-            //取消后  如果有未完成的保洁订单 状态就是待保洁
-            int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(clearInfoDO.getRoomId());
-            if (countCurrentByRoomId > 0) {
-                roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), clearInfoDO.getRoomId());
-            } else if (orderInfoMapper.countByRoomCurrent(clearInfoDO.getRoomId(),null) > 0) {
+            //任务完成了  要关闭房间电源 但是如果房间已经开始后面的订单  就不关闭电源
+            if (orderInfoMapper.countByRoomCurrent(clearInfoDO.getRoomId(),null) > 0) {
                 // 如果当前有订单进行 就改成进行中
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), clearInfoDO.getRoomId());
             } else if (orderInfoMapper.countByRoomId(clearInfoDO.getRoomId(), null) > 0) {
                 // 如果后面还有预约 就改成已预定
                 roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), clearInfoDO.getRoomId());
+                deviceService.closeRoomDoor(clearInfoDO.getRoomId(),  4);
             } else {
                 // 否则 改成空闲
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), clearInfoDO.getRoomId());
+                deviceService.closeRoomDoor(clearInfoDO.getRoomId(),  4);
             }
         } else {
             throw exception(OPRATION_ERROR);

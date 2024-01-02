@@ -612,7 +612,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                 throw exception(ORDER_STATUS_CANCEL_OPRATION_ERROR);
         }
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
-        //管理员下单  不需要算钱了，但是要校验时间冲突
+        //管理员续费  不需要算钱了，但是要校验时间冲突
         Date endTime = reqVO.getEndTime();
         appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), endTime, null, reqVO.getOrderId(), false, false);
         //增加订单的结束时间

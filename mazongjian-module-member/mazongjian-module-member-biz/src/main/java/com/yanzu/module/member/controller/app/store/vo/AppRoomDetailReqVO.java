@@ -29,6 +29,9 @@ public class AppRoomDetailReqVO {
     @NotNull(message = "单价不能为空")
     private BigDecimal price;
 
+    @Schema(description = "通宵场价格", requiredMode = Schema.RequiredMode.REQUIRED, example = "100")
+    private BigDecimal tongxiaoPrice;
+
     @Schema(description = "房间标签 逗号分隔")
     @NotNull(message = "房间标签不能为空")
     private String label;

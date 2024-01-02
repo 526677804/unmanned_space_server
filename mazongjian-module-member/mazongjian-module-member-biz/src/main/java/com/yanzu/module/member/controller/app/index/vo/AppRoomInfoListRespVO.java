@@ -2,7 +2,6 @@ package com.yanzu.module.member.controller.app.index.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yanzu.framework.common.util.date.DateUtils;
-import com.yanzu.module.member.controller.app.order.vo.TimeRange;
 import com.yanzu.module.member.controller.app.order.vo.TimeSlotVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -41,8 +40,11 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "房间类型  值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer type;
 
-    @Schema(description = "单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "20571")
+    @Schema(description = "单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
     private BigDecimal price;
+
+    @Schema(description = "通宵场价格", requiredMode = Schema.RequiredMode.REQUIRED, example = "100")
+    private BigDecimal tongxiaoPrice;
 
     @Schema(description = "房间标签 逗号分隔")
     private String label;

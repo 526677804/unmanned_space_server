@@ -1094,7 +1094,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //房间改为进行中
             roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
             //将该房间历史的保洁订单，未开始的  改成取消
-            clearInfoMapper.cancelByRoomId(orderInfoDO.getRoomId());
+//            clearInfoMapper.cancelByRoomId(orderInfoDO.getRoomId());
             //开门开电
 //            deviceService.openRoomDoor(orderInfoDO.getRoomId(), null, 4);
             //播放欢迎语
@@ -1180,6 +1180,9 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
                 orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), orderIds.stream().collect(Collectors.joining(",")));
                 roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), roomIds.stream().collect(Collectors.joining(",")));
+                //取消掉存在的保洁订单
+                clearInfoMapper.cancelByRoomIds(roomIds.stream().collect(Collectors.joining(",")));
+                //然后再新增保洁订单
                 clearInfoMapper.insertBatch(clearInfoDOList);
                 //发送微信通知
                 sendClearMsg(roomIds, storeIds);
@@ -1207,8 +1210,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
                 orderInfoMapper.updateStatusByIds(AppEnum.order_status.START.getValue(), orderIds.stream().collect(Collectors.joining(",")));
                 roomInfoMapper.updateStatusByIds(AppEnum.room_status.USED.getValue(), roomIds.stream().collect(Collectors.joining(",")));
-                //取消掉存在的保洁订单
-                clearInfoMapper.cancelByRoomIds(roomIds.stream().collect(Collectors.joining(",")));
+
             }
         }
         log.info("==========     订单定时检查任务执行完成     ==========");

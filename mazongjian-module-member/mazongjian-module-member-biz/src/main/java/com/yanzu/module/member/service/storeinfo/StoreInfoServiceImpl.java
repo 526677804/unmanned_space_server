@@ -36,6 +36,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -138,6 +139,10 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     @Transactional
     public void saveRoomDetail(AppRoomDetailReqVO reqVO) {
+        if (ObjectUtils.isEmpty(reqVO.getTongxiaoPrice())) {
+            //没有填通宵场价格  那么默认设置为单价*6个小时
+            reqVO.setTongxiaoPrice(reqVO.getPrice().multiply(BigDecimal.valueOf(6)));
+        }
         if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //新增
             RoomInfoDO roomInfoDO = RoomInfoConvert.INSTANCE.convert3(reqVO);
@@ -154,6 +159,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoDO.setRoomName(reqVO.getRoomName());
             roomInfoDO.setType(reqVO.getType());
             roomInfoDO.setPrice(reqVO.getPrice());
+            roomInfoDO.setTongxiaoPrice(reqVO.getTongxiaoPrice());
             roomInfoDO.setLabel(reqVO.getLabel());
             roomInfoDO.setImageUrls(reqVO.getImageUrls());
             roomInfoDO.setStoreId(reqVO.getStoreId());
@@ -162,7 +168,6 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoDO.setSortId(reqVO.getSortId());
             roomInfoMapper.updateById(roomInfoDO);
         }
-
     }
 
 
@@ -367,7 +372,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         //关电
         deviceService.closeRoomDoor(roomId, 4);
         //发通知
-        workWxService.sendClearRoomMsg(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), getLoginUserId(),"设置房间空闲");
+        workWxService.sendClearRoomMsg(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), getLoginUserId(), "设置房间空闲");
     }
 
     @Override
@@ -379,7 +384,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             orderInfoDO.setEndTime(new Date());
             orderInfoMapper.updateById(orderInfoDO);
             //发通知
-            workWxService.sendClearRoomMsg(orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), getLoginUserId(),"结束订单");
+            workWxService.sendClearRoomMsg(orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), getLoginUserId(), "结束订单");
         }
     }
 

@@ -1,15 +1,12 @@
 package com.yanzu.module.member.dal.dataobject.roominfo;
 
-import lombok.*;
-import java.util.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 /**
  * 房间管理 DO
@@ -41,7 +38,7 @@ public class RoomInfoDO extends BaseDO {
     private Long storeId;
     /**
      * 房间类型
-     *
+     * <p>
      * 枚举 {@link TODO member_room_type 对应的类}
      */
     private Integer type;
@@ -49,6 +46,7 @@ public class RoomInfoDO extends BaseDO {
      * 单价
      */
     private BigDecimal price;
+    private BigDecimal tongxiaoPrice;
     /**
      * 房间标签
      */
@@ -79,7 +77,7 @@ public class RoomInfoDO extends BaseDO {
     private BigDecimal totalMoney;
     /**
      * 状态
-     *
+     * <p>
      * 枚举 {@link TODO member_room_status 对应的类}
      */
     private Integer status;

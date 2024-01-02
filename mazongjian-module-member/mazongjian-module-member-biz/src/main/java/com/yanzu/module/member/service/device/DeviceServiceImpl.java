@@ -2,15 +2,12 @@ package com.yanzu.module.member.service.device;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
-import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
-import com.yanzu.module.member.enums.AppEnum;
-import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
+import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.IotService;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +16,8 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 
-import java.util.Date;
-
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.DEVICE_OPRATION_ERROR;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.device
@@ -184,6 +178,7 @@ public class DeviceServiceImpl implements DeviceService {
     //提示语类型 1欢迎语 2结束时间30分钟提醒  3结束时间15分钟提示  4 结束时间5分钟提醒
     @Override
     public void runSound(Long roomId, Integer type) {
+        log.info("发送云喇叭提醒,房间id:{}", roomId);
         //获取设备的sn
         String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 3);
         if (!ObjectUtils.isEmpty(sn)) {

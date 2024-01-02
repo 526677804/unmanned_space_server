@@ -20,8 +20,11 @@ public class AppRoomDetailRespVO {
     @Schema(description = "房间类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer type;
 
-    @Schema(description = "单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "20571")
+    @Schema(description = "单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
     private BigDecimal price;
+
+    @Schema(description = "通宵场价格", requiredMode = Schema.RequiredMode.REQUIRED, example = "100")
+    private BigDecimal tongxiaoPrice;
 
     @Schema(description = "房间标签 逗号分隔")
     private String label;
