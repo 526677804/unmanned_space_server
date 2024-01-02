@@ -264,7 +264,7 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     @Transactional
     public void eechargeBalance(AppRechargeBalanceReqVO reqVO) {
-        reqVO.setUserId(getLoginUserId());
+//        reqVO.setUserId(getLoginUserId());
         String redisKey = String.format(WX_PAY_ORDER, reqVO.getOrderNo());
         // 从redis查询 存在的情况才处理，防止重复验证充值
         if (redisTemplate.hasKey(redisKey)) {

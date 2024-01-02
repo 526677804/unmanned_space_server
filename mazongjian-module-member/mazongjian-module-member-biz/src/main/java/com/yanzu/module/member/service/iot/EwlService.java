@@ -208,6 +208,8 @@ public class EwlService {
             String refushToken = stringRedisTemplate.opsForValue().get("ewelink.refushToken");
             String atExpiredTime = stringRedisTemplate.opsForValue().get("ewelink.atExpiredTime");
             String rtExpiredTime = stringRedisTemplate.opsForValue().get("ewelink.rtExpiredTime");
+            log.info("ewelink.atExpiredTime:{}", atExpiredTime);
+            log.info("ewelink.rtExpiredTime:{}", rtExpiredTime);
             LocalDateTime now = LocalDateTime.now();
             now = now.plusDays(2);//加2天  用来判断过期
             //时间戳转日期
@@ -222,7 +224,9 @@ public class EwlService {
                     workWxService.sendEwelinkRefushTokenMsg();
                 } else {
                     //换取新的token
+
                     JSONObject refresh = ewlClient.refresh(new EwlRefreshTokenReqVO(refushToken), appid, token);
+                    log.info("refresh result:{}", refresh);
                     if (refresh.getInteger("error") == 0) {
                         configApi.updateConfigValue("ewelink.token", refresh.getString("at"));
                         configApi.updateConfigValue("ewelink.refushToken", refresh.getString("rt"));
