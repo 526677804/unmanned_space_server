@@ -39,5 +39,15 @@ public class StoreWxpayConfigDO extends BaseDO {
      */
     private String mchId;
 
+    /**
+     * 微信支付商户密钥
+     */
+    private String mchKey;
+
+    /**
+     * p12证书
+     */
+    private String p12;
+
 
 }

@@ -217,16 +217,31 @@ justauth:
     timeout: 24h # 超时时长，目前只对 Redis 缓存生效，默认 3 分钟
 
 
-
+#易微联平台配置
+ewelink:
+  enable: false # 是否开启易微联平台 根据需要开启  不开启就不填下面的信息
+  appid: iSQwkQ8PfVRB75jaOgsPJtwfAdG1678f
+  secret: y0guc89GZnkcbbRDRzOL3HCh7LaXNpgw
+  redirectUrl: https://api.scyanzu.com/app-api/callback/ewelink
+  apiKey: f3bfc723-56e6-4f98-a69f-1a1ab94f3e87
 # 微信支付回调
 wx:
   pay:
+    appId: wx9727cb1c69b545a7 #微信公众号或者小程序等的appid
     #支付回调通知地址
     returnUrl: https://api-dev.scyanzu.com/app-api/callback/wxpay/update
+    serviceModel: false #是否开启支付服务商模式
+    #########################################################################################
+    mchId:  #微信支付服务商的商户号  如果不是服务商模式，这里就不填
+    mchKey:  #微信支付服务商的v2密钥    如果不是服务商模式，这里就不填
+    # p12证书的位置，可以指定绝对路径，也可以指定类路径（以classpath:开头）
+    keyPath:  # 如果不是服务商模式，这里就不填
     #是否开启分账功能  如果为true 则需要填写接收分账的账户信息
-    splitEnable: false
-    splitMchId:  #接收分账的账户id 这里是开发环境  就不填
-    splitMchName:  #接收分账的账户名称  营业执照上的全称   这里是开发环境  就不填
+    splitEnable: false #只有支付服务商模式，才支持分账，否则请填false
+    splitMchId:  #接收分账的账户id 这里是开发环境  不需要分账 就不填
+    splitMchName:  #接收分账的账户名称  营业执照上的全称   这里是开发环境 不需要分账   就不填
+
+
 # 美团回调
 meituan:
   redirectUrl: https://api-dev.scyanzu.com/app-api/callback/meituan

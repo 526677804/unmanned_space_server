@@ -1,8 +1,10 @@
 package com.yanzu.module.member.service.wx;
 
+import cn.hutool.core.codec.Base64;
 import com.github.binarywang.wxpay.config.WxPayConfig;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.binarywang.wxpay.service.impl.WxPayServiceImpl;
+import com.yanzu.framework.common.util.io.FileUtils;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.mysql.member.StoreWxpayConfigMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ public class MyWxPayService {
 
     @Value("${wx.pay.appId}")
     private String appId;
+    @Value("${wx.pay.serviceModel}")
+    private Boolean serviceModel;
     @Value("${wx.pay.mchId}")
     private String mchId;
     @Value("${wx.pay.mchKey}")
@@ -48,15 +52,25 @@ public class MyWxPayService {
             throw exception(STORE_WX_PAY_CONFIG_NOT_FOUND);
         }
         WxPayConfig payConfig = new WxPayConfig();
-        payConfig.setAppId(appId);
-        payConfig.setMchId(mchId);//服务商的商户号
-        payConfig.setMchKey(mchKey);//服务商的v2秘钥
-        payConfig.setKeyPath(keyPath);//服务商的证书文件
-        if(splitEnable){
-            if (!ObjectUtils.isEmpty(config.getAppId())) {
-                payConfig.setSubAppId(config.getAppId());//服务商模式下的子商户公众账号ID
+        if(serviceModel){
+            //支付服务商模式
+            payConfig.setAppId(appId);
+            payConfig.setMchId(mchId);//服务商的商户号
+            payConfig.setMchKey(mchKey);//服务商的v2秘钥
+            payConfig.setKeyPath(keyPath);//服务商的证书文件
+            if(splitEnable){
+                if (!ObjectUtils.isEmpty(config.getAppId())) {
+                    payConfig.setSubAppId(config.getAppId());//服务商模式下的子商户公众账号ID
+                }
+                payConfig.setSubMchId(config.getMchId());//服务商模式下的子商户号
             }
-            payConfig.setSubMchId(config.getMchId());//服务商模式下的子商户号
+        }else{
+            //非服务商模式
+            payConfig.setAppId(appId);
+            payConfig.setMchId(config.getMchId());//商户号
+            payConfig.setMchKey(config.getMchKey());//v2秘钥
+            // weixin-pay-java 无法设置内容，只允许读取文件，所以这里要创建临时文件来解决
+            payConfig.setKeyPath(FileUtils.createTempFile(Base64.decode(config.getP12())).getPath());//证书文件
         }
         payConfig.setTradeType("JSAPI");
         payConfig.setNotifyUrl(returnUrl);

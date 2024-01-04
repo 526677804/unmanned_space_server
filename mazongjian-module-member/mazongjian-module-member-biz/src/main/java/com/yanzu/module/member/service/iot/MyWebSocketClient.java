@@ -30,8 +30,9 @@ public class MyWebSocketClient {
 
     @Value("${ewelink.appid}")
     private String appid;
-    //    @Value("${ewelink.token:1}")
-//    private String token;
+    @Value("${ewelink.enable}")
+    private Boolean enable;
+
     @Value("${ewelink.apiKey}")
     private String apiKey;
     @Resource
@@ -47,11 +48,13 @@ public class MyWebSocketClient {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             webSocketClient.close();
         }
-        String socketUrl = ewlService.getSocketUrl();
-        webSocketClient = createWebSocketClient(socketUrl);
-        webSocketClient.connectBlocking();
-        //握手
-        hand();
+        if(enable){
+            String socketUrl = ewlService.getSocketUrl();
+            webSocketClient = createWebSocketClient(socketUrl);
+            webSocketClient.connectBlocking();
+            //握手
+            hand();
+        }
     }
 
     public WebSocketClient createWebSocketClient(String serverUrl) {

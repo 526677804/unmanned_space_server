@@ -34,7 +34,7 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_START_TIME_ERROR = new ErrorCode(1004004005, "订单开始时间不能小于当前时间！");
     ErrorCode ORDER_START_TIME_GT_END_ERROR = new ErrorCode(1004004006, "订单开始时间不能小于结束时间！");
     ErrorCode ORDER_START_TIME_MAX_ERROR = new ErrorCode(1004004007, "订单开始时间最早不能超过5天！");
-    ErrorCode ORDER_TIME_CHECK_ERROR = new ErrorCode(1004004008, "您选择的时间段在该房间不可用，请修改或更换房间！");
+    ErrorCode ORDER_TIME_CHECK_ERROR = new ErrorCode(1004004008, "您选择的时间段该房间不可用，请修改时间或更换房间！");
     ErrorCode TIME_UNIT_ERROR = new ErrorCode(1004004009, "时间单位错误，必须以0.5小时/30分钟为一个单位！");
     ErrorCode PAY_TYPE_ERROR = new ErrorCode(1004004010, "支付方式选择错误！");
     ErrorCode ORDER_TIME_MIN_ERROR = new ErrorCode(1004004011, "选择的时长不能低于4个小时！");
@@ -44,7 +44,7 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_WEIXIN_PAY_ERROR = new ErrorCode(1004004015, "微信支付失败！");
     ErrorCode ORDER_STATUS_CANCEL_OPRATION_ERROR = new ErrorCode(1004004016, "订单已取消，不支持续费！");
     ErrorCode ORDER_STATUS_FINISH_OPRATION_ERROR = new ErrorCode(1004004017, "订单已结束，不支持续费！请重新下单");
-    ErrorCode ORDER_START_OPRATION_ERROR = new ErrorCode(1004004018, "无法开始消费当前订单！");
+    ErrorCode ORDER_START_OPRATION_ERROR = new ErrorCode(1004004018, "订单已开始！");
     ErrorCode ORDER_CANCEL_OPRATION_ERROR = new ErrorCode(1004004019, "无法取消当前订单！仅允许取消下单不超过5分钟，且状态为未开始、进行中的订单！");
     ErrorCode ADMIN_ORDER_CANCEL_OPRATION_ERROR = new ErrorCode(1004004020, "无法取消当前订单!管理员仅允许取消状态为未开始、进行中的订单！");
     ErrorCode ORDER_START_TIME_LT_NOW_ERROR = new ErrorCode(1004004021, "您选择的开始时间已经小于当前时间5分钟，请重新选择开始时间！");
@@ -83,14 +83,15 @@ public interface ErrorCodeConstants {
     ErrorCode GROUP_NO_CHECK_ERROR = new ErrorCode(1004004083, "团购券验证失败！无效/已使用/已过期");
     ErrorCode GROUP_NO_CANCEL_TIMEOUT_ERROR = new ErrorCode(1004004084, "团购券退款失败,该团购券不支持退款，或已超过退款时效！");
     ErrorCode GROUP_NO_CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004085, "通宵券，仅支持23时以后~次日8时使用！请修改预定时间后重试！");
-    ErrorCode TONGXIAO_ORDER_START_ERROR = new ErrorCode(1004004086, "当前预定的时段为通宵场！仅支持23时以后~次日4时使用！请在23:00后开始订单！");
+    ErrorCode TONGXIAO_ORDER_START_ERROR = new ErrorCode(1004004086, "当前预定的时段为通宵场！不支持提前开始消费！");
     ErrorCode TONGXIAO_COUPON_USE_ERROR = new ErrorCode(1004004087, "您选择的优惠券！仅支持通宵场(23时以后~次日8时)使用！");
     ErrorCode STORE_DY_TUANGOU_PAY_ERROR = new ErrorCode(1004004088, "当前店铺暂不支持抖音团购券支付！请选择其他支付方式！");
     ErrorCode GROUP_PAY_WORK_CHECK_ERROR = new ErrorCode(1004004089, "您输入的团购券仅周一至周四可用！请修改预定时间或更换团购券");
     ErrorCode GROUP_PAY_WORK_DAY_CHECK_ERROR = new ErrorCode(1004004090, "您输入的团购券仅工作日可用！请修改预定时间或更换团购券");
     ErrorCode GROUP_PAY_ROOM_TYPE_CHECK_ERROR = new ErrorCode(1004004091, "您输入的团购券仅【小包】可用！请修改预订的包间！");
     ErrorCode ORDER_START_TIQIAN_ERROR = new ErrorCode(1004004092, "订单不允许提前6小时以上开始！");
-    ErrorCode CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004093, "通宵场时间为23时以后~次日8时！请修改预定时间后重试！");
+    ErrorCode CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004093, "团购的通宵场时间为23时以后~次日8时！请修改预定时间后重试！");
+    ErrorCode CHECK_TONGXIAO_END_TIME_ERROR = new ErrorCode(1004004094, "通宵场的结束时间只能为08:00！请修改预定时间后重试！");
 
     ErrorCode GROUP_NO_USE_CHECK_ERROR = new ErrorCode(1004004084, "您输入的团购券不符合订单使用条件！");
 

@@ -32,6 +32,7 @@ import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import com.yanzu.module.member.service.wx.MyWxPayService;
@@ -130,6 +131,10 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Resource
     private WorkWxService workWxService;
+
+    @Resource
+    private AppOrderService appOrderService;
+
     @Resource
     private StoreInfoService storeInfoService;
 
@@ -361,20 +366,23 @@ public class AppUserServiceImpl implements AppUserService {
             return new PageResult<>(page.getList(), page.getTotal());
         } else {
             //提交订单页查询
-            //下单的时候  要返回可用状态  先计算出房间单价
+            //下单的时候  要返回可用状态
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
-            BigDecimal price = roomInfoDO.getPrice().multiply(reqVO.getOrderHour());
+            //先计算出订单价格
+            BigDecimal mathPrice = appOrderService.mathPrice(roomInfoDO.getPrice(), roomInfoDO.getTongxiaoPrice(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null);
+            //再计算出时长 精确到小数点后两位
+            BigDecimal hours = new BigDecimal(String.valueOf((reqVO.getEndTime().getTime() - reqVO.getStartTime().getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
             List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
-            //计算是否可用
+            //校验每张优惠券是否可用
             if (!CollectionUtils.isEmpty(list)) {
                 list.stream().forEach(x -> {
                     boolean f1 = false;
                     if (x.getType().compareTo(AppEnum.coupon_type.DIKOU.getValue()) == 0) {
                         //抵扣时长
-                        f1 = reqVO.getOrderHour().compareTo(x.getMinUsePrice()) >= 0;
+                        f1 = hours.compareTo(x.getMinUsePrice()) >= 0;
                     } else if (x.getType().compareTo(AppEnum.coupon_type.MANJIAN.getValue()) == 0) {
                         //满减
-                        f1 = price.compareTo(x.getMinUsePrice()) >= 0;
+                        f1 = mathPrice.compareTo(x.getMinUsePrice()) >= 0;
                     }
                     //判断门店
                     boolean f2 = x.getStoreId().compareTo(roomInfoDO.getStoreId()) == 0;

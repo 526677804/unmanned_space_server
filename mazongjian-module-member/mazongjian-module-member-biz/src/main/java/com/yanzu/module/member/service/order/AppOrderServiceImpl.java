@@ -179,18 +179,16 @@ public class AppOrderServiceImpl implements AppOrderService {
         //通宵场判断
         if (nightLong) {
             //通宵
-            //判断订单时间是否合法  通宵场的开始时间必须大于23:00小于04:00  结束时间必须等于08:00  时间差不能大于9小时
-            if (!checkTongxiao(startTime, endTime)) {
-                throw exception(CHECK_TONGXIAO_TIME_ERROR);
+            //判断订单时间是否合法  通宵场的 结束时间必须等于08:00
+            if (!(endTime.getHours() == 8 && endTime.getMinutes() == 0)) {
+                throw exception(CHECK_TONGXIAO_END_TIME_ERROR);
             }
-        } else {
-            //非通宵
-            if (startTime.before(now)) {
-                //开始时间在当前之前，不能超过5分钟  不然间隔太久了
-                long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
-                if (l > 6) {
-                    throw exception(ORDER_START_TIME_LT_NOW_ERROR);
-                }
+        }
+        if (startTime.before(now)) {
+            //开始时间在当前之前，不能超过5分钟  不然间隔太久了
+            long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
+            if (l > 6) {
+                throw exception(ORDER_START_TIME_LT_NOW_ERROR);
             }
         }
         //查询出房间信息
@@ -198,7 +196,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //检查优惠券是否允许使用
         checkCouponUse(couponInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime);
         //计算订单价格
-        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), startTime, endTime, couponInfoDO);
+        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getTongxiaoPrice(), startTime, endTime, nightLong, couponInfoDO);
         //查询出该房间 所有的订单 以及不可用的时间段
         List<OrderInfoDO> orderInfoList = orderInfoMapper.getByRoomId(roomId, ignoreOrderId);
         //构建出不可用的时间区间
@@ -322,49 +320,48 @@ public class AppOrderServiceImpl implements AppOrderService {
                     throw exception(COUPON_USE_CHECK_ERROR);
                 }
             }
-            //普通场 不能使用通宵券
-            if (!nightLong) {
-                if (couponInfoDO.getCouponName().indexOf("通宵") != -1) {
-                    throw exception(TONGXIAO_COUPON_USE_ERROR);
-                }
-            }
-
         }
 
     }
 
 
     @Override
-    public BigDecimal mathPrice(BigDecimal price, Date startTime, Date endTime, CouponInfoDO couponInfoDO) {
-        // 将秒字段设置为0，保持其他字段不变
-        Calendar cal1 = Calendar.getInstance();
-        cal1.setTime(startTime);
-        cal1.set(Calendar.SECOND, 0);
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTime(endTime);
-        cal2.set(Calendar.SECOND, 0);
-        // 计算两个日期的分钟差值
-        long diff = Math.abs(cal2.getTimeInMillis() - cal1.getTimeInMillis());
-        long minutes = diff / (60 * 1000);
-        BigDecimal hour = new BigDecimal(String.valueOf(minutes / 60.0));
+    public BigDecimal mathPrice(BigDecimal price, BigDecimal tongxiaoPrice, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO) {
+        // 计算两个日期的小时差 精确到小数点后两位
+        BigDecimal hours = new BigDecimal(String.valueOf((endTime.getTime() - startTime.getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
         //计算价格 单价*时长
-        BigDecimal totalPrice = price.multiply(hour);
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        //如果是通宵场 要考虑通宵场的价格
+        if (nightLong) {
+            //如果小于等于9个小时  那么说明是23~8时的  就按通宵场价格
+            if (hours.compareTo(new BigDecimal(9)) <= 0) {
+                totalPrice = tongxiaoPrice;
+            } else {
+                //大于9小时  要用多于的时间*单价 再加上通宵场的价格
+                BigDecimal addPrice = hours.subtract(new BigDecimal(9)).multiply(price);
+                totalPrice = tongxiaoPrice.add(addPrice);
+            }
+        } else {
+            //否则就是单价*时长
+            totalPrice = price.multiply(hours);
+        }
         //判断使用优惠券的情况
         if (!ObjectUtils.isEmpty(couponInfoDO)) {
+
             //判断类型
             switch (couponInfoDO.getType()) {
                 case 1://1抵扣券
                     //判断门槛
-                    if (couponInfoDO.getMinUsePrice().compareTo(hour) > 0) {
+                    if (couponInfoDO.getMinUsePrice().compareTo(hours) > 0) {
                         throw exception(COUPON_MIN_USER_PRICE_ERROR);
                     }
                     //抵扣 并重新算价格
-                    if (couponInfoDO.getPrice().compareTo(hour) >= 0) {
+                    if (couponInfoDO.getPrice().compareTo(hours) >= 0) {
                         //直接抵扣完，价格设置为0
                         totalPrice = BigDecimal.ZERO;
                     } else {
-                        hour = hour.subtract(couponInfoDO.getPrice());
-                        totalPrice = price.multiply(hour);
+                        hours = hours.subtract(couponInfoDO.getPrice());
+                        totalPrice = price.multiply(hours);
                     }
                     break;
                 case 2://2满减券
@@ -382,7 +379,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                     break;
             }
         }
-        return totalPrice;
+        //结果保留2位小数
+        return totalPrice.setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 
     private String getRoomNameByType(Integer roomType) {
@@ -412,7 +410,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     private boolean checkTongxiao(Date startTime, Date endTime) {
-        return (startTime.getHours() >= 23 || startTime.getHours() < 4) && endTime.getHours() == 8 && endTime.getMinutes() == 0 && endTime.getTime() - startTime.getTime() <= 9 * 60 * 60 * 1000;
+        return (endTime.getHours() == 8 && endTime.getMinutes() == 0 && endTime.getTime() - startTime.getTime() <= 9 * 60 * 60 * 1000);
     }
 
     /**
@@ -426,12 +424,12 @@ public class AppOrderServiceImpl implements AppOrderService {
      */
     private void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong) {
         if (nightLong) {
-            //通宵场 要求团购券必须包含 “通宵”两个字
+            //团购的通宵场 要求团购券必须包含 “通宵”两个字
             if (title.indexOf("通宵") == -1) {
                 throw exception(GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR);
             }
-            //通宵场  判断开始时间必须大于23:00 小于4:00   结束时间必须等于08:00
-            if (!checkTongxiao(startTime, endTime)) {
+            //团购的通宵场  判断开始时间必须大于23:00 小于4:00   结束时间必须等于08:00
+            if (!(endTime.getHours() == 8 && endTime.getMinutes() == 0 && endTime.getTime() - startTime.getTime() <= 9 * 60 * 60 * 1000)) {
                 throw exception(CHECK_TONGXIAO_TIME_ERROR);
             }
         } else {
@@ -1056,25 +1054,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (l1 > 360) {
                     throw exception(ORDER_START_TIQIAN_ERROR);
                 }
-                //对于通宵场，开始时间只能在23时以后 4时之前
+                //对于通宵场，不能提前开始
                 if (orderInfoDO.getNightLong()) {
                     //通宵场
-                    //判断是否具备提前开始的条件，23点及以后 或者4点以前
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.set(Calendar.HOUR_OF_DAY, 8); // 设置小时为8
-                    calendar.set(Calendar.MINUTE, 0); // 设置分钟为0
-                    calendar.set(Calendar.SECOND, 0); // 设置秒钟为0
-                    calendar.set(Calendar.MILLISECOND, 0); // 设置毫秒为0
-                    if (now.getHours() >= 23) {
-                        //今日23时之后开始 开始时间就等于现在  结束时间等于次日8时
-                        calendar.add(Calendar.DAY_OF_MONTH, 1); // 加一天
-                        orderInfoDO.setEndTime(calendar.getTime());
-                    } else if (now.getHours() < 4) {
-                        //次日4点以前开始 开始时间就等于现在  结束时间等于今日8时
-                        orderInfoDO.setEndTime(calendar.getTime());
-                    } else {
-                        throw exception(TONGXIAO_ORDER_START_ERROR);
-                    }
+                    throw exception(TONGXIAO_ORDER_START_ERROR);
                 } else {
                     //新的结束时间 等于当前时间加上订单的时长
                     long l = now.getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime());

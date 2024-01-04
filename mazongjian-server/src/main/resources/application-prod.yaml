@@ -222,15 +222,32 @@ justauth:
     prefix: 'social_auth_state:' # 缓存前缀，目前只对 Redis 缓存生效，默认 JUSTAUTH::STATE::
     timeout: 24h # 超时时长，目前只对 Redis 缓存生效，默认 3 分钟
 
+#易微联平台配置
+ewelink:
+  enable: true # 是否开启易微联平台 根据需要开启  不开启就不填下面的信息
+  appid: iSQwkQ8PfVRB75jaOgsPJtwfAdG1678f
+  secret: y0guc89GZnkcbbRDRzOL3HCh7LaXNpgw
+  redirectUrl: https://api.scyanzu.com/app-api/callback/ewelink
+  apiKey: f3bfc723-56e6-4f98-a69f-1a1ab94f3e87
+
 # 微信支付回调
 wx:
   pay:
+    appId: wx9727cb1c69b545a7 #微信公众号或者小程序等的appid
     #支付回调通知地址
     returnUrl: https://api.scyanzu.com/app-api/callback/wxpay/update
+    serviceModel: true #是否开启支付服务商模式
+    #########################################################################################
+    mchId: 1660250968 #微信支付服务商的商户号  如果不是服务商模式，这里就不填
+    mchKey: 25f3ab3858f654cacd7d3737a9a97e80 #微信支付服务商的v2密钥    如果不是服务商模式，这里就不填
+    # p12证书的位置，可以指定绝对路径，也可以指定类路径（以classpath:开头）
+    keyPath: classpath:apiclient_cert.p12 # 如果不是服务商模式，这里就不填
     #是否开启分账功能  如果为true 则需要填写接收分账的账户信息
     splitEnable: true
     splitMchId: 1654622828 #接收分账的账户id
     splitMchName: 双流区麻总监壹号棋牌馆 #接收分账的账户名称  营业执照上的全称
+
+
 # 美团回调
 meituan:
   redirectUrl: https://api.scyanzu.com/app-api/callback/meituan

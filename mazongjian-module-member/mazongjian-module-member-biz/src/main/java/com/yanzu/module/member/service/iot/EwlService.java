@@ -117,6 +117,7 @@ public class EwlService {
         reqVO.setRedirectUrl(redirectUrl);
         String jsonString = JSONObject.toJSONString(reqVO);
         EwlBaseRespVO<EwlTokenRespVO> token = ewlClient.getToken(reqVO, appid, HMACSHA256(jsonString));
+        log.info("token:{}",token);
         if (token.getError().compareTo(0) == 0) {
             //存起来  token 1个月过期 rtoken 3个月过期
 //            accessToken -> 28e3579792d46a0e00e323d0ced05d9e97691782

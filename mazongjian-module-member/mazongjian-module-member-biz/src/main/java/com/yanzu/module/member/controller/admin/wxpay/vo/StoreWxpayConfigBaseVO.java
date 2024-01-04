@@ -23,5 +23,10 @@ public class StoreWxpayConfigBaseVO {
     @NotNull(message = "微信支付商户号不能为空")
     private String mchId;
 
+    @Schema(description = "支付密钥", requiredMode = Schema.RequiredMode.REQUIRED, example = "23018")
+    private String mchKey;
+
+    @Schema(description = "p12证书", requiredMode = Schema.RequiredMode.REQUIRED, example = "23018")
+    private String p12;
 
 }
