@@ -1054,18 +1054,20 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (l1 > 360) {
                     throw exception(ORDER_START_TIQIAN_ERROR);
                 }
-                //对于通宵场，不能提前开始
+                //对于通宵场，除非已经超过23时 否则不能提前开始
                 if (orderInfoDO.getNightLong()) {
                     //通宵场
-                    throw exception(TONGXIAO_ORDER_START_ERROR);
-                } else {
-                    //新的结束时间 等于当前时间加上订单的时长
-                    long l = now.getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime());
-                    Date endTime = new Date(l);
-                    //更改订单的开始和完成时间
-                    orderInfoDO.setEndTime(endTime);
-                    log.info("订单：{}，提前开始消费！", orderInfoDO.getOrderNo());
+                    if (now.getHours() < 23 && now.getHours() >= 4) {
+                        throw exception(TONGXIAO_ORDER_START_ERROR);
+                    }
                 }
+                //新的结束时间 等于当前时间加上订单的时长
+                long l = now.getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime());
+                Date endTime = new Date(l);
+                endTime.setSeconds(0);
+                //更改订单的开始和完成时间
+                orderInfoDO.setEndTime(endTime);
+                log.info("订单：{}，提前开始消费！", orderInfoDO.getOrderNo());
                 orderInfoDO.setStartTime(now);
                 //校验时间冲突
                 preOrder(orderInfoDO.getRoomId(), now, orderInfoDO.getEndTime(), null, orderId, false, false);
