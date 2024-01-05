@@ -184,12 +184,12 @@
 
     <select id="getRevenueStatistics" resultType="com.yanzu.framework.common.core.KeyValue">
         SELECT
-        `key`,
+        `key`,create_time,
         ifnull( SUM( price ), 0 ) `value`
         FROM
         (
         SELECT
-        DATE_FORMAT( create_time, '%m-%d' ) `key`,
+        DATE_FORMAT( create_time, '%m-%d' ) `key`,create_time,
         ifnull( sum( group_pay_price ), 0 ) `price`
         FROM
         member_group_pay_info
@@ -208,7 +208,7 @@
         GROUP BY
         DATE_FORMAT( create_time, '%m-%d' ) UNION
         SELECT
-        DATE_FORMAT( create_time, '%m-%d' ) `key`,
+        DATE_FORMAT( create_time, '%m-%d' ) `key`,create_time,
         ifnull( sum( price / 100.0 ), 0 ) `price`
         FROM
         member_pay_order
