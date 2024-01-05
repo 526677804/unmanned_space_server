@@ -231,8 +231,7 @@
         ) t
         GROUP BY
         `key`
-        ORDER BY
-        `key`
+        ORDER BY create_time asc
     </select>
     <select id="getOrderStatistics" resultType="com.yanzu.framework.common.core.KeyValue">
         select d.label as `key`,count(1) `value`
