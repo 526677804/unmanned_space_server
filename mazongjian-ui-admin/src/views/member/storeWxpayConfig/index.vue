@@ -68,6 +68,12 @@
         <el-form-item label="商户号" prop="mchId">
           <el-input v-model="form.mchId" placeholder="请输入商户号" />
         </el-form-item>
+        <el-form-item label="支付密钥" prop="mchkey">
+          <el-input v-model="form.mchkey" placeholder="请输入支付密钥(服务商模式不填)" />
+        </el-form-item>
+        <el-form-item label="p12证书" prop="p12">
+          <el-input v-model="form.p12" placeholder="请输入p12证书(服务商模式不填)" />
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -146,6 +152,8 @@ export default {
         id: undefined,
         storeId: undefined,
         mchId: undefined,
+        mchkey: undefined,
+        p12: undefined
       };
       this.resetForm("form");
     },
