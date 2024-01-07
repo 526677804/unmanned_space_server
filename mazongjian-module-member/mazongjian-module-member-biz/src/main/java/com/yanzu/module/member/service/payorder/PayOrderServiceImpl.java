@@ -36,7 +36,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.ADMIN_WEIXIN_PAY_REFOUND_ERROR;
 
 /**
  * 支付订单 Service 实现类
@@ -233,6 +235,33 @@ public class PayOrderServiceImpl implements PayOrderService {
 //            throw new RuntimeException(e);
             return false;
         }
+    }
+
+    @Override
+    @Transactional
+    public void refundOrder(Long id) {
+        //查询出订单
+        PayOrderDO payOrderDO = payOrderMapper.selectById(id);
+        if (!ObjectUtils.isEmpty(payOrderDO)) {
+            if (payOrderDO.getPayStatus() && payOrderDO.getRefundPrice() == 0) {
+                WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+                refundRequest.setOutTradeNo(payOrderDO.getOrderNo());
+                refundRequest.setOutRefundNo("TK" + payOrderDO.getOrderNo());
+                refundRequest.setTotalFee(payOrderDO.getPrice());
+                refundRequest.setRefundFee(payOrderDO.getPrice());
+                refundRequest.setRefundDesc("管理员退款");
+                WxPayService wxPayService = myWxPayService.init(payOrderDO.getStoreId());
+                try {
+                    wxPayService.refundV2(refundRequest);
+                } catch (WxPayException ex) {
+//                throw new RuntimeException(ex);
+//                    log.error("微信支付订单:{}，退款失败！", orderNo);
+                }
+            } else {
+                throw exception(ADMIN_WEIXIN_PAY_REFOUND_ERROR);
+            }
+        }
+
     }
 
 }

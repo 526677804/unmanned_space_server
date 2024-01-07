@@ -1,5 +1,7 @@
 package com.yanzu.module.member.controller.app.user;
 
+import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
+import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
@@ -10,10 +12,12 @@ import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.MyWebSocketClient;
 import com.yanzu.module.member.service.user.AppUserService;
+import com.yanzu.module.member.service.wx.MyWxPayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -166,8 +170,8 @@ public class AppUserController {
         return success(userService.getCouponPage(reqVO));
     }
 
-//    @Autowired
-//    MyWxPayService myWxPayService;
+    @Autowired
+    MyWxPayService myWxPayService;
 
 //    @Autowired
 //    EwlService ewlService;
@@ -213,13 +217,13 @@ public class AppUserController {
         data.put("params",params);
         myWebSocketClient.sendToServer(JSON.toJSONString(data));*/
 
-//        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-//        refundRequest.setOutTradeNo("2023112253399475");
-//        refundRequest.setOutRefundNo("2023112253399475");
-//        refundRequest.setTotalFee(4800);
-//        refundRequest.setRefundFee(4800);
-//        WxPayService wxPayService = myWxPayService.init(5L);
-//        wxPayService.refundV2(refundRequest);
+        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+        refundRequest.setOutTradeNo("2024010504000603");
+        refundRequest.setOutRefundNo("2024010504000603");
+        refundRequest.setTotalFee(6990);
+        refundRequest.setRefundFee(6990);
+        WxPayService wxPayService = myWxPayService.init(5L);
+        wxPayService.refundV2(refundRequest);
         return success("1");
     }
 

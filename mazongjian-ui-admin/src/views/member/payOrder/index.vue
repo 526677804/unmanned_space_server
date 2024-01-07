@@ -77,8 +77,8 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-                     v-hasPermi="['member:pay-order:update']">修改</el-button>
+          <!-- <el-button size="mini" type="text" icon="el-icon-edit" v-if="scope.row.payStatus&&!scope.row.refundPrice" @click="handleRefund(scope.row)"
+                     v-hasPermi="['member:pay-order:update']">退款</el-button> -->
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
                      v-hasPermi="['member:pay-order:delete']">删除</el-button>
         </template>
@@ -101,7 +101,7 @@
 </template>
 
 <script>
-import { createPayOrder, updatePayOrder, deletePayOrder, getPayOrder, getPayOrderPage, exportPayOrderExcel } from "@/api/member/payOrder";
+import { createPayOrder, updatePayOrder, deletePayOrder, refundOrder,getPayOrder, getPayOrderPage, exportPayOrderExcel } from "@/api/member/payOrder";
 
 export default {
   name: "PayOrder",
@@ -191,6 +191,17 @@ export default {
         this.open = true;
         this.title = "修改支付订单";
       });
+    },
+    /** 退款 */
+    handleRefund(row) {
+      const id = row.id;
+      this.$modal.confirm('是否确认退款订单编号："' + id + '"?').then(function() {
+          return refundOrder(id);
+        }).then(() => {
+          this.getList();
+          this.$modal.msgSuccess("退款成功");
+        }).catch(() => {});
+
     },
     /** 提交按钮 */
     submitForm() {

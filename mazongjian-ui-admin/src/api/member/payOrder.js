@@ -17,7 +17,13 @@ export function updatePayOrder(data) {
     data: data
   })
 }
-
+//退款
+export function refundOrder(id) {
+  return request({
+    url: '/member/pay-order/refund?id=' + id,
+    method: 'post'
+  })
+}
 // 删除支付订单
 export function deletePayOrder(id) {
   return request({
