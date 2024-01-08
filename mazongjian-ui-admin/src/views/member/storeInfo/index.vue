@@ -148,7 +148,7 @@
 </template>
 
 <script>
-import { createStoreInfo, updateStoreInfo, deleteStoreInfo, getStoreInfo, getStoreInfoPage, exportStoreInfoExcel } from "@/api/member/storeInfo";
+import { createStoreInfo, updateStoreInfo, deleteStoreInfo, getStoreInfo, getStoreInfoPage, exportStoreInfoExcel,getMeituanScope } from "@/api/member/storeInfo";
 import Editor from '@/components/Editor';
 
 export default {
@@ -271,8 +271,9 @@ export default {
     /** 美团授权按钮操作 */
     handleMeituan(row) {
       const storeId = row.storeId;
-      let url="https://e.dianping.com/dz-open/merchant/auth?app_key=022008863ebef333&redirect_url=https://api.scyanzu.com/app-api/callback/meituan&state=storeId-"+storeId
-      window.open(url);
+      getMeituanScope(storeId).then(response => {
+        window.open(response.data, '_blank'); // 在新窗口中打开
+      });
     },
     /** 提交按钮 */
     submitForm() {

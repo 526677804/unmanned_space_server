@@ -155,7 +155,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     }
 
     @Override
-    public String ewelinkScopre() {
+    public String ewelinkScope() {
         return ewlService.getAuthUrl();
     }
 

@@ -29,6 +29,7 @@ import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.wx.WorkWxService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -81,6 +82,14 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Resource
     private WorkWxService workWxService;
+
+
+    @Value("${meituan.appKey}")
+    private String meituanAppKey;
+
+
+    @Value("${meituan.redirectUrl}")
+    private String meituanRedirectUrl;
 
     @Override
     public PageResult<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO) {
@@ -386,6 +395,13 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //发通知
             workWxService.sendClearRoomMsg(orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), getLoginUserId(), "结束订单");
         }
+    }
+
+    @Override
+    public String meituanScope(Long storeId) {
+        String url = "https://e.dianping.com/dz-open/merchant/auth?app_key=" + meituanAppKey
+                + "&redirect_url=" + meituanRedirectUrl + "&state=storeId-" + storeId;
+        return url;
     }
 
 }

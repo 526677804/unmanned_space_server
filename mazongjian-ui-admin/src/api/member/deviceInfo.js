@@ -85,9 +85,9 @@ export function bind(data) {
     data: data
   })
 }
-export function getEwelinkScore(){
+export function getEwelinkScope(){
   return request({
-    url: '/member/device-info/ewelinkScopre',
+    url: '/member/device-info/ewelinkScope',
     method: 'get'
   })
 }

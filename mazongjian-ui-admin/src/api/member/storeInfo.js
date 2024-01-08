@@ -52,3 +52,9 @@ export function exportStoreInfoExcel(query) {
     responseType: 'blob'
   })
 }
+export function getMeituanScope(id){
+  return request({
+    url: '/member/store-info/meituanScope/'+id,
+    method: 'get'
+  })
+}

@@ -41,11 +41,11 @@ public class DeviceInfoController {
         return success(deviceInfoService.createDeviceInfo(createReqVO));
     }
 
-    @GetMapping("/ewelinkScopre")
+    @GetMapping("/ewelinkScope")
     @Operation(summary = "易微联授权")
     @PreAuthorize("@ss.hasPermission('member:device-info:create')")
-    public CommonResult<String> ewelinkScopre() {
-        return success(deviceInfoService.ewelinkScopre());
+    public CommonResult<String> ewelinkScope() {
+        return success(deviceInfoService.ewelinkScope());
     }
 
     @PutMapping("/bindStore")

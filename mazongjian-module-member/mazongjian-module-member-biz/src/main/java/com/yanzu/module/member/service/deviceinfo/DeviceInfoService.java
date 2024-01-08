@@ -73,7 +73,7 @@ public interface DeviceInfoService {
 
     void bind(DeviceInfoBindReqVO reqVO);
 
-    String ewelinkScopre();
+    String ewelinkScope();
 
 
 }

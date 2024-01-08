@@ -14,7 +14,6 @@ import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
-import com.yanzu.module.member.enums.AppEnum;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -28,9 +27,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
-import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.index
@@ -67,6 +63,12 @@ public class IndexServiceImpl implements IndexService {
 
     @Override
     public PageResult<AppStorePageRespVO> getStorePageList(AppStorePageReqVO reqVO) {
+        if (!ObjectUtils.isEmpty(reqVO.getCityName())) {
+            if (reqVO.getCityName().equals("选择城市") || reqVO.getCityName().equals("请选择")) {
+                reqVO.setCityName("");
+            }
+        }
+
         PageHelper.startPage(reqVO);
         List<AppStorePageRespVO> list = storeInfoMapper.getStorePageList(reqVO);
         PageInfo<AppStorePageRespVO> page = new PageInfo<>(list);
