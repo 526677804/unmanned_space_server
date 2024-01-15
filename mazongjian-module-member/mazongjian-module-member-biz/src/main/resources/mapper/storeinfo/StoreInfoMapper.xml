@@ -78,7 +78,7 @@
     <select id="getStoreList" resultType="com.yanzu.framework.common.core.KeyValue">
         select s.store_name `key`,s.store_id `value`
         from member_store_info s
-        left join member_store_user su ON su.store_id=s.store_id
+        left join member_store_user su ON su.store_id=s.store_id and su.type!=11
         where s.deleted = 0 and su.deleted=0
         and su.user_id=#{userId}
         <if test=" null!=cityName and cityName!=''">

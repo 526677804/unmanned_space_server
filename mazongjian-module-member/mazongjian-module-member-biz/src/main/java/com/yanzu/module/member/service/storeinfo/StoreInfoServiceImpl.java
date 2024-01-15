@@ -404,4 +404,19 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         return url;
     }
 
+    @Override
+    @Transactional
+    public void disableRoom(Long roomId) {
+        //检查权限
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+        checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
+            //改成空闲
+            roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(),roomId);
+        } else {
+            //改成禁用
+            roomInfoMapper.updateStatusById(AppEnum.room_status.DISABLE.getValue(),roomId);
+        }
+    }
+
 }

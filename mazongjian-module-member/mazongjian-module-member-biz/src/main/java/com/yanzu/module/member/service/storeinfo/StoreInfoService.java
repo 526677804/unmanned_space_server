@@ -112,4 +112,6 @@ public interface StoreInfoService {
     void finishRoomOrder(Long roomId);
 
     String meituanScope(Long storeId);
+
+    void disableRoom(Long roomId);
 }

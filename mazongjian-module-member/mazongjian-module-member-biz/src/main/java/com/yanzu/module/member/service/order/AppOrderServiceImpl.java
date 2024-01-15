@@ -1111,57 +1111,60 @@ public class AppOrderServiceImpl implements AppOrderService {
             List<String> orderIds = new ArrayList<>();
             //新增保洁订单
             List<ClearInfoDO> clearInfoDOList = new ArrayList<>();
-            listStart.forEach(x -> {
-//                log.info("进行中订单：{}，结束时间:{}", x.getOrderNo(), DateUtils.dateToStr(x.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
-                //进行中订单的结束时间 小于当前时间 则结束订单
-                if (x.getEndTime().before(now)) {
-                    log.info("结束订单：{}", x.getOrderNo());
-//                    x.setStatus(AppEnum.order_status.FINISH.getValue());
-                    orderIds.add(String.valueOf(x.getOrderId()));
-                    //房间改为待保洁
-                    roomIds.add(String.valueOf(x.getRoomId()));
-                    //新增保洁订单
-                    ClearInfoDO clearInfoDO = new ClearInfoDO();
-                    clearInfoDO.setOrderId(x.getOrderId());
-                    clearInfoDO.setStoreId(x.getStoreId());
-                    clearInfoDO.setOrderNo(x.getOrderNo());
-                    clearInfoDO.setRoomId(x.getRoomId());
-                    clearInfoDOList.add(clearInfoDO);
-                    //关门关电
-                    deviceService.closeRoomDoor(x.getRoomId(), 4);
-                    storeIds.add(x.getStoreId().toString());
-                } else {
-                    //如果订单结束时间  还剩30分钟，发送提醒
-                    Calendar cal1 = Calendar.getInstance();
-                    cal1.setTime(now);
-                    Calendar cal2 = Calendar.getInstance();
-                    cal2.setTime(x.getEndTime());
-                    // 忽略秒
-                    cal1.set(Calendar.SECOND, 0);
-                    cal2.set(Calendar.SECOND, 0);
-                    long milliseconds1 = cal1.getTimeInMillis();
-                    long milliseconds2 = cal2.getTimeInMillis();
-                    long diff = milliseconds2 - milliseconds1;
-                    int minutes = (int) (diff / (60 * 1000));
-                    if (minutes == 30) {
-                        deviceService.runSound(x.getRoomId(), 2);
-                    } else if (minutes == 15) {
-                        deviceService.runSound(x.getRoomId(), 3);
-                    } else if (minutes == 5) {
-                        deviceService.runSound(x.getRoomId(), 4);
-                    }
-                    //如果当前是 0-7点  整点 提醒夜间控制噪音  每笔订单只在第一个整点进行提醒
-                    if (night) {
-                        //开始时间是0点以后的  从1点开始提醒
-                        if (x.getStartTime().getHours() + 1 == now.getHours()) {
-                            deviceService.runSound(x.getRoomId(), 5);
-                        } else if (now.getHours() == 0) {
-                            //开始时间是其他 0时提醒 前日23时开始的订单
-                            deviceService.runSound(x.getRoomId(), 5);
+            for (OrderInfoDO x : listStart) {
+                try {
+                    //log.info("进行中订单：{}，结束时间:{}", x.getOrderNo(), DateUtils.dateToStr(x.getEndTime(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
+                    //进行中订单的结束时间 小于当前时间 则结束订单
+                    if (x.getEndTime().before(now)) {
+                        log.info("结束订单：{}", x.getOrderNo());
+                        orderIds.add(String.valueOf(x.getOrderId()));
+                        //房间改为待保洁
+                        roomIds.add(String.valueOf(x.getRoomId()));
+                        //新增保洁订单
+                        ClearInfoDO clearInfoDO = new ClearInfoDO();
+                        clearInfoDO.setOrderId(x.getOrderId());
+                        clearInfoDO.setStoreId(x.getStoreId());
+                        clearInfoDO.setOrderNo(x.getOrderNo());
+                        clearInfoDO.setRoomId(x.getRoomId());
+                        clearInfoDOList.add(clearInfoDO);
+                        //关门关电
+                        deviceService.closeRoomDoor(x.getRoomId(), 4);
+                        storeIds.add(x.getStoreId().toString());
+                    } else {
+                        //如果订单结束时间  还剩30分钟，发送提醒
+                        Calendar cal1 = Calendar.getInstance();
+                        cal1.setTime(now);
+                        Calendar cal2 = Calendar.getInstance();
+                        cal2.setTime(x.getEndTime());
+                        // 忽略秒
+                        cal1.set(Calendar.SECOND, 0);
+                        cal2.set(Calendar.SECOND, 0);
+                        long milliseconds1 = cal1.getTimeInMillis();
+                        long milliseconds2 = cal2.getTimeInMillis();
+                        long diff = milliseconds2 - milliseconds1;
+                        int minutes = (int) (diff / (60 * 1000));
+                        if (minutes == 30) {
+                            deviceService.runSound(x.getRoomId(), 2);
+                        } else if (minutes == 15) {
+                            deviceService.runSound(x.getRoomId(), 3);
+                        } else if (minutes == 5) {
+                            deviceService.runSound(x.getRoomId(), 4);
+                        }
+                        //如果当前是 0-7点  整点 提醒夜间控制噪音  每笔订单只在第一个整点进行提醒
+                        if (night) {
+                            //开始时间是0点以后的  从1点开始提醒
+                            if (x.getStartTime().getHours() + 1 == now.getHours()) {
+                                deviceService.runSound(x.getRoomId(), 5);
+                            } else if (now.getHours() == 0) {
+                                //开始时间是其他 0时提醒 前日23时开始的订单
+                                deviceService.runSound(x.getRoomId(), 5);
+                            }
                         }
                     }
+                } catch (Exception e) {
+                    continue;//即使因为某个设备故障，导致关电失败，也不会影响其他设备
                 }
-            });
+            }
             if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
                 orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), orderIds.stream().collect(Collectors.joining(",")));
                 roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), roomIds.stream().collect(Collectors.joining(",")));

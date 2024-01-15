@@ -131,7 +131,8 @@
                msu.name,
                mu.avatar,
                msu.name,
-               mu.mobile,
+--                mu.mobile,
+               REPLACE(mu.mobile, SUBSTRING(mu.mobile, 4, 4), '****') mobile,
                msu.status
         from member_store_user msu
                  left join member_user mu ON msu.user_id = mu.id
@@ -139,8 +140,8 @@
         where msu.deleted = 0
           and mu.deleted = 0
           and s.deleted = 0
-          and msu.type=13
-          and msu.store_id =#{storeId}
+          and msu.type = 13
+          and msu.store_id = #{storeId}
         order by msu.id
 
     </select>

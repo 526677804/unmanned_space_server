@@ -122,6 +122,16 @@ public class AppStoreController {
         return success(true);
     }
 
+    @PostMapping("/disableRoom/{roomId}")
+    @Operation(summary = "启用禁用房间", description = "房间管理使用")
+    @PreAuthenticated
+    @Parameter(name = "roomId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> disableRoom(@PathVariable("roomId") Long roomId) {
+        storeInfoService.disableRoom(roomId);
+        return success(true);
+    }
+
 
     @PostMapping("/getDiscountRulesPage")
     @Operation(summary = "获取门店充值优惠信息分页列表")
