@@ -127,6 +127,8 @@ public class EwlService {
             configApi.updateConfigValue("ewelink.atExpiredTime", String.valueOf(token.getData().getAtExpiredTime()));
             myWebSocketClient.init();
         }
+        //输出设备列表，仅为了获取apikey
+        getThing();
     }
 
     public void getThing() {
@@ -134,6 +136,7 @@ public class EwlService {
         String token = getToken();
         EwlGetThingReqVO reqVO = new EwlGetThingReqVO();
         EwlBaseRespVO<JSONObject> thing = ewlClient.getThing(reqVO, appid, token);
+        log.info("=========== 易微联设备列表:");
         if (thing.getError() == 0) {
             JSONArray thingList = thing.getData().getJSONArray("thingList");
             thingList.forEach(v -> {
@@ -141,11 +144,11 @@ public class EwlService {
                 JSONObject itemData = jsonObject.getJSONObject("itemData");
                 String name = itemData.getString("name");
                 String deviceid = itemData.getString("deviceid");
-                String apiKey = itemData.getString("apiKey");
+                String apikey = itemData.getString("apikey");
                 JSONObject extra = itemData.getJSONObject("extra");
                 String ui = extra.getString("ui");
                 String uiid = extra.getString("uiid");
-                log.info("name:{},deviceid:{},apiKey:{},uiid:{},ui:{}", name, deviceid, apiKey, uiid, ui);
+                log.info("apiKey:{},name:{},deviceid:{},uiid:{},ui:{}", apikey,name, deviceid,  uiid, ui);
             });
         } else {
             log.error("获取eweilink设备列表失败！data:{}", thing);
@@ -225,8 +228,10 @@ public class EwlService {
                     workWxService.sendEwelinkRefushTokenMsg();
                 } else {
                     //换取新的token
-
-                    JSONObject refresh = ewlClient.refresh(new EwlRefreshTokenReqVO(refushToken), appid, token);
+                    EwlRefreshTokenReqVO reqVO = new EwlRefreshTokenReqVO(refushToken);
+                    String sign = sortAndConcatenateParameters(reqVO);
+                    String jsonString = JSONObject.toJSONString(reqVO);
+                    JSONObject refresh = ewlClient.refresh(reqVO, appid, HMACSHA256(jsonString));
                     log.info("refresh result:{}", refresh);
                     if (refresh.getInteger("error") == 0) {
                         configApi.updateConfigValue("ewelink.token", refresh.getString("at"));
@@ -240,7 +245,6 @@ public class EwlService {
             }
 
         }
-
     }
 
     public boolean runKongkai(String sn, String cmd) {

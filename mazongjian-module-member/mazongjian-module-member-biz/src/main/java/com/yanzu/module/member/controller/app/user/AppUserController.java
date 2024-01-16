@@ -1,15 +1,12 @@
 package com.yanzu.module.member.controller.app.user;
 
-import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
-import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
-import com.yanzu.module.member.service.device.DeviceService;
-import com.yanzu.module.member.service.iot.IotService;
+import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.MyWebSocketClient;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxPayService;
@@ -173,19 +170,20 @@ public class AppUserController {
     @Autowired
     MyWxPayService myWxPayService;
 
-//    @Autowired
-//    EwlService ewlService;
+    @Autowired
+    EwlService ewlService;
 
 //    @Autowired
 //    MemberUserApi memberUserApi;
 
-    @Resource
-    private IotService iotService;
+//    @Resource
+//    private IotService iotService;
 
 
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
+//        ewlService.getThing();
 //        memberUserApi.executeWxPaySplit();
 //        iotService.configYunlaba("W70F9783A44");
 //        iotService.runYunlaba("W70F9783A44", "尊敬的顾客您好,根据城市管理条例要求,请您在深夜消费时,注意控制噪音,以免影响到他人,感谢您的支持与理解！");
@@ -216,14 +214,14 @@ public class AppUserController {
         params.put("switches",switches);
         data.put("params",params);
         myWebSocketClient.sendToServer(JSON.toJSONString(data));*/
-
-        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-        refundRequest.setOutTradeNo("2024010504000603");
-        refundRequest.setOutRefundNo("2024010504000603");
-        refundRequest.setTotalFee(6990);
-        refundRequest.setRefundFee(6990);
-        WxPayService wxPayService = myWxPayService.init(5L);
-        wxPayService.refundV2(refundRequest);
+//
+//        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+//        refundRequest.setOutTradeNo("2024010504000603");
+//        refundRequest.setOutRefundNo("2024010504000603");
+//        refundRequest.setTotalFee(6990);
+//        refundRequest.setRefundFee(6990);
+//        WxPayService wxPayService = myWxPayService.init(5L);
+//        wxPayService.refundV2(refundRequest);
         return success("1");
     }
 
