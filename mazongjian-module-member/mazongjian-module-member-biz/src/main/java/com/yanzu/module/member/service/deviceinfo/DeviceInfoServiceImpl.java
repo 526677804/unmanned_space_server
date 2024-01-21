@@ -118,7 +118,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     public void configYunlaba(Long deviceId) {
         DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(deviceId);
         if (!ObjectUtils.isEmpty(deviceInfoDO)) {
-            //目前只处理云喇叭
+            //目前处理云喇叭 和 兼容处理 wifi密码门锁
             if (deviceInfoDO.getType().compareTo(AppEnum.device_type.SOUND.getValue()) == 0
                     && deviceInfoDO.getDeviceSn().startsWith("W")) {
                 try {
@@ -127,6 +127,13 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
 //                    throw new RuntimeException(e);
                 }
                 iotService.configYunlaba(deviceInfoDO.getDeviceSn());
+            } else if (deviceInfoDO.getType().compareTo(AppEnum.device_type.DOOR.getValue()) == 0
+                    && deviceInfoDO.getDeviceSn().startsWith("W89")) {
+                try {
+                    iotService.regV2Door(deviceInfoDO.getDeviceSn());
+                } catch (Exception e) {
+//                    throw new RuntimeException(e);
+                }
             }
 
         }

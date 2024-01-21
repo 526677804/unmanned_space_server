@@ -234,8 +234,8 @@ public class EwlService {
                     JSONObject refresh = ewlClient.refresh(reqVO, appid, HMACSHA256(jsonString));
                     log.info("refresh result:{}", refresh);
                     if (refresh.getInteger("error") == 0) {
-                        configApi.updateConfigValue("ewelink.token", refresh.getString("at"));
-                        configApi.updateConfigValue("ewelink.refushToken", refresh.getString("rt"));
+                        stringRedisTemplate.opsForValue().set("ewelink.token",refresh.getString("at"));
+                        stringRedisTemplate.opsForValue().set("ewelink.refushToken",refresh.getString("rt"));
                         //重新连接
                         myWebSocketClient.init();
                     } else {

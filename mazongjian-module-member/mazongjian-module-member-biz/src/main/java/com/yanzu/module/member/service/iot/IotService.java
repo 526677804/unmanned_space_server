@@ -38,6 +38,19 @@ public class IotService {
 
     }
 
+    public boolean regV2Door(String sn) {
+        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        vo.setDevice_sn(sn);
+        vo.setType(null);
+        IotApiV2RegDoorReqVO data = new IotApiV2RegDoorReqVO();
+        data.setData(new IotApiV2RegDoorDataReqVO());
+        vo.setData(data);
+        IotApiV2BaseRespVO respVO = iotClient.regV2Door(vo);
+        log.info("data:{}", respVO);
+        return respVO.getCode() == 0;
+
+    }
+
     public boolean configYunlaba(String sn) {
         IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
@@ -59,6 +72,16 @@ public class IotService {
         return respVO.getState_code() == 1 && respVO.getState_msg().equals("成功");
     }
 
+    public boolean runDoorV2(String sn) {
+        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        vo.setDevice_sn(sn);
+        KongkaiOpVO data = new KongkaiOpVO();
+        data.setCmd_type("open");
+        vo.setData(data);
+        IotApiV2BaseRespVO respVO = iotClient.runKongkai(vo);
+        log.info("data:{}", respVO);
+        return respVO.getCode() == 0;
+    }
 
     public boolean runKongkai(String sn, String cmd) {
         IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();

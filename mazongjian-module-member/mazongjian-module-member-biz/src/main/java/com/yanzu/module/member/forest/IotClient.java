@@ -27,6 +27,15 @@ public interface IotClient {
 
 
     /**
+     * 初始化v2门锁
+     *
+     * @param reqVO
+     * @return
+     */
+    @Post(url = "https://wdev.wmj.com.cn/deviceApi/send")
+    IotApiV2BaseRespVO<IotApiV2DataVO> regV2Door(@JSONBody IotApiV2BaseReqVO<IotApiV2RegDoorReqVO> reqVO);
+
+    /**
      * 调用门禁
      *
      * @param reqVO
@@ -41,7 +50,7 @@ public interface IotClient {
      * @param reqVO
      * @return
      */
-    @Post(url = "https://wdev.wmj.com.cn/deviceApi/mqtt/send")
+    @Post(url = "https://wdev.wmj.com.cn/deviceApi/send")
     IotApiV2BaseRespVO<IotApiV2DataVO> runKongkai(@JSONBody IotApiV2BaseReqVO<KongkaiOpVO> reqVO);
 
     /**

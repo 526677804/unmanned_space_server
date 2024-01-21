@@ -82,11 +82,20 @@ public class DeviceServiceImpl implements DeviceService {
     private void openStoreDoor(Long storeId) {
         //获取大门的门禁sn
         String sn = deviceInfoMapper.getSnByStoreId(storeId);
+        openDoor(sn);
+    }
+
+
+    private void openDoor(String sn) {
         if (!ObjectUtils.isEmpty(sn)) {
             boolean flag;
             //判断硬件平台类型 W开头是微门禁 其他则是易微联
             if (sn.startsWith("W")) {
-                flag = iotService.runDoorV1(sn);
+                if (sn.startsWith("W89")) {
+                    flag = iotService.runDoorV2(sn);
+                } else {
+                    flag = iotService.runDoorV1(sn);
+                }
             } else {
                 flag = ewlService.runKongkai(sn, "on");
             }
@@ -96,8 +105,9 @@ public class DeviceServiceImpl implements DeviceService {
         }
     }
 
+
     private void openRoomDoor(Long roomId) {
-        //获取设备的门禁sn
+        //获取房间空开设备的sn
         String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
         if (!ObjectUtils.isEmpty(sn)) {
             boolean flag;
@@ -112,19 +122,22 @@ public class DeviceServiceImpl implements DeviceService {
                 throw exception(DEVICE_OPRATION_ERROR);
             }
         }
+        //可能有门禁  获取一下门禁
+        String doorSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 1);
+        openDoor(doorSn);
     }
 
-    private void clouseRoomDoorV2(Long roomId) {
-        //获取设备的门禁sn
-        String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
-        if (!ObjectUtils.isEmpty(sn)) {
+    private void closeRoomDoorV2(Long roomId) {
+        //获取房间空开设备的sn
+        String kongKaiSN = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
+        if (!ObjectUtils.isEmpty(kongKaiSN)) {
             boolean flag;
             //判断硬件平台类型 W开头是微门禁 其他则是易微联
-            if (sn.startsWith("W")) {
-                flag = iotService.runKongkai(sn, "turnoff");
+            if (kongKaiSN.startsWith("W")) {
+                flag = iotService.runKongkai(kongKaiSN, "turnoff");
 
             } else {
-                flag = ewlService.runKongkai(sn, "off");
+                flag = ewlService.runKongkai(kongKaiSN, "off");
             }
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
@@ -160,15 +173,15 @@ public class DeviceServiceImpl implements DeviceService {
         //1用户关门 2管理员关门 3保洁关门  4系统关门
         switch (type) {
             case 1://1用户关门
-                clouseRoomDoorV2(roomId);
+                closeRoomDoorV2(roomId);
                 break;
             case 2:
             case 3:
                 //管理员 保洁也不限制关门
-                clouseRoomDoorV2(roomId);
+                closeRoomDoorV2(roomId);
                 break;
             case 4:
-                clouseRoomDoorV2(roomId);
+                closeRoomDoorV2(roomId);
                 break;
         }
         //增加记录
