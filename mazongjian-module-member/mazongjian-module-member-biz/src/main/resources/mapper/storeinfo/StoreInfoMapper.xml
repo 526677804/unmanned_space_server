@@ -108,7 +108,7 @@
         deviceOnlineNum
         FROM
         member_store_info s
-        left join member_store_user su on su.store_id=s.store_id
+        left join member_store_user su on su.store_id=s.store_id and su.deleted=0
         WHERE
         s.deleted = 0
         and su.user_id=#{userId} and su.type in (12,13)

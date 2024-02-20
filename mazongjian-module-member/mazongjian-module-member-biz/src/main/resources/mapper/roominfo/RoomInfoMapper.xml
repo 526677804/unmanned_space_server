@@ -36,7 +36,7 @@
             resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO">
         select r.*
         from member_room_info r
-        left join member_store_user su ON su.store_id=r.store_id
+        left join member_store_user su ON su.store_id=r.store_id and su.deleted=0
         where r.deleted = 0 and su.user_id=#{userId} and su.type in (12,13)
           and r.store_id = #{storeId}
         order by r.sort_id
