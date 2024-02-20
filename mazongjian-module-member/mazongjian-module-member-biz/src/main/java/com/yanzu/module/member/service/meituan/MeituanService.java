@@ -7,7 +7,6 @@ import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper
 import com.yanzu.module.member.forest.MeituanClient;
 import com.yanzu.module.member.service.meituan.vo.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.math3.fraction.BigFraction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -112,7 +111,7 @@ public class MeituanService {
         if (result.getInt("code").intValue() == 200) {
             StoreMeituanInfoDO storeMeituanInfoDO = storeMeituanInfoMapper.getByStoreId(storeId);
             String access_token = result.getStr("access_token");
-            String refresh_token = result.getStr("access_token");
+            String refresh_token = result.getStr("refresh_token");
             Integer remain_refresh_count = result.getInt("remain_refresh_count");
             Long expires_in = result.getLong("expires_in");
             LocalDateTime now = LocalDateTime.now();
