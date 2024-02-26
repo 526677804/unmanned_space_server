@@ -721,11 +721,12 @@ public class AppOrderServiceImpl implements AppOrderService {
                 break;
             case 2:
                 //完成 不支持续费
-                throw exception(ORDER_STATUS_FINISH_OPRATION_ERROR);
-                //已完成，5分钟内可以续费，超过5分钟只能重新下单
-//                if (((new Date().getTime() - orderInfoDO.getEndTime().getTime()) / 1000 / 60) > 5) {
-//                    throw exception(ORDER_STATUS_FINISH_OPRATION_ERROR);
-//                }
+//                throw exception(ORDER_STATUS_FINISH_OPRATION_ERROR);
+//                已完成，5分钟内可以续费，超过5分钟只能重新下单
+                if (((new Date().getTime() - orderInfoDO.getEndTime().getTime()) / 1000 / 60) > 5) {
+                    throw exception(ORDER_STATUS_FINISH_OPRATION_ERROR);
+                }
+                break;
             case 3://已经取消，不能续费
                 throw exception(ORDER_STATUS_CANCEL_OPRATION_ERROR);
         }
@@ -808,11 +809,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
             deviceService.openRoomDoor(roomInfoDO.getRoomId(), 1);
-            if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) != 0) {
-                roomInfoDO.setStatus(AppEnum.room_status.USED.getValue());
-                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
-                clearInfoMapper.cancelByRoomId(roomInfoDO.getRoomId());
-            }
+            roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
+            clearInfoMapper.cancelByRoomId(roomInfoDO.getRoomId());
         }
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
