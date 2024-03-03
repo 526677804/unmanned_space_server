@@ -141,7 +141,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
         // 校验用户类型
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
-        String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining(","));
+        String storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId()).stream().collect(Collectors.joining(","));
         reqVO.setStoreIds(storeIds);
         PageHelper.startPage(reqVO);
         List<OrderListRespVO> list = orderInfoMapper.getOrderPage(reqVO);
@@ -191,7 +191,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         // 校验用户类型
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //仅限查看当前用户所在门店的优惠券列表
-        String storeIds = storeUserMapper.getIdsByUserId(getLoginUserId()).stream().collect(Collectors.joining(","));
+        String storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId()).stream().collect(Collectors.joining(","));
         PageHelper.startPage(reqVO.getPageNo(), reqVO.getPageSize());
         List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPageByAdmin(reqVO, storeIds);
         PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
@@ -245,7 +245,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         String ids = "";
         if (ObjectUtils.isEmpty(reqVO.getStoreId())) {
             //查询该账号权限下的所有保洁员
-            List<String> storeIds = storeUserMapper.getIdsByUserId(getLoginUserId());
+            List<String> storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId());
             ids = storeIds.stream().collect(Collectors.joining(","));
         } else {
             ids = String.valueOf(reqVO.getStoreId());
@@ -416,7 +416,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     public AppRevenueChartRespVO getRevenueChart() {
         //仅管理员使用
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
-        List<String> storeIds = storeUserMapper.getIdsByUserId(getLoginUserId());
+        List<String> storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId());
         Integer wxTotalMoney = orderInfoMapper.getWxTotalMoney(storeIds);
         BigDecimal wxMoney = new BigDecimal(String.valueOf(wxTotalMoney / 100.0));
         BigDecimal groupTotalMoney = groupPayInfoMapper.getGroupTotalMoney(storeIds);
@@ -528,7 +528,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         String ids = "";
         if (ObjectUtils.isEmpty(reqVO.getStoreId())) {
             //查询该账号权限下的
-            List<String> storeIds = storeUserMapper.getIdsByUserId(getLoginUserId());
+            List<String> storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId());
             ids = storeIds.stream().collect(Collectors.joining(","));
         } else {
             storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
@@ -637,7 +637,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         //权限检查
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //查询出账号权限的门店
-        List<String> storeIds = storeUserMapper.getIdsByUserId(getLoginUserId());
+        List<String> storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId());
         reqVO.setStoreIds(storeIds.stream().collect(Collectors.joining(",")));
         PageHelper.startPage(reqVO);
         List<AppClearPageRespVO> list = clearInfoMapper.getClearManagerPage(reqVO);

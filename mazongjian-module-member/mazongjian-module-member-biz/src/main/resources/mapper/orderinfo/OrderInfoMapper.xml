@@ -203,7 +203,7 @@
             and store_id=#{storeId}
         </if>
         <if test="null==storeId or storeId==''">
-            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
         </if>
         GROUP BY
         DATE_FORMAT( create_time, '%m-%d' ) UNION
@@ -224,7 +224,7 @@
             and store_id=#{storeId}
         </if>
         <if test="null==storeId or storeId==''">
-            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
         </if>
         GROUP BY
         DATE_FORMAT( create_time, '%m-%d' )
@@ -247,7 +247,7 @@
             and o.store_id=#{storeId}
         </if>
         <if test="null==storeId or storeId==''">
-            and o.store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})
+            and o.store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
         </if>
         group by o.pay_type
     </select>
@@ -264,7 +264,7 @@
             and store_id=#{storeId}
         </if>
         <if test="null==storeId or storeId==''">
-            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
         </if>
         group by DATE_FORMAT(create_time, '%m-%d')
         order by create_time asc
@@ -287,7 +287,7 @@
             and store_id=#{storeId}
         </if>
         <if test="null==storeId or storeId==''">
-            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
         </if>
         group by DATE_FORMAT(create_time, '%m-%d')
         order by create_time asc
@@ -306,7 +306,7 @@
             and store_id=#{storeId}
         </if>
         <if test="null==storeId or storeId==''">
-            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
         </if>
         group by DATE_FORMAT(create_time, '%Y-%m-%d')
         order by create_time asc
@@ -402,7 +402,7 @@
             and store_id=#{storeId}
         </if>
         <if test="null==storeId or storeId==''">
-            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId})
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} and type IN (12,13))
         </if>
     </select>
 
