@@ -6,15 +6,15 @@ import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
-import com.yanzu.module.member.service.iot.EwlService;
+import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
+import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
 import com.yanzu.module.member.service.iot.MyWebSocketClient;
+import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.user.AppUserService;
-import com.yanzu.module.member.service.wx.MyWxPayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -167,11 +167,11 @@ public class AppUserController {
         return success(userService.getCouponPage(reqVO));
     }
 
-    @Autowired
-    MyWxPayService myWxPayService;
+//    @Autowired
+//    MyWxPayService myWxPayService;
 
-    @Autowired
-    EwlService ewlService;
+//    @Autowired
+//    EwlService ewlService;
 
 //    @Autowired
 //    MemberUserApi memberUserApi;

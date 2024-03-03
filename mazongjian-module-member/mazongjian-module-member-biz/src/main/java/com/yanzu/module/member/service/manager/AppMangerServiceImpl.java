@@ -617,15 +617,12 @@ public class AppMangerServiceImpl implements AppMangerService {
         appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), endTime, null, reqVO.getOrderId(), false, false);
         //增加订单的结束时间
         orderInfoDO.setEndTime(endTime);
-        //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
+        //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电 还要清除保洁订单信息
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
             deviceService.openRoomDoor(roomInfoDO.getRoomId(), 1);
-            if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) != 0) {
-                roomInfoDO.setStatus(AppEnum.room_status.USED.getValue());
-                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
-                clearInfoMapper.cancelByRoomId(roomInfoDO.getRoomId());
-            }
+            roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
+            clearInfoMapper.cancelByRoomId(roomInfoDO.getRoomId());
         }
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
