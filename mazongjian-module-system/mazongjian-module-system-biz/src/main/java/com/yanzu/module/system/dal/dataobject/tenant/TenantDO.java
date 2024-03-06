@@ -1,10 +1,10 @@
 package com.yanzu.module.system.dal.dataobject.tenant;
 
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 import com.yanzu.module.system.dal.dataobject.user.AdminUserDO;
-import com.baomidou.mybatisplus.annotation.KeySequence;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -78,5 +78,13 @@ public class TenantDO extends BaseDO {
      * 账号数量
      */
     private Integer accountCount;
+
+//    @Schema(description = "小程序id")
+//    @NotNull(message = "小程序id不能为空")
+    private String miniappId;
+
+//    @Schema(description = "小程序Secret")
+//    @NotNull(message = "小程序Secret不能为空")
+    private String miniappSecret;
 
 }

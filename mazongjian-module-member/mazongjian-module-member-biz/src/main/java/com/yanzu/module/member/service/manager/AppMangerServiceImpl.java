@@ -51,7 +51,7 @@ import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
-import com.yanzu.module.member.service.wx.MyWxPayService;
+import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -123,7 +123,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     private WorkWxService workWxService;
 
     @Resource
-    private MyWxPayService myWxPayService;
+    private MyWxService myWxService;
 
     @Resource
     private MeituanService meituanService;
@@ -662,7 +662,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                 if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {
                     if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
                         //创建微信支付实例
-                        WxPayService wxPayService = myWxPayService.init(orderInfoDO.getStoreId());
+                        WxPayService wxPayService = myWxService.initWxPay(orderInfoDO.getStoreId());
                         //微信退款
                         PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
                         WxPayRefundRequest refundRequest = new WxPayRefundRequest();

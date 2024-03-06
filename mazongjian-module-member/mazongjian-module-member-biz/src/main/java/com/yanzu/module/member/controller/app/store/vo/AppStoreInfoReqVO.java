@@ -38,13 +38,13 @@ public class AppStoreInfoReqVO {
     @NotNull(message = "门店公告不能为空")
     private String notice;
 
-    @Schema(description = "纬度")
-    @NotNull(message = "纬度不能为空")
-    private Double lat;
-
-    @Schema(description = "经度")
-    @NotNull(message = "经度不能为空")
-    private Double lon;
+//    @Schema(description = "纬度")
+//    @NotNull(message = "纬度不能为空")
+//    private Double lat;
+//
+//    @Schema(description = "经度")
+//    @NotNull(message = "经度不能为空")
+//    private Double lon;
 
     @Schema(description = "详细地址")
     @NotNull(message = "详细地址不能为空")

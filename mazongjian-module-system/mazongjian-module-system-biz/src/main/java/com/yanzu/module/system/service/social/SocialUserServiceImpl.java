@@ -2,6 +2,11 @@ package com.yanzu.module.system.service.social;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
+import com.xingyuv.jushauth.model.AuthCallback;
+import com.xingyuv.jushauth.model.AuthResponse;
+import com.xingyuv.jushauth.model.AuthUser;
+import com.xingyuv.jushauth.request.AuthRequest;
+import com.xingyuv.jushauth.utils.AuthStateUtils;
 import com.yanzu.framework.common.util.http.HttpUtils;
 import com.yanzu.framework.social.core.MazongjianAuthRequestFactory;
 import com.yanzu.module.system.api.social.dto.SocialUserBindReqDTO;
@@ -9,12 +14,6 @@ import com.yanzu.module.system.dal.dataobject.social.SocialUserBindDO;
 import com.yanzu.module.system.dal.dataobject.social.SocialUserDO;
 import com.yanzu.module.system.dal.mysql.social.SocialUserBindMapper;
 import com.yanzu.module.system.dal.mysql.social.SocialUserMapper;
-import com.yanzu.module.system.enums.social.SocialTypeEnum;
-import com.xingyuv.jushauth.model.AuthCallback;
-import com.xingyuv.jushauth.model.AuthResponse;
-import com.xingyuv.jushauth.model.AuthUser;
-import com.xingyuv.jushauth.request.AuthRequest;
-import com.xingyuv.jushauth.utils.AuthStateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +26,7 @@ import java.util.List;
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.util.collection.CollectionUtils.convertSet;
 import static com.yanzu.framework.common.util.json.JsonUtils.toJsonString;
+import static com.yanzu.framework.tenant.core.context.TenantContextHolder.getTenantId;
 import static com.yanzu.module.system.enums.ErrorCodeConstants.*;
 
 /**
@@ -50,7 +50,8 @@ public class SocialUserServiceImpl implements SocialUserService {
     @Override
     public String getAuthorizeUrl(Integer type, String redirectUri) {
         // 获得对应的 AuthRequest 实现
-        AuthRequest authRequest = mazongjianAuthRequestFactory.get(SocialTypeEnum.valueOfType(type).getSource());
+        String source = socialUserMapper.selectSourceByTenant(getTenantId());
+        AuthRequest authRequest = mazongjianAuthRequestFactory.get(source);
         // 生成跳转地址
         String authorizeUri = authRequest.authorize(AuthStateUtils.createState());
         return HttpUtils.replaceUrlQuery(authorizeUri, "redirect_uri", redirectUri);
@@ -126,7 +127,7 @@ public class SocialUserServiceImpl implements SocialUserService {
         }
 
         // 获得对应的社交绑定关系
-        socialUserBindMapper.deleteByUserIdAndSocialType( userId, socialUser.getType());
+        socialUserBindMapper.deleteByUserIdAndSocialType(userId, socialUser.getType());
     }
 
     @Override
@@ -157,7 +158,8 @@ public class SocialUserServiceImpl implements SocialUserService {
      * @return 授权的用户
      */
     private AuthUser getAuthUser(Integer type, String code, String state) {
-        AuthRequest authRequest = mazongjianAuthRequestFactory.get(SocialTypeEnum.valueOfType(type).getSource());
+        String source = socialUserMapper.selectSourceByTenant(getTenantId());
+        AuthRequest authRequest = mazongjianAuthRequestFactory.get(source);
         AuthCallback authCallback = AuthCallback.builder().code(code).state(state).build();
         AuthResponse<?> authResponse = authRequest.login(authCallback);
         log.info("[getAuthUser][请求社交平台 type({}) request({}) response({})]", type,
@@ -167,5 +169,6 @@ public class SocialUserServiceImpl implements SocialUserService {
         }
         return (AuthUser) authResponse.getData();
     }
+
 
 }

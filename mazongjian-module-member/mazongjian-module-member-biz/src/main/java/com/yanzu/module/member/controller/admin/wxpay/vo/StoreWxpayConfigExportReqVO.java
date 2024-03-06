@@ -10,8 +10,11 @@ public class StoreWxpayConfigExportReqVO {
     @Schema(description = "门店ID", example = "7352")
     private Long storeId;
 
-    @Schema(description = "小程序id", example = "25462")
-    private String appId;
+    @Schema(description = "是否分账", example = "1")
+    private Boolean split;
+
+    @Schema(description = "服务商支付模式", example = "1")
+    private Boolean serviceModel;
 
     @Schema(description = "微信支付商户号", example = "23018")
     private String mchId;

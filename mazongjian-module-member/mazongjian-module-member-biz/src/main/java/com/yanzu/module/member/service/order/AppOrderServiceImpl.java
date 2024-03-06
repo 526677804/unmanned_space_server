@@ -15,6 +15,7 @@ import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
+import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
@@ -44,7 +45,7 @@ import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.payorder.PayOrderService;
-import com.yanzu.module.member.service.wx.MyWxPayService;
+import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
@@ -110,7 +111,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     private PayOrderService payOrderService;
 
     @Autowired
-    private MyWxPayService myWxPayService;
+    private MyWxService myWxService;
 
     @Resource
     private MeituanService meituanService;
@@ -255,7 +256,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                     throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
                 }
                 //创建微信支付实例
-                WxPayService wxPayService = myWxPayService.init(roomInfoDO.getStoreId());
+                WxPayService wxPayService = myWxService.initWxPay(roomInfoDO.getStoreId());
+                //获取分账配置
+                StoreWxpayConfigDO wxPayConfig = myWxService.getWxPayConfig(roomInfoDO.getStoreId());
                 //生成微信支付的订单
                 WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
                 wxPayUnifiedOrderRequest.setBody("微信支付订单");
@@ -264,7 +267,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
                 wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
                 wxPayUnifiedOrderRequest.setTradeType("JSAPI");
-                wxPayUnifiedOrderRequest.setProfitSharing(myWxPayService.getSplitEnable() ? "Y" : "N");
+                wxPayUnifiedOrderRequest.setProfitSharing(wxPayConfig.getServiceModel() && wxPayConfig.getSplit() ? "Y" : "N");
                 wxPayUnifiedOrderRequest.setOpenid(openId);
 //            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
 //            wxPayUnifiedOrderRequest.setTimeExpire()
@@ -440,7 +443,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 checkWorkDay(startTime);
             }
             //判断包间限制情况  标题包含：不限包间
-            if (title.indexOf("不限包间") != -1) {
+            if (title.indexOf("不限包间") != -1 || title.indexOf("任意包间") != -1 || title.indexOf("不分包间") != -1 || title.indexOf("所有包间") != -1 || title.indexOf("全部包间") != -1) {
                 //不校验
             } else {
                 Integer checkRoomType = 0;
@@ -933,7 +936,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {
                     if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
                         //创建微信支付实例
-                        WxPayService wxPayService = myWxPayService.init(orderInfoDO.getStoreId());
+                        WxPayService wxPayService = myWxService.initWxPay(orderInfoDO.getStoreId());
                         //微信退款
                         PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
                         WxPayRefundRequest refundRequest = new WxPayRefundRequest();

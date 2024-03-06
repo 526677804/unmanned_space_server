@@ -8,9 +8,6 @@
           <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="小程序id" prop="appId">
-        <el-input v-model="queryParams.appId" placeholder="请输入小程序id" clearable @keyup.enter.native="handleQuery"/>
-      </el-form-item>
       <el-form-item label="商户号" prop="mchId">
         <el-input v-model="queryParams.mchId" placeholder="请输入商户号" clearable @keyup.enter.native="handleQuery"/>
       </el-form-item>
@@ -37,7 +34,6 @@
     <el-table v-loading="loading" :data="list">
       <el-table-column label="ID" align="center" prop="id" />
       <el-table-column label="门店" align="center" prop="storeName" />
-      <el-table-column label="小程序id" align="center" prop="appId" />
       <el-table-column label="商户号" align="center" prop="mchId" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
@@ -62,9 +58,6 @@
           <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
         </el-select>
       </el-form-item>
-        <el-form-item label="小程序id" prop="appId">
-          <el-input v-model="form.appId" placeholder="请输入小程序id" />
-        </el-form-item>
         <el-form-item label="商户号" prop="mchId">
           <el-input v-model="form.mchId" placeholder="请输入商户号" />
         </el-form-item>
@@ -73,6 +66,21 @@
         </el-form-item>
         <el-form-item label="p12证书" prop="p12">
           <el-input v-model="form.p12" placeholder="请输入p12证书(服务商模式不填)" />
+        </el-form-item>
+        <el-form-item label="支付服务商模式" prop="type">
+          <el-radio-group v-model="form.serviceModel">
+            <el-radio :key="true" :label="true">是</el-radio>
+            <el-radio :key="false" :label="false">否</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="是否分账" prop="type">
+          <el-radio-group v-model="form.split">
+            <el-radio :key="true" :label="true">是</el-radio>
+            <el-radio :key="false" :label="false">否</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="分账比例" prop="splitProp">
+          <el-input v-model="form.splitProp" placeholder="请输入1-30的数字，最大允许30%" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -112,7 +120,6 @@ export default {
         pageNo: 1,
         pageSize: 10,
         storeId: null,
-        appId: null,
         mchId: null,
       },
       // 表单参数
@@ -153,7 +160,11 @@ export default {
         storeId: undefined,
         mchId: undefined,
         mchkey: undefined,
-        p12: undefined
+        p12: undefined,
+        serviceModel: undefined,
+        split: undefined,
+        splitProp: undefined,
+
       };
       this.resetForm("form");
     },

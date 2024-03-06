@@ -11,9 +11,9 @@ import lombok.Data;
 @Data
 public class IotApiBaseReqVO {
 
-    private String appid="wmj_LJjdyQZUOuf";
+    private String appid;
 
-    private String appsecret="hz4NZmaTaRQWlcuH3R87rfXmaVaIzlza";
+    private String appsecret;
 
     private String sn;//设备序列号
 }

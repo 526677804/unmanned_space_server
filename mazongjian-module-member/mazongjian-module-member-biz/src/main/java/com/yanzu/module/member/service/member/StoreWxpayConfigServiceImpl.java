@@ -2,6 +2,7 @@ package com.yanzu.module.member.service.member;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.binarywang.wxpay.bean.profitsharing.ProfitSharingReceiverRequest;
+import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -10,7 +11,7 @@ import com.yanzu.module.member.controller.admin.wxpay.vo.*;
 import com.yanzu.module.member.convert.member.StoreWxpayConfigConvert;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.mysql.member.StoreWxpayConfigMapper;
-import com.yanzu.module.member.service.wx.MyWxPayService;
+import com.yanzu.module.member.service.wx.MyWxService;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.ADMIN_WEIXIN_PAY_SPLIT_ERROR;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.DATA_NOT_EXISTS;
 
 /**
@@ -37,7 +39,7 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
     private StoreWxpayConfigMapper storeWxpayConfigMapper;
 
     @Resource
-    private MyWxPayService myWxPayService;
+    private MyWxService myWxService;
 
 
     @Value("${wx.pay.splitMchId}")
@@ -107,8 +109,8 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
     @Override
     @SneakyThrows
     public void profitsharing(Long id) {
-        if(myWxPayService.getSplitEnable()){
-            StoreWxpayConfigDO configDO = storeWxpayConfigMapper.selectById(id);
+        StoreWxpayConfigDO configDO = storeWxpayConfigMapper.selectById(id);
+        if (configDO.getSplit()) {
             ProfitSharingReceiverRequest request = new ProfitSharingReceiverRequest();
 //        示例值：{
 //            "type": "MERCHANT_ID",
@@ -122,8 +124,15 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
             json.put("name", splitMchName);
             json.put("relation_type", "SERVICE_PROVIDER");
             request.setReceiver(json.toJSONString());
-            WxPayService wxPayService = myWxPayService.init(configDO.getStoreId());
-            wxPayService.getProfitSharingService().addReceiver(request);
+            WxPayService wxPayService = myWxService.initWxPay(configDO.getStoreId());
+            try {
+                wxPayService.getProfitSharingService().addReceiver(request);
+            } catch (WxPayException e) {
+                throw exception(ADMIN_WEIXIN_PAY_SPLIT_ERROR);
+//                throw new RuntimeException(e);
+            }
+        }else{
+            throw exception(ADMIN_WEIXIN_PAY_SPLIT_ERROR);
         }
     }
 

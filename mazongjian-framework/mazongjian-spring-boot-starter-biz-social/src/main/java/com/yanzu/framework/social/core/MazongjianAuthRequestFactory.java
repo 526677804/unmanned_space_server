@@ -57,14 +57,19 @@ public class MazongjianAuthRequestFactory extends AuthRequestFactory {
     protected AuthRequest getExtendRequest(String source) {
         AuthExtendSource authExtendSource;
         try {
-            authExtendSource = EnumUtil.fromString(AuthExtendSource.class, source.toUpperCase());
+            authExtendSource = EnumUtil.fromString(AuthExtendSource.class, "WECHAT_MINI_APP");
         } catch (IllegalArgumentException e) {
             // 无自定义匹配
             return null;
         }
-
+        String[] split = source.split("-");
         // 拓展配置和默认配置齐平，properties 放在一起
-        AuthConfig config = properties.getType().get(authExtendSource.name());
+//        AuthConfig config = properties.getType().get(authExtendSource.name());
+        AuthConfig config = new AuthConfig();
+        config.setClientId(split[0]);
+        config.setClientSecret(split[1]);
+        config.setIgnoreCheckRedirectUri(true);
+        config.setIgnoreCheckState(true);
         // 找不到对应关系，直接返回空
         if (config == null) {
             return null;

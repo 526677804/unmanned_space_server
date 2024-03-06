@@ -126,6 +126,12 @@
                       :key="dict.value" :label="parseInt(dict.value)">{{dict.label}}</el-radio>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="小程序id" prop="miniappId">
+          <el-input v-model="form.miniappId" placeholder="请输入微信小程序id" />
+        </el-form-item>
+        <el-form-item label="小程序secret" prop="miniappSecret">
+          <el-input v-model="form.miniappSecret" placeholder="请输入微信小程序id" />
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -179,6 +185,8 @@ export default {
         name: [{ required: true, message: "租户名不能为空", trigger: "blur" }],
         packageId: [{ required: true, message: "租户套餐不能为空", trigger: "blur" }],
         contactName: [{ required: true, message: "联系人不能为空", trigger: "blur" }],
+        miniappId: [{ required: true, message: "小程序ID不能为空", trigger: "blur" }],
+        miniappSecret: [{ required: true, message: "小程序Secret不能为空", trigger: "blur" }],
         status: [{ required: true, message: "租户状态不能为空", trigger: "blur" }],
         accountCount: [{ required: true, message: "账号额度不能为空", trigger: "blur" }],
         expireTime: [{ required: true, message: "过期时间不能为空", trigger: "blur" }],
@@ -218,6 +226,8 @@ export default {
         name: undefined,
         packageId: undefined,
         contactName: undefined,
+        miniappId: undefined,
+        miniappSecret: undefined,
         contactMobile: undefined,
         accountCount: undefined,
         expireTime: undefined,

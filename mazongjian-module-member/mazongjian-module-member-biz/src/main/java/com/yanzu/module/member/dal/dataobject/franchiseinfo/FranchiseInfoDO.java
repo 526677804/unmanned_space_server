@@ -1,11 +1,10 @@
 package com.yanzu.module.member.dal.dataobject.franchiseinfo;
 
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import lombok.*;
 
 /**
  * 加盟信息 DO
@@ -52,6 +51,6 @@ public class FranchiseInfoDO extends BaseDO {
      *
      * 枚举 {@link TODO member_franchise_status 对应的类}
      */
-    private Byte status;
+    private Integer status;
 
 }

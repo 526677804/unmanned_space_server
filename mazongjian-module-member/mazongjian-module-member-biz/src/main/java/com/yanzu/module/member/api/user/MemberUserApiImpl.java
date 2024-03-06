@@ -8,6 +8,7 @@ import com.github.binarywang.wxpay.service.ProfitSharingService;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.module.member.api.user.dto.MemberUserRespDTO;
 import com.yanzu.module.member.convert.user.UserConvert;
+import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
@@ -15,7 +16,7 @@ import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
-import com.yanzu.module.member.service.wx.MyWxPayService;
+import com.yanzu.module.member.service.wx.MyWxService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -50,7 +51,7 @@ public class MemberUserApiImpl implements MemberUserApi {
     private DiscountRulesMapper discountRulesMapper;
 
     @Resource
-    private MyWxPayService myWxPayService;
+    private MyWxService myWxService;
 
     @Resource
     private PayOrderMapper payOrderMapper;
@@ -106,46 +107,46 @@ public class MemberUserApiImpl implements MemberUserApi {
 
     @Override
     public void executeWxPaySplit() {
-        if (myWxPayService.getSplitEnable()) {
-            log.info("==========     开始执行微信分账定时检查任务     ==========");
-            //获取今天之前的已支付但未分账的订单
-            List<PayOrderDO> preSplit = payOrderMapper.getPreSplit();
-            if (!CollectionUtils.isEmpty(preSplit)) {
-                List<Long> splitId = new ArrayList<>(preSplit.size());
-                //按storeId分组
-                Map<Long, List<PayOrderDO>> listMap = preSplit.stream().collect(Collectors.groupingBy(x -> x.getStoreId()));
-                for (Map.Entry<Long, List<PayOrderDO>> entry : listMap.entrySet()) {
-                    //初始化微信支付
-                    WxPayService wxPayService = myWxPayService.init(entry.getKey());
-                    //初始化分账服务
-                    ProfitSharingService profitSharingService = wxPayService.getProfitSharingService();
-                    for (PayOrderDO payOrderDO : entry.getValue()) {
-                        try {
-                            ProfitSharingRequest req = new ProfitSharingRequest();
-                            req.setNonceStr(UUID.randomUUID().toString().substring(0, 16));
-                            req.setTransactionId(payOrderDO.getPayOrderNo());
-                            req.setOutOrderNo("P" + payOrderDO.getOrderNo());
-                            JSONArray jsonArr = new JSONArray();
-                            JSONObject json = new JSONObject();
-                            json.put("type", "MERCHANT_ID");
-                            json.put("account", splitMchId);
-                            json.put("amount", payOrderDO.getPrice() / 100);
-                            json.put("description", "支付服务费");
-                            jsonArr.add(json);
-                            req.setReceivers(jsonArr.toJSONString());
-                            profitSharingService.profitSharing(req);
-                            splitId.add(payOrderDO.getId());
-                        } catch (WxPayException e) {
-                            log.error("微信支付分账失败:{}", payOrderDO.getId());
-                            e.printStackTrace();
+        log.info("==========     开始执行微信分账定时检查任务     ==========");
+        //获取今天之前的已支付但未分账的订单
+        List<PayOrderDO> preSplit = payOrderMapper.getPreSplit();
+        if (!CollectionUtils.isEmpty(preSplit)) {
+            List<Long> splitId = new ArrayList<>(preSplit.size());
+            //按storeId分组
+            Map<Long, List<PayOrderDO>> listMap = preSplit.stream().collect(Collectors.groupingBy(x -> x.getStoreId()));
+            for (Map.Entry<Long, List<PayOrderDO>> entry : listMap.entrySet()) {
+                //初始化微信支付
+                WxPayService wxPayService = myWxService.initWxPay(entry.getKey());
+                //初始化分账服务
+                ProfitSharingService profitSharingService = wxPayService.getProfitSharingService();
+                //查询分账比例
+                StoreWxpayConfigDO config = myWxService.getWxPayConfig(entry.getKey());
+                for (PayOrderDO payOrderDO : entry.getValue()) {
+                    try {
+                        ProfitSharingRequest req = new ProfitSharingRequest();
+                        req.setNonceStr(UUID.randomUUID().toString().substring(0, 16));
+                        req.setTransactionId(payOrderDO.getPayOrderNo());
+                        req.setOutOrderNo("P" + payOrderDO.getOrderNo());
+                        JSONArray jsonArr = new JSONArray();
+                        JSONObject json = new JSONObject();
+                        json.put("type", "MERCHANT_ID");
+                        json.put("account", splitMchId);
+                        json.put("amount", payOrderDO.getPrice() * config.getSplitProp() / 100);
+                        json.put("description", "支付服务费");
+                        jsonArr.add(json);
+                        req.setReceivers(jsonArr.toJSONString());
+                        profitSharingService.profitSharing(req);
+                        splitId.add(payOrderDO.getId());
+                    } catch (WxPayException e) {
+                        log.error("微信支付分账失败:{}", payOrderDO.getId());
+                        e.printStackTrace();
 //                        throw new RuntimeException(e);
-                            continue;
-                        }
+                        continue;
                     }
                 }
-                if (!CollectionUtils.isEmpty(splitId)) {
-                    payOrderMapper.finishSplit(splitId);
-                }
+            }
+            if (!CollectionUtils.isEmpty(splitId)) {
+                payOrderMapper.finishSplit(splitId);
             }
         }
     }

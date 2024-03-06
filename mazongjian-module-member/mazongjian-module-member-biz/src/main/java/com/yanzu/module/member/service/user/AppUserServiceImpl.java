@@ -19,6 +19,7 @@ import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.convert.franchiseinfo.FranchiseInfoConvert;
 import com.yanzu.module.member.convert.user.UserConvert;
 import com.yanzu.module.member.dal.dataobject.franchiseinfo.FranchiseInfoDO;
+import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
@@ -35,7 +36,7 @@ import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
-import com.yanzu.module.member.service.wx.MyWxPayService;
+import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import com.yanzu.module.system.api.sms.SmsCodeApi;
 import com.yanzu.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
@@ -124,7 +125,7 @@ public class AppUserServiceImpl implements AppUserService {
     private String returnUrl;
 
     @Autowired
-    private MyWxPayService myWxPayService;
+    private MyWxService myWxService;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -137,6 +138,9 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Resource
     private StoreInfoService storeInfoService;
+
+    @Value("${sys.user.init-avatar:null}")
+    private String userInitAvatar;
 
     @Override
     public MemberUserDO getUserByMobile(String mobile) {
@@ -165,7 +169,7 @@ public class AppUserServiceImpl implements AppUserService {
         // 插入用户
         MemberUserDO user = new MemberUserDO();
         user.setNickname("用户" + mobile.substring(5, 11));
-        user.setAvatar("https://images.scyanzu.com/icon_avatar.png");
+        user.setAvatar(userInitAvatar);
         user.setMobile(mobile);
         user.setStatus(CommonStatusEnum.ENABLE.getStatus()); // 默认开启
         user.setPassword(encodePassword(password)); // 加密密码
@@ -418,7 +422,8 @@ public class AppUserServiceImpl implements AppUserService {
                 throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
             }
             //创建微信支付实例
-            WxPayService wxPayService = myWxPayService.init(reqVO.getStoreId());
+            WxPayService wxPayService = myWxService.initWxPay(reqVO.getStoreId());
+            StoreWxpayConfigDO wxPayConfig = myWxService.getWxPayConfig(reqVO.getStoreId());
             //生成微信支付的订单
             WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
             wxPayUnifiedOrderRequest.setBody("微信支付订单");
@@ -427,7 +432,7 @@ public class AppUserServiceImpl implements AppUserService {
             wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
             wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
             wxPayUnifiedOrderRequest.setTradeType("JSAPI");
-            wxPayUnifiedOrderRequest.setProfitSharing(myWxPayService.getSplitEnable() ? "Y" : "N");
+            wxPayUnifiedOrderRequest.setProfitSharing(wxPayConfig.getServiceModel() && wxPayConfig.getSplit() ? "Y" : "N");
             wxPayUnifiedOrderRequest.setOpenid(openId);
 //            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
 //            wxPayUnifiedOrderRequest.setTimeExpire()

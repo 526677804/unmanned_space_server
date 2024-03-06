@@ -1,8 +1,9 @@
 package com.yanzu.module.member.service.iot;
 
-import com.yanzu.module.member.service.iot.iotbean.*;
 import com.yanzu.module.member.forest.IotClient;
+import com.yanzu.module.member.service.iot.iotbean.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -20,8 +21,33 @@ public class IotService {
     @Resource
     private IotClient iotClient;
 
-    public boolean regV1(String sn) {
+    @Value("${wmj.v1.appid}")
+    private String v1appid;
+    @Value("${wmj.v1.secret}")
+    private String v1secret;
+
+    @Value("${wmj.v2.appid}")
+    private String v2appid;
+    @Value("${wmj.v2.secret}")
+    private String v2secret;
+
+
+    private IotApiBaseReqVO getIotApiBaseReqVO(){
         IotApiBaseReqVO vo = new IotApiBaseReqVO();
+        vo.setAppid(v1appid);
+        vo.setAppsecret(v1secret);
+        return vo;
+    }
+
+    private IotApiV2BaseReqVO getIotApiV2BaseReqVO(){
+        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        vo.setApp_id(v2appid);
+        vo.setApp_secret(v2secret);
+        return vo;
+    }
+
+    public boolean regV1(String sn) {
+        IotApiBaseReqVO vo = getIotApiBaseReqVO();
         vo.setSn(sn);
         IotApiBaseRespVO respVO = iotClient.regV1(vo);
         log.info("data:{}", respVO);
@@ -29,7 +55,7 @@ public class IotService {
     }
 
     public boolean regV2(String sn) {
-        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
         vo.setType(null);
         IotApiV2BaseRespVO respVO = iotClient.regV2(vo);
@@ -39,7 +65,7 @@ public class IotService {
     }
 
     public boolean regV2Door(String sn) {
-        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
         vo.setType(null);
         IotApiV2RegDoorReqVO data = new IotApiV2RegDoorReqVO();
@@ -52,7 +78,7 @@ public class IotService {
     }
 
     public boolean configYunlaba(String sn) {
-        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
         YunlabaOpVO<YunlabaConfigReqVO> data = new YunlabaOpVO();
         YunlabaConfigReqVO info = new YunlabaConfigReqVO();
@@ -65,7 +91,7 @@ public class IotService {
     }
 
     public boolean runDoorV1(String sn) {
-        IotApiBaseReqVO vo = new IotApiBaseReqVO();
+        IotApiBaseReqVO vo = getIotApiBaseReqVO();
         vo.setSn(sn);
         IotApiBaseRespVO respVO = iotClient.runDoorV1(vo);
         log.info("data:{}", respVO);
@@ -73,7 +99,7 @@ public class IotService {
     }
 
     public boolean runDoorV2(String sn) {
-        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
         KongkaiOpVO data = new KongkaiOpVO();
         data.setCmd_type("open");
@@ -84,7 +110,7 @@ public class IotService {
     }
 
     public boolean runKongkai(String sn, String cmd) {
-        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
         KongkaiOpVO data = new KongkaiOpVO();
         data.setCmd_type(cmd);
@@ -95,7 +121,7 @@ public class IotService {
     }
 
     public boolean runConfigWifi(String sn, String cmd) {
-        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
         KongkaiOpVO data = new KongkaiOpVO();
         data.setCmd_type(cmd);
@@ -106,7 +132,7 @@ public class IotService {
     }
 
     public boolean runYunlaba(String sn, String tts) {
-        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
         YunlabaOpVO<YunlabaInfoVO> data = new YunlabaOpVO();
         YunlabaInfoVO info = new YunlabaInfoVO();
@@ -120,7 +146,7 @@ public class IotService {
     }
 
     public Integer getV1Status(String sn) {
-        IotApiBaseReqVO vo = new IotApiBaseReqVO();
+        IotApiBaseReqVO vo = getIotApiBaseReqVO();
         vo.setSn(sn);
         IotApiOnlineDataVO v1Status = iotClient.getV1Status(vo);
         log.info("data:{}", v1Status);
@@ -133,7 +159,7 @@ public class IotService {
 
 
     public Integer getV2Status(String sn) {
-        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
+        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
         IotApiV2BaseRespVO<IotApiV2OnlineDataVO> v2Status = iotClient.getV2Status(vo);
         log.info("data:{}", v2Status);
         if (v2Status.getCode() == 0) {

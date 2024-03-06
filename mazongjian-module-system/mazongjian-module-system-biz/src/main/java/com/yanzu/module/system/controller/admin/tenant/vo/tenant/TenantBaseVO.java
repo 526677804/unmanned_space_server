@@ -43,4 +43,12 @@ public class TenantBaseVO {
     @NotNull(message = "账号数量不能为空")
     private Integer accountCount;
 
+    @Schema(description = "小程序id")
+    @NotNull(message = "小程序id不能为空")
+    private String miniappId;
+
+    @Schema(description = "小程序Secret")
+    @NotNull(message = "小程序Secret不能为空")
+    private String miniappSecret;
+
 }

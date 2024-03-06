@@ -83,9 +83,6 @@ mazongjian:
   info:
     version: 1.0.0
     base-package: com.yanzu
-  web:
-    admin-ui:
-      url: http://admin.scyanzu.com # Admin 管理后台 UI 的地址
   security:
     permit-all_urls:
       - /admin-api/mp/open/** # 微信公众号开放平台，微信回调接口，不需要登录
@@ -98,7 +95,6 @@ mazongjian:
     title: 麻总监
     description: 提供管理后台、用户 App 的所有功能
     version: ${mazongjian.info.version}
-    url: ${mazongjian.web.admin-ui.url}
   captcha:
     enable: true # 验证码的开关，默认为 true
   codegen:
@@ -188,14 +184,5 @@ forest:
   read-timeout: 5000
 
 
-#美团北极星平台开发者配置
-meituan:
-  appKey: 022008863ebef333
-  secret: 8c7729556cb497fcec48133dc760dd2808ba1399
-
-#抖音开放平台开发者配置
-douyin:
-  appKey: awfftg1h15wwhu3n
-  secret: 51763320da7cc3a7f2a7e8c1758e6eef
 
 

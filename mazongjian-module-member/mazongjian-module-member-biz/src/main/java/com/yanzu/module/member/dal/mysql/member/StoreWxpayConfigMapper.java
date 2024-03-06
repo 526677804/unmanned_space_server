@@ -7,6 +7,7 @@ import com.yanzu.module.member.controller.admin.wxpay.vo.StoreWxpayConfigExportR
 import com.yanzu.module.member.controller.admin.wxpay.vo.StoreWxpayConfigPageReqVO;
 import com.yanzu.module.member.controller.admin.wxpay.vo.StoreWxpayConfigPageRespVO;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
+import com.yanzu.module.member.service.wx.MiniappConfigVO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -22,7 +23,8 @@ public interface StoreWxpayConfigMapper extends BaseMapperX<StoreWxpayConfigDO> 
     default PageResult<StoreWxpayConfigDO> selectPage(StoreWxpayConfigPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<StoreWxpayConfigDO>()
                 .eqIfPresent(StoreWxpayConfigDO::getStoreId, reqVO.getStoreId())
-                .likeIfPresent(StoreWxpayConfigDO::getAppId, reqVO.getAppId())
+                .eqIfPresent(StoreWxpayConfigDO::getSplit, reqVO.getSplit())
+                .eqIfPresent(StoreWxpayConfigDO::getServiceModel, reqVO.getServiceModel())
                 .likeIfPresent(StoreWxpayConfigDO::getMchId, reqVO.getMchId())
                 .orderByDesc(StoreWxpayConfigDO::getId));
     }
@@ -30,7 +32,8 @@ public interface StoreWxpayConfigMapper extends BaseMapperX<StoreWxpayConfigDO> 
     default List<StoreWxpayConfigDO> selectList(StoreWxpayConfigExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<StoreWxpayConfigDO>()
                 .eqIfPresent(StoreWxpayConfigDO::getStoreId, reqVO.getStoreId())
-                .likeIfPresent(StoreWxpayConfigDO::getAppId, reqVO.getAppId())
+                .eqIfPresent(StoreWxpayConfigDO::getSplit, reqVO.getSplit())
+                .eqIfPresent(StoreWxpayConfigDO::getServiceModel, reqVO.getServiceModel())
                 .likeIfPresent(StoreWxpayConfigDO::getMchId, reqVO.getMchId())
                 .orderByDesc(StoreWxpayConfigDO::getId));
     }
@@ -38,4 +41,7 @@ public interface StoreWxpayConfigMapper extends BaseMapperX<StoreWxpayConfigDO> 
     List<StoreWxpayConfigPageRespVO> getStoreWxpayConfigPage(StoreWxpayConfigPageReqVO reqVO);
 
     StoreWxpayConfigDO getConfigByStoreId(Long storeId);
+
+    MiniappConfigVO getMiniappConfig(Long tenantId);
+
 }

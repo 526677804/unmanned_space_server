@@ -20,7 +20,7 @@ import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
-import com.yanzu.module.member.service.wx.MyWxPayService;
+import com.yanzu.module.member.service.wx.MyWxService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -54,7 +54,7 @@ public class PayOrderServiceImpl implements PayOrderService {
     private PayOrderMapper payOrderMapper;
 
     @Autowired
-    private MyWxPayService myWxPayService;
+    private MyWxService myWxService;
     @Resource
     @Lazy // 延迟，避免循环依赖报错
     private AppUserService appUserService;
@@ -153,7 +153,7 @@ public class PayOrderServiceImpl implements PayOrderService {
             refundRequest.setTotalFee(payOrderDO.getPrice());
             refundRequest.setRefundFee(payOrderDO.getPrice());
             refundRequest.setRefundDesc("订单确认失败退款");
-            WxPayService wxPayService = myWxPayService.init(payOrderDO.getStoreId());
+            WxPayService wxPayService = myWxService.initWxPay(payOrderDO.getStoreId());
             try {
                 wxPayService.refundV2(refundRequest);
             } catch (WxPayException ex) {
@@ -200,7 +200,7 @@ public class PayOrderServiceImpl implements PayOrderService {
     public boolean checkWxOrder(String orderNo, Long storeId, Integer price) {
         log.info("检查订单：{}，微信支付状态！", orderNo);
         //创建微信支付实例
-        WxPayService wxPayService = myWxPayService.init(storeId);
+        WxPayService wxPayService = myWxService.initWxPay(storeId);
         try {
             WxPayOrderQueryResult wxPayOrderQueryResult = wxPayService.queryOrder(null, orderNo);
             String tradeNo = wxPayOrderQueryResult.getTransactionId();
@@ -250,7 +250,7 @@ public class PayOrderServiceImpl implements PayOrderService {
                 refundRequest.setTotalFee(payOrderDO.getPrice());
                 refundRequest.setRefundFee(payOrderDO.getPrice());
                 refundRequest.setRefundDesc("管理员退款");
-                WxPayService wxPayService = myWxPayService.init(payOrderDO.getStoreId());
+                WxPayService wxPayService = myWxService.initWxPay(payOrderDO.getStoreId());
                 try {
                     wxPayService.refundV2(refundRequest);
                 } catch (WxPayException ex) {

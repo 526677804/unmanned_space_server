@@ -9,7 +9,7 @@ import lombok.Data;
  * @DATE: 2023/7/17 15:42
  */
 @Data
-public class KongkaiOpVO extends IotApiV2BaseReqVO{
+public class KongkaiOpVO {
 
     //业务参数：操作命令
     //turnon：开断路器

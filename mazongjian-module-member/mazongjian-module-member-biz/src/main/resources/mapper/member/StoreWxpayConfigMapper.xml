@@ -18,10 +18,6 @@
         <if test="null!=storeId and storeId!=''">
             and sw.store_id=#{storeId}
         </if>
-
-        <if test="null!=appId and appId!=''">
-            and locate(#{appId},sw.app_id)>0
-        </if>
         <if test="null!=mchId and mchId!=''">
             and locate(#{mchId},sw.mch_id)>0
         </if>
@@ -32,5 +28,10 @@
         from member_store_wxpay_config
         where deleted = 0
           and store_id = #{storeId}
+    </select>
+    <select id="getMiniappConfig" resultType="com.yanzu.module.member.service.wx.MiniappConfigVO">
+        select miniapp_id, miniapp_secret
+        from system_tenant
+        where id = #{tenantId}
     </select>
 </mapper>

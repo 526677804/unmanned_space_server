@@ -44,12 +44,7 @@ spring:
       primary: master
       datasource:
         master:
-          #          name: mazongjian
           url: jdbc:mysql://139.155.146.244:8306/mazongjian?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
-          #          url: jdbc:mysql://127.0.0.1:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT # MySQL Connector/J 5.X 连接的示例
-          #          url: jdbc:postgresql://127.0.0.1:5432/${spring.datasource.dynamic.datasource.slave.name} # PostgreSQL 连接的示例
-          #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
-          #          url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=${spring.datasource.dynamic.datasource.master.name} # SQLServer 连接的示例
           username: mazongjian
           password: 4WpEGdbkHd4YGrpN
 
@@ -161,14 +156,6 @@ debug: false
 
 --- #################### 微信公众号、小程序相关配置 ####################
 wx:
-  mp: # 公众号配置（必填），参见 https://github.com/Wechat-Group/WxJava/blob/develop/spring-boot-starters/wx-java-mp-spring-boot-starter/README.md 文档
-    app-id: wx041349c6f39b268b
-    secret: 5abee519483bc9f8cb37ce280e814bd0
-    # 存储配置，解决 AccessToken 的跨节点的共享
-    config-storage:
-      type: RedisTemplate # 采用 RedisTemplate 操作 Redis，会自动从 Spring 中获取
-      key-prefix: wx # Redis Key 的前缀 TODO 芋艿：解决下 Redis key 管理的配置
-      http-client-type: HttpClient # 采用 HttpClient 请求微信公众号平台
   miniapp: # 小程序配置（必填），参见 https://github.com/Wechat-Group/WxJava/blob/develop/spring-boot-starters/wx-java-miniapp-spring-boot-starter/README.md 文档
     appid: wx9727cb1c69b545a7
     secret: 225b211ecb35c1709767f7872e4bd2fe
@@ -190,9 +177,6 @@ mazongjian:
     exclude-urls: # 如下两个 url，仅仅是为了演示，去掉配置也没关系
       - ${spring.boot.admin.context-path}/** # 不处理 Spring Boot Admin 的请求
       - ${management.endpoints.web.base-path}/** # 不处理 Actuator 的请求
-  pay:
-    order-notify-url: https://api.scyanzu.com/admin-api/pay/notify/order # 支付渠道的【支付】回调地址
-    refund-notify-url: https://api.scyanzu.com/admin-api/pay/notify/refund # 支付渠道的【退款】回调地址
   access-log: # 访问日志的配置项
     enable: true
   error-code: # 错误码相关配置项
@@ -201,27 +185,47 @@ mazongjian:
 
 justauth:
   enabled: true
-  type:
-    DINGTALK: # 钉钉
-      client-id: dingvrnreaje3yqvzhxg
-      client-secret: i8E6iZyDvZj51JIb0tYsYfVQYOks9Cq1lgryEjFRqC79P3iJcrxEwT6Qk2QvLrLI
-      ignore-check-redirect-uri: true
-    WECHAT_ENTERPRISE: # 企业微信
-      client-id: wwd411c69a39ad2e54
-      client-secret: 1wTb7hYxnpT2TUbIeHGXGo7T0odav1ic10mLdyyATOw
-      agent-id: 1000004
-      ignore-check-redirect-uri: true
-    WECHAT_MINI_APP: # 微信小程序
-      client-id: ${wx.miniapp.appid}
-      client-secret: ${wx.miniapp.secret}
-      ignore-check-redirect-uri: true
-      ignore-check-state: true # 微信小程序，不会使用到 state，所以不进行校验
-
   cache:
     type: REDIS
     prefix: 'social_auth_state:' # 缓存前缀，目前只对 Redis 缓存生效，默认 JUSTAUTH::STATE::
     timeout: 24h # 超时时长，目前只对 Redis 缓存生效，默认 3 分钟
 
+
+# 微信支付回调
+wx:
+  pay:
+    #支付回调通知地址
+    returnUrl: https://api.scyanzu.com/app-api/callback/wxpay/update
+    ################################以下内容为微信支付服务商模式以及分账配置############################################
+    mchId: 1660250968 #微信支付服务商的商户号  如果不是服务商模式，这里就不填
+    mchKey: 25f3ab3858f654cacd7d3737a9a97e80 #微信支付服务商的v2密钥    如果不是服务商模式，这里就不填
+    # p12证书的位置，可以指定绝对路径，也可以指定类路径（以classpath:开头）
+    keyPath: classpath:apiclient_cert.p12 # 如果不是服务商模式，这里就不填
+    #开启分账功能 则需要填写接收分账的账户信息
+    splitMchId: 1654622828 #接收分账的账户id
+    splitMchName: 双流区麻总监壹号棋牌馆 #接收分账的账户名称  营业执照上的全称
+
+#美团北极星平台开发者配置
+meituan:
+  redirectUrl: https://api.scyanzu.com/app-api/callback/meituan
+  appKey: 022008863ebef333
+  secret: 8c7729556cb497fcec48133dc760dd2808ba1399
+
+#抖音开放平台开发者配置
+douyin:
+  redirectUrl: https://api.scyanzu.com/app-api/callback/douyin
+  appKey: awfftg1h15wwhu3n
+  secret: 51763320da7cc3a7f2a7e8c1758e6eef
+
+#微门禁开发者配置
+wmj:
+  v1:
+    appid: wmj_LJjdyQZUOuf
+    secret: hz4NZmaTaRQWlcuH3R87rfXmaVaIzlza
+  v2:
+    appid: d5bac4c4fbc731b59b59914fd4365efe
+    secret: b11e94fe3e2fb72ac4121c0e306cbd2d
+    
 #易微联平台配置
 ewelink:
   enable: true # 是否开启易微联平台 根据需要开启  不开启就不填下面的信息
@@ -230,28 +234,3 @@ ewelink:
   redirectUrl: https://api.scyanzu.com/app-api/callback/ewelink
   apiKey: f3bfc723-56e6-4f98-a69f-1a1ab94f3e87
 
-# 微信支付回调
-wx:
-  pay:
-    appId: wx9727cb1c69b545a7 #微信公众号或者小程序等的appid
-    #支付回调通知地址
-    returnUrl: https://api.scyanzu.com/app-api/callback/wxpay/update
-    serviceModel: true #是否开启支付服务商模式
-    #########################################################################################
-    mchId: 1660250968 #微信支付服务商的商户号  如果不是服务商模式，这里就不填
-    mchKey: 25f3ab3858f654cacd7d3737a9a97e80 #微信支付服务商的v2密钥    如果不是服务商模式，这里就不填
-    # p12证书的位置，可以指定绝对路径，也可以指定类路径（以classpath:开头）
-    keyPath: classpath:apiclient_cert.p12 # 如果不是服务商模式，这里就不填
-    #是否开启分账功能  如果为true 则需要填写接收分账的账户信息
-    splitEnable: true
-    splitMchId: 1654622828 #接收分账的账户id
-    splitMchName: 双流区麻总监壹号棋牌馆 #接收分账的账户名称  营业执照上的全称
-
-
-# 美团回调
-meituan:
-  redirectUrl: https://api.scyanzu.com/app-api/callback/meituan
-
-# 抖音回调
-douyin:
-  redirectUrl: https://api.scyanzu.com/app-api/callback/douyin

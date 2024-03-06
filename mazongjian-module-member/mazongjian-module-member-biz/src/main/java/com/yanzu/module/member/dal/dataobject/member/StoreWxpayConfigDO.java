@@ -30,10 +30,7 @@ public class StoreWxpayConfigDO extends BaseDO {
      * 门店ID
      */
     private Long storeId;
-    /**
-     * 小程序id
-     */
-    private String appId;
+
     /**
      * 微信支付商户号
      */
@@ -48,6 +45,21 @@ public class StoreWxpayConfigDO extends BaseDO {
      * p12证书
      */
     private String p12;
+
+    /**
+     * 服务商支付模式
+     */
+    private Boolean serviceModel;
+
+    /**
+     * 是否分账
+     */
+    private Boolean split;
+
+    /**
+     * 分账比例
+     */
+    private Integer splitProp;
 
 
 }

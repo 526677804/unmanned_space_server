@@ -25,6 +25,7 @@ public interface ErrorCodeConstants {
     ErrorCode USER_WEIXIN_PAY_ERROR = new ErrorCode(1004003009, "微信支付失败！");
     ErrorCode USER_WEIXIN_PAY_REFUND_ERROR = new ErrorCode(1004003010, "微信退款失败！请联系管理员处理");
     ErrorCode ADMIN_WEIXIN_PAY_REFOUND_ERROR = new ErrorCode(1004003011, "微信退款失败!该订单无法退款");
+    ErrorCode ADMIN_WEIXIN_PAY_SPLIT_ERROR = new ErrorCode(1004003012, "门店分账失败！请检查配置！");
 
     // ========== app相关 1004004000 ==========
     ErrorCode NOT_START_ORDER = new ErrorCode(1004004001, "没有进行中的订单！");

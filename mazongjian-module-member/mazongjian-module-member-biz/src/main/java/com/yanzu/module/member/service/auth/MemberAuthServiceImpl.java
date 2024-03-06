@@ -13,6 +13,7 @@ import com.yanzu.module.member.convert.auth.AuthConvert;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.service.user.AppUserService;
+import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.system.api.logger.LoginLogApi;
 import com.yanzu.module.system.api.logger.dto.LoginLogCreateReqDTO;
 import com.yanzu.module.system.api.oauth2.OAuth2TokenApi;
@@ -59,9 +60,11 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     @Resource
     private OAuth2TokenApi oauth2TokenApi;
 
-    @Resource
-    private WxMaService wxMaService;
+//    @Resource
+//    private WxMaService wxMaService;
 
+    @Resource
+    private MyWxService myWxService;
     @Resource
     private PasswordEncoder passwordEncoder;
     @Resource
@@ -124,6 +127,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
     @Override
     public AppAuthLoginRespVO weixinMiniAppLogin(AppAuthWeixinMiniAppLoginReqVO reqVO) {
+        WxMaService wxMaService = myWxService.initWxMa();
         // 获得对应的手机号信息
         WxMaPhoneNumberInfo phoneNumberInfo;
         try {
