@@ -541,7 +541,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 groupShopId = prepare.getDealId();
                 checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong());
                 //检验通过  把团购券给使用了
-                meituanService.consume(roomInfoDO.getStoreId(), reqVO.getUserId(), reqVO.getGroupPayNo());
+                meituanService.consume(roomInfoDO.getStoreId(), reqVO.getUserId(), reqVO.getGroupPayNo(), groupShopId);
             } else {
                 //抖音券
                 groupType = AppEnum.member_group_no_type.DOUYIN.getValue();
@@ -826,6 +826,17 @@ public class AppOrderServiceImpl implements AppOrderService {
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
         PageHelper.startPage(reqVO);
         List<OrderListRespVO> list = orderInfoMapper.getOrderPage(reqVO);
+        if (!org.springframework.util.CollectionUtils.isEmpty(list)) {
+            //如果状态是已取消以外的状态  并且订单结束时间不超过5分钟，那么允许续费
+            LocalDateTime now = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            list.forEach(x -> {
+                x.setRenewBtn(false);
+                if (x.getStatus().compareTo(AppEnum.order_status.CANCEL.getValue()) != 0) {
+                    LocalDateTime endDate = x.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plusMinutes(5);
+                    x.setRenewBtn(endDate.isAfter(now));
+                }
+            });
+        }
         PageInfo<OrderListRespVO> page = new PageInfo<>(list);
         return new PageResult<>(page.getList(), page.getTotal());
     }

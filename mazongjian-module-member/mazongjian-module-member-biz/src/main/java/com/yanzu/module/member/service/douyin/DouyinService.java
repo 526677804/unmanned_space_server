@@ -150,12 +150,19 @@ public class DouyinService {
         JSONObject jsonObject = douyinClient.verify(reqVO, clientToken);
         log.info("抖音验券:{}", jsonObject);
         JSONObject data = jsonObject.getJSONObject("data");
+        String verify_id = "";
+        String certificate_id = "";
         if (data.getInteger("error_code") == 0) {
             JSONObject verify_results = (JSONObject) data.getJSONArray("verify_results").get(0);
-            String verify_id = verify_results.getString("verify_id");
-            String certificate_id = verify_results.getString("certificate_id");
+            verify_id = verify_results.getString("verify_id");
+            certificate_id = verify_results.getString("certificate_id");
             return verify_id + "-" + certificate_id;
         } else {
+            try {
+                cancel(new DouyinCancelReqVO(verify_id, certificate_id));
+            } catch (Exception e) {
+//                throw new RuntimeException(e);
+            }
             throw exception(GROUP_NO_CHECK_ERROR);
         }
     }

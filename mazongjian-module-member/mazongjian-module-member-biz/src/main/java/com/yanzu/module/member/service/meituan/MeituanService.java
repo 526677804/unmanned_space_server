@@ -182,7 +182,7 @@ public class MeituanService {
     }
 
 
-    public JSONObject consume(Long storeId, Long userId, String receiptCode) {
+    public JSONObject consume(Long storeId, Long userId, String receiptCode, String dealId) {
         //查询出店铺id
         StoreMeituanInfoDO meituan = storeMeituanInfoMapper.getByStoreId(storeId);
         if (ObjectUtils.isEmpty(meituan) || ObjectUtils.isEmpty(meituan.getOpenShopUuid())) {
@@ -201,6 +201,12 @@ public class MeituanService {
         JSONObject consume = meituanClient.consume(reqVO);
         log.info("美团验券:{}", consume);
         if (consume.getInt("code") != 200) {
+            //异常了 需要撤销
+            try {
+                reverseconsume(storeId, userId, receiptCode, dealId);
+            } catch (Exception e) {
+//                throw new RuntimeException(e);
+            }
             throw exception(GROUP_NO_CHECK_ERROR);
         }
         return (JSONObject) consume.getJSONArray("data").get(0);

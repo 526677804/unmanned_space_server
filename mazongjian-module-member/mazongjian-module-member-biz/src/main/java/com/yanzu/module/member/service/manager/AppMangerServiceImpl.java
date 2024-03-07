@@ -63,6 +63,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -145,6 +146,17 @@ public class AppMangerServiceImpl implements AppMangerService {
         reqVO.setStoreIds(storeIds);
         PageHelper.startPage(reqVO);
         List<OrderListRespVO> list = orderInfoMapper.getOrderPage(reqVO);
+        if (!CollectionUtils.isEmpty(list)) {
+            //如果状态是已取消以外的状态  并且订单结束时间不超过5分钟，那么允许续费
+            LocalDateTime now = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            list.forEach(x -> {
+                x.setRenewBtn(false);
+                if (x.getStatus().compareTo(AppEnum.order_status.CANCEL.getValue()) != 0) {
+                    LocalDateTime endDate = x.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plusMinutes(5);
+                    x.setRenewBtn(endDate.isAfter(now));
+                }
+            });
+        }
         PageInfo<OrderListRespVO> page = new PageInfo<>(list);
         return new PageResult<>(page.getList(), page.getTotal());
     }
@@ -775,7 +787,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             groupPayInfoDO.setGroupPayPrice(prepare.getPayAmount());
             groupPayInfoDO.setGroupShopId(prepare.getDealId());
             //使用
-            meituanService.consume(reqVO.getStoreId(), getLoginUserId(), reqVO.getGroupPayNo());
+            meituanService.consume(reqVO.getStoreId(), getLoginUserId(), reqVO.getGroupPayNo(), prepare.getDealId());
         } else {
             //抖音券
             groupPayInfoDO.setGroupPayType(AppEnum.member_group_no_type.DOUYIN.getValue());

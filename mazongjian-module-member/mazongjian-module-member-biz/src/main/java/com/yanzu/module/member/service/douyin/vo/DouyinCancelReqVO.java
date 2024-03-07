@@ -1,6 +1,8 @@
 package com.yanzu.module.member.service.douyin.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.douyin.vo
@@ -9,6 +11,8 @@ import lombok.Data;
  * @DATE: 2023/10/9 12:24
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class DouyinCancelReqVO {
 
     //代表券码一次核销的唯一标识（验券时返回）

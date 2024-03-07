@@ -86,4 +86,8 @@ public class OrderListRespVO {
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date createTime;
 
+    @Schema(description = "是否允许续费",  example = "false")
+    private Boolean renewBtn;
+
+
 }
