@@ -24,4 +24,5 @@ public interface DeviceService {
 
     void weimenjin(JSONObject body);
 
+    void testYunlaba(Long roomId);
 }

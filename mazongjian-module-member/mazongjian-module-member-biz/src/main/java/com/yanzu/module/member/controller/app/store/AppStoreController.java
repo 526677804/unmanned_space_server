@@ -100,6 +100,16 @@ public class AppStoreController {
         return success(true);
     }
 
+    @PostMapping("/testYunlaba/{roomId}")
+    @Operation(summary = "测试云喇叭", description = "房间管理使用")
+    @PreAuthenticated
+    @Parameter(name = "roomId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> testYunlaba(@PathVariable("roomId") Long roomId) {
+        deviceService.testYunlaba(roomId);
+        return success(true);
+    }
+
     @PostMapping("/openRoomDoor/{roomId}")
     @Operation(summary = "开房间的大门", description = "房间管理使用")
     @PreAuthenticated

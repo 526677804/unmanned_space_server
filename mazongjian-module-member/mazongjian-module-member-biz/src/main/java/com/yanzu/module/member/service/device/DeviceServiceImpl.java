@@ -254,4 +254,9 @@ public class DeviceServiceImpl implements DeviceService {
 
 
     }
+
+    @Override
+    public void testYunlaba(Long roomId) {
+        runSound(roomId, 1);
+    }
 }

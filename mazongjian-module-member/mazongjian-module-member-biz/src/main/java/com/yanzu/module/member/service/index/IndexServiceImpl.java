@@ -189,7 +189,7 @@ public class IndexServiceImpl implements IndexService {
                 for (int i = 0; i < appTimeSlotRespVOS.size(); i++) {
                     AppTimeSlotRespVO slotRespVO = appTimeSlotRespVOS.get(i);
                     if (slotRespVO.getHour().equals("00")) {
-                        slotRespVO=new AppTimeSlotRespVO("次",slotRespVO.getDisable());
+                        slotRespVO = new AppTimeSlotRespVO("次", slotRespVO.getDisable());
                     }
                     timeSlot.set(i, slotRespVO);
                 }
@@ -276,73 +276,71 @@ public class IndexServiceImpl implements IndexService {
         } else {
             orederMap = new HashMap<>();
         }
-
-        DateTimeFormatter formatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        DateTimeFormatter formatterHour = DateTimeFormatter.ofPattern("HH:mm");
         // 获取当前日期
-        LocalDate currentDate = LocalDate.now();
-        Set<String> days = new HashSet<>(5);
-        for (int i = 0; i < 5; i++) {
-            days.add(currentDate.format(formatterDay));
-            currentDate = currentDate.plusDays(1);
-        }
-        //开始处理
-        List<TimeRange> disabledTimeRanges = new ArrayList<>();
-        //先把订单中的时间进行处理
+        int hour = LocalDateTime.now().getHour();
+        //重新处理不可用时间段的显示
+        //一天24个 5天就是120个
+        List<AppTimeSlotRespVO> timeSlot = new ArrayList<>(120);
+        //暂存所有禁用的时间段
+        List<AppOrderTimeVO> bookings = new ArrayList<>();
+        //找出该房间所有订单
         if (orederMap.containsKey(respVO.getRoomId())) {
-            respVO.setStartTime(orederMap.get(respVO.getRoomId()).get(0).getStartTime());
-            respVO.setEndTime(orederMap.get(respVO.getRoomId()).get(0).getEndTime());
-            for (OrderInfoDO orderInfoDO : orederMap.get(respVO.getRoomId())) {
-                if (orderInfoDO.getStartTime().getDay() != orderInfoDO.getEndTime().getDay()) {
-                    //开始时间与结束时间跨日 分隔成两段
-                    LocalDateTime start = DateUtils.of(orderInfoDO.getStartTime());
-                    LocalDateTime end = DateUtils.of(orderInfoDO.getEndTime());
-                    disabledTimeRanges.add(new TimeRange(start, start.with(LocalTime.of(23, 59))));
-                    disabledTimeRanges.add(new TimeRange(end.with(LocalTime.of(00, 00)), end));
-                } else {
-                    disabledTimeRanges.add(new TimeRange(DateUtils.of(orderInfoDO.getStartTime()), DateUtils.of(orderInfoDO.getEndTime())));
-                }
-            }
+            List<OrderInfoDO> sortOrder = orederMap.get(respVO.getRoomId()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
+            sortOrder.forEach(x -> {
+                bookings.add(new AppOrderTimeVO(x.getStartTime(), x.getEndTime()));
+            });
         }
-        //再处理每天有禁用时间的情况
+        //每日不可用时间
+        LocalTime bstart = null;
+        LocalTime bend = null;
+        // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
         if (!ObjectUtils.isEmpty(respVO.getBanTimeStart()) && !ObjectUtils.isEmpty(respVO.getBanTimeStart())) {
-            // 获取当前日期
-            currentDate = LocalDate.now();
-            // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
-            LocalTime bstart = LocalTime.parse(respVO.getBanTimeStart());
-            LocalTime bend = LocalTime.parse(respVO.getBanTimeEnd());
-            // 遍历日期范围内的每一天'
-            for (int i = 0; i < 5; i++) {
-                // 判断是否跨越两天
-                if (bend.isBefore(bstart)) {
-                    // 添加禁用时间范围：从开始时间到当天最后一秒
-                    disabledTimeRanges.add(new TimeRange(currentDate.atTime(bstart), currentDate.atTime(LocalTime.MAX)));
-                    // 添加禁用时间范围：从零点到结束时间
-                    disabledTimeRanges.add(new TimeRange(currentDate.atTime(LocalTime.MIDNIGHT), currentDate.atTime(bend)));
-                } else {
-                    // 添加禁用时间范围：从开始时间到结束时间
-                    disabledTimeRanges.add(new TimeRange(currentDate.atTime(bstart), currentDate.atTime(bend)));
+            bstart = LocalTime.parse(respVO.getBanTimeStart());
+            bend = LocalTime.parse(respVO.getBanTimeEnd());
+        }
+        // 获取从今天起未来5天的小时数
+        int totalHours = 5 * 24;
+        // 获取当前时间的当天0时
+        LocalDateTime currentDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS);
+        // 获取每小时的可用状态
+        for (int i = 0; i < totalHours; i++) {
+            LocalDateTime currentHour = currentDateTime.plusHours(i);
+            boolean isAvailable = false;
+            for (AppOrderTimeVO booking : bookings) {
+                if (booking.getStartTime().isBefore(currentHour.plusHours(1)) &&
+                        booking.getEndTime().isAfter(currentHour)) {
+                    isAvailable = true;
+                    break;
                 }
-                currentDate = currentDate.plusDays(1);
             }
+            if (null != bstart && null != bend) {
+                // 处理禁用时间跨越两天的情况
+                int currentHourValue = currentHour.getHour();
+                if (bstart.getHour() > bend.getHour()) {
+                    if (currentHourValue >= bstart.getHour() || currentHourValue < bend.getHour()) {
+                        isAvailable = true;
+                    }
+                } else {
+                    if (currentHourValue >= bstart.getHour() && currentHourValue < bend.getHour()) {
+                        isAvailable = true;
+                    }
+                }
+            }
+            // 将小时和可用状态放入结果中
+            String formattedHour = currentHour.format(DateTimeFormatter.ofPattern("HH"));
+            timeSlot.add(new AppTimeSlotRespVO(formattedHour, isAvailable));
         }
-        //排序结果，并按日期进行分组
-        Map<String, List<TimeRange>> collect = disabledTimeRanges.stream().sorted(Comparator.comparing(TimeRange::getStart))
-                .collect(Collectors.groupingBy(v -> v.getStart().format(formatterDay)));
-        Map<String, List<TimeSlotVO>> timeSlotMap = new HashMap<>(collect.size());
-        for (Map.Entry<String, List<TimeRange>> entry : collect.entrySet()) {
-            List<TimeSlotVO> timeSlotVOList = new ArrayList<>(entry.getValue().size());
-            for (TimeRange timeRange : entry.getValue()) {
-                timeSlotVOList.add(new TimeSlotVO(timeRange.getStart().format(formatterHour), timeRange.getEnd().format(formatterHour)));
+        //重新处理当日的，从当前时间的小时开始 设置到次日
+        List<AppTimeSlotRespVO> appTimeSlotRespVOS = timeSlot.subList(hour, hour + 24);
+        for (int i = 0; i < appTimeSlotRespVOS.size(); i++) {
+            AppTimeSlotRespVO slotRespVO = appTimeSlotRespVOS.get(i);
+            if (slotRespVO.getHour().equals("00")) {
+                slotRespVO = new AppTimeSlotRespVO("次", slotRespVO.getDisable());
             }
-            timeSlotMap.put(entry.getKey(), timeSlotVOList);
+            timeSlot.set(i, slotRespVO);
         }
-        days.forEach(d -> {
-            if (!timeSlotMap.containsKey(d)) {
-                timeSlotMap.put(d, new ArrayList<>(1));
-            }
-        });
-        respVO.setDisabledTimeSlot(timeSlotMap);
+        respVO.setTimeSlot(timeSlot);
+
         return respVO;
     }
 
