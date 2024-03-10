@@ -2,6 +2,7 @@ package com.yanzu.module.member.api.user;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.binarywang.wxpay.bean.profitsharing.ProfitSharingFinishRequest;
 import com.github.binarywang.wxpay.bean.profitsharing.ProfitSharingRequest;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.ProfitSharingService;
@@ -115,33 +116,46 @@ public class MemberUserApiImpl implements MemberUserApi {
             //按storeId分组
             Map<Long, List<PayOrderDO>> listMap = preSplit.stream().collect(Collectors.groupingBy(x -> x.getStoreId()));
             for (Map.Entry<Long, List<PayOrderDO>> entry : listMap.entrySet()) {
-                //初始化微信支付
-                WxPayService wxPayService = myWxService.initWxPay(entry.getKey());
-                //初始化分账服务
-                ProfitSharingService profitSharingService = wxPayService.getProfitSharingService();
                 //查询分账比例
                 StoreWxpayConfigDO config = myWxService.getWxPayConfig(entry.getKey());
-                for (PayOrderDO payOrderDO : entry.getValue()) {
-                    try {
-                        ProfitSharingRequest req = new ProfitSharingRequest();
-                        req.setNonceStr(UUID.randomUUID().toString().substring(0, 16));
-                        req.setTransactionId(payOrderDO.getPayOrderNo());
-                        req.setOutOrderNo("P" + payOrderDO.getOrderNo());
-                        JSONArray jsonArr = new JSONArray();
-                        JSONObject json = new JSONObject();
-                        json.put("type", "MERCHANT_ID");
-                        json.put("account", splitMchId);
-                        json.put("amount", payOrderDO.getPrice() * config.getSplitProp() / 100);
-                        json.put("description", "支付服务费");
-                        jsonArr.add(json);
-                        req.setReceivers(jsonArr.toJSONString());
-                        profitSharingService.profitSharing(req);
-                        splitId.add(payOrderDO.getId());
-                    } catch (WxPayException e) {
-                        log.error("微信支付分账失败:{}", payOrderDO.getId());
-                        e.printStackTrace();
+                if(config.getSplit()){
+                    //初始化微信支付
+                    WxPayService wxPayService = myWxService.initWxPay(entry.getKey());
+                    //初始化分账服务
+                    ProfitSharingService profitSharingService = wxPayService.getProfitSharingService();
+                    for (PayOrderDO payOrderDO : entry.getValue()) {
+                        try {
+                            int amount = payOrderDO.getPrice() * config.getSplitProp() / 100;
+                            if (amount == 0) {
+                                //直接退回资金
+                                ProfitSharingFinishRequest finishRequest = new ProfitSharingFinishRequest();
+                                finishRequest.setNonceStr(UUID.randomUUID().toString().substring(0, 16));
+                                finishRequest.setTransactionId(payOrderDO.getPayOrderNo());
+                                finishRequest.setOutOrderNo("P" + payOrderDO.getOrderNo());
+                                finishRequest.setDescription("支付服务费");
+                                profitSharingService.profitSharingFinish(finishRequest);
+                            } else {
+                                ProfitSharingRequest req = new ProfitSharingRequest();
+                                req.setNonceStr(UUID.randomUUID().toString().substring(0, 16));
+                                req.setTransactionId(payOrderDO.getPayOrderNo());
+                                req.setOutOrderNo("P" + payOrderDO.getOrderNo());
+                                JSONArray jsonArr = new JSONArray();
+                                JSONObject json = new JSONObject();
+                                json.put("type", "MERCHANT_ID");
+                                json.put("account", splitMchId);
+                                json.put("amount", payOrderDO.getPrice() * config.getSplitProp() / 100);
+                                json.put("description", "支付服务费");
+                                jsonArr.add(json);
+                                req.setReceivers(jsonArr.toJSONString());
+                                profitSharingService.profitSharing(req);
+                            }
+                            splitId.add(payOrderDO.getId());
+                        } catch (WxPayException e) {
+                            log.error("微信支付分账失败:{}", payOrderDO.getId());
+                            e.printStackTrace();
 //                        throw new RuntimeException(e);
-                        continue;
+                            continue;
+                        }
                     }
                 }
             }
