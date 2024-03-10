@@ -189,7 +189,7 @@ public class IndexServiceImpl implements IndexService {
                 for (int i = 0; i < appTimeSlotRespVOS.size(); i++) {
                     AppTimeSlotRespVO slotRespVO = appTimeSlotRespVOS.get(i);
                     if (slotRespVO.getHour().equals("00")) {
-                        slotRespVO=new AppTimeSlotRespVO("次日",slotRespVO.getDisable());
+                        slotRespVO=new AppTimeSlotRespVO("次",slotRespVO.getDisable());
                     }
                     timeSlot.set(i, slotRespVO);
                 }
