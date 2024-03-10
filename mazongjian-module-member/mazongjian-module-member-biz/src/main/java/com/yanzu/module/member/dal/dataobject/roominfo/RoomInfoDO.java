@@ -59,6 +59,8 @@ public class RoomInfoDO extends BaseDO {
      * 排序位置
      */
     private Integer sortId;
+
+    private Integer yunlabaSound;
     /**
      * 禁用开始时间
      */

@@ -5,6 +5,7 @@ import com.yanzu.module.member.service.iot.iotbean.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 
@@ -32,14 +33,14 @@ public class IotService {
     private String v2secret;
 
 
-    private IotApiBaseReqVO getIotApiBaseReqVO(){
+    private IotApiBaseReqVO getIotApiBaseReqVO() {
         IotApiBaseReqVO vo = new IotApiBaseReqVO();
         vo.setAppid(v1appid);
         vo.setAppsecret(v1secret);
         return vo;
     }
 
-    private IotApiV2BaseReqVO getIotApiV2BaseReqVO(){
+    private IotApiV2BaseReqVO getIotApiV2BaseReqVO() {
         IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
         vo.setApp_id(v2appid);
         vo.setApp_secret(v2secret);
@@ -131,13 +132,17 @@ public class IotService {
         return respVO.getCode() == 0;
     }
 
-    public boolean runYunlaba(String sn, String tts) {
+    public boolean runYunlaba(String sn, String tts, Integer sound) {
         IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
         vo.setDevice_sn(sn);
         YunlabaOpVO<YunlabaInfoVO> data = new YunlabaOpVO();
         YunlabaInfoVO info = new YunlabaInfoVO();
         info.setTts(tts);
         info.setInner(10);
+        if (ObjectUtils.isEmpty(sound) || sound == 0) {
+            sound = 2;
+        }
+        info.setVolume(sound);
         data.setInfo(info);
         vo.setData(data);
         IotApiV2BaseRespVO respVO = iotClient.runYunlaba(vo);

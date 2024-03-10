@@ -15,4 +15,6 @@ public class YunlabaInfoVO {
 
     private Integer inner = 10;//头部提示音，取值范围1-15
 
+    private Integer volume;//4G版本1-7，wifi版1-10
+
 }

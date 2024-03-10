@@ -2,9 +2,11 @@ package com.yanzu.module.member.service.device;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
+import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
+import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.IotService;
@@ -37,7 +39,7 @@ public class DeviceServiceImpl implements DeviceService {
     private OrderInfoMapper orderInfoMapper;
 
     @Resource
-    private StoreInfoMapper storeInfoMapper;
+    private RoomInfoMapper roomInfoMapper;
 
     @Resource
     private DeviceInfoMapper deviceInfoMapper;
@@ -194,6 +196,8 @@ public class DeviceServiceImpl implements DeviceService {
         log.info("发送云喇叭提醒,房间id:{}", roomId);
         //获取设备的sn
         String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 3);
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+        //获取音量设置
         if (!ObjectUtils.isEmpty(sn)) {
             String str = "";
             switch (type) {
@@ -213,7 +217,7 @@ public class DeviceServiceImpl implements DeviceService {
                     str = "尊敬的顾客您好,根据城市管理条例要求,请您在深夜消费时,注意控制噪音,以免影响到他人,感谢您的支持与理解！";
                     break;
             }
-            boolean flag = iotService.runYunlaba(sn, str);
+            boolean flag = iotService.runYunlaba(sn, str, roomInfoDO.getYunlabaSound());
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }

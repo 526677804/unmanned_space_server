@@ -43,6 +43,9 @@ public class AppRoomDetailReqVO {
     @Schema(description = "排序位置", example = "0")
     private Integer sortId;
 
+    @Schema(description = "云喇叭音量，1-5")
+    private Integer yunlabaSound;
+
     @Schema(description = "禁用开始时间 HH:mm:ss")
     private String banTimeStart;
 

@@ -152,6 +152,10 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //没有填通宵场价格  那么默认设置为单价*6个小时
             reqVO.setTongxiaoPrice(reqVO.getPrice().multiply(BigDecimal.valueOf(6)));
         }
+        if (ObjectUtils.isEmpty(reqVO.getYunlabaSound())) {
+            //默认设置音量为2
+            reqVO.setYunlabaSound(2);
+        }
         if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //新增
             RoomInfoDO roomInfoDO = RoomInfoConvert.INSTANCE.convert3(reqVO);
@@ -175,6 +179,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoDO.setBanTimeStart(reqVO.getBanTimeStart());
             roomInfoDO.setBanTimeEnd(reqVO.getBanTimeEnd());
             roomInfoDO.setSortId(reqVO.getSortId());
+            roomInfoDO.setYunlabaSound(reqVO.getYunlabaSound());
             roomInfoMapper.updateById(roomInfoDO);
         }
     }
@@ -412,10 +417,10 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
             //改成空闲
-            roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(),roomId);
+            roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomId);
         } else {
             //改成禁用
-            roomInfoMapper.updateStatusById(AppEnum.room_status.DISABLE.getValue(),roomId);
+            roomInfoMapper.updateStatusById(AppEnum.room_status.DISABLE.getValue(), roomId);
         }
     }
 
