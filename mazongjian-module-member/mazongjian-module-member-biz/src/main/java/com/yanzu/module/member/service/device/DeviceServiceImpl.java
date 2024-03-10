@@ -198,7 +198,7 @@ public class DeviceServiceImpl implements DeviceService {
             String str = "";
             switch (type) {
                 case 1:
-                    str = "欢迎您光临自助棋牌室,本店无人值守,需要帮助请电话或微信联系客服.请您文明娱乐,禁止从事赌博等违法行为.祝您玩的开心！";
+                    str = "欢迎您光临自助棋牌室,本店无人值守,需要帮助请联系客服，请您文明娱乐,禁止从事赌博等违法行为.祝您玩的开心！";
                     break;
                 case 2:
                     str = "您的订单剩余时间已不足三十分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！";
