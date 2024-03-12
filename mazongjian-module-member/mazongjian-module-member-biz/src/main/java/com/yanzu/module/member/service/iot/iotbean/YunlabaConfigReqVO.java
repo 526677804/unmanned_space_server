@@ -18,6 +18,6 @@ public class YunlabaConfigReqVO {
     private Integer volume = 2;
     private Integer speed = 3;
     private Integer tone = 5;
-    private String launch_tts = "欢迎您光临自助棋牌室,本店无人值守,需要帮助请联系客服，请您文明娱乐,禁止从事赌博等违法行为.祝您玩的开心！";
+    private String launch_tts = "欢迎您光临,本店无人值守,需要帮助请联系客服，请您文明娱乐,禁止从事赌博等违法行为.祝您玩的开心！";
 
 }
