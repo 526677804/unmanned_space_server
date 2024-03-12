@@ -1,8 +1,6 @@
 package com.yanzu.module.member.controller.app.index.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.controller.app.order.vo.TimeSlotVO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,6 +42,9 @@ public class AppRoomInfoListRespVO {
 
     @Schema(description = "单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
     private BigDecimal price;
+
+    @Schema(description = "单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
+    private BigDecimal workPrice;
 
     @Schema(description = "通宵场价格", requiredMode = Schema.RequiredMode.REQUIRED, example = "100")
     private BigDecimal tongxiaoPrice;

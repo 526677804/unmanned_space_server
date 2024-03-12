@@ -603,12 +603,12 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Transactional
     public void renew(OrderRenewalReqVO reqVO) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(reqVO.getOrderId());
+        if(orderInfoDO.getStartTime().after(reqVO.getEndTime())){
+            throw exception(ORDER_START_TIME_GT_END_ERROR);
+        }
         //权限校验
 //        Long userId = getLoginUserId();
         storeInfoService.checkPermisson(orderInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
-//        if (reqVO.getMinutes() < 1 || reqVO.getMinutes() % 30 != 0) {
-//            throw exception(TIME_UNIT_ERROR);
-//        }
         //未开始=0 进行中=1  已完成=2  已取消=3
         switch (orderInfoDO.getStatus()) {
             case 0:
@@ -624,18 +624,21 @@ public class AppMangerServiceImpl implements AppMangerService {
                 throw exception(ORDER_STATUS_CANCEL_OPRATION_ERROR);
         }
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
-        //管理员续费  不需要算钱了，但是要校验时间冲突
-        Date endTime = reqVO.getEndTime();
-        appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), endTime, null, reqVO.getOrderId(), false, false);
-        //增加订单的结束时间
-        orderInfoDO.setEndTime(endTime);
-        //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电 还要清除保洁订单信息
-        if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
-            orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
-            deviceService.openRoomDoor(roomInfoDO.getRoomId(), 1);
-            roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
-            clearInfoMapper.cancelByRoomId(roomInfoDO.getRoomId());
+        //如果是减少时间 不用校验时间冲突
+        if(orderInfoDO.getEndTime().before(reqVO.getEndTime())){
+            //增加时间
+            //管理员续费  不需要算钱了，但是要校验时间冲突
+            appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
+            //如果状态是已完成  则状态改成进行中 并触发一次开房间门操作，以实现通电 还要清除保洁订单信息
+            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0 && reqVO.getEndTime().after(new Date())) {
+                orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
+                deviceService.openRoomDoor(roomInfoDO.getRoomId(), 1);
+                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
+                clearInfoMapper.cancelByRoomId(roomInfoDO.getRoomId());
+            }
         }
+        //修改订单的结束时间
+        orderInfoDO.setEndTime(reqVO.getEndTime());
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
         workWxService.sendRenewMsg(roomInfoDO.getStoreId(), getLoginUserId(), roomInfoDO.getRoomName(), BigDecimal.ZERO, reqVO.getPayType(), orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), true);
@@ -757,7 +760,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
             } else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
                 // 如果后面还有预约 就改成已预定
-                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), orderInfoDO.getRoomId());
+                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), orderInfoDO.getRoomId());
             } else {
                 // 否则 改成空闲
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), orderInfoDO.getRoomId());
@@ -767,7 +770,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), userId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice()
                     , couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo(), true);
         } else {
-            throw exception(ADMIN_ORDER_CANCEL_OPRATION_ERROR);
+            throw exception(ADMIN_ORDER_OPRATION_ERROR);
         }
     }
 
@@ -832,6 +835,64 @@ public class AppMangerServiceImpl implements AppMangerService {
                 throw exception(CLEAR_ORDER_STATUS_ERROR);
             }
 
+        }
+    }
+
+    @Override
+    @Transactional
+    public void changeOrderTime(AppChangeOrderTimeReqVO reqVO) {
+        //检查订单时间合法性
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(reqVO.getOrderId());
+        Long roomId = orderInfoDO.getRoomId();
+        Long userId = orderInfoDO.getUserId();
+        //权限检查
+        storeInfoService.checkPermisson(orderInfoDO.getStoreId(), userId, null, AppEnum.member_user_type.ADMIN.getValue());
+        //订单状态检查 只有未开始、进行中的订单，才允许修改
+        boolean flag = true;//默认允许修改订单
+        flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
+        if (flag) {
+            //检查时间
+            appOrderService.preOrder(orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
+            //开始修改
+            //改时间
+            orderInfoDO.setStartTime(reqVO.getStartTime());
+            orderInfoDO.setEndTime(reqVO.getEndTime());
+            orderInfoMapper.updateById(orderInfoDO);
+            //判断有没有换房间
+            if (reqVO.getRoomId().compareTo(orderInfoDO.getRoomId()) != 0) {
+                //改新房间的状态  如果订单是开始 改成进行中  否则改成已预订
+                if (orderInfoDO.getStartTime().before(new Date())) {
+                    //订单开始时间在当前时间之前  说明订单已开始
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), reqVO.getRoomId());
+                    orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
+                } else {
+                    //订单开始时间在当前时间之后  说明订单未开始
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), reqVO.getRoomId());
+                    orderInfoDO.setStatus(AppEnum.order_status.PENDING.getValue());
+                }
+                orderInfoMapper.updateById(orderInfoDO);
+                //改旧房间的状态
+                Long oldRoomId = orderInfoDO.getRoomId();
+                //如果有未完成的保洁订单 状态就是待保洁
+                int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(oldRoomId);
+                if (countCurrentByRoomId > 0) {
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), oldRoomId);
+                } else if (orderInfoMapper.countByRoomCurrent(oldRoomId, reqVO.getOrderId()) > 0) {
+                    // 如果当前有订单进行 就改成进行中
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), oldRoomId);
+                } else if (orderInfoMapper.countByRoomId(oldRoomId, reqVO.getOrderId()) > 0) {
+                    // 如果后面还有预约 就改成已预定
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), oldRoomId);
+                } else {
+                    // 否则 改成空闲
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), oldRoomId);
+                }
+            }
+            //发送消息到企业微信
+            workWxService.sendChangeMsg(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), roomId, reqVO.getRoomId(), userId);
+
+        } else {
+            throw exception(ADMIN_ORDER_OPRATION_ERROR);
         }
     }
 }

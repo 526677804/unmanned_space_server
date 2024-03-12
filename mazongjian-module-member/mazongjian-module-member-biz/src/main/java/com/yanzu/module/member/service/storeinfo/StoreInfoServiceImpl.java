@@ -172,6 +172,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoDO.setRoomName(reqVO.getRoomName());
             roomInfoDO.setType(reqVO.getType());
             roomInfoDO.setPrice(reqVO.getPrice());
+            roomInfoDO.setWorkPrice(reqVO.getWorkPrice());
             roomInfoDO.setTongxiaoPrice(reqVO.getTongxiaoPrice());
             roomInfoDO.setLabel(reqVO.getLabel());
             roomInfoDO.setImageUrls(reqVO.getImageUrls());
@@ -378,7 +379,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), roomInfoDO.getRoomId());
         } else if (orderInfoMapper.countByRoomId(roomInfoDO.getRoomId(), null) > 0) {
             // 如果后面还有预约 就改成已预定
-            roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), roomInfoDO.getRoomId());
+            roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), roomInfoDO.getRoomId());
         } else {
             // 否则 改成空闲
             roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomInfoDO.getRoomId());

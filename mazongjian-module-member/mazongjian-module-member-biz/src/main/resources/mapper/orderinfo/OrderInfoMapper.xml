@@ -144,6 +144,7 @@
         , o.order_no
         , r.room_name
         , r.price roomPrice
+        , r.work_price workPrice
         , o.room_id
         , o.store_id
         , r.type roomType

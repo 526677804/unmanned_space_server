@@ -197,7 +197,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //检查优惠券是否允许使用
         checkCouponUse(couponInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime);
         //计算订单价格
-        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getTongxiaoPrice(), startTime, endTime, nightLong, couponInfoDO);
+        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), startTime, endTime, nightLong, couponInfoDO);
         //查询出该房间 所有的订单 以及不可用的时间段
         List<OrderInfoDO> orderInfoList = orderInfoMapper.getByRoomId(roomId, ignoreOrderId);
         //构建出不可用的时间区间
@@ -329,7 +329,15 @@ public class AppOrderServiceImpl implements AppOrderService {
 
 
     @Override
-    public BigDecimal mathPrice(BigDecimal price, BigDecimal tongxiaoPrice, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO) {
+    public BigDecimal mathPrice(BigDecimal price, BigDecimal workPrice, BigDecimal tongxiaoPrice, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO) {
+        //以订单开始时间算，如果开始时间在周一至周四，那么就按工作日价格计算
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startTime);
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        if (dayOfWeek >= Calendar.MONDAY && dayOfWeek <= Calendar.THURSDAY) {
+            //工作日
+            price = workPrice;
+        }
         // 计算两个日期的小时差 精确到小数点后两位
         BigDecimal hours = new BigDecimal(String.valueOf((endTime.getTime() - startTime.getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
         //计算价格 单价*时长
@@ -350,7 +358,6 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //判断使用优惠券的情况
         if (!ObjectUtils.isEmpty(couponInfoDO)) {
-
             //判断类型
             switch (couponInfoDO.getType()) {
                 case 1://1抵扣券
@@ -647,7 +654,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         orderInfoMapper.insert(orderInfoDO);
         //如果房间状态不是进行中，就改成已预定
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) != 0) {
-            roomInfoDO.setStatus(AppEnum.room_status.PENDDING.getValue());
+            roomInfoDO.setStatus(AppEnum.room_status.PENDING.getValue());
             roomInfoMapper.updateById(roomInfoDO);
         }
         //如果使用了团购券 就增加团购验券记录
@@ -711,9 +718,6 @@ public class AppOrderServiceImpl implements AppOrderService {
             reqVO.setUserId(getLoginUserId());
         }
         Long userId = reqVO.getUserId();
-//        if (reqVO.getMinutes() < 1 || reqVO.getMinutes() % 30 != 0) {
-//            throw exception(TIME_UNIT_ERROR);
-//        }
         //把订单查出来
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(reqVO.getOrderId());
         //未开始=0 进行中=1  已完成=2  已取消=3
@@ -881,7 +885,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 orderInfoMapper.updateById(orderInfoDO);
                 //改新房间的状态  如果房间是空闲，则改成已预订
                 if (newRoomInfo.getStatus().compareTo(AppEnum.room_status.ENABLE.getValue()) == 0) {
-                    roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), roomId);
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), roomId);
                 }
                 //改旧房间的状态
                 Long oldRoomId = oldRoomInfo.getRoomId();
@@ -894,7 +898,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), oldRoomId);
                 } else if (orderInfoMapper.countByRoomId(oldRoomId, orderId) > 0) {
                     // 如果后面还有预约 就改成已预定
-                    roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), oldRoomId);
+                    roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), oldRoomId);
                 } else {
                     // 否则 改成空闲
                     roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), oldRoomId);
@@ -1030,7 +1034,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
             } else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
                 // 如果后面还有预约 就改成已预定
-                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), orderInfoDO.getRoomId());
+                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), orderInfoDO.getRoomId());
             } else {
                 // 否则 改成空闲
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), orderInfoDO.getRoomId());

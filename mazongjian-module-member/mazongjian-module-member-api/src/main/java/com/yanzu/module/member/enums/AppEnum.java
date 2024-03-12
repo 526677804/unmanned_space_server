@@ -119,7 +119,7 @@ public class AppEnum {
         ENABLE(1),
         CLEAR(2),
         USED(3),
-        PENDDING(4),
+        PENDING(4),
         ;
 
 

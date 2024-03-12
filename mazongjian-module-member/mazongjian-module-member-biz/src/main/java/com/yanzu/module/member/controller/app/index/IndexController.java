@@ -31,7 +31,6 @@ import static com.yanzu.framework.common.pojo.CommonResult.success;
 @Slf4j
 public class IndexController {
 
-
     @Resource
     private IndexService indexService;
 

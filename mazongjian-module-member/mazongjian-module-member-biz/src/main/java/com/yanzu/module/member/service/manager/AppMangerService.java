@@ -77,4 +77,6 @@ public interface AppMangerService {
 
     void changeOrderUser(AppChangeOrderUserReqVO reqVO);
 
+    void changeOrderTime(AppChangeOrderTimeReqVO reqVO);
+
 }

@@ -29,6 +29,10 @@ public class AppRoomDetailReqVO {
     @NotNull(message = "单价不能为空")
     private BigDecimal price;
 
+    @Schema(description = "工作日单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
+    @NotNull(message = "工作日单价不能为空")
+    private BigDecimal workPrice;
+
     @Schema(description = "通宵场价格", requiredMode = Schema.RequiredMode.REQUIRED, example = "100")
     private BigDecimal tongxiaoPrice;
 

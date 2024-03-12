@@ -223,5 +223,12 @@ public class AppManagerController {
         return success(true);
     }
 
+//    @PostMapping("/changeOrderTime")
+//    @Operation(summary = "管理员修改订单时间")
+//    @PreAuthenticated
+//    public CommonResult<Boolean> changeOrderTime(@RequestBody @Validated AppChangeOrderTimeReqVO reqVO) {
+//        appMangerService.changeOrderTime(reqVO);
+//        return success(true);
+//    }
 
 }

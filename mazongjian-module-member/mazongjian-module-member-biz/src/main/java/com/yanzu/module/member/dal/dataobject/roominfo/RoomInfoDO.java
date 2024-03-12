@@ -45,6 +45,7 @@ public class RoomInfoDO extends BaseDO {
     /**
      * 单价
      */
+    private BigDecimal workPrice;
     private BigDecimal price;
     private BigDecimal tongxiaoPrice;
     /**

@@ -23,6 +23,9 @@ public class AppRoomDetailRespVO {
     @Schema(description = "单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
     private BigDecimal price;
 
+    @Schema(description = "工作日单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
+    private BigDecimal workPrice;
+
     @Schema(description = "通宵场价格", requiredMode = Schema.RequiredMode.REQUIRED, example = "100")
     private BigDecimal tongxiaoPrice;
 

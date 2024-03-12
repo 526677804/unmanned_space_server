@@ -406,6 +406,41 @@ public class WorkWxServiceImpl implements WorkWxService {
         workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
     }
 
+    @Override
+    @Async
+    public void sendChangeMsg(Long storeId, String orderNo, Date startTime, Date endTime, Long oldRoom, Long newRoom, Long userId) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+        String oldRoomName = roomInfoMapper.getNameById(oldRoom);
+        String newRoomName = roomInfoMapper.getNameById(newRoom);
+        //异步发送微信通知
+        StringBuffer sb = new StringBuffer();
+        sb.append("管理员修改订单通知\n");
+        sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        if(oldRoom.compareTo(newRoom)==0){
+            //没有更换房间
+            sb.append(">房间名称:<font color=\"warning\">").append(oldRoomName).append("</font>\n");
+        }else {
+            sb.append(">原房间名:<font color=\"warning\">").append(oldRoomName).append("</font>\n");
+            sb.append(">新房间名:<font color=\"warning\">").append(newRoomName).append("</font>\n");
+        }
+        sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(startTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(endTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+    }
+
     private String getPayTypeStr(Integer type) {
         switch (type) {
             case 1:

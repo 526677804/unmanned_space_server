@@ -373,7 +373,7 @@ public class AppUserServiceImpl implements AppUserService {
             //下单的时候  要返回可用状态
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
             //先计算出订单价格
-            BigDecimal mathPrice = appOrderService.mathPrice(roomInfoDO.getPrice(), roomInfoDO.getTongxiaoPrice(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null);
+            BigDecimal mathPrice = appOrderService.mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null);
             //再计算出时长 精确到小数点后两位
             BigDecimal hours = new BigDecimal(String.valueOf((reqVO.getEndTime().getTime() - reqVO.getStartTime().getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
             List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);

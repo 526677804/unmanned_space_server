@@ -190,7 +190,7 @@ public class AppClearServiceImpl implements AppClearService {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), clearInfoDO.getRoomId());
             } else if (orderInfoMapper.countByRoomId(clearInfoDO.getRoomId(), null) > 0) {
                 // 如果后面还有预约 就改成已预定
-                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDDING.getValue(), clearInfoDO.getRoomId());
+                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), clearInfoDO.getRoomId());
                 deviceService.closeRoomDoor(clearInfoDO.getRoomId(),  4);
             } else {
                 // 否则 改成空闲

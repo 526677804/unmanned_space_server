@@ -32,4 +32,7 @@ public interface WorkWxService {
     void sendEwelinkRefushTokenMsg();
 
     void sendClearRoomMsg(Long storeId, Long roomId, Long loginUserId, String type);
+
+    void sendChangeMsg(Long storeId, String orderNo, Date startTime, Date endTime, Long oldRoom, Long newRoom, Long userId);
+
 }
