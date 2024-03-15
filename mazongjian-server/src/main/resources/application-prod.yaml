@@ -237,7 +237,7 @@ ewelink:
 #自建mqtt
 mqtt:
   # MQTT服务地址，端口号默认11883，如果有多个，用逗号隔开
-  url: mqtt://mqtt.scyanzu.com:8883
+  url: tcp://mqtt.scyanzu.com:8883
   # 用户名
   username: mazongjian
   # 密码
