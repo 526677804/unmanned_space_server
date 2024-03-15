@@ -7,16 +7,19 @@ import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
-import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.mqtt.MqttProviderConfig;
 import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.IotService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+
+import java.util.UUID;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.DEVICE_OPRATION_ERROR;
@@ -44,7 +47,8 @@ public class DeviceServiceImpl implements DeviceService {
     @Resource
     private DeviceInfoMapper deviceInfoMapper;
 
-
+    @Autowired
+    private MqttProviderConfig mqttProvider;
     @Resource
     private IotService iotService;
 
@@ -199,27 +203,35 @@ public class DeviceServiceImpl implements DeviceService {
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
         //获取音量设置
         if (!ObjectUtils.isEmpty(sn)) {
-            String str = "";
-            switch (type) {
-                case 1:
-                    str = "欢迎您光临,本店无人值守,需要帮助请联系客服，请您文明娱乐,禁止从事赌博等违法行为.祝您玩的开心！";
-                    break;
-                case 2:
-                    str = "您的订单剩余时间已不足三十分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！";
-                    break;
-                case 3:
-                    str = "您的订单剩余时间已不足十五分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！";
-                    break;
-                case 4:
-                    str = "您的订单剩余时间已不足五分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！";
-                    break;
-                case 5:
-                    str = "尊敬的顾客您好,根据城市管理条例要求,请您在深夜消费时,注意控制噪音,以免影响到他人,感谢您的支持与理解！";
-                    break;
-            }
-            boolean flag = iotService.runYunlaba(sn, str, roomInfoDO.getYunlabaSound());
-            if (!flag) {
-                throw exception(DEVICE_OPRATION_ERROR);
+            if (sn.startsWith("MZJ")) {
+                JSONObject data = new JSONObject();
+                data.put("playAudibleMsg", "00" + type);
+                data.put("orderId", UUID.randomUUID().toString());
+                mqttProvider.publish(2, false, sn, data.toJSONString());
+            } else {
+                //自有设备
+                String str = "";
+                switch (type) {
+                    case 1:
+                        str = "欢迎您光临,本店无人值守,需要帮助请联系客服，请您文明娱乐,禁止从事赌博等违法行为.祝您玩的开心！";
+                        break;
+                    case 2:
+                        str = "您的订单剩余时间已不足三十分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！";
+                        break;
+                    case 3:
+                        str = "您的订单剩余时间已不足十五分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！";
+                        break;
+                    case 4:
+                        str = "您的订单剩余时间已不足五分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！";
+                        break;
+                    case 5:
+                        str = "尊敬的顾客您好,根据城市管理条例要求,请您在深夜消费时,注意控制噪音,以免影响到他人,感谢您的支持与理解！";
+                        break;
+                }
+                boolean flag = iotService.runYunlaba(sn, str, roomInfoDO.getYunlabaSound());
+                if (!flag) {
+                    throw exception(DEVICE_OPRATION_ERROR);
+                }
             }
         }
     }

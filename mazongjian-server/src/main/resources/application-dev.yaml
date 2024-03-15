@@ -234,3 +234,17 @@ ewelink:
   redirectUrl: https://api.scyanzu.com/app-api/callback/ewelink
   apiKey: f3bfc723-56e6-4f98-a69f-1a1ab94f3e87
 
+#自建mqtt
+mqtt:
+  # MQTT服务地址，端口号默认11883，如果有多个，用逗号隔开
+  url: tcp://mqtt.scyanzu.com:8883
+  # 用户名
+  username: mazongjian
+  # 密码
+  password: mazongjiandev
+  # 客户端id(不能重复)
+  client:
+    id: mazongjian-dev
+  # MQTT默认的消息推送主题，实际可在调用接口是指定
+  default:
+    topic: yunlaba-dev
