@@ -15,7 +15,7 @@ public class YunlabaConfigReqVO {
 //            "tone":5,     // 0-9，语调由低到高，默认为中间值正常语调
 //            "launch_tts":" " // 网络连接成功后播报
 
-    private Integer volume = 2;
+    private Integer volume = 2; 
     private Integer speed = 3;
     private Integer tone = 5;
     private String launch_tts = "欢迎您光临,本店无人值守,需要帮助请联系客服，请您文明娱乐,禁止从事赌博等违法行为.祝您玩的开心！";

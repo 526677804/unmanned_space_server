@@ -207,7 +207,7 @@ public class DeviceServiceImpl implements DeviceService {
                 JSONObject data = new JSONObject();
                 data.put("playAudibleMsg", "00" + type);
                 data.put("orderId", UUID.randomUUID().toString());
-                mqttProvider.publish(2, false, sn, data.toJSONString());
+                mqttProvider.publish(2, false, "yunlaba/" + sn, data.toJSONString());
             } else {
                 //自有设备
                 String str = "";
