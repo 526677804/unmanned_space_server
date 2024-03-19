@@ -68,8 +68,7 @@ public class AppCallbackController {
     @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public String meituan(@RequestParam("auth_code") String auth_code, @RequestParam("state") String state) {
-        meituanService.getToken(auth_code, state);
-        return "success";
+        return meituanService.getToken(auth_code, state);
     }
 
     @PostMapping(value = "/weimenjin")

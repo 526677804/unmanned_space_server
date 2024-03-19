@@ -117,7 +117,7 @@ public class AppClearServiceImpl implements AppClearService {
         ClearInfoDO clearInfoDO = clearInfoMapper.selectById(id);
         //只有是自己的订单 才能开门
         if (clearInfoDO.getUserId().compareTo(getLoginUserId()) == 0) {
-            deviceService.openStoreDoor(clearInfoDO.getStoreId(),  3);
+            deviceService.openStoreDoor(getLoginUserId(), clearInfoDO.getStoreId(), 3);
         } else {
             throw exception(CLEAR_OPEN_DOOR_ERROR);
         }
@@ -129,7 +129,7 @@ public class AppClearServiceImpl implements AppClearService {
         ClearInfoDO clearInfoDO = clearInfoMapper.selectById(id);
         //只有是自己的订单 并且状态是已开始 才能开门
         if (clearInfoDO.getUserId().compareTo(getLoginUserId()) == 0 && clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.START.getValue()) == 0) {
-            deviceService.openRoomDoor(clearInfoDO.getRoomId(),  3);
+            deviceService.openRoomDoor(getLoginUserId(), clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), 3);
         } else {
             throw exception(CLEAR_OPEN_DOOR_ERROR);
         }
@@ -185,17 +185,17 @@ public class AppClearServiceImpl implements AppClearService {
             clearInfoDO.setFinishTime(LocalDateTime.now());
             clearInfoMapper.updateById(clearInfoDO);
             //任务完成了  要关闭房间电源 但是如果房间已经开始后面的订单  就不关闭电源
-            if (orderInfoMapper.countByRoomCurrent(clearInfoDO.getRoomId(),null) > 0) {
+            if (orderInfoMapper.countByRoomCurrent(clearInfoDO.getRoomId(), null) > 0) {
                 // 如果当前有订单进行 就改成进行中
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), clearInfoDO.getRoomId());
             } else if (orderInfoMapper.countByRoomId(clearInfoDO.getRoomId(), null) > 0) {
                 // 如果后面还有预约 就改成已预定
                 roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), clearInfoDO.getRoomId());
-                deviceService.closeRoomDoor(clearInfoDO.getRoomId(),  4);
+                deviceService.closeRoomDoor(getLoginUserId(),clearInfoDO.getStoreId(),clearInfoDO.getRoomId(), 4);
             } else {
                 // 否则 改成空闲
                 roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), clearInfoDO.getRoomId());
-                deviceService.closeRoomDoor(clearInfoDO.getRoomId(),  4);
+                deviceService.closeRoomDoor(getLoginUserId(),clearInfoDO.getStoreId(),clearInfoDO.getRoomId(), 4);
             }
         } else {
             throw exception(OPRATION_ERROR);

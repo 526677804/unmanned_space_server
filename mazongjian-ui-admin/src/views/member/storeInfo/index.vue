@@ -129,9 +129,10 @@
         <el-form-item label="抖音poi_id" prop="douyinPoiId">
           <el-input v-model="form.douyinPoiId" placeholder="请输入抖音poi_id" />
         </el-form-item>
-        <!-- <el-form-item label="美团店铺uuid" prop="meituanOpenShopUuid">
+        <el-form-item label="美团店铺uuid" prop="meituanOpenShopUuid">
           <el-input v-model="form.meituanOpenShopUuid" placeholder="请输入美团店铺uuid" />
         </el-form-item>
+        <!-- 
         <el-form-item label="美团key" prop="meituanKey">
           <el-input v-model="form.meituanKey" placeholder="请输入美团key" />
         </el-form-item>

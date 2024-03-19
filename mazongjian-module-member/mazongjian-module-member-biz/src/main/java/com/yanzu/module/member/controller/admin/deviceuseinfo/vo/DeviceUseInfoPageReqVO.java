@@ -1,10 +1,12 @@
 package com.yanzu.module.member.controller.admin.deviceuseinfo.vo;
 
-import lombok.*;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import com.yanzu.framework.common.pojo.PageParam;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDateTime;
 
 import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
@@ -15,8 +17,8 @@ import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_D
 @ToString(callSuper = true)
 public class DeviceUseInfoPageReqVO extends PageParam {
 
-    @Schema(description = "用户id", example = "10776")
-    private Long userId;
+    @Schema(description = "用户昵称", example = "10776")
+    private String nickname;
 
     @Schema(description = "门店id", example = "30308")
     private Long storeId;

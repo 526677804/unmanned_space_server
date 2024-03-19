@@ -2,10 +2,7 @@ package com.yanzu.module.member.service.storeinfo;
 
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoCreateReqVO;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoExportReqVO;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoPageReqVO;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoUpdateReqVO;
+import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 
@@ -73,7 +70,7 @@ public interface StoreInfoService {
      * @param id 编号
      * @return 门店管理
      */
-    StoreInfoDO getStoreInfo(Long id);
+    StoreInfoRespVO getStoreInfo(Long id);
 
     /**
      * 获得门店管理列表

@@ -3,14 +3,18 @@
 
     <!-- 搜索工作栏 -->
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="用户id" prop="userId">
-        <el-input v-model="queryParams.userId" placeholder="请输入用户id" clearable @keyup.enter.native="handleQuery"/>
+      <el-form-item label="用户昵称" prop="nickname">
+        <el-input v-model="queryParams.userId" placeholder="请输入用户昵称" clearable @keyup.enter.native="handleQuery"/>
       </el-form-item>
-      <el-form-item label="门店id" prop="storeId">
-        <el-input v-model="queryParams.storeId" placeholder="请输入门店id" clearable @keyup.enter.native="handleQuery"/>
+      <el-form-item label="门店" prop="storeId">
+        <el-select v-model="queryParams.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList">
+          <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
+        </el-select>
       </el-form-item>
-      <el-form-item label="房间id" prop="roomId">
-        <el-input v-model="queryParams.roomId" placeholder="请输入房间id" clearable @keyup.enter.native="handleQuery"/>
+      <el-form-item label="房间" prop="roomId">
+        <el-select v-model="queryParams.roomId" placeholder="请选择房间" clearable size="small">
+          <el-option v-for="item in roomList" :key="item.value" :label="item.key" :value="item.value" />
+        </el-select>
       </el-form-item>
       <el-form-item label="命令" prop="cmd">
         <el-input v-model="queryParams.cmd" placeholder="请输入命令" clearable @keyup.enter.native="handleQuery"/>
@@ -27,10 +31,10 @@
 
     <!-- 操作工具栏 -->
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+      <!-- <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
                    v-hasPermi="['member:device-use-info:create']">新增</el-button>
-      </el-col>
+      </el-col> -->
       <el-col :span="1.5">
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport" :loading="exportLoading"
                    v-hasPermi="['member:device-use-info:export']">导出</el-button>
@@ -41,9 +45,10 @@
     <!-- 列表 -->
     <el-table v-loading="loading" :data="list">
       <el-table-column label="id" align="center" prop="id" />
-      <el-table-column label="用户id" align="center" prop="userId" />
-      <el-table-column label="门店id" align="center" prop="storeId" />
-      <el-table-column label="房间id" align="center" prop="roomId" />
+      <el-table-column label="用户昵称" align="center" prop="nickname" />
+      <el-table-column label="手机号" align="center" prop="mobile" />
+      <el-table-column label="门店" align="center" prop="storeName" />
+      <el-table-column label="房间" align="center" prop="roomName" />
       <el-table-column label="命令" align="center" prop="cmd" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template v-slot="scope">
@@ -52,8 +57,8 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-                     v-hasPermi="['member:device-use-info:update']">修改</el-button>
+          <!-- <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
+                     v-hasPermi="['member:device-use-info:update']">修改</el-button> -->
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
                      v-hasPermi="['member:device-use-info:delete']">删除</el-button>
         </template>
@@ -76,7 +81,7 @@
 </template>
 
 <script>
-import { createDeviceUseInfo, updateDeviceUseInfo, deleteDeviceUseInfo, getDeviceUseInfo, getDeviceUseInfoPage, exportDeviceUseInfoExcel } from "@/api/member/deviceUseInfo";
+import { createDeviceUseInfo, updateDeviceUseInfo, deleteDeviceUseInfo, getDeviceUseInfo, getDeviceUseInfoPage,getStoreList, getRoomList, exportDeviceUseInfoExcel } from "@/api/member/deviceUseInfo";
 
 export default {
   name: "DeviceUseInfo",
@@ -94,6 +99,8 @@ export default {
       total: 0,
       // 设备使用记录列表
       list: [],
+      storeList: [],
+      roomList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -102,7 +109,7 @@ export default {
       queryParams: {
         pageNo: 1,
         pageSize: 10,
-        userId: null,
+        nickname: null,
         storeId: null,
         roomId: null,
         cmd: null,
@@ -117,6 +124,9 @@ export default {
   },
   created() {
     this.getList();
+    getStoreList().then(response => {
+      this.storeList = response.data;
+    });
   },
   methods: {
     /** 查询列表 */
@@ -188,6 +198,13 @@ export default {
           this.getList();
         });
       });
+    },
+    loadRoomList(storeId) {
+      if (storeId) {
+        getRoomList(storeId).then(response => {
+          this.roomList = response.data;
+        });
+      }
     },
     /** 删除按钮操作 */
     handleDelete(row) {

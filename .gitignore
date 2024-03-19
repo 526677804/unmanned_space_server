@@ -48,4 +48,10 @@ rebel.xml
 
 application-my.yaml
 
-/mazongjian-ui-app/unpackage/
+/mazongjian-ui-admin/.env.dev
+/mazongjian-ui-admin/.env.prod
+/mazongjian-server/src/main/resources/apiclient_cert.p12
+/mazongjian-server/src/main/resources/application-dev.yaml
+/mazongjian-server/src/main/resources/application-prod.yaml
+/mazongjian-module-member/src/main/resources/application-prod.yaml
+/mazongjian-module-member/mazongjian-module-member-biz/src/main/java/com/yanzu/module/member/controller/app/user/AppUserController.java

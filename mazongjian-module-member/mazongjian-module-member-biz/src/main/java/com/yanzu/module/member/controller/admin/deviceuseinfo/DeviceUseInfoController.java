@@ -59,8 +59,8 @@ public class DeviceUseInfoController {
     @Operation(summary = "获得设备使用记录分页")
     @PreAuthorize("@ss.hasPermission('member:device-use-info:query')")
     public CommonResult<PageResult<DeviceUseInfoRespVO>> getDeviceUseInfoPage(@Valid DeviceUseInfoPageReqVO pageVO) {
-        PageResult<DeviceUseInfoDO> pageResult = deviceUseInfoService.getDeviceUseInfoPage(pageVO);
-        return success(DeviceUseInfoConvert.INSTANCE.convertPage(pageResult));
+        PageResult<DeviceUseInfoRespVO> pageResult = deviceUseInfoService.getDeviceUseInfoPage(pageVO);
+        return success(pageResult);
     }
 
     @GetMapping("/export-excel")

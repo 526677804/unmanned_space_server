@@ -61,8 +61,8 @@
         <el-form-item label="商户号" prop="mchId">
           <el-input v-model="form.mchId" placeholder="请输入商户号" />
         </el-form-item>
-        <el-form-item label="支付密钥" prop="mchkey">
-          <el-input v-model="form.mchkey" placeholder="请输入支付密钥(服务商模式不填)" />
+        <el-form-item label="支付密钥" prop="mchKey">
+          <el-input v-model="form.mchKey" placeholder="请输入支付密钥(服务商模式不填)" />
         </el-form-item>
         <el-form-item label="p12证书" prop="p12">
           <el-input v-model="form.p12" placeholder="请输入p12证书(服务商模式不填)" />
@@ -159,7 +159,7 @@ export default {
         id: undefined,
         storeId: undefined,
         mchId: undefined,
-        mchkey: undefined,
+        mchKey: undefined,
         p12: undefined,
         serviceModel: undefined,
         split: undefined,

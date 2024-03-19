@@ -603,12 +603,12 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Transactional
     public void renew(OrderRenewalReqVO reqVO) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(reqVO.getOrderId());
-        if(orderInfoDO.getStartTime().after(reqVO.getEndTime())){
+        if (orderInfoDO.getStartTime().after(reqVO.getEndTime())) {
             throw exception(ORDER_START_TIME_GT_END_ERROR);
         }
         //权限校验
-//        Long userId = getLoginUserId();
-        storeInfoService.checkPermisson(orderInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        Long userId = getLoginUserId();
+        storeInfoService.checkPermisson(orderInfoDO.getStoreId(), userId, null, AppEnum.member_user_type.ADMIN.getValue());
         //未开始=0 进行中=1  已完成=2  已取消=3
         switch (orderInfoDO.getStatus()) {
             case 0:
@@ -625,14 +625,14 @@ public class AppMangerServiceImpl implements AppMangerService {
         }
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
         //如果是减少时间 不用校验时间冲突
-        if(orderInfoDO.getEndTime().before(reqVO.getEndTime())){
+        if (orderInfoDO.getEndTime().before(reqVO.getEndTime())) {
             //增加时间
             //管理员续费  不需要算钱了，但是要校验时间冲突
             appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
             //如果状态是已完成  则状态改成进行中 并触发一次开房间门操作，以实现通电 还要清除保洁订单信息
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0 && reqVO.getEndTime().after(new Date())) {
                 orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
-                deviceService.openRoomDoor(roomInfoDO.getRoomId(), 1);
+                deviceService.openRoomDoor(userId, roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), 1);
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
                 clearInfoMapper.cancelByRoomId(roomInfoDO.getRoomId());
             }
@@ -747,7 +747,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             }
             //取消的订单已开始  那就触发一下关门
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.closeRoomDoor(orderInfoDO.getRoomId(), 4);
+                deviceService.closeRoomDoor(userId, orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 4);
             }
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());

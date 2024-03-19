@@ -1,16 +1,14 @@
 package com.yanzu.module.member.service.storeinfo;
 
 import cn.hutool.core.io.IoUtil;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.infra.api.file.FileApi;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoCreateReqVO;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoExportReqVO;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoPageReqVO;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoUpdateReqVO;
+import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
 import com.yanzu.module.member.convert.roominfo.RoomInfoConvert;
@@ -19,12 +17,14 @@ import com.yanzu.module.member.dal.dataobject.discountrules.DiscountRulesDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
+import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -77,6 +78,10 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Resource
     private ClearInfoMapper clearInfoMapper;
+
+    @Resource
+    private StoreMeituanInfoMapper storeMeituanInfoMapper;
+
     @Resource
     private FileApi fileApi;
 
@@ -270,6 +275,11 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         // 更新
         StoreInfoDO updateObj = StoreInfoConvert.INSTANCE.convert(updateReqVO);
         storeInfoMapper.updateById(updateObj);
+        //更新美团uuid
+        if(!StringUtils.isEmpty(updateReqVO.getMeituanOpenShopUuid())){
+            storeMeituanInfoMapper.update(new StoreMeituanInfoDO().setOpenShopUuid(updateReqVO.getMeituanOpenShopUuid())
+                    , new LambdaUpdateWrapper<StoreMeituanInfoDO>().eq(StoreMeituanInfoDO::getStoreId, updateReqVO.getStoreId()));
+        }
     }
 
     @Override
@@ -287,8 +297,14 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     }
 
     @Override
-    public StoreInfoDO getStoreInfo(Long id) {
-        return storeInfoMapper.selectById(id);
+    public StoreInfoRespVO getStoreInfo(Long id) {
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(id);
+        StoreInfoRespVO convert = StoreInfoConvert.INSTANCE.convert(storeInfoDO);
+        StoreMeituanInfoDO meituanInfoDO = storeMeituanInfoMapper.getByStoreId(id);
+        if(!ObjectUtils.isEmpty(meituanInfoDO)){
+            convert.setMeituanOpenShopUuid(meituanInfoDO.getOpenShopUuid());
+        }
+        return convert;
     }
 
     @Override
@@ -385,7 +401,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomInfoDO.getRoomId());
         }
         //关电
-        deviceService.closeRoomDoor(roomId, 4);
+        deviceService.closeRoomDoor(getLoginUserId(), roomInfoDO.getStoreId(), roomId, 4);
         //发通知
         workWxService.sendClearRoomMsg(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), getLoginUserId(), "设置房间空闲");
     }

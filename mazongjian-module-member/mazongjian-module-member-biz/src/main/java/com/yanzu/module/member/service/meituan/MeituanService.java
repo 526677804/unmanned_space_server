@@ -46,13 +46,14 @@ public class MeituanService {
 
     public String getToken(String authCode, String state) {
         Long storeId = Long.valueOf(state.split("-")[1]);
+        JSONObject result = null;
         if (!ObjectUtils.isEmpty(storeId)) {
             MeituanGetTokenReqVO reqVO = new MeituanGetTokenReqVO();
             reqVO.setApp_key(appKey);
             reqVO.setApp_secret(secret);
             reqVO.setRedirect_url(redirectUrl);
             reqVO.setAuth_code(authCode);
-            JSONObject result = meituanClient.getToken(reqVO);
+            result = meituanClient.getToken(reqVO);
             log.info("result:{}", result);
 //            {"code":200,"msg":"success","access_token":"be887662bc3c89b855f572517f4055a6c03cf888","expires_in":2591999,
 //            "remain_refresh_count":12,"tokenType":"bearer","scope":"tuangou","bid":"c4408e57fb4058237e70beacb2945e49",
@@ -93,11 +94,11 @@ public class MeituanService {
                     storeMeituanInfoDO.setExpiresIn(expiresDate);
                     storeMeituanInfoMapper.updateById(storeMeituanInfoDO);
                 }
-                return "success";
+                return scope.toString();
             }
         }
         log.info("获取美团授权token失败，{}", state);
-        return "fail";
+        return "获取美团授权失败,错误信息:" + result.toString();
     }
 
     public String refreshToken(Long storeId, String refreshToken) {

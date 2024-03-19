@@ -53,8 +53,8 @@ public class StoreInfoUpdateReqVO extends StoreInfoBaseVO {
     @Schema(description = "订单通知webhook")
     private String orderWebhook;
 
-    @Schema(description = "组局通知webhook")
-    private String gameWebhook;
+    @Schema(description = "美团店铺uuid")
+    private String meituanOpenShopUuid;
 
     @Schema(description = "抖音poiId")
     private String douyinPoiId;

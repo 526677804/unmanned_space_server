@@ -6,7 +6,6 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.*;
 import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
-import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
@@ -22,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.DATA_NOT_EXISTS;
 
 /**
  * 设备管理 Service 实现类
@@ -36,10 +35,6 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     @Resource
     private DeviceInfoMapper deviceInfoMapper;
 
-    @Resource
-    private RoomInfoMapper roomInfoMapper;
-    @Resource
-    private IotService iotService;
     @Resource
     private EwlService ewlService;
 
@@ -115,50 +110,16 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     }
 
     @Override
-    public void configYunlaba(Long deviceId) {
-        DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(deviceId);
-        if (!ObjectUtils.isEmpty(deviceInfoDO)) {
-            //目前处理云喇叭 和 兼容处理 wifi密码门锁
-            if (deviceInfoDO.getType().compareTo(AppEnum.device_type.SOUND.getValue()) == 0
-                    && deviceInfoDO.getDeviceSn().startsWith("W")) {
-                try {
-                    iotService.regV2(deviceInfoDO.getDeviceSn());
-                } catch (Exception e) {
-//                    throw new RuntimeException(e);
-                }
-                iotService.configYunlaba(deviceInfoDO.getDeviceSn());
-            } else if (deviceInfoDO.getType().compareTo(AppEnum.device_type.DOOR.getValue()) == 0
-                    && deviceInfoDO.getDeviceSn().startsWith("W89")) {
-                try {
-                    iotService.regV2Door(deviceInfoDO.getDeviceSn());
-                } catch (Exception e) {
-//                    throw new RuntimeException(e);
-                }
-            }
-
-        }
-    }
-
-    @Override
     @Transactional
     public void bind(DeviceInfoBindReqVO reqVO) {
-        //如果设备已经被绑定了， 就不允许绑定
+        //如果设备已经被绑定了， 就更新绑定关系
         DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(reqVO.getDeviceId());
-        if (!ObjectUtils.isEmpty(deviceInfoDO.getStoreId())) {
-            throw exception(DEVICE_BIND_ERROR);
+        if (ObjectUtils.isEmpty(deviceInfoDO)) {
+            throw exception(DATA_NOT_EXISTS);
         }
         deviceInfoDO.setStoreId(reqVO.getStoreId());
         deviceInfoDO.setRoomId(reqVO.getRoomId());
         deviceInfoMapper.updateById(deviceInfoDO);
-        if (!ObjectUtils.isEmpty(reqVO.getRoomId())) {
-            //绑定的房间  如果房间状态为禁用，则改成启用
-            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
-            if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
-                roomInfoDO.setStatus(AppEnum.room_status.ENABLE.getValue());
-                roomInfoMapper.updateById(roomInfoDO);
-            }
-        }
-
     }
 
     @Override

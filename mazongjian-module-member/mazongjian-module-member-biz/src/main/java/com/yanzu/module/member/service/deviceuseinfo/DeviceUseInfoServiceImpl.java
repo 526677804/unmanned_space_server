@@ -1,21 +1,19 @@
 package com.yanzu.module.member.service.deviceuseinfo;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.member.controller.admin.deviceuseinfo.vo.DeviceUseInfoExportReqVO;
+import com.yanzu.module.member.controller.admin.deviceuseinfo.vo.DeviceUseInfoPageReqVO;
+import com.yanzu.module.member.controller.admin.deviceuseinfo.vo.DeviceUseInfoRespVO;
+import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
+import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
 import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
-import javax.xml.crypto.Data;
-
 import org.springframework.validation.annotation.Validated;
 
-import java.util.*;
-import com.yanzu.module.member.controller.admin.deviceuseinfo.vo.*;
-import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
-import com.yanzu.framework.common.pojo.PageResult;
-
-import com.yanzu.module.member.convert.deviceuseinfo.DeviceUseInfoConvert;
-import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
-
-import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
+import javax.annotation.Resource;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 设备使用记录 Service 实现类
@@ -41,8 +39,10 @@ public class DeviceUseInfoServiceImpl implements DeviceUseInfoService {
     }
 
     @Override
-    public PageResult<DeviceUseInfoDO> getDeviceUseInfoPage(DeviceUseInfoPageReqVO pageReqVO) {
-        return deviceUseInfoMapper.selectPage(pageReqVO);
+    public PageResult<DeviceUseInfoRespVO> getDeviceUseInfoPage(DeviceUseInfoPageReqVO pageReqVO) {
+        IPage<DeviceUseInfoRespVO> page = new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        deviceUseInfoMapper.getDeviceUseInfoPage(page,pageReqVO);
+        return new PageResult<>(page.getRecords(),page.getTotal());
     }
 
     @Override

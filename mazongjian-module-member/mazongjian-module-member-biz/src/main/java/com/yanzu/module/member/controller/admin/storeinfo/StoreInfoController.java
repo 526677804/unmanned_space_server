@@ -58,8 +58,7 @@ public class StoreInfoController {
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('member:store-info:query')")
     public CommonResult<StoreInfoRespVO> getStoreInfo(@RequestParam("id") Long id) {
-        StoreInfoDO storeInfo = storeInfoService.getStoreInfo(id);
-        return success(StoreInfoConvert.INSTANCE.convert(storeInfo));
+        return success(storeInfoService.getStoreInfo(id));
     }
 
     @GetMapping("/meituanScope/{storeId}")

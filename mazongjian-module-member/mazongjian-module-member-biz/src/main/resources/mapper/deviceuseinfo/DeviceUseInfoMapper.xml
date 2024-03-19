@@ -9,4 +9,32 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getDeviceUseInfoPage"
+            resultType="com.yanzu.module.member.controller.admin.deviceuseinfo.vo.DeviceUseInfoRespVO">
+        select d.*, u.nickname,u.mobile,s.store_name, r.room_name
+        from member_device_use_info d
+        left join member_user u ON u.id = d.user_id
+        left join member_store_info s ON s.store_id = d.store_id
+        left join member_room_info r ON r.room_id = d.room_id
+        where d.deleted = 0
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.cmd and reqVO.cmd!=''">
+                AND locate(#{reqVO.cmd},d.cmd)>0
+            </if>
+            <if test="null!=reqVO.nickname and reqVO.nickname!=''">
+                AND locate(#{reqVO.nickname},u.nickname)>0
+            </if>
+            <if test="null!=reqVO.storeId">
+                AND d.store_id=#{reqVO.storeId}
+            </if>
+            <if test="null!=reqVO.roomId">
+                AND d.room_id=#{reqVO.roomId}
+            </if>
+            <if test="null!=reqVO.createTime">
+                AND d.create_time>=#{reqVO.createTime[0]}
+                AND d.create_time&lt;=#{reqVO.createTime[1]}
+            </if>
+        </if>
+        order by d.create_time desc
+    </select>
 </mapper>

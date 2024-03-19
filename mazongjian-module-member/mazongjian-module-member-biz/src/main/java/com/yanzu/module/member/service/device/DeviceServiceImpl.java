@@ -57,7 +57,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional
-    public void openStoreDoor(Long storeId, int type) {
+    public void openStoreDoor(Long userId,Long storeId, int type) {
         //1用户开门 2管理员开门 3保洁开门
         switch (type) {
             case 1://1用户开门
@@ -72,7 +72,7 @@ public class DeviceServiceImpl implements DeviceService {
                 break;
         }
         //增加开门记录
-        saveDeviceUseRecord(null, storeId, null, "openStoreDoor");
+        saveDeviceUseRecord(userId, storeId, null, "openStoreDoor");
     }
 
 
@@ -154,7 +154,11 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional
-    public void openRoomDoor(Long roomId, int type) {
+    public void openRoomDoor(Long userId,Long storeId,Long roomId, int type) {
+        if(!ObjectUtils.isEmpty(roomId)&&ObjectUtils.isEmpty(storeId)){
+            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+            storeId=roomInfoDO.getStoreId();
+        }
         //1用户开门 2管理员开门 3保洁开门 4系统开门
         switch (type) {
             case 1://1用户开门 这里的 roomId肯定不是空
@@ -170,12 +174,16 @@ public class DeviceServiceImpl implements DeviceService {
                 break;
         }
         //增加开门记录
-        saveDeviceUseRecord(null, null, roomId, "openRoomDoor");
+        saveDeviceUseRecord(userId, storeId, roomId, "openRoomDoor");
     }
 
     @Override
     @Transactional
-    public void closeRoomDoor(Long roomId, int type) {
+    public void closeRoomDoor(Long userId,Long storeId,Long roomId, int type) {
+        if(!ObjectUtils.isEmpty(roomId)&&ObjectUtils.isEmpty(storeId)){
+            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+            storeId=roomInfoDO.getStoreId();
+        }
         //1用户关门 2管理员关门 3保洁关门  4系统关门
         switch (type) {
             case 1://1用户关门
@@ -191,7 +199,7 @@ public class DeviceServiceImpl implements DeviceService {
                 break;
         }
         //增加记录
-        saveDeviceUseRecord(null, null, roomId, "closeRoomDoor");
+        saveDeviceUseRecord(userId, storeId, roomId, "closeRoomDoor");
     }
 
     //提示语类型 1欢迎语 2结束时间30分钟提醒  3结束时间15分钟提示  4 结束时间5分钟提醒

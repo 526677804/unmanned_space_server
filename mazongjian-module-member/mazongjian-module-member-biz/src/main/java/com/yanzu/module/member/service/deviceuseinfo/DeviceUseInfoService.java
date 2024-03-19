@@ -1,10 +1,13 @@
 package com.yanzu.module.member.service.deviceuseinfo;
 
-import java.util.*;
-import javax.validation.*;
-import com.yanzu.module.member.controller.admin.deviceuseinfo.vo.*;
-import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.member.controller.admin.deviceuseinfo.vo.DeviceUseInfoExportReqVO;
+import com.yanzu.module.member.controller.admin.deviceuseinfo.vo.DeviceUseInfoPageReqVO;
+import com.yanzu.module.member.controller.admin.deviceuseinfo.vo.DeviceUseInfoRespVO;
+import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 设备使用记录 Service 接口
@@ -35,7 +38,7 @@ public interface DeviceUseInfoService {
      * @param pageReqVO 分页查询
      * @return 设备使用记录分页
      */
-    PageResult<DeviceUseInfoDO> getDeviceUseInfoPage(DeviceUseInfoPageReqVO pageReqVO);
+    PageResult<DeviceUseInfoRespVO> getDeviceUseInfoPage(DeviceUseInfoPageReqVO pageReqVO);
 
     /**
      * 获得设备使用记录列表, 用于 Excel 导出

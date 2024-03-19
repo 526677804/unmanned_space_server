@@ -69,8 +69,6 @@ public interface DeviceInfoService {
      */
     List<DeviceInfoDO> getDeviceInfoList(DeviceInfoExportReqVO exportReqVO);
 
-    void configYunlaba(Long deviceId);
-
     void bind(DeviceInfoBindReqVO reqVO);
 
     String ewelinkScope();

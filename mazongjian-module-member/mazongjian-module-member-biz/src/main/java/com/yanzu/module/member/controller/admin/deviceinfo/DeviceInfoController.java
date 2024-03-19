@@ -101,15 +101,6 @@ public class DeviceInfoController {
         ExcelUtils.write(response, "设备管理.xls", "数据", DeviceInfoExcelVO.class, datas);
     }
 
-    @PutMapping("/configYunlaba/{deviceId}")
-    @Operation(summary = "初始化云喇叭设置")
-    @Parameter(name = "deviceId", description = "编号", required = true, example = "1024")
-    @PreAuthorize("@ss.hasPermission('member:device-info:update')")
-    public CommonResult<Boolean> configYunlaba(@PathVariable(value = "deviceId", required = true) Long deviceId) {
-        deviceInfoService.configYunlaba(deviceId);
-        return success(true);
-    }
-
     @PostMapping("/bind")
     @Operation(summary = "设备绑定门店/房间")
     @PreAuthorize("@ss.hasPermission('member:device-info:update')")

@@ -52,3 +52,18 @@ export function exportDeviceUseInfoExcel(query) {
     responseType: 'blob'
   })
 }
+// 获得门店下拉列表
+export function getStoreList() {
+  return request({
+    url: '/index/getStoreList',
+    method: 'get'
+  })
+}
+
+// 获得房间下拉列表
+export function getRoomList(storeId) {
+  return request({
+    url: '/index/getRoomList/'+storeId,
+    method: 'get'
+  })
+}

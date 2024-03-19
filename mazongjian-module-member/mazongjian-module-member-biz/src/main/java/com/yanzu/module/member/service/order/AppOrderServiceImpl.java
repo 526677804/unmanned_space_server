@@ -815,7 +815,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
-            deviceService.openRoomDoor(roomInfoDO.getRoomId(), 1);
+            deviceService.openRoomDoor(userId, roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), 1);
             roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomInfoDO.getRoomId());
             clearInfoMapper.cancelByRoomId(roomInfoDO.getRoomId());
         }
@@ -1021,7 +1021,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             //被取消的订单已开始了  那就触发一下关门
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.closeRoomDoor(orderInfoDO.getRoomId(), 4);
+                deviceService.closeRoomDoor(loginUserId, orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 4);
             }
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
@@ -1133,6 +1133,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                     //进行中订单的结束时间 小于当前时间 则结束订单
                     if (x.getEndTime().before(now)) {
                         log.info("结束订单：{}", x.getOrderNo());
+                        //关门关电
+                        deviceService.closeRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
+                        storeIds.add(x.getStoreId().toString());
                         orderIds.add(String.valueOf(x.getOrderId()));
                         //房间改为待保洁
                         roomIds.add(String.valueOf(x.getRoomId()));
@@ -1143,9 +1146,6 @@ public class AppOrderServiceImpl implements AppOrderService {
                         clearInfoDO.setOrderNo(x.getOrderNo());
                         clearInfoDO.setRoomId(x.getRoomId());
                         clearInfoDOList.add(clearInfoDO);
-                        //关门关电
-                        deviceService.closeRoomDoor(x.getRoomId(), 4);
-                        storeIds.add(x.getStoreId().toString());
                     } else {
                         //如果订单结束时间  还剩30分钟，发送提醒
                         Calendar cal1 = Calendar.getInstance();
@@ -1214,7 +1214,6 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (!org.springframework.util.CollectionUtils.isEmpty(roomIds)) {
                 orderInfoMapper.updateStatusByIds(AppEnum.order_status.START.getValue(), orderIds.stream().collect(Collectors.joining(",")));
                 roomInfoMapper.updateStatusByIds(AppEnum.room_status.USED.getValue(), roomIds.stream().collect(Collectors.joining(",")));
-
             }
         }
         log.info("==========     订单定时检查任务执行完成     ==========");
@@ -1288,9 +1287,9 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
                 startOrder(orderId);
-                deviceService.openRoomDoor(orderInfoDO.getRoomId(), 1);
+                deviceService.openRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.openRoomDoor(orderInfoDO.getRoomId(), 1);
+                deviceService.openRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else {
                 throw exception(CLEAR_OPEN_DOOR_ERROR);
             }
@@ -1316,7 +1315,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (l1 > 360) {
                     throw exception(ORDER_START_TIQIAN_ERROR);
                 }
-                deviceService.openStoreDoor(orderInfoDO.getStoreId(), 1);
+                deviceService.openStoreDoor(getLoginUserId(),orderInfoDO.getStoreId(), 1);
             } else {
                 throw exception(CLEAR_OPEN_DOOR_ERROR);
             }

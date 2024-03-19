@@ -10,11 +10,11 @@ import com.alibaba.fastjson.JSONObject;
  */
 public interface DeviceService {
 
-    void openStoreDoor(Long storeId, int type);
+    void openStoreDoor(Long userId,Long storeId, int type);
 
-    void openRoomDoor(Long roomId, int type);
+    void openRoomDoor(Long userId,Long storeId,Long roomId, int type);
 
-    void closeRoomDoor(Long roomId, int type);
+    void closeRoomDoor(Long userId,Long storeId,Long roomId, int type);
 
     /**
      * @param roomId 房间id
