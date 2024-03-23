@@ -1,5 +1,7 @@
 package com.yanzu.module.member.service.storeinfo;
 
+import cn.binarywang.wx.miniapp.api.WxMaQrcodeService;
+import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.hutool.core.io.IoUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.pagehelper.PageHelper;
@@ -28,10 +30,13 @@ import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
+import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
@@ -88,6 +93,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Resource
     private WorkWxService workWxService;
 
+    @Resource
+    private MyWxService myWxService;
+
 
     @Value("${meituan.appKey}")
     private String meituanAppKey;
@@ -96,13 +104,22 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Value("${meituan.redirectUrl}")
     private String meituanRedirectUrl;
 
+
+    private static final String MINIAPP_IMG_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='%s'&secret='%s'";
+
     @Override
     public PageResult<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO) {
-
         reqVO.setUserId(getLoginUserId());
         PageHelper.startPage(reqVO);
         List<AppStoreAdminRespVO> list = storeInfoMapper.getPageList(reqVO);
         PageInfo<AppStoreAdminRespVO> page = new PageInfo(list);
+        if (!CollectionUtils.isEmpty(page.getList())) {
+            page.getList().forEach(x -> {
+                String url = "https://e.dianping.com/dz-open/merchant/auth?app_key=" + meituanAppKey
+                        + "&redirect_url=" + meituanRedirectUrl + "&state=storeId-" + x.getStoreId();
+                x.setMeituanScope(url);
+            });
+        }
         return new PageResult(page.getList(), page.getTotal());
     }
 
@@ -122,7 +139,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
             //新增
             StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
-            storeInfoDO.setStatus(1);
+            storeInfoDO.setStatus(1);//默认禁用
             storeInfoMapper.insert(storeInfoDO);
             //还要保存一个门店关系
             StoreUserDO storeUserDO = new StoreUserDO();
@@ -130,6 +147,18 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             storeUserDO.setUserId(getLoginUserId());
             storeUserDO.setType(AppEnum.member_user_type.BOSS.getValue());
             storeUserMapper.insert(storeUserDO);
+            //生成小程序码
+            WxMaService wxMaService = myWxService.initWxMa();
+            // 获取小程序二维码生成实例
+            try {
+                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+                String path = "pages/doorList/doorList?storeId=" + storeInfoDO.getStoreId();
+                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
+                String file = fileApi.createFile(bytes);
+                storeInfoMapper.updateById(new StoreInfoDO().setStoreId(storeInfoDO.getStoreId()).setQrCode(file));
+            } catch (WxErrorException e) {
+//                throw new RuntimeException(e);
+            }
         } else {
             //修改
             //校验门店权限
@@ -169,6 +198,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(reqVO.getStoreId());
             storeInfoDO.setRoomNum(storeInfoDO.getRoomNum() + 1);
             storeInfoMapper.updateById(storeInfoDO);
+
         } else {
             //修改 只有所有者才可以修改
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
@@ -276,7 +306,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         StoreInfoDO updateObj = StoreInfoConvert.INSTANCE.convert(updateReqVO);
         storeInfoMapper.updateById(updateObj);
         //更新美团uuid
-        if(!StringUtils.isEmpty(updateReqVO.getMeituanOpenShopUuid())){
+        if (!StringUtils.isEmpty(updateReqVO.getMeituanOpenShopUuid())) {
             storeMeituanInfoMapper.update(new StoreMeituanInfoDO().setOpenShopUuid(updateReqVO.getMeituanOpenShopUuid())
                     , new LambdaUpdateWrapper<StoreMeituanInfoDO>().eq(StoreMeituanInfoDO::getStoreId, updateReqVO.getStoreId()));
         }
@@ -301,7 +331,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(id);
         StoreInfoRespVO convert = StoreInfoConvert.INSTANCE.convert(storeInfoDO);
         StoreMeituanInfoDO meituanInfoDO = storeMeituanInfoMapper.getByStoreId(id);
-        if(!ObjectUtils.isEmpty(meituanInfoDO)){
+        if (!ObjectUtils.isEmpty(meituanInfoDO)) {
             convert.setMeituanOpenShopUuid(meituanInfoDO.getOpenShopUuid());
         }
         return convert;

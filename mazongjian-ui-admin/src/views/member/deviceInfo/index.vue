@@ -51,7 +51,7 @@
       </el-col>
       <el-col :span="3">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleEwelinkScope"
-          v-hasPermi="['member:device-info:create']">易微联授权</el-button>
+          v-hasPermi="['member:device-info:create']">硬件平台授权</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>

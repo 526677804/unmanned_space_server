@@ -4,13 +4,13 @@ import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
+import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
-import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
-import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
 import com.yanzu.module.member.service.iot.MyWebSocketClient;
-import com.yanzu.module.member.service.meituan.MeituanService;
+import com.yanzu.module.member.service.iot.TTLockService;
 import com.yanzu.module.member.service.user.AppUserService;
+import com.yanzu.module.member.service.wx.MyWxService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -167,8 +167,14 @@ public class AppUserController {
         return success(userService.getCouponPage(reqVO));
     }
 
-//    @Autowired
-//    MyWxPayService myWxPayService;
+
+    @Resource
+    private FileApi fileApi;
+
+    @Resource
+    private MyWxService myWxService;
+
+    private static final String MINIAPP_IMG_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='%s'&secret='%s'";
 
 //    @Autowired
 //    EwlService ewlService;
@@ -180,9 +186,25 @@ public class AppUserController {
 //    private IotService iotService;
 
 
+    @Resource
+    private TTLockService ttLockService;
+
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
+        //生成小程序码
+//        WxMaService wxMaService = myWxService.initWxMa();
+//        // 获取小程序二维码生成实例
+//        WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+//        String path = "pages/doorList/doorList?storeId=5";
+//
+//        byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path,430);
+//        String file = fileApi.createFile(bytes);
+//        System.out.println(file);
+        String key = ttLockService.getKey(13883575);
+        System.out.println(key);
+
+
 //        ewlService.getThing();
 //        memberUserApi.executeWxPaySplit();
 //        iotService.configYunlaba("W70F9783A44");

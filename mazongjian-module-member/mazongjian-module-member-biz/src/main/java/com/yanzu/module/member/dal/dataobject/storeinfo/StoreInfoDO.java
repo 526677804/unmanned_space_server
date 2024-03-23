@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -107,5 +108,20 @@ public class StoreInfoDO extends BaseDO {
      * 已提现
      */
     private BigDecimal totalWithdrawal;
+
+    @Schema(description = "主题色")
+    private String mainColor;
+    @Schema(description = "最大提前开始时间")
+    private Integer leadHour;
+    @Schema(description = "最小下单时间")
+    private Integer minHour;
+    @Schema(description = "订单清洁时间")
+    private Integer clearTime;
+    @Schema(description = "清洁时开放房间")
+    private Boolean clearOpen;
+    @Schema(description = "二维码照片")
+    private String qrCode;
+    @Schema(description = "预约按钮照片")
+    private String btnImg;
 
 }

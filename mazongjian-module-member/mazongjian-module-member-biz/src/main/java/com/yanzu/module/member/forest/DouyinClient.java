@@ -28,7 +28,7 @@ public interface DouyinClient {
 
     @Get(url = "{0}")
     @Redirection(false)
-//关闭重定向
+    //关闭重定向
     ForestResponse<String> queryCode(String url);
 
     //验券

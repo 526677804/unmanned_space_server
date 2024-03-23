@@ -234,6 +234,10 @@ ewelink:
   redirectUrl: https://api.scyanzu.com/app-api/callback/ewelink
   apiKey: f3bfc723-56e6-4f98-a69f-1a1ab94f3e87
 
+
+
+
+
 #mqtt
 mqtt:
   enable: true

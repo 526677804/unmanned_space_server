@@ -38,13 +38,13 @@ public class AppStoreInfoReqVO {
     @NotNull(message = "门店公告不能为空")
     private String notice;
 
-//    @Schema(description = "纬度")
-//    @NotNull(message = "纬度不能为空")
-//    private Double lat;
-//
-//    @Schema(description = "经度")
-//    @NotNull(message = "经度不能为空")
-//    private Double lon;
+    @Schema(description = "纬度")
+    @NotNull(message = "纬度不能为空")
+    private Double lat;
+
+    @Schema(description = "经度")
+    @NotNull(message = "经度不能为空")
+    private Double lon;
 
     @Schema(description = "详细地址")
     @NotNull(message = "详细地址不能为空")
@@ -58,10 +58,22 @@ public class AppStoreInfoReqVO {
     @NotNull(message = "客服电话不能为空")
     private String kefuPhone;
 
-//    @Schema(description = "工作日折扣", example = "25916")
-//    @Max(value = 100, message = "工作日折扣不能大于100")
-//    @Min(value = 1, message = "工作日折扣不能小于1")
-//    private Integer workDiscount;
+    @Schema(description = "主题色")
+    private String mainColor;
 
+    @Schema(description = "最大提前开始时间")
+    private Integer leadHour;
+
+    @Schema(description = "最小下单时间")
+    private Integer minHour;
+
+    @Schema(description = "订单清洁时间")
+    private Integer clearTime;
+
+    @Schema(description = "清洁时开放房间")
+    private Boolean clearOpen;
+
+    @Schema(description = "预约按钮照片")
+    private String btnImg;
 
 }

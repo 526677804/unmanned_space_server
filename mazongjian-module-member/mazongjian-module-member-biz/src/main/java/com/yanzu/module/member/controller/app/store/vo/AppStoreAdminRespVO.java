@@ -1,9 +1,9 @@
 package com.yanzu.module.member.controller.app.store.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.Data;
+import lombok.ToString;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 @Schema(description = "miniapp - 门店管理列表 Response VO")
@@ -32,6 +32,9 @@ public class AppStoreAdminRespVO {
     @Schema(description = "门店状态 值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer status;
 
+    @Schema(description = "美团授权链接")
+    private String meituanScope;
+
     @Schema(description = "房间数量")
     private Integer roomNum;
 
@@ -43,6 +46,21 @@ public class AppStoreAdminRespVO {
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private Date createTime;
+
+    @Schema(description = "主题色")
+    private String mainColor;
+    @Schema(description = "最大提前开始时间")
+    private Integer leadHour;
+    @Schema(description = "最小下单时间")
+    private Integer minHour;
+    @Schema(description = "订单清洁时间")
+    private Integer clearTime;
+    @Schema(description = "清洁时开放房间")
+    private Boolean clearOpen;
+    @Schema(description = "二维码照片")
+    private String qrCode;
+    @Schema(description = "预约按钮照片")
+    private String btnImg;
 
 
 }

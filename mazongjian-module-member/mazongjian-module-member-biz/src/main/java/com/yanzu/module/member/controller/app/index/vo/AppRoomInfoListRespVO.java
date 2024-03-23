@@ -2,7 +2,6 @@ package com.yanzu.module.member.controller.app.index.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yanzu.framework.common.util.date.DateUtils;
-import com.yanzu.module.member.controller.app.order.vo.TimeSlotVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +10,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 
@@ -74,9 +72,6 @@ public class AppRoomInfoListRespVO {
 
     @Schema(description = "状态 值见字典", example = "2")
     private Integer status;
-
-    @Schema(description = "不可用的时间段,为空则表示未来5天除每日禁用时间外都可以使用")
-    private Map<String, List<TimeSlotVO>> disabledTimeSlot;
 
     @Schema(description = "不可用的时间段,从当前小时开始")
     private List<AppTimeSlotRespVO> timeSlot;
