@@ -79,10 +79,7 @@ public class StoreInfoDO extends BaseDO {
      * 房间标签
      */
     private String label;
-    /**
-     * 工作日折扣
-     */
-    private Integer workDiscount;
+
     /**
      * 客服电话
      */
@@ -123,5 +120,16 @@ public class StoreInfoDO extends BaseDO {
     private String qrCode;
     @Schema(description = "预约按钮照片")
     private String btnImg;
+    @Schema(description = "显示通宵价格")
+    private Boolean showTxPrice;
+    @Schema(description = "通宵开始小时")
+    private Integer txStartHour;
+    @Schema(description = "通宵小时时长")
+    private Integer txHour;
+    @Schema(description = "延时关灯")
+    private Boolean delayLight;
+    @Schema(description = "工作日价格")
+    private Boolean workPrice;
+
 
 }

@@ -72,6 +72,8 @@ public class OrderInfoAppRespVO {
     @Schema(description = "订单价格", requiredMode = Schema.RequiredMode.REQUIRED, example = "1698")
     private BigDecimal price;
 
+    @Schema(description = "密码锁data 用于离线蓝牙开锁")
+    private String lockData;
 //    @Schema(description = "工作日折扣", example = "2948")
 //    private Integer workDiscount;
 

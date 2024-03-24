@@ -96,8 +96,10 @@
         from member_room_info
         where deleted = 0
           and store_id = #{storeId}
+        <if test="null!=roomClass">
+            and room_class=#{roomClass}
+        </if>
         order by sort_id asc
-
     </select>
     <select id="getPageList" resultType="com.yanzu.module.member.controller.app.store.vo.AppStoreAdminRespVO">
         SELECT
@@ -135,10 +137,17 @@
     </select>
     <select id="getRoomInfo"
             resultType="com.yanzu.module.member.controller.app.index.vo.AppRoomInfoListRespVO">
-        select *
-        from member_room_info
-        where deleted = 0
-          and room_id = #{roomId}
+        select r.*,
+               s.tx_start_hour,
+               s.tx_hour,
+               s.work_price enableWorkPrice,
+               s.lead_hour leadHour,
+               s.min_hour minHour,
+               s.clear_time clearTime
+        from member_room_info r
+        left join member_store_info s ON r.store_id=s.store_id
+        where r.deleted = 0
+          and r.room_id = #{roomId}
     </select>
     <select id="getNameMapByIds" resultType="com.yanzu.framework.common.core.KeyValue">
         select store_id as 'key', store_name as 'value'

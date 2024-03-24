@@ -15,7 +15,7 @@ public class TTLockTokenReqVO {
 
     private String clientSecret;
 
-    private String username="+8617608045045";
+    private String username="17608045045";
 
     private String password="c6731e3037d4ecaf27ed7fd1da394d59";
 

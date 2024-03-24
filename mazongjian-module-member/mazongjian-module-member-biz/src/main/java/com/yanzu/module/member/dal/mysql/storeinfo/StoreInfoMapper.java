@@ -55,7 +55,7 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
 
     List<KeyValue<String, Long>> getStoreList(@Param("name") String name,@Param("cityName") String cityName, @Param("userId") Long userId);
 
-    List<AppRoomInfoListRespVO> getRoomInfoList(Long storeId);
+    List<AppRoomInfoListRespVO> getRoomInfoList(@Param("storeId") Long storeId, @Param("roomClass") Integer roomClass);
 
     AppRoomInfoListRespVO getRoomInfo(Long roomId);
 

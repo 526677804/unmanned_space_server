@@ -30,8 +30,19 @@ public class RoomInfoDO extends BaseDO {
     private Long roomId;
     /**
      * 房间名称
+     * 枚举 {@link TODO member_room_class 对应的类}
      */
     private String roomName;
+
+    /**
+     * 房间类别
+     */
+    private Integer roomClass;
+
+    /**
+     * 房间小程序码
+     */
+    private String qrCode;
     /**
      * 门店id
      */
@@ -60,7 +71,9 @@ public class RoomInfoDO extends BaseDO {
      * 排序位置
      */
     private Integer sortId;
-
+    /**
+     * 云喇叭音量
+     */
     private Integer yunlabaSound;
     /**
      * 禁用开始时间

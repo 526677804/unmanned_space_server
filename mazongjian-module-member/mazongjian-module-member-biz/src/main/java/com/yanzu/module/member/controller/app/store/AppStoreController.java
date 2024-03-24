@@ -221,4 +221,13 @@ public class AppStoreController {
         storeInfoService.finishRoomOrder(roomId);
         return success(true);
     }
+
+    @GetMapping("/workPrice/{storeId}")
+    @Operation(summary = "管理员启用/关闭工作日价格")
+    @PreAuthenticated
+    @Parameter(name = "storeId")
+    public CommonResult<Boolean> workPrice(@PathVariable("storeId") Long storeId) {
+        storeInfoService.syncPrice(storeId);
+        return success(true);
+    }
 }

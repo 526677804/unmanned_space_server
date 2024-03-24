@@ -61,6 +61,9 @@ public class AppStoreAdminRespVO {
     private String qrCode;
     @Schema(description = "预约按钮照片")
     private String btnImg;
+    @Schema(description = "启用工作日价格")
+    private Boolean workPrice;
+
 
 
 }

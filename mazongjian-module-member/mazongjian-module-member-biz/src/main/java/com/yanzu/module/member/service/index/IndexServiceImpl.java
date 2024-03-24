@@ -103,9 +103,9 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public List<AppRoomInfoListRespVO> getRoomInfoList(Long storeId) {
+    public List<AppRoomInfoListRespVO> getRoomInfoList(Long storeId,Integer roomClass) {
         //获取所有房间信息
-        List<AppRoomInfoListRespVO> roomInfoList = storeInfoMapper.getRoomInfoList(storeId);
+        List<AppRoomInfoListRespVO> roomInfoList = storeInfoMapper.getRoomInfoList(storeId,roomClass);
         if (!CollectionUtils.isEmpty(roomInfoList)) {
             //找出所有房间的订单
             List<OrderInfoDO> orderList = orderInfoMapper.getByRoomIds(roomInfoList.stream().map(x -> x.getRoomId()).collect(Collectors.toList()));

@@ -17,6 +17,9 @@ public class AppRoomDetailRespVO {
     @Schema(description = "房间名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "王五")
     private String roomName;
 
+    @Schema(description = "房间类别", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
+    private Integer roomClass;
+
     @Schema(description = "房间类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer type;
 

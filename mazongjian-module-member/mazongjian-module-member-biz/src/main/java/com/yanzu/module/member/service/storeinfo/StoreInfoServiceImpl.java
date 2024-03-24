@@ -198,7 +198,18 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(reqVO.getStoreId());
             storeInfoDO.setRoomNum(storeInfoDO.getRoomNum() + 1);
             storeInfoMapper.updateById(storeInfoDO);
-
+            //生成小程序码
+            WxMaService wxMaService = myWxService.initWxMa();
+            // 获取小程序二维码生成实例
+            try {
+                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+                String path = "pages/orderSubmit/orderSubmit?storeId=" + reqVO.getStoreId() + "&roomId=" + roomInfoDO.getRoomId() + "&timeselectindex=0";
+                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
+                String file = fileApi.createFile(bytes);
+                roomInfoMapper.updateById(new RoomInfoDO().setRoomId(roomInfoDO.getRoomId()).setQrCode(file));
+            } catch (WxErrorException e) {
+//                throw new RuntimeException(e);
+            }
         } else {
             //修改 只有所有者才可以修改
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
@@ -469,6 +480,15 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //改成禁用
             roomInfoMapper.updateStatusById(AppEnum.room_status.DISABLE.getValue(), roomId);
         }
+    }
+
+    @Override
+    @Transactional
+    public void syncPrice(Long storeId) {
+        //校验门店权限
+        checkPermisson(storeId, getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        storeInfoMapper.updateById(new StoreInfoDO().setStoreId(storeId).setWorkPrice(!storeInfoDO.getWorkPrice()));
     }
 
 }

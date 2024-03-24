@@ -20,7 +20,7 @@ public interface AppOrderService {
 
     PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO);
 
-    OrderInfoAppRespVO getOrderInfo(Long orderId);
+    OrderInfoAppRespVO getOrderInfo(Long orderId,String orderKey);
 
     String getRoomImgs(Long roomId);
 

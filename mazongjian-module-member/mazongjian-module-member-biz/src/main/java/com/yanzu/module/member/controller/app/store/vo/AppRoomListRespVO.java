@@ -19,6 +19,15 @@ public class AppRoomListRespVO {
     @Schema(description = "房间名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "王五")
     private String roomName;
 
+    @Schema(description = "房间类别", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
+    private Integer roomClass;
+
+    @Schema(description = "密码锁data 用于离线蓝牙开锁")
+    private String lockData;
+
+    @Schema(description = "房间小程序码")
+    private String qrCode;
+
     @Schema(description = "房间类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer type;
 

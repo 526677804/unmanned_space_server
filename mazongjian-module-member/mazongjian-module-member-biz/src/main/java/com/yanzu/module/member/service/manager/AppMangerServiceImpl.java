@@ -753,12 +753,12 @@ public class AppMangerServiceImpl implements AppMangerService {
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
             //取消后  如果有未完成的保洁订单 状态就是待保洁
             int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(orderInfoDO.getRoomId());
-            if (countCurrentByRoomId > 0) {
-                roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), orderInfoDO.getRoomId());
-            } else if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId(), orderId) > 0) {
+            if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId(), orderId) > 0) {
                 // 如果当前有订单进行 就改成进行中
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
-            } else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
+            } else if (countCurrentByRoomId > 0) {
+                roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), orderInfoDO.getRoomId());
+            }  else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
                 // 如果后面还有预约 就改成已预定
                 roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), orderInfoDO.getRoomId());
             } else {

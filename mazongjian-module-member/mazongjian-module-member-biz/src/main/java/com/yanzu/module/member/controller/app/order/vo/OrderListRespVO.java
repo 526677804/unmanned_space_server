@@ -27,6 +27,9 @@ public class OrderListRespVO {
     @Schema(description = "订单id", requiredMode = Schema.RequiredMode.REQUIRED, example = "2248")
     private Long orderId;
 
+    @Schema(description = "分享订单使用")
+    private String orderKey;
+
     @Schema(description = "订单编号", requiredMode = Schema.RequiredMode.REQUIRED)
     private String orderNo;
 

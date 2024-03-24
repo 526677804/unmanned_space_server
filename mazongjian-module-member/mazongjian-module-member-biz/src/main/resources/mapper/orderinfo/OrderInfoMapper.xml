@@ -145,6 +145,7 @@
         , r.room_name
         , r.price roomPrice
         , r.work_price workPrice
+        , device.device_data lockData
         , o.room_id
         , o.store_id
         , r.type roomType
@@ -170,6 +171,7 @@
         left join member_room_info r ON r.room_id = o.room_id
         left join member_user m ON m.id = o.user_id
         left join member_coupon_info c ON o.coupon_id = c.coupon_id
+        left join member_device_info device ON device.room_id=r.room_id and device.type=5
         where o.deleted = 0
         <if test="null != orderId">
             and o.order_id = #{orderId}

@@ -34,9 +34,10 @@
     </select>
     <select id="getRoomInfoList"
             resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO">
-        select r.*
+        select r.*,device.device_data lockData
         from member_room_info r
         left join member_store_user su ON su.store_id=r.store_id and su.deleted=0
+        left join member_device_info device ON device.room_id=r.room_id and device.type=5
         where r.deleted = 0 and su.user_id=#{userId} and su.type in (12,13)
           and r.store_id = #{storeId}
         order by r.sort_id

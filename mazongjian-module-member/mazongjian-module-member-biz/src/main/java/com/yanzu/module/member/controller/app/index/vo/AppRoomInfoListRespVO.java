@@ -35,6 +35,9 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "门店id", requiredMode = Schema.RequiredMode.REQUIRED, example = "14069")
     private Long storeId;
 
+    @Schema(description = "房间类别  值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
+    private Integer roomClass;
+
     @Schema(description = "房间类型  值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer type;
 
@@ -78,4 +81,19 @@ public class AppRoomInfoListRespVO {
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private Date createTime;
+
+    @Schema(description = "通宵开始小时")
+    private Integer txStartHour;
+    @Schema(description = "通宵小时时长")
+    private Integer txHour;
+    @Schema(description = "启用工作日价格")
+    private Boolean enableWorkPrice;
+    @Schema(description = "最大提前开始时间")
+    private Integer leadHour;
+    @Schema(description = "最小下单时间")
+    private Integer minHour;
+    @Schema(description = "订单清洁时间")
+    private Integer clearTime;
+
+
 }

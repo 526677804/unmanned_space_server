@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -100,20 +101,21 @@ public class OrderController {
         reqVO.setUserId(getLoginUserId());
         return success(appOrderService.getOrderPage(reqVO));
     }
-
     @GetMapping("/getOrderInfo/{orderId}")
     @Operation(summary = "获取订单详情", description = "我的订单使用")
-    @PreAuthenticated
+//    @PreAuthenticated
+    @PermitAll//因为有分享订单功能 所以取消权限校验 通过参数校验
     @Parameter(name = "orderId", required = false)
-    public CommonResult<OrderInfoAppRespVO> getOrderInfo(@PathVariable(name = "orderId", required = false) Long orderId) {
-        return success(appOrderService.getOrderInfo(orderId));
+    public CommonResult<OrderInfoAppRespVO> getOrderInfo(@PathVariable(name = "orderId", required = false) Long orderId
+            , @RequestParam(value = "orderKey", required = false) String orderKey) {
+        return success(appOrderService.getOrderInfo(orderId, orderKey));
     }
 
     @GetMapping("/getOrderInfo")
     @Operation(summary = "获取订单详情(开门按钮)", description = "我的订单使用")
     @PreAuthenticated
     public CommonResult<OrderInfoAppRespVO> getOrderInfo1() {
-        return success(appOrderService.getOrderInfo(null));
+        return success(appOrderService.getOrderInfo(null, null));
     }
 
     @PostMapping("/startOrder/{orderId}")

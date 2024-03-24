@@ -227,10 +227,18 @@ public class AppEnum {
         //门禁	1
         //空开	2
         //云喇叭	3
+        //灯具 4
+        //密码锁 5
+        //网关 6
 
         DOOR(1),
         ELECTRIC(2),
-        SOUND(3);
+        SOUND(3),
+        LIGHT(4),
+        LOCK(5),
+        GATEWAY(6),
+
+        ;
 
 
         private final Integer value;
@@ -252,6 +260,20 @@ public class AppEnum {
         private final Integer value;
     }
 
+    //miniapp房间类别
+    @Getter
+    @AllArgsConstructor
+    public enum room_class {
+        //棋牌	0
+        //台球	1
+        //自习室	2
+
+        QIPAI(0),
+        TAIQIU(1),
+        ZIXISHI(2);
+
+        private final Integer value;
+    }
 
     //miniapp优惠券类型
     @Getter

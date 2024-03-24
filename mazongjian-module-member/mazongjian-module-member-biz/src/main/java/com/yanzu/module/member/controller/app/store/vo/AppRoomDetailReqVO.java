@@ -17,6 +17,10 @@ public class AppRoomDetailReqVO {
     @NotNull(message = "门店不能为空")
     private Long storeId;
 
+    @Schema(description = "房间类别", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
+    @NotNull(message = "房间类别不能为空")
+    private Integer roomClass;
+
     @Schema(description = "房间名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "王五")
     @NotNull(message = "房间名称不能为空")
     private String roomName;

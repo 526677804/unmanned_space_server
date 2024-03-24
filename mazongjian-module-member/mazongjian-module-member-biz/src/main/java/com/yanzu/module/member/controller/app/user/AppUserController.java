@@ -7,6 +7,8 @@ import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
+import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
+import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.service.iot.MyWebSocketClient;
 import com.yanzu.module.member.service.iot.TTLockService;
 import com.yanzu.module.member.service.user.AppUserService;
@@ -189,6 +191,8 @@ public class AppUserController {
     @Resource
     private TTLockService ttLockService;
 
+    @Resource
+    private DeviceInfoMapper deviceInfoMapper;
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
@@ -201,9 +205,10 @@ public class AppUserController {
 //        byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path,430);
 //        String file = fileApi.createFile(bytes);
 //        System.out.println(file);
-        String key = ttLockService.getKey(13883575);
-        System.out.println(key);
+        String key = ttLockService.getKey(13939971);
 
+        System.out.println(key);
+        deviceInfoMapper.updateById(new DeviceInfoDO().setDeviceId(7L).setDeviceData(key));
 
 //        ewlService.getThing();
 //        memberUserApi.executeWxPaySplit();

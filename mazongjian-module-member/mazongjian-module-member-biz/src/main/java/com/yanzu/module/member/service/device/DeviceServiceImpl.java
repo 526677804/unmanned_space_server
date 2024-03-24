@@ -1,6 +1,7 @@
 package com.yanzu.module.member.service.device;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
@@ -57,7 +58,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional
-    public void openStoreDoor(Long userId,Long storeId, int type) {
+    public void openStoreDoor(Long userId, Long storeId, int type) {
         //1用户开门 2管理员开门 3保洁开门
         switch (type) {
             case 1://1用户开门
@@ -113,8 +114,32 @@ public class DeviceServiceImpl implements DeviceService {
 
 
     private void openRoomDoor(Long roomId) {
-        //获取房间空开设备的sn
+        //开门 等于是开门+通电
+        //如果有密码锁,并且有网关,那就直接网关远程开锁,否则就让用户本地开锁
+        //获取房间设备的sn 1=门禁 2=空开 4=灯具 5=密码锁
         String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
+        openSwitch(sn);
+        //可能有门禁  获取一下门禁
+        String doorSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 1);
+        openDoor(doorSn);
+        //可能有灯具
+        String lightSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 4);
+        openSwitch(lightSn);
+        //可能有密码锁
+        DeviceInfoDO lock = deviceInfoMapper.selectOne("room_id", roomId, "type", 5);
+        if(!ObjectUtils.isEmpty(lock)){
+            if(lock.getDeviceData().startsWith("ttgateway")){
+                //网关开锁   否则就不管
+                //todo..网关开锁
+            }
+        }
+    }
+
+    /**
+     * 打开开关
+     * @param sn
+     */
+    private void openSwitch(String sn){
         if (!ObjectUtils.isEmpty(sn)) {
             boolean flag;
             //判断硬件平台类型 W开头是微门禁 其他则是易微联
@@ -128,9 +153,6 @@ public class DeviceServiceImpl implements DeviceService {
                 throw exception(DEVICE_OPRATION_ERROR);
             }
         }
-        //可能有门禁  获取一下门禁
-        String doorSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 1);
-        openDoor(doorSn);
     }
 
     private void closeRoomDoorV2(Long roomId) {
@@ -154,10 +176,10 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional
-    public void openRoomDoor(Long userId,Long storeId,Long roomId, int type) {
-        if(!ObjectUtils.isEmpty(roomId)&&ObjectUtils.isEmpty(storeId)){
+    public void openRoomDoor(Long userId, Long storeId, Long roomId, int type) {
+        if (!ObjectUtils.isEmpty(roomId) && ObjectUtils.isEmpty(storeId)) {
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
-            storeId=roomInfoDO.getStoreId();
+            storeId = roomInfoDO.getStoreId();
         }
         //1用户开门 2管理员开门 3保洁开门 4系统开门
         switch (type) {
@@ -179,10 +201,10 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional
-    public void closeRoomDoor(Long userId,Long storeId,Long roomId, int type) {
-        if(!ObjectUtils.isEmpty(roomId)&&ObjectUtils.isEmpty(storeId)){
+    public void closeRoomDoor(Long userId, Long storeId, Long roomId, int type) {
+        if (!ObjectUtils.isEmpty(roomId) && ObjectUtils.isEmpty(storeId)) {
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
-            storeId=roomInfoDO.getStoreId();
+            storeId = roomInfoDO.getStoreId();
         }
         //1用户关门 2管理员关门 3保洁关门  4系统关门
         switch (type) {

@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.order;
 
+import cn.hutool.core.util.HexUtil;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
@@ -51,6 +52,7 @@ import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.security.MD5Encoder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,6 +61,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -834,6 +837,10 @@ public class AppOrderServiceImpl implements AppOrderService {
             //如果状态是已取消以外的状态  并且订单结束时间不超过5分钟，那么允许续费
             LocalDateTime now = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             list.forEach(x -> {
+                if (x.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
+                        || x.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                    x.setOrderKey(HexUtil.encodeHexStr(x.getOrderNo() + "&mzjkey"));
+                }
                 x.setRenewBtn(false);
                 if (x.getStatus().compareTo(AppEnum.order_status.CANCEL.getValue()) != 0) {
                     LocalDateTime endDate = x.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plusMinutes(5);
@@ -846,9 +853,20 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
-    public OrderInfoAppRespVO getOrderInfo(Long orderId) {
+    public OrderInfoAppRespVO getOrderInfo(Long orderId, String orderKey) {
         //如果没有传订单id 就返回该用户最新创建的一笔订单
-        OrderInfoAppRespVO orderInfo = orderInfoMapper.getOrderInfo(orderId, getLoginUserId());
+        OrderInfoAppRespVO orderInfo = null;
+        if (StringUtils.isEmpty(orderKey)) {
+            //校验权限
+            orderInfo = orderInfoMapper.getOrderInfo(orderId, getLoginUserId());
+        } else {
+            //对比key
+            orderInfo = orderInfoMapper.getOrderInfo(orderId, null);
+            if (!HexUtil.encodeHexStr(orderInfo.getOrderNo() + "&mzjkey").equals(orderKey)) {
+                //权限错误
+                throw exception(AUTH_PROMISSION_ERROR);
+            }
+        }
         if (ObjectUtils.isEmpty(orderInfo)) {
             throw exception(ORDER_NOT_FOUND_ERROR);
         }
@@ -1027,11 +1045,11 @@ public class AppOrderServiceImpl implements AppOrderService {
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
             //取消后  如果有未完成的保洁订单 状态就是待保洁
             int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(orderInfoDO.getRoomId());
-            if (countCurrentByRoomId > 0) {
-                roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), orderInfoDO.getRoomId());
-            } else if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId(), orderId) > 0) {
+            if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId(), orderId) > 0) {
                 // 如果当前有订单进行 就改成进行中
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
+            } else if (countCurrentByRoomId > 0) {
+                roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), orderInfoDO.getRoomId());
             } else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
                 // 如果后面还有预约 就改成已预定
                 roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), orderInfoDO.getRoomId());
@@ -1315,7 +1333,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (l1 > 360) {
                     throw exception(ORDER_START_TIQIAN_ERROR);
                 }
-                deviceService.openStoreDoor(getLoginUserId(),orderInfoDO.getStoreId(), 1);
+                deviceService.openStoreDoor(getLoginUserId(), orderInfoDO.getStoreId(), 1);
             } else {
                 throw exception(CLEAR_OPEN_DOOR_ERROR);
             }

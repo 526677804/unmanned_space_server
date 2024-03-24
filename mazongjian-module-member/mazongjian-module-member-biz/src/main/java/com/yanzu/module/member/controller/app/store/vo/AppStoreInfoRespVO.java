@@ -65,8 +65,18 @@ public class AppStoreInfoRespVO {
     private Boolean clearOpen;
     @Schema(description = "二维码照片")
     private String qrCode;
-
     @Schema(description = "预约按钮照片")
     private String btnImg;
+
+    @Schema(description = "显示通宵价格")
+    private Boolean showTxPrice;
+    @Schema(description = "通宵开始小时")
+    private Integer txStartHour;
+    @Schema(description = "通宵小时时长")
+    private Integer txHour;
+    @Schema(description = "延时关灯")
+    private Boolean delayLight;
+    @Schema(description = "启用工作日价格")
+    private Boolean workPrice;
 
 }

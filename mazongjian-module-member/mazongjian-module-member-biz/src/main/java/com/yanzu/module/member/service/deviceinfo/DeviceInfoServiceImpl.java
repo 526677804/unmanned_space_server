@@ -11,6 +11,7 @@ import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.IotService;
+import com.yanzu.module.member.service.iot.TTLockService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -38,27 +39,20 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     @Resource
     private EwlService ewlService;
 
+    @Resource
+    private TTLockService ttLockService;
+
+
     @Override
     @Transactional
     public Long createDeviceInfo(DeviceInfoCreateReqVO createReqVO) {
-        //注册到平台
-//        boolean flag = false;
-//        switch (createReqVO.getType()) {
-//            case 1:
-//                //门禁
-//                flag = iotService.regV1(createReqVO.getDeviceSn());
-//                break;
-//            case 2:
-//            case 3:
-//                //空开和云喇叭
-//                flag = iotService.regV2(createReqVO.getDeviceSn());
-//                break;
-//        }
-//        if (!flag) {
-//            throw exception(DEVICE_REG_ERROR);
-//        }
         // 插入
         DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
+        //如果是密码锁 需要获取一下锁的数据
+        if (createReqVO.getType().compareTo(AppEnum.device_type.LOCK.getValue()) == 0) {
+            String key = ttLockService.getKey(Integer.valueOf(createReqVO.getDeviceSn()));
+            deviceInfo.setDeviceData(key);
+        }
         deviceInfoMapper.insert(deviceInfo);
         return deviceInfo.getDeviceId();
     }

@@ -30,6 +30,11 @@ public class DeviceInfoDO extends BaseDO {
      * 设备sn
      */
     private String deviceSn;
+
+    /**
+     * 设备数据
+     */
+    private String deviceData;
     /**
      * 设备类型
      *
@@ -39,6 +44,8 @@ public class DeviceInfoDO extends BaseDO {
      * 房间id
      */
     private Long storeId;
+
+
     private Long roomId;
     /**
      * 状态
