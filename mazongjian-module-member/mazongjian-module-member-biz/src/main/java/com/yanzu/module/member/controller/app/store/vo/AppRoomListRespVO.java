@@ -25,6 +25,9 @@ public class AppRoomListRespVO {
     @Schema(description = "密码锁data 用于离线蓝牙开锁")
     private String lockData;
 
+    @Schema(description = "网关id 用于远程开锁")
+    private Long gatewayId;
+
     @Schema(description = "房间小程序码")
     private String qrCode;
 

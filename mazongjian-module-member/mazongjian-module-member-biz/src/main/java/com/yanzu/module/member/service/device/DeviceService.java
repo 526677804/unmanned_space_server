@@ -27,4 +27,6 @@ public interface DeviceService {
     void testYunlaba(Long roomId);
 
     void closeLightByRoomId(Long userId,Long storeId,Long roomId, int type);
+
+    void clearByRoomId(Long roomId);
 }

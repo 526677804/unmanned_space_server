@@ -13,6 +13,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -62,11 +63,15 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     int countByRoomCurrent(@Param("roomId") Long roomId, @Param("ignoreOrderId") Long ignoreOrderId);
 
-    Integer getWxTotalMoney(List<String> storeIds);
+    Integer getWxTotalMoney(@Param("storeIds") List<String> storeIds, @Param("storeId") Long storeId);
 
-    Integer countByStoreIds(List<String> storeIds);
+    Integer countByStoreIds(@Param("storeIds") List<String> storeIds, @Param("storeId") Long storeId);
 
     int changeOrderUser(@Param("orderId") Long orderId, @Param("userId") Long userId);
 
     Integer getCountOrder(AppChartDataReqVO reqVO);
+
+    Integer countByPreOrder(@Param("roomId") Long roomId, @Param("clearTime") Integer clearTime,
+                            @Param("startTime") Date startTime, @Param("endTime") Date endTime, @Param("ignoreOrderId") Long ignoreOrderId);
+
 }

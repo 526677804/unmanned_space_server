@@ -164,86 +164,81 @@ public class AppOrderServiceImpl implements AppOrderService {
      */
     @Override
     public WxPayOrderRespVO preOrder(Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, Long ignoreOrderId, boolean nightLong, boolean wxpay) {
+        //秒位处理为0
+        startTime.setSeconds(0);
+        endTime.setSeconds(0);
         Date now = new Date();
         //参数校验
         //开始时间不能小于结束时间
         if (startTime.after(endTime)) {
             throw exception(ORDER_START_TIME_GT_END_ERROR);
         }
-        //检查时间有没有超过提前5天的范围
+        if (startTime.before(now)) {
+            //开始时间在当前之前，不能超过5分钟  不然间隔太久了
+            long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
+            if (l >= 5) {
+                throw exception(ORDER_START_TIME_LT_NOW_ERROR);
+            }
+        }
+        //查询房间的信息 以及门店的信息
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+        if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
+            throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
+        }
+        //检查订单时间 是否符合最小下单时间要求
+        long orderMinutes = Math.abs(ChronoUnit.MINUTES.between(startTime.toInstant(), endTime.toInstant()));
+        if ((orderMinutes / 60) < roomInfoDO.getMinHour()) {
+            throw exception(ORDER_MIN_HOUR_ERROR);
+        }
+        //查询出门店的配置信息
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
+        //下单需要,检查时间有没有超过提前设置的范围
         Instant instant1 = startTime.toInstant();
         Instant instant2 = now.toInstant();
         ZonedDateTime zonedDateTime1 = instant1.atZone(ZoneId.systemDefault());
         ZonedDateTime zonedDateTime2 = instant2.atZone(ZoneId.systemDefault());
         Duration duration = Duration.between(zonedDateTime1, zonedDateTime2);
         long days = duration.toDays();
-        if (days > 5) {
+        if (days > roomInfoDO.getLeadDay()) {
             throw exception(ORDER_START_TIME_MAX_ERROR);
         }
-        //通宵场判断
-        if (nightLong) {
-            //通宵
-            //判断订单时间是否合法  通宵场的 结束时间必须等于08:00
-            if (!(endTime.getHours() == 8 && endTime.getMinutes() == 0)) {
-                throw exception(CHECK_TONGXIAO_END_TIME_ERROR);
+        //判断清洁时是否允许下单
+        if (!storeInfoDO.getClearOpen()) {
+            if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {
+                throw exception(ROOM_CLEAR_SUBMIT_ORDER_ERROR);
             }
         }
-        if (startTime.before(now)) {
-            //开始时间在当前之前，不能超过5分钟  不然间隔太久了
-            long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
-            if (l > 6) {
-                throw exception(ORDER_START_TIME_LT_NOW_ERROR);
-            }
+        //检查订单时间是否冲突
+        //查询出该房间，存在时间交集的订单
+        Integer c = orderInfoMapper.countByPreOrder(roomId, storeInfoDO.getClearTime(), startTime, endTime, ignoreOrderId);
+        if (c > 0) {
+            throw exception(ORDER_TIME_CHECK_ERROR);
         }
-        //查询出房间信息
-        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
-        //检查优惠券是否允许使用
-        checkCouponUse(couponInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime);
-        //计算订单价格
-        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), startTime, endTime, nightLong, couponInfoDO);
-        //查询出该房间 所有的订单 以及不可用的时间段
-        List<OrderInfoDO> orderInfoList = orderInfoMapper.getByRoomId(roomId, ignoreOrderId);
-        //构建出不可用的时间区间
-        List<TimeRange> disabledTimeRanges = new ArrayList<>();
-        //先把订单中的时间进行处理
-        if (!CollectionUtils.isAnyEmpty(orderInfoList)) {
-            for (OrderInfoDO orderInfoDO : orderInfoList) {
-                disabledTimeRanges.add(new TimeRange(DateUtils.of(orderInfoDO.getStartTime()), DateUtils.of(orderInfoDO.getEndTime())));
-            }
-        }
-        //再处理每天有禁用时间的情况
-        //获取当前日期
-        LocalDate currentDate = LocalDate.now();
+        //再检查是否在禁用时间范围内
         if (!ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart()) && !ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart())) {
             // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
             LocalTime bstart = LocalTime.parse(roomInfoDO.getBanTimeStart());
             LocalTime bend = LocalTime.parse(roomInfoDO.getBanTimeEnd());
-            // 遍历日期范围内的每一天'
-            for (int i = 0; i < 5; i++) {
-                // 判断是否跨越两天
-                if (bend.isBefore(bstart)) {
-                    // 添加禁用时间范围：从开始时间到当天最后一秒
-                    disabledTimeRanges.add(new TimeRange(currentDate.atTime(bstart), currentDate.atTime(LocalTime.MAX)));
-                    // 添加禁用时间范围：从零点到结束时间
-                    disabledTimeRanges.add(new TimeRange(currentDate.atTime(LocalTime.MIDNIGHT), currentDate.atTime(bend)));
-                } else {
-                    // 添加禁用时间范围：从开始时间到结束时间
-                    disabledTimeRanges.add(new TimeRange(currentDate.atTime(bstart), currentDate.atTime(bend)));
-                }
-                currentDate = currentDate.plusDays(1);
+            LocalDateTime bindS = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            bindS.with(bindS);
+            LocalDateTime endS = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            endS.with(bend);
+            // 判断是否跨日
+            if (bend.isBefore(bstart)) {
+                //跨日了
+                endS.plusDays(1);
+            }
+            if (startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isBefore(endS)
+                    && bindS.isBefore(endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
+                //存在交集
+                throw exception(ORDER_TIME_CHECK_ERROR);
             }
         }
-        //查看是否需要校验 如果是空的 代表可以下单 就不校验了
-        if (!CollectionUtils.isAnyEmpty(disabledTimeRanges)) {
-            //需要校验
-            for (TimeRange timeRange : disabledTimeRanges) {
-                //如果下单时间大于不可用时间的开始时间， 并且不可用时间的开始时间小于订单的结束时间，那么就不能下单
-                if (startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isBefore(timeRange.getEnd()) && timeRange.getStart().isBefore(endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
-                    //存在交集
-                    throw exception(ORDER_TIME_CHECK_ERROR);
-                }
-            }
-        }
+        //检查优惠券是否允许使用
+        checkCouponUse(couponInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime);
+        //计算订单价格
+        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(),
+                storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO);
         //随机生成一个订单号
         String orderNo = getOrderNo();
         //价格转成分为单位 微信支付使用
@@ -326,20 +321,28 @@ public class AppOrderServiceImpl implements AppOrderService {
                     throw exception(COUPON_USE_CHECK_ERROR);
                 }
             }
+            //如果是通宵场，那么优惠券名称必须包含通宵两个字
+            if (nightLong) {
+                if (!couponInfoDO.getCouponName().contains("通宵")) {
+                    throw exception(COUPON_USE_CHECK_ERROR);
+                }
+            }
         }
-
     }
 
 
     @Override
-    public BigDecimal mathPrice(BigDecimal price, BigDecimal workPrice, BigDecimal tongxiaoPrice, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO) {
-        //以订单开始时间算，如果开始时间在周一至周四，那么就按工作日价格计算
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startTime);
-        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-        if (dayOfWeek >= Calendar.MONDAY && dayOfWeek <= Calendar.THURSDAY) {
-            //工作日
-            price = workPrice;
+    public BigDecimal mathPrice(BigDecimal price, BigDecimal workPrice,Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour,
+                                Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO) {
+        if(enableWorkPrice){
+            //以订单开始时间算，如果开始时间在周一至周四，那么就按工作日价格计算
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(startTime);
+            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+            if (dayOfWeek >= Calendar.MONDAY && dayOfWeek <= Calendar.THURSDAY) {
+                //工作日
+                price = workPrice;
+            }
         }
         // 计算两个日期的小时差 精确到小数点后两位
         BigDecimal hours = new BigDecimal(String.valueOf((endTime.getTime() - startTime.getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -347,12 +350,12 @@ public class AppOrderServiceImpl implements AppOrderService {
         BigDecimal totalPrice = BigDecimal.ZERO;
         //如果是通宵场 要考虑通宵场的价格
         if (nightLong) {
-            //如果小于等于9个小时  那么说明是23~8时的  就按通宵场价格
-            if (hours.compareTo(new BigDecimal(9)) <= 0) {
+            //如果小于等于设置的通宵场时间   就按通宵场价格
+            if (hours.compareTo(new BigDecimal(txHour)) <= 0) {
                 totalPrice = tongxiaoPrice;
             } else {
-                //大于9小时  要用多于的时间*单价 再加上通宵场的价格
-                BigDecimal addPrice = hours.subtract(new BigDecimal(9)).multiply(price);
+                //大于 要用多于的时间*单价 再加上通宵场的价格
+                BigDecimal addPrice = hours.subtract(new BigDecimal(txHour)).multiply(price);
                 totalPrice = tongxiaoPrice.add(addPrice);
             }
         } else {

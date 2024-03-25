@@ -425,14 +425,18 @@ public class AppMangerServiceImpl implements AppMangerService {
     }
 
     @Override
-    public AppRevenueChartRespVO getRevenueChart() {
+    public AppRevenueChartRespVO getRevenueChart(AppChartDataReqVO reqVO) {
         //仅管理员使用
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        reqVO.setUserId(getLoginUserId());
         List<String> storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId());
-        Integer wxTotalMoney = orderInfoMapper.getWxTotalMoney(storeIds);
+        if (CollectionUtils.isEmpty(storeIds)) {
+            return new AppRevenueChartRespVO();
+        }
+        Integer wxTotalMoney = orderInfoMapper.getWxTotalMoney(storeIds,reqVO.getStoreId());
         BigDecimal wxMoney = new BigDecimal(String.valueOf(wxTotalMoney / 100.0));
-        BigDecimal groupTotalMoney = groupPayInfoMapper.getGroupTotalMoney(storeIds);
-        Integer count = orderInfoMapper.countByStoreIds(storeIds);
+        BigDecimal groupTotalMoney = groupPayInfoMapper.getGroupTotalMoney(storeIds,reqVO.getStoreId());
+        Integer count = orderInfoMapper.countByStoreIds(storeIds,reqVO.getStoreId());
         AppRevenueChartRespVO respVO = new AppRevenueChartRespVO();
         respVO.setTotalMoney(wxMoney.add(groupTotalMoney));
         respVO.setTotalOrder(count);

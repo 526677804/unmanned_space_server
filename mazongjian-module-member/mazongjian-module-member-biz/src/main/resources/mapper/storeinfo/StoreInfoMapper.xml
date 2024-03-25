@@ -141,8 +141,6 @@
                s.tx_start_hour,
                s.tx_hour,
                s.work_price enableWorkPrice,
-               s.lead_hour leadHour,
-               s.min_hour minHour,
                s.clear_time clearTime
         from member_room_info r
         left join member_store_info s ON r.store_id=s.store_id

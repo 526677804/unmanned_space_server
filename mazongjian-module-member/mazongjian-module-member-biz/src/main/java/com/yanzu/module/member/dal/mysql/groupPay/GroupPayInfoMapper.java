@@ -9,6 +9,7 @@ import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -43,7 +44,7 @@ public interface GroupPayInfoMapper extends BaseMapperX<GroupPayInfoDO> {
                 .orderByDesc(GroupPayInfoDO::getId));
     }
 
-    BigDecimal getGroupTotalMoney(List<String> storeIds);
+    BigDecimal getGroupTotalMoney(@Param("storeIds") List<String> storeIds, @Param("storeId") Long storeId);
 
     BigDecimal getBusinessStatistics(AppChartDataReqVO reqVO);
 

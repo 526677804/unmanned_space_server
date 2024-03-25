@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -54,10 +56,24 @@ public class AppRoomDetailReqVO {
     @Schema(description = "云喇叭音量，1-5")
     private Integer yunlabaSound;
 
-    @Schema(description = "禁用开始时间 HH:mm:ss")
+    @Schema(description = "禁用开始时间 HH:mm")
     private String banTimeStart;
 
-    @Schema(description = "禁用结束时间 HH:mm:ss")
+    @Schema(description = "禁用结束时间 HH:mm")
     private String banTimeEnd;
 
+    @Schema(description = "最大提前开始时间")
+    @Min(value = 1, message = "提前开始时间最小1小时！")
+    @Max(value = 6, message = "提前开始时间最大6小时！")
+    private Integer leadHour;
+
+    @Schema(description = "最大提前下单天数")
+    @Min(value = 1, message = "最大提前下单天数最小1天！")
+    @Max(value = 5, message = "最大提前下单天数最大5天！")
+    private Integer leadDay;
+
+    @Schema(description = "最小下单时间")
+    @Min(value = 1, message = "最小下单时间最小1小时！")
+    @Max(value = 4, message = "最小下单时间最大4小时！")
+    private Integer minHour;
 }

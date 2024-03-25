@@ -7,7 +7,6 @@ import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
-import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.order.AppOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,9 +48,20 @@ public class OrderController {
 
 
     @PostMapping("/preOrder")
-    @Operation(summary = "预下单,预订和续费前需调用此接口，会返回需要支付的价格以及微信支付需要的参数", description = "下单使用")
+    @Operation(summary = "预下单,预订前需调用此接口，会返回需要支付的价格以及微信支付需要的参数", description = "下单使用")
     @PreAuthenticated
     public CommonResult<WxPayOrderRespVO> preOrder(@RequestBody @Valid OrderPreReqVO reqVO) {
+        CouponInfoDO couponInfoDO = null;
+        if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
+            couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
+        }
+        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), true));
+    }
+
+    @PostMapping("/preRenew")
+    @Operation(summary = "续费前需调用此接口，会返回需要支付的价格以及微信支付需要的参数", description = "用户续费使用")
+    @PreAuthenticated
+    public CommonResult<WxPayOrderRespVO> preRenew(@RequestBody @Valid OrderPreReqVO reqVO) {
         CouponInfoDO couponInfoDO = null;
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());

@@ -45,7 +45,7 @@ public interface AppMangerService {
 
     PageResult<AppWithdrawalPageRespVO> getWithdrawalPage(AppWithdrawalPageReqVO reqVO);
 
-    AppRevenueChartRespVO getRevenueChart();
+    AppRevenueChartRespVO getRevenueChart(AppChartDataReqVO reqVO);
 
     AppBusinessStatisticsRespVO getBusinessStatistics(AppChartDataReqVO reqVO);
 

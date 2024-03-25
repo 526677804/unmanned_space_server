@@ -59,13 +59,9 @@ public class AppStoreInfoReqVO {
     private String kefuPhone;
 
     @Schema(description = "主题色")
+    @NotNull(message = "主题色不能为空")
     private String mainColor;
 
-    @Schema(description = "最大提前开始时间")
-    private Integer leadHour;
-
-    @Schema(description = "最小下单时间")
-    private Integer minHour;
 
     @Schema(description = "订单清洁时间")
     private Integer clearTime;

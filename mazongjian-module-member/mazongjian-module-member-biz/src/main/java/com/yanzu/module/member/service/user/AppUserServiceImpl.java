@@ -22,6 +22,7 @@ import com.yanzu.module.member.dal.dataobject.franchiseinfo.FranchiseInfoDO;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
+import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
@@ -29,6 +30,7 @@ import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.franchiseinfo.FranchiseInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
+import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
@@ -118,6 +120,10 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Resource
     private RoomInfoMapper roomInfoMapper;
+
+    @Resource
+    private StoreInfoMapper storeInfoMapper;
+
     @Resource
     private SocialUserApi socialUserApi;
 
@@ -372,8 +378,10 @@ public class AppUserServiceImpl implements AppUserService {
             //提交订单页查询
             //下单的时候  要返回可用状态
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
+            StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
             //先计算出订单价格
-            BigDecimal mathPrice = appOrderService.mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null);
+            BigDecimal mathPrice = appOrderService.mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(),
+                    roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null);
             //再计算出时长 精确到小数点后两位
             BigDecimal hours = new BigDecimal(String.valueOf((reqVO.getEndTime().getTime() - reqVO.getStartTime().getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
             List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);

@@ -31,10 +31,10 @@ public interface ErrorCodeConstants {
     ErrorCode NOT_START_ORDER = new ErrorCode(1004004001, "没有进行中的订单！");
     ErrorCode DEVICE_OPRATION_ERROR = new ErrorCode(1004004002, "设备操作失败！");
     ErrorCode CLEAR_USER_DELETE_ERROR = new ErrorCode(1004004003, "请结算完所有已完成的任务，再删除用户！");
-    ErrorCode ORDER_STATUS_NOT_START_ERROR = new ErrorCode(1004004004, "请先开始订单，再操作开门！");
+    ErrorCode ROOM_CLEAR_SUBMIT_ORDER_ERROR = new ErrorCode(1004004004, "该房间不允许清洁时预定！");
     ErrorCode ORDER_START_TIME_ERROR = new ErrorCode(1004004005, "订单开始时间不能小于当前时间！");
     ErrorCode ORDER_START_TIME_GT_END_ERROR = new ErrorCode(1004004006, "订单开始时间不能小于结束时间！");
-    ErrorCode ORDER_START_TIME_MAX_ERROR = new ErrorCode(1004004007, "订单开始时间最早不能超过5天！");
+    ErrorCode ORDER_START_TIME_MAX_ERROR = new ErrorCode(1004004007, "订单开始时间超过允许提前下单的时间！");
     ErrorCode ORDER_TIME_CHECK_ERROR = new ErrorCode(1004004008, "您选择的时间段该房间不可用，请修改时间或更换房间！");
     ErrorCode TIME_UNIT_ERROR = new ErrorCode(1004004009, "时间单位错误，必须以0.5小时/30分钟为一个单位！");
     ErrorCode PAY_TYPE_ERROR = new ErrorCode(1004004010, "支付方式选择错误！");
@@ -77,7 +77,7 @@ public interface ErrorCodeConstants {
     ErrorCode DEVICE_REG_ERROR = new ErrorCode(1004004070, "设备注册到平台失败！");
     ErrorCode DEVICE_BIND_ERROR = new ErrorCode(1004004071, "该设备已经被其他门店/房间绑定！");
     ErrorCode CLEAR_AND_FINISH_ROOM_STATUS_ERROR = new ErrorCode(1004004072, "房间当前状态不允许执行此操作！");
-    ErrorCode USRE_ADD_ADMIN_ERROR = new ErrorCode(1004004073, "当前用户不允许进行添加管理员操作！");
+    ErrorCode ORDER_MIN_HOUR_ERROR = new ErrorCode(1004004073, "订单时长必须达到设置的起步时长！");
     ErrorCode GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR = new ErrorCode(1004004080, "团购券适用的房间类型，与当前订单预定的房间类型不匹配，请检查!");
     ErrorCode GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR = new ErrorCode(1004004081, "团购券的使用时长，与当前预订时长不匹配，请检查!");
     ErrorCode STORE_MT_TUANGOU_PAY_ERROR = new ErrorCode(1004004082, "当前门店暂不支持团购券支付！请选择其他支付方式！");
@@ -94,7 +94,8 @@ public interface ErrorCodeConstants {
     ErrorCode CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004093, "团购的通宵场时间为23时以后~次日8时！请修改预定时间后重试！");
     ErrorCode CHECK_TONGXIAO_END_TIME_ERROR = new ErrorCode(1004004094, "通宵场的结束时间只能为08:00！请修改预定时间后重试！");
 
-    ErrorCode GROUP_NO_USE_CHECK_ERROR = new ErrorCode(1004004084, "您输入的团购券不符合订单使用条件！");
+
+    ErrorCode DELETE_ROOM_ERROR = new ErrorCode(1004004095, "删除失败,房间存在未完成的订单！");
 
 
     ErrorCode STORE_WX_PAY_CONFIG_NOT_FOUND = new ErrorCode(1004004999, "该门店暂不支持微信支付！");

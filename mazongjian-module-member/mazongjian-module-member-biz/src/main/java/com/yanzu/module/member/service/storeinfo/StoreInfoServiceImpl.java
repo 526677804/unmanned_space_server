@@ -115,8 +115,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         PageInfo<AppStoreAdminRespVO> page = new PageInfo(list);
         if (!CollectionUtils.isEmpty(page.getList())) {
             page.getList().forEach(x -> {
-                String url = "https://e.dianping.com/dz-open/merchant/auth?app_key=" + meituanAppKey
-                        + "&redirect_url=" + meituanRedirectUrl + "&state=storeId-" + x.getStoreId();
+                String url = "https://e.dianping.com/dz-open/merchant/auth?app_key=" + meituanAppKey + "&redirect_url=" + meituanRedirectUrl + "&state=storeId-" + x.getStoreId();
                 x.setMeituanScope(url);
             });
         }
@@ -127,7 +126,6 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     public AppStoreInfoRespVO getDetail(Long storeId) {
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
         AppStoreInfoRespVO appStoreInfoRespVO = StoreInfoConvert.INSTANCE.convert2(storeInfoDO);
-
         return appStoreInfoRespVO;
     }
 
@@ -227,6 +225,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoDO.setBanTimeEnd(reqVO.getBanTimeEnd());
             roomInfoDO.setSortId(reqVO.getSortId());
             roomInfoDO.setYunlabaSound(reqVO.getYunlabaSound());
+            roomInfoDO.setLeadDay(reqVO.getLeadDay());
+            roomInfoDO.setLeadHour(reqVO.getLeadHour());
+            roomInfoDO.setMinHour(reqVO.getMinHour());
             roomInfoMapper.updateById(roomInfoDO);
         }
     }
@@ -318,8 +319,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         storeInfoMapper.updateById(updateObj);
         //更新美团uuid
         if (!StringUtils.isEmpty(updateReqVO.getMeituanOpenShopUuid())) {
-            storeMeituanInfoMapper.update(new StoreMeituanInfoDO().setOpenShopUuid(updateReqVO.getMeituanOpenShopUuid())
-                    , new LambdaUpdateWrapper<StoreMeituanInfoDO>().eq(StoreMeituanInfoDO::getStoreId, updateReqVO.getStoreId()));
+            storeMeituanInfoMapper.update(new StoreMeituanInfoDO().setOpenShopUuid(updateReqVO.getMeituanOpenShopUuid()), new LambdaUpdateWrapper<StoreMeituanInfoDO>().eq(StoreMeituanInfoDO::getStoreId, updateReqVO.getStoreId()));
         }
     }
 
@@ -462,8 +462,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Override
     public String meituanScope(Long storeId) {
-        String url = "https://e.dianping.com/dz-open/merchant/auth?app_key=" + meituanAppKey
-                + "&redirect_url=" + meituanRedirectUrl + "&state=storeId-" + storeId;
+        String url = "https://e.dianping.com/dz-open/merchant/auth?app_key=" + meituanAppKey + "&redirect_url=" + meituanRedirectUrl + "&state=storeId-" + storeId;
         return url;
     }
 
@@ -489,6 +488,28 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         checkPermisson(storeId, getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
         storeInfoMapper.updateById(new StoreInfoDO().setStoreId(storeId).setWorkPrice(!storeInfoDO.getWorkPrice()));
+    }
+
+    @Override
+    @Transactional
+    public void deleteRoomInfo(Long roomId) {
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
+        //校验门店权限
+        checkPermisson(storeInfoDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+        //删除房间  房间不能有未完成的订单
+        int i = orderInfoMapper.countByRoomId(roomId, null);
+        if (i < 0) {
+            throw exception(DELETE_ROOM_ERROR);
+        }
+        //开始删除
+        roomInfoMapper.deleteById(roomId);
+        //房间数量-1
+
+        storeInfoMapper.updateById(new StoreInfoDO().setStoreId(storeInfoDO.getStoreId()).setRoomNum(storeInfoDO.getRoomNum() - 1));
+        //清除该房间的设备
+        deviceService.clearByRoomId(roomId);
+
     }
 
 }

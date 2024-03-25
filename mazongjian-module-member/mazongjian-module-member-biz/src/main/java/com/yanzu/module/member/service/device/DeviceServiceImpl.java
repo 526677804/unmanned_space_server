@@ -1,6 +1,8 @@
 package com.yanzu.module.member.service.device;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
@@ -327,6 +329,13 @@ public class DeviceServiceImpl implements DeviceService {
         }
         //增加关灯记录
         saveDeviceUseRecord(userId, storeId, roomId, "closeRoomLight");
+    }
+
+    @Override
+    public void clearByRoomId(Long roomId) {
+        deviceInfoMapper.update(new DeviceInfoDO().setRoomId(null).setStoreId(null),
+                new LambdaUpdateWrapper<DeviceInfoDO>().eq(DeviceInfoDO::getRoomId, roomId)
+        );
     }
 
     private void closeLight(Long roomId) {

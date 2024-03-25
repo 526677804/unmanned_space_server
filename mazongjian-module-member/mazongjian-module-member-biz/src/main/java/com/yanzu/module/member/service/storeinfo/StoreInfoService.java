@@ -113,4 +113,6 @@ public interface StoreInfoService {
     void disableRoom(Long roomId);
 
     void syncPrice(Long storeId);
+
+    void deleteRoomInfo(Long roomId);
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -97,5 +98,14 @@ public class RoomInfoDO extends BaseDO {
      * 枚举 {@link TODO member_room_status 对应的类}
      */
     private Integer status;
+
+    @Schema(description = "最大提前开始时间")
+    private Integer leadHour;
+
+    @Schema(description = "最大提前下单天数")
+    private Integer leadDay;
+
+    @Schema(description = "最小下单时间")
+    private Integer minHour;
 
 }

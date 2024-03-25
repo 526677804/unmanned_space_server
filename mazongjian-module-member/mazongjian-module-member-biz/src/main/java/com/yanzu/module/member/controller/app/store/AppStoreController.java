@@ -110,6 +110,16 @@ public class AppStoreController {
         deviceService.testYunlaba(roomId);
         return success(true);
     }
+    @PostMapping("/deleteRoomInfo/{roomId}")
+    @Operation(summary = "删除房间", description = "房间管理使用")
+    @PreAuthenticated
+    @Parameter(name = "roomId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> deleteRoomInfo(@PathVariable("roomId") Long roomId) {
+        storeInfoService.deleteRoomInfo(roomId);
+        return success(true);
+    }
+
 
     @PostMapping("/openRoomDoor/{roomId}")
     @Operation(summary = "开房间的大门", description = "房间管理使用")

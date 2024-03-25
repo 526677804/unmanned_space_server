@@ -35,11 +35,11 @@ public class AppChartController {
     @Resource
     private AppMangerService appMangerService;
 
-    @GetMapping("/getRevenueChart")
+    @PostMapping("/getRevenueChart")
     @Operation(summary = "获取营业额数据 （总收入、总订单数）")
     @PreAuthenticated
-    public CommonResult<AppRevenueChartRespVO> getRevenueChart() {
-        return success(appMangerService.getRevenueChart());
+    public CommonResult<AppRevenueChartRespVO> getRevenueChart(@RequestBody AppChartDataReqVO reqVO) {
+        return success(appMangerService.getRevenueChart(reqVO));
     }
 
 

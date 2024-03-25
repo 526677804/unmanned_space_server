@@ -145,7 +145,8 @@
         , r.room_name
         , r.price roomPrice
         , r.work_price workPrice
-        , if(gateway.device_id,device.device_data,null) lockData
+        , gateway.device_id gatewayId
+        , device.device_data lockData
         , o.room_id
         , o.store_id
         , r.type roomType
@@ -369,18 +370,23 @@
             resultType="java.lang.Integer">
         select ifnull(sum(price),0) from member_pay_order where deleted=0 AND pay_status=1 AND refund_price=0
         AND store_id IN
-        <foreach collection="collection" item="item" index="index" open="(" separator="," close=")">
+        <foreach collection="storeIds" item="item" index="index" open="(" separator="," close=")">
             #{item}
         </foreach>
-
+        <if test="null!=storeId">
+            AND store_id=#{storeId}
+        </if>
     </select>
 
     <select id="countByStoreIds" resultType="java.lang.Integer">
         select count(1) from member_order_info where deleted=0 AND status!=3
         AND store_id IN
-        <foreach collection="collection" item="item" index="index" open="(" separator="," close=")">
+        <foreach collection="storeIds" item="item" index="index" open="(" separator="," close=")">
             #{item}
         </foreach>
+        <if test="null!=storeId">
+            AND store_id=#{storeId}
+        </if>
     </select>
     <select id="countByRoomCurrent" resultType="java.lang.Integer">
         select count(1)
@@ -421,6 +427,22 @@
         from member_order_info o
         where o.deleted = 0
           and o.status in (0, 1, 2)
+    </select>
+
+    <select id="countByPreOrder" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM member_order_info
+        WHERE deleted = 0
+        AND room_id = #{roomId}
+        AND (
+            (#{startTime} >= start_time - INTERVAL buffer_minutes MINUTE AND #{startTime} &lt; end_time) OR
+            (#{endTime} > start_time AND #{endTime} &lt;= end_time + INTERVAL buffer_minutes MINUTE) OR
+            (#{startTime} &lt;= start_time AND #{endTime} >= end_time)
+        )
+        <if test="null!=ignoreOrderId and ignoreOrderId!=''">
+            and order_id !=#{ignoreOrderId}
+        </if>
+
     </select>
 
 </mapper>
