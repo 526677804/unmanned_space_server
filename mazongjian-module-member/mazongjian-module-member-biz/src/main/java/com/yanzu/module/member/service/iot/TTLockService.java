@@ -64,5 +64,17 @@ public class TTLockService {
         return key.getString("lockData");
     }
 
+    public String unlock(Integer lockId){
+        String token = this.getToken();
+        TTLockKeyReqVO reqVO = new TTLockKeyReqVO();
+        reqVO.setAccessToken(token);
+        reqVO.setLockId(lockId);
+        reqVO.setDate(new Date().getTime());
+        reqVO.setClientId(clientId);
+        JSONObject resp = ttLockClient.unlock(reqVO);
+        log.info("网关开锁:{},结果:{}", lockId, resp);
+        return resp.getString("errmsg");
+    }
+
 
 }

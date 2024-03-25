@@ -205,10 +205,10 @@ public class AppUserController {
 //        byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path,430);
 //        String file = fileApi.createFile(bytes);
 //        System.out.println(file);
-        String key = ttLockService.getKey(13939971);
+        String key = ttLockService.unlock(13883575);
 
         System.out.println(key);
-        deviceInfoMapper.updateById(new DeviceInfoDO().setDeviceId(7L).setDeviceData(key));
+//        deviceInfoMapper.updateById(new DeviceInfoDO().setDeviceId(7L).setDeviceData(key));
 
 //        ewlService.getThing();
 //        memberUserApi.executeWxPaySplit();

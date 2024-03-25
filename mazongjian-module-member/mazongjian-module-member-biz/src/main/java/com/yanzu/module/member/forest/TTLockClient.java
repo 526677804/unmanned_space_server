@@ -19,4 +19,7 @@ public interface TTLockClient {
     @Post(url = "https://cnapi.ttlock.com/v3/key/get")
     JSONObject getKey(@Query TTLockKeyReqVO reqVO);
 
+    @Post(url = "https://cnapi.ttlock.com/v3/lock/unlock")
+    JSONObject unlock(@Query TTLockKeyReqVO reqVO);
+
 }

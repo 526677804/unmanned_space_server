@@ -11,11 +11,13 @@ import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.mqtt.MqttProviderConfig;
 import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.IotService;
+import com.yanzu.module.member.service.iot.TTLockService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -55,6 +57,11 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Resource
     private EwlService ewlService;
+
+
+    @Resource
+    private TTLockService ttLockService;
+
 
     @Override
     @Transactional
@@ -115,8 +122,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     private void openRoomDoor(Long roomId) {
         //开门 等于是开门+通电
-        //如果有密码锁,并且有网关,那就直接网关远程开锁,否则就让用户本地开锁
-        //获取房间设备的sn 1=门禁 2=空开 4=灯具 5=密码锁
+        //获取房间设备的sn 1=门禁 2=空开 4=灯具 5=密码锁 6=网关
         String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
         openSwitch(sn);
         //可能有门禁  获取一下门禁
@@ -126,11 +132,12 @@ public class DeviceServiceImpl implements DeviceService {
         String lightSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 4);
         openSwitch(lightSn);
         //可能有密码锁
-        DeviceInfoDO lock = deviceInfoMapper.selectOne("room_id", roomId, "type", 5);
-        if(!ObjectUtils.isEmpty(lock)){
-            if(lock.getDeviceData().startsWith("ttgateway")){
-                //网关开锁   否则就不管
-                //todo..网关开锁
+        String lockSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 5);
+        if(!StringUtils.isEmpty(lockSn)){
+            //如果是密码锁,还要获取网关,没有网关则不管 让用户本地蓝牙开锁
+            String gateway = deviceInfoMapper.getSnByRoomIdAndType(roomId, 6);
+            if(!StringUtils.isEmpty(lockSn)){
+                ttLockService.unlock(Integer.valueOf(lockSn));
             }
         }
     }
