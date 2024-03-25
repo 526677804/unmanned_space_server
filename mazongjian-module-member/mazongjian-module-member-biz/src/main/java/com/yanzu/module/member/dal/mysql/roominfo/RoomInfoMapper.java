@@ -7,11 +7,13 @@ import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.module.member.controller.admin.roominfo.vo.RoomInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.roominfo.vo.RoomInfoPageReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO;
+import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 房间管理 Mapper
@@ -57,5 +59,7 @@ public interface RoomInfoMapper extends BaseMapperX<RoomInfoDO> {
     List<KeyValue<String, Long>> getRoomListByStoreId(Long storeId);
 
     String getNameById(Long roomId);
+
+    List<AppRoomListVO> getListByIds(@Param("roomIds") Set<Long> roomIds);
 
 }

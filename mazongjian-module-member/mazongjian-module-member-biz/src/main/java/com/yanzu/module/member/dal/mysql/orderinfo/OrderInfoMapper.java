@@ -49,6 +49,7 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
     List<KeyValue<String, BigDecimal>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
 
     List<OrderInfoDO> getByStatus(Integer status);
+    List<OrderInfoDO> getListByJob();
 
     int updateStatusByIds(@Param("status") Integer status, @Param("orderIds") String orderIds);
 

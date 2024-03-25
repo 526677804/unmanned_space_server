@@ -6,9 +6,10 @@ import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
+import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
-import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
+import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.service.iot.MyWebSocketClient;
 import com.yanzu.module.member.service.iot.TTLockService;
 import com.yanzu.module.member.service.user.AppUserService;
@@ -24,7 +25,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
@@ -187,6 +190,9 @@ public class AppUserController {
 //    @Resource
 //    private IotService iotService;
 
+    @Resource
+    private RoomInfoMapper roomInfoMapper;
+
 
     @Resource
     private TTLockService ttLockService;
@@ -196,59 +202,7 @@ public class AppUserController {
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
-        //生成小程序码
-//        WxMaService wxMaService = myWxService.initWxMa();
-//        // 获取小程序二维码生成实例
-//        WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
-//        String path = "pages/doorList/doorList?storeId=5";
-//
-//        byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path,430);
-//        String file = fileApi.createFile(bytes);
-//        System.out.println(file);
-        String key = ttLockService.unlock(13883575);
 
-        System.out.println(key);
-//        deviceInfoMapper.updateById(new DeviceInfoDO().setDeviceId(7L).setDeviceData(key));
-
-//        ewlService.getThing();
-//        memberUserApi.executeWxPaySplit();
-//        iotService.configYunlaba("W70F9783A44");
-//        iotService.runYunlaba("W70F9783A44", "尊敬的顾客您好,根据城市管理条例要求,请您在深夜消费时,注意控制噪音,以免影响到他人,感谢您的支持与理解！");
-//        String authUrl = ewlService.getAuthUrl();
-
-//        ewlService.getToken("9be670fa-026c-4595-b7c8-2871557ed372","state");
-//        ewlService.getThing();
-//        ewlService.login();
-//        EwlSwitchReqVO reqVO = new EwlSwitchReqVO();
-//        reqVO.setDeviceid("1001fbe910");
-//        reqVO.setApikey("f3bfc723-56e6-4f98-a69f-1a1ab94f3e87");
-//        JSONObject param = new JSONObject();
-//        param.put("switch", "on");
-//        reqVO.setParams(param);
-
-       /* JSONObject data=new JSONObject();
-        data.put("action","update");
-        data.put("deviceid","1001fbe910");
-        data.put("apikey","f3bfc723-56e6-4f98-a69f-1a1ab94f3e87");
-        data.put("userAgent","app");
-        data.put("sequence",new Date().getTime()+"");
-        JSONObject params = new JSONObject();
-        JSONArray switches=new JSONArray();
-        JSONObject v=new JSONObject();
-        v.put("switch", "off");
-        v.put("outlet", 0);
-        switches.add(v);
-        params.put("switches",switches);
-        data.put("params",params);
-        myWebSocketClient.sendToServer(JSON.toJSONString(data));*/
-//
-//        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-//        refundRequest.setOutTradeNo("2024010504000603");
-//        refundRequest.setOutRefundNo("2024010504000603");
-//        refundRequest.setTotalFee(6990);
-//        refundRequest.setRefundFee(6990);
-//        WxPayService wxPayService = myWxPayService.init(5L);
-//        wxPayService.refundV2(refundRequest);
         return success("1");
     }
 

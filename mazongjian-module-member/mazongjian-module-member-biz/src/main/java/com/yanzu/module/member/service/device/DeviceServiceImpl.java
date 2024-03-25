@@ -1,7 +1,6 @@
 package com.yanzu.module.member.service.device;
 
 import com.alibaba.fastjson.JSONObject;
-import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
@@ -21,7 +20,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-
 import java.util.UUID;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -133,10 +131,10 @@ public class DeviceServiceImpl implements DeviceService {
         openSwitch(lightSn);
         //可能有密码锁
         String lockSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 5);
-        if(!StringUtils.isEmpty(lockSn)){
+        if (!StringUtils.isEmpty(lockSn)) {
             //如果是密码锁,还要获取网关,没有网关则不管 让用户本地蓝牙开锁
             String gateway = deviceInfoMapper.getSnByRoomIdAndType(roomId, 6);
-            if(!StringUtils.isEmpty(lockSn)){
+            if (!StringUtils.isEmpty(lockSn)) {
                 ttLockService.unlock(Integer.valueOf(lockSn));
             }
         }
@@ -144,9 +142,10 @@ public class DeviceServiceImpl implements DeviceService {
 
     /**
      * 打开开关
+     *
      * @param sn
      */
-    private void openSwitch(String sn){
+    private void openSwitch(String sn) {
         if (!ObjectUtils.isEmpty(sn)) {
             boolean flag;
             //判断硬件平台类型 W开头是微门禁 其他则是易微联
@@ -308,4 +307,50 @@ public class DeviceServiceImpl implements DeviceService {
     public void testYunlaba(Long roomId) {
         runSound(roomId, 1);
     }
+
+    @Override
+    public void closeLightByRoomId(Long userId, Long storeId, Long roomId, int type) {
+        if (!ObjectUtils.isEmpty(roomId) && ObjectUtils.isEmpty(storeId)) {
+            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+            storeId = roomInfoDO.getStoreId();
+        }
+        //1用户关灯 2管理员关灯 3保洁关灯 4系统关灯
+        switch (type) {
+            case 1://1用户关灯 目前没有用户关灯的情况
+                break;
+            case 2:
+            case 3://管理员和保洁目前也没有单独关灯的需求  都是关电的时候，同时关灯
+                break;
+            case 4:
+                closeLight(roomId);
+                break;
+        }
+        //增加关灯记录
+        saveDeviceUseRecord(userId, storeId, roomId, "closeRoomLight");
+    }
+
+    private void closeLight(Long roomId) {
+        //获取房间设备的sn 1=门禁 2=空开 4=灯具 5=密码锁 6=网关
+        String lightSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 4);
+        if (!StringUtils.isEmpty(lightSn)) {
+            //todo...关灯
+        }
+        //关灯的同时一定会关电  可能电已经关了，这里保守起见，再关一次
+        //获取房间空开设备的sn
+        String kongKaiSN = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
+        if (!ObjectUtils.isEmpty(kongKaiSN)) {
+            boolean flag;
+            //判断硬件平台类型 W开头是微门禁 其他则是易微联
+            if (kongKaiSN.startsWith("W")) {
+                flag = iotService.runKongkai(kongKaiSN, "turnoff");
+
+            } else {
+                flag = ewlService.runKongkai(kongKaiSN, "off");
+            }
+            if (!flag) {
+                throw exception(DEVICE_OPRATION_ERROR);
+            }
+        }
+    }
+
 }

@@ -79,4 +79,14 @@
     <select id="getNameById" resultType="java.lang.String">
         select room_name from member_room_info  where deleted = 0 and room_id=#{roomId}
     </select>
+    <select id="getListByIds" resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomListVO">
+        select r.room_id, r.room_name, r.store_id, s.store_name,s.order_webhook
+        from member_room_info r
+        left join member_store_info s ON s.store_id = r.store_id
+        where r.deleted = 0
+        and r.room_id IN
+        <foreach collection="roomIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>

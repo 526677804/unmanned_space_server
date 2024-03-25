@@ -145,7 +145,7 @@
         , r.room_name
         , r.price roomPrice
         , r.work_price workPrice
-        , device.device_data lockData
+        , if(gateway.device_id,device.device_data,null) lockData
         , o.room_id
         , o.store_id
         , r.type roomType
@@ -171,7 +171,8 @@
         left join member_room_info r ON r.room_id = o.room_id
         left join member_user m ON m.id = o.user_id
         left join member_coupon_info c ON o.coupon_id = c.coupon_id
-        left join member_device_info device ON device.room_id=r.room_id and device.type=5
+        left join member_device_info device ON device.room_id=r.room_id and device.type=5 and device.deleted=0
+        left join member_device_info gateway ON gateway.room_id=r.room_id and gateway.type=6 and gateway.deleted=0
         where o.deleted = 0
         <if test="null != orderId">
             and o.order_id = #{orderId}
@@ -407,6 +408,19 @@
         <if test="null==storeId or storeId==''">
             and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} and type IN (12,13))
         </if>
+    </select>
+    <select id="getListByJob" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
+        select order_id,
+               order_no,
+               store_id,
+               room_id,
+               user_id,
+               start_time,
+               end_time,
+               status
+        from member_order_info o
+        where o.deleted = 0
+          and o.status in (0, 1, 2)
     </select>
 
 </mapper>
