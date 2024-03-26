@@ -435,8 +435,8 @@
         WHERE deleted = 0
         AND room_id = #{roomId}
         AND (
-            (#{startTime} >= start_time - INTERVAL buffer_minutes MINUTE AND #{startTime} &lt; end_time) OR
-            (#{endTime} > start_time AND #{endTime} &lt;= end_time + INTERVAL buffer_minutes MINUTE) OR
+            (#{startTime} >= start_time - INTERVAL #{clearTime} MINUTE AND #{startTime} &lt; end_time) OR
+            (#{endTime} > start_time AND #{endTime} &lt;= end_time + INTERVAL #{clearTime} MINUTE) OR
             (#{startTime} &lt;= start_time AND #{endTime} >= end_time)
         )
         <if test="null!=ignoreOrderId and ignoreOrderId!=''">

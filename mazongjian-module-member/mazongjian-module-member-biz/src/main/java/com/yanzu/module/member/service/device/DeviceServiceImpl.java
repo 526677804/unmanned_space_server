@@ -131,15 +131,6 @@ public class DeviceServiceImpl implements DeviceService {
         //可能有灯具
         String lightSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 4);
         openSwitch(lightSn);
-        //可能有密码锁
-        String lockSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 5);
-        if (!StringUtils.isEmpty(lockSn)) {
-            //如果是密码锁,还要获取网关,没有网关则不管 让用户本地蓝牙开锁
-            String gateway = deviceInfoMapper.getSnByRoomIdAndType(roomId, 6);
-            if (!StringUtils.isEmpty(lockSn)) {
-                ttLockService.unlock(Integer.valueOf(lockSn));
-            }
-        }
     }
 
     /**

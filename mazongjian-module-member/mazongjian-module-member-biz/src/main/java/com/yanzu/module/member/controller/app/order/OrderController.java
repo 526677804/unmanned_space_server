@@ -48,7 +48,7 @@ public class OrderController {
 
 
     @PostMapping("/preOrder")
-    @Operation(summary = "预下单,预订前需调用此接口，会返回需要支付的价格以及微信支付需要的参数", description = "下单使用")
+    @Operation(summary = "预下单,预订和续费前需调用此接口，会返回需要支付的价格以及微信支付需要的参数", description = "下单使用")
     @PreAuthenticated
     public CommonResult<WxPayOrderRespVO> preOrder(@RequestBody @Valid OrderPreReqVO reqVO) {
         CouponInfoDO couponInfoDO = null;
@@ -58,16 +58,6 @@ public class OrderController {
         return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), true));
     }
 
-    @PostMapping("/preRenew")
-    @Operation(summary = "续费前需调用此接口，会返回需要支付的价格以及微信支付需要的参数", description = "用户续费使用")
-    @PreAuthenticated
-    public CommonResult<WxPayOrderRespVO> preRenew(@RequestBody @Valid OrderPreReqVO reqVO) {
-        CouponInfoDO couponInfoDO = null;
-        if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
-            couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
-        }
-        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), true));
-    }
 
     /*@GetMapping("/queryWxOrder/{orderNo}")
     @Operation(summary = "主动查询微信支付订单是否支付", description = "下单使用")

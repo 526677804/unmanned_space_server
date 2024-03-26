@@ -49,7 +49,7 @@ public class AppManagerController {
         //参数检查
         if (!ObjectUtils.isEmpty(reqVO.getOrderColumn())) {
             if (reqVO.getOrderColumn().equals("createTime") || reqVO.getOrderColumn().equals("startTime")) {
-                //正确
+                //参数正确
 
             } else {
                 throw exception(ORDER_PAGE_PARAM_ERROR);
