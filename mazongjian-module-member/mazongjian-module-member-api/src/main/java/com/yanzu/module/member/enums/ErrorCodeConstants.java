@@ -90,7 +90,7 @@ public interface ErrorCodeConstants {
     ErrorCode GROUP_PAY_WORK_CHECK_ERROR = new ErrorCode(1004004089, "您输入的团购券仅周一至周四可用！请修改预定时间或更换团购券");
     ErrorCode GROUP_PAY_WORK_DAY_CHECK_ERROR = new ErrorCode(1004004090, "您输入的团购券仅工作日可用！请修改预定时间或更换团购券");
     ErrorCode GROUP_PAY_ROOM_TYPE_CHECK_ERROR = new ErrorCode(1004004091, "您输入的团购券仅【小包】可用！请修改预订的包间！");
-    ErrorCode ORDER_START_TIQIAN_ERROR = new ErrorCode(1004004092, "订单不允许提前6小时以上开始！");
+    ErrorCode ORDER_START_TIQIAN_ERROR = new ErrorCode(1004004092, "订单不允许开始时间不允许超过设定的时间！");
     ErrorCode CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004093, "团购的通宵场时间为23时以后~次日8时！请修改预定时间后重试！");
     ErrorCode CHECK_GROUP_NO_TIME_ERROR = new ErrorCode(1004004094, "团购券未设置抵扣时长，请联系商家！");
 

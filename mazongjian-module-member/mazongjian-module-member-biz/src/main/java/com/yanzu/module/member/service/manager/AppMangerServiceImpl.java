@@ -633,7 +633,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             //增加时间
             //管理员续费  不需要算钱了，但是要校验时间冲突
             appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
-            //如果状态是已完成  则状态改成进行中 并触发一次开房间门操作，以实现通电 还要清除保洁订单信息
+            //如果状态是已完成  则状态改成进行中 并触发一次通电 还要清除保洁订单信息
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0 && reqVO.getEndTime().after(new Date())) {
                 orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
                 deviceService.openRoomDoor(userId, roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), 1);

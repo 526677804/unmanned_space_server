@@ -1102,32 +1102,32 @@ public class AppOrderServiceImpl implements AppOrderService {
             throw exception(OPRATION_ERROR);
         }
         Date now = new Date();
+        now.setSeconds(0);//秒数取0 方便计算
         //只有未开始的订单才能开始
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
             //判断当前的时间是否在订单开始时间之前
             if (now.before(orderInfoDO.getStartTime())) {
-                //早于开始时间 判断一下是否能提前开始  最早不能提前6小时开始
-                long l1 = (orderInfoDO.getStartTime().getTime() - now.getTime()) / 1000 / 60;
-                if (l1 > 360) {
-                    throw exception(ORDER_START_TIQIAN_ERROR);
-                }
-                //对于通宵场，除非已经超过23时 否则不能提前开始
+                //对于通宵场 不能提前开始
                 if (orderInfoDO.getNightLong()) {
-                    //通宵场
-                    if (now.getHours() < 23 && now.getHours() >= 4) {
-                        throw exception(TONGXIAO_ORDER_START_ERROR);
+                    throw exception(TONGXIAO_ORDER_START_ERROR);
+                }else{
+                    //早于开始时间 判断一下是否能提前开始  最早不能提前房间设置的时间
+                    RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
+                    long l1 = (orderInfoDO.getStartTime().getTime() - now.getTime()) / 1000 / 60 / 60;
+                    if (l1 > roomInfoDO.getLeadHour()) {
+                        throw exception(ORDER_START_TIQIAN_ERROR);
                     }
+                    //新的结束时间 等于当前时间加上订单的时长
+                    long l = now.getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime());
+                    Date endTime = new Date(l);
+                    endTime.setSeconds(0);
+                    //更改订单的开始和完成时间
+                    orderInfoDO.setEndTime(endTime);
+                    log.info("订单：{}，提前开始消费！", orderInfoDO.getOrderNo());
+                    orderInfoDO.setStartTime(now);
+                    //校验时间冲突
+                    preOrder(orderInfoDO.getRoomId(), now, orderInfoDO.getEndTime(), null, orderId, false, false);
                 }
-                //新的结束时间 等于当前时间加上订单的时长
-                long l = now.getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime());
-                Date endTime = new Date(l);
-                endTime.setSeconds(0);
-                //更改订单的开始和完成时间
-                orderInfoDO.setEndTime(endTime);
-                log.info("订单：{}，提前开始消费！", orderInfoDO.getOrderNo());
-                orderInfoDO.setStartTime(now);
-                //校验时间冲突
-                preOrder(orderInfoDO.getRoomId(), now, orderInfoDO.getEndTime(), null, orderId, false, false);
             }
             //开始订单
             orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
@@ -1329,8 +1329,11 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(OPRATION_ERROR);
             }
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
+                //未开始的订单则直接开始
                 startOrder(orderId);
+                //然后触发开电
                 deviceService.openRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
+
             } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                 deviceService.openRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else {

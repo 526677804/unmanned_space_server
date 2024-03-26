@@ -14,6 +14,8 @@ public interface DeviceService {
 
     void openRoomDoor(Long userId,Long storeId,Long roomId, int type);
 
+    void openRoomBlueLock(Long userId,Long storeId,Long roomId, int type);
+
     void closeRoomDoor(Long userId,Long storeId,Long roomId, int type);
 
     /**

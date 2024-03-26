@@ -7,7 +7,6 @@ import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
-import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.mqtt.MqttProviderConfig;
 import com.yanzu.module.member.service.iot.EwlService;
@@ -40,9 +39,6 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Resource
     private DeviceUseInfoMapper deviceUseInfoMapper;
-
-    @Resource
-    private OrderInfoMapper orderInfoMapper;
 
     @Resource
     private RoomInfoMapper roomInfoMapper;
@@ -172,7 +168,6 @@ public class DeviceServiceImpl implements DeviceService {
         }
     }
 
-
     @Override
     @Transactional
     public void openRoomDoor(Long userId, Long storeId, Long roomId, int type) {
@@ -196,6 +191,31 @@ public class DeviceServiceImpl implements DeviceService {
         }
         //增加开门记录
         saveDeviceUseRecord(userId, storeId, roomId, "openRoomDoor");
+    }
+
+    @Override
+    @Transactional
+    public void openRoomBlueLock(Long userId, Long storeId, Long roomId, int type) {
+        if (!ObjectUtils.isEmpty(roomId) && ObjectUtils.isEmpty(storeId)) {
+            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+            storeId = roomInfoDO.getStoreId();
+        }
+        //1用户开门 2管理员开门 3保洁开门 4系统开门
+        switch (type) {
+            case 1://1用户开门 这里的 roomId肯定不是空
+                openRoomDoor(roomId);
+                break;
+            case 2:
+            case 3:
+                //管理员不限制 保洁开门权限在调用处控制 只能开待清洁的房间
+                openRoomDoor(roomId);
+                break;
+            case 4:
+                openRoomDoor(roomId);
+                break;
+        }
+        //增加开门记录
+        saveDeviceUseRecord(userId, storeId, roomId, "开房间密码门锁");
     }
 
     @Override
@@ -268,7 +288,6 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     @Transactional
     public void weimenjin(JSONObject body) {
-        //收到智能硬件回调:{"device_sn":"W71F9783B28","cmd":"notify","msg_id":0,"type":2,"app_id":"","cmd_type":"notify","info":{"notify_type":"on-off","state":1}}
         //收到智能硬件回调:{"device_sn":"W71F9783B28","cmd":"notify","msg_id":0,"type":2,"app_id":"","cmd_type":"notify","info":{"notify_type":"on-off","state":0}}
         String device_sn = body.getString("device_sn");
         if (body.getString("cmd").equals("notify")) {
@@ -286,14 +305,6 @@ public class DeviceServiceImpl implements DeviceService {
                 }
             }
         }
-
-
-        //收到智能硬件回调:{"device_sn":"W70F9783D78","cmd":"OnLine","msg_id":0,"type":0,"app_id":"","cmd_type":"OnLine","info":{"time":1694930336}}
-
-        //收到智能硬件回调:{"device_sn":"W70F9783D78","cmd":"dev_reg","msg_id":0,"type":2,"app_id":"","cmd_type":"dev_reg","info":{"hw_ver":"1.0.0","iccid":"535479429655B2D5","imei":"6055F9783D78","project":"WMJ_CLOUDSPEAKER_C3","rssi":-52,"sw_ver":"1.0.7","username":"W70F9783D78"}}
-        //{"device_sn":"W70F9783D78","cmd":"dev_reg","msg_id":0,"type":2,"app_id":"","cmd_type":"dev_reg","info":{"hw_ver":"1.0.0","iccid":"535479429655B2D5","imei":"6055F9783D78","project":"WMJ_CLOUDSPEAKER_C3","rssi":-52,"sw_ver":"1.0.7","username":"W70F9783D78"}}
-
-
     }
 
     @Override
