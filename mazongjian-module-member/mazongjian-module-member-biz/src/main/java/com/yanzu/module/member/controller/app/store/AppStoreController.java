@@ -122,13 +122,25 @@ public class AppStoreController {
 
 
     @PostMapping("/openRoomDoor/{roomId}")
-    @Operation(summary = "开房间的大门", description = "房间管理使用")
+    @Operation(summary = "开房间电源和灯光", description = "房间管理使用")
     @PreAuthenticated
     @Parameter(name = "roomId")
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户开门 2管理员开门 3保洁开门
         deviceService.openRoomDoor(getLoginUserId(),null,roomId, 2);
+        return success(true);
+    }
+
+
+    @PostMapping("/openRoomLock/{roomId}")
+    @Operation(summary = "开房间的门锁", description = "房间管理使用")
+    @PreAuthenticated
+    @Parameter(name = "roomId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> openRoomLock(@PathVariable("roomId") Long roomId) {
+        //1用户开门 2管理员开门 3保洁开门
+        deviceService.openRoomBlueLock(getLoginUserId(),null,roomId, 2);
         return success(true);
     }
 

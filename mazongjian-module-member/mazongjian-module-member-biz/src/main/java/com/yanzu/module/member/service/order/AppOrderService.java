@@ -43,6 +43,8 @@ public interface AppOrderService {
 
     void openStoreDoor(Long orderId);
 
+    void openRoomLock(Long orderId);
+
 
 
 //    void closeOrder(Long orderId);

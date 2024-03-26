@@ -1110,7 +1110,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //对于通宵场 不能提前开始
                 if (orderInfoDO.getNightLong()) {
                     throw exception(TONGXIAO_ORDER_START_ERROR);
-                }else{
+                } else {
                     //早于开始时间 判断一下是否能提前开始  最早不能提前房间设置的时间
                     RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
                     long l1 = (orderInfoDO.getStartTime().getTime() - now.getTime()) / 1000 / 60 / 60;
@@ -1362,6 +1362,32 @@ public class AppOrderServiceImpl implements AppOrderService {
                     throw exception(ORDER_START_TIQIAN_ERROR);
                 }
                 deviceService.openStoreDoor(getLoginUserId(), orderInfoDO.getStoreId(), 1);
+            } else {
+                throw exception(CLEAR_OPEN_DOOR_ERROR);
+            }
+        } else {
+            throw exception(ORDER_NOT_FOUND_ERROR);
+        }
+
+    }
+
+    @Override
+    @Transactional
+    public void openRoomLock(Long orderId) {
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
+        if (!ObjectUtils.isEmpty(orderInfoDO)) {
+            //只能操作自己的订单
+            if (orderInfoDO.getUserId().compareTo(getLoginUserId()) != 0) {
+                throw exception(OPRATION_ERROR);
+            }
+            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
+                //未开始的订单则直接开始
+                startOrder(orderId);
+                //然后触发开门开电
+                deviceService.openRoomBlueLock(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
+                deviceService.openRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
+            } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                deviceService.openRoomBlueLock(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else {
                 throw exception(CLEAR_OPEN_DOOR_ERROR);
             }

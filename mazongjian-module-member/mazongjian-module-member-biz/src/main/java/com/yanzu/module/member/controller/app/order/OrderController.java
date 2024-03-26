@@ -159,7 +159,7 @@ public class OrderController {
     }
 
     @PostMapping("/openRoomDoor/{orderId}")
-    @Operation(summary = "(开关)房间的大门", description = "我的订单使用")
+    @Operation(summary = "(开)房间电源及灯光", description = "我的订单使用")
     @PreAuthenticated
     @Parameter(name = "orderId")
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
@@ -168,6 +168,15 @@ public class OrderController {
         return success(true);
     }
 
+    @PostMapping("/openRoomLock/{orderId}")
+    @Operation(summary = "(开)房间密码门锁", description = "我的订单使用")
+    @PreAuthenticated
+    @Parameter(name = "orderId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> openRoomLock(@PathVariable("orderId") Long orderId) {
+        appOrderService.openRoomLock(orderId);
+        return success(true);
+    }
     @GetMapping("/getRoomImgs/{roomId}")
     @Operation(summary = "获取房间的图片组 逗号分隔", description = "我的订单使用")
     @PreAuthenticated
