@@ -62,6 +62,25 @@ public class AppIndexStoreInfoRespVO  {
 
     @Schema(description = "预约按钮照片")
     private String btnImg;
+
+    @Schema(description = "团购按钮照片")
+    private String tgImg;
+
+    @Schema(description = "充值按钮照片")
+    private String czImg;
+
+    @Schema(description = "wifi按钮照片")
+    private String wifiImg;
+
+    @Schema(description = "切换门店按钮照片")
+    private String qhImg;
+
+    @Schema(description = "一键开门按钮照片")
+    private String openImg;
+
+    @Schema(description = "客服按钮照片")
+    private String kfImg;
+
     @Schema(description = "主题色")
     private String mainColor;
 

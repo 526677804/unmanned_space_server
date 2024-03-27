@@ -122,6 +122,24 @@ public class StoreInfoDO extends BaseDO {
     @Schema(description = "预约按钮照片")
     private String btnImg;
 
+    @Schema(description = "团购按钮照片")
+    private String tgImg;
+
+    @Schema(description = "充值按钮照片")
+    private String czImg;
+
+    @Schema(description = "wifi照片")
+    private String wifiImg;
+
+    @Schema(description = "切换门店照片")
+    private String qhImg;
+
+    @Schema(description = "一键开门照片")
+    private String openImg;
+
+    @Schema(description = "联系客服照片")
+    private String kfImg;
+
     @Schema(description = "显示通宵价格")
     private Boolean showTxPrice;
 
@@ -136,6 +154,9 @@ public class StoreInfoDO extends BaseDO {
 
     @Schema(description = "工作日价格")
     private Boolean workPrice;
+
+
+
 
 
 }

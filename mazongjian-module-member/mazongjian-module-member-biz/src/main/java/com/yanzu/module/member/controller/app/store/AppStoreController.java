@@ -55,7 +55,6 @@ public class AppStoreController {
         return success(storeInfoService.getDetail(storeId));
     }
 
-
     @PostMapping("/save")
     @Operation(summary = "保存门店详情")
     @PreAuthenticated
