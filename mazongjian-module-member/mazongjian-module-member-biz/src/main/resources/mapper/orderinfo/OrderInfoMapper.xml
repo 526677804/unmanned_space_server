@@ -142,6 +142,7 @@
     <select id="getOrderInfo" resultType="com.yanzu.module.member.controller.app.order.vo.OrderInfoAppRespVO">
         select o.order_id
         , o.order_no
+        , o.order_key
         , r.room_name
         , r.price roomPrice
         , r.work_price workPrice
@@ -177,6 +178,9 @@
         where o.deleted = 0
         <if test="null != orderId">
             and o.order_id = #{orderId}
+        </if>
+        <if test="null != orderKey and orderKey!=''">
+            and o.order_key = #{orderKey}
         </if>
         <if test="null == orderId">
             and o.user_id=#{userId}

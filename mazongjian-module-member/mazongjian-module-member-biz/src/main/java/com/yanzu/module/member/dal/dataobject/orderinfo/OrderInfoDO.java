@@ -34,6 +34,10 @@ public class OrderInfoDO extends BaseDO {
      */
     private String orderNo;
     /**
+     * 订单key
+     */
+    private String orderKey;
+    /**
      * 门店id
      */
     private Long storeId;

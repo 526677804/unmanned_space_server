@@ -35,7 +35,7 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     List<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO);
 
-    OrderInfoAppRespVO getOrderInfo(@Param("orderId") Long orderId, @Param("userId") Long userId);
+    OrderInfoAppRespVO getOrderInfo(@Param("orderId") Long orderId,@Param("orderKey") String orderKey, @Param("userId") Long userId);
 
     List<KeyValue<String, BigDecimal>> getRevenueStatistics(AppChartDataReqVO reqVO);
 

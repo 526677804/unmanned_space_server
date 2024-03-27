@@ -102,6 +102,9 @@ public class OrderInfoAppRespVO {
     @Schema(description = "状态 值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer status;
 
+    @Schema(description = "是否允许续费",  example = "false")
+    private Boolean renewBtn;
+
     @Schema(description = "创建时间/下单时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)

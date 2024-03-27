@@ -664,6 +664,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //生成订单，并修改房间状态
         orderInfoDO.setOrderNo(reqVO.getOrderNo());
+        orderInfoDO.setOrderKey(HexUtil.encodeHexStr(reqVO.getOrderNo() + UUID.randomUUID().toString()));
         orderInfoDO.setStoreId(roomInfoDO.getStoreId());
         orderInfoDO.setRoomId(roomInfoDO.getRoomId());
         orderInfoDO.setUserId(reqVO.getUserId());
@@ -732,8 +733,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         LocalDateTime currentDateTime = LocalDateTime.now();
         String currentDate = currentDateTime.format(dateFormatter);
         Random random = new Random();
-        int randomNum = random.nextInt(100000000);
-        String randomNumString = String.format("%08d", randomNum);
+        int randomNum = random.nextInt(1000000000);
+        String randomNumString = String.format("%09d", randomNum);
         return currentDate + randomNumString;
     }
 
@@ -860,10 +861,6 @@ public class AppOrderServiceImpl implements AppOrderService {
             //如果状态是已取消以外的状态  并且订单结束时间不超过5分钟，那么允许续费
             LocalDateTime now = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             list.forEach(x -> {
-                if (x.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
-                        || x.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                    x.setOrderKey(HexUtil.encodeHexStr(x.getOrderNo() + "&mzjkey"));
-                }
                 x.setRenewBtn(false);
                 if (x.getStatus().compareTo(AppEnum.order_status.CANCEL.getValue()) != 0) {
                     LocalDateTime endDate = x.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plusMinutes(5);
@@ -881,22 +878,22 @@ public class AppOrderServiceImpl implements AppOrderService {
         OrderInfoAppRespVO orderInfo = null;
         if (StringUtils.isEmpty(orderKey)) {
             //校验权限
-            orderInfo = orderInfoMapper.getOrderInfo(orderId, getLoginUserId());
+            orderInfo = orderInfoMapper.getOrderInfo(orderId, null, getLoginUserId());
         } else {
             //对比key
-            orderInfo = orderInfoMapper.getOrderInfo(orderId, null);
-            if (!HexUtil.encodeHexStr(orderInfo.getOrderNo() + "&mzjkey").equals(orderKey)) {
-                //权限错误
-                throw exception(AUTH_PROMISSION_ERROR);
-            }
+            orderInfo = orderInfoMapper.getOrderInfo(null, orderKey, null);
         }
         if (ObjectUtils.isEmpty(orderInfo)) {
             throw exception(ORDER_NOT_FOUND_ERROR);
         }
-        if(!ObjectUtils.isEmpty(orderInfo)){
-            if(orderInfo.getStatus().compareTo(AppEnum.order_status.PENDING.getValue())==0
-                    || orderInfo.getStatus().compareTo(AppEnum.order_status.START.getValue())==0){
-                orderInfo.setOrderKey(HexUtil.encodeHexStr(orderInfo.getOrderNo() + "&mzjkey"));
+        if (!ObjectUtils.isEmpty(orderInfo)) {
+            if (orderInfo.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
+                    || orderInfo.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                orderInfo.setRenewBtn(true);
+            } else {
+                orderInfo.setRenewBtn(false);
+                //订单key给设置为空 不允许好友再使用
+                orderInfo.setOrderKey("");
             }
         }
         return orderInfo;
@@ -1224,6 +1221,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                                 }
                             } catch (Exception e) {
                                 //异常时不影响其他订单关闭
+                                e.printStackTrace();
 //                                throw new RuntimeException(e);
                             }
                             break;
