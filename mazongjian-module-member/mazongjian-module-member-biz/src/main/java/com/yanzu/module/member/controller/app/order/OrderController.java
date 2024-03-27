@@ -120,15 +120,15 @@ public class OrderController {
 //        return success(appOrderService.getOrderInfo(null, null));
 //    }
 
-    @PostMapping("/startOrder/{orderId}")
-    @Operation(summary = "开始订单", description = "我的订单使用")
-    @PreAuthenticated
-    @Parameter(name = "orderId")
-    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
-    public CommonResult<Boolean> startOrder(@PathVariable("orderId") Long orderId) {
-        appOrderService.startOrder(orderId);
-        return success(true);
-    }
+//    @PostMapping("/startOrder/{orderId}")
+//    @Operation(summary = "开始订单", description = "我的订单使用")
+//    @PreAuthenticated
+//    @Parameter(name = "orderId")
+//    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+//    public CommonResult<Boolean> startOrder(@PathVariable("orderId") Long orderId) {
+//        appOrderService.startOrder(orderId);
+//        return success(true);
+//    }
 
     @PostMapping("/cancelOrder/{orderId}")
     @Operation(summary = "取消订单 ", description = "我的订单使用")
@@ -150,33 +150,33 @@ public class OrderController {
 //        return success(true);
 //    }
 
-    @PostMapping("/openStoreDoor/{orderId}")
+    @PostMapping("/openStoreDoor")
     @Operation(summary = "(开关)门店的大门", description = "我的订单使用")
-    @PreAuthenticated
-    @Parameter(name = "orderId", required = false)
+    @PermitAll//因为有分享订单功能 所以取消权限校验
+    @Parameter(name = "orderKey", required = false)
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
-    public CommonResult<Boolean> openStoreDoor(@PathVariable(value = "orderId") Long orderId) {
-        appOrderService.openStoreDoor(orderId);
+    public CommonResult<Boolean> openStoreDoor(@RequestParam(value = "orderKey", required = true) String orderKey) {
+        appOrderService.openStoreDoor(orderKey);
         return success(true);
     }
 
-    @PostMapping("/openRoomDoor/{orderId}")
+    @PostMapping("/openRoomDoor")
     @Operation(summary = "(开)房间电源及灯光", description = "我的订单使用")
-    @PreAuthenticated
-    @Parameter(name = "orderId")
+    @PermitAll//因为有分享订单功能 所以取消权限校验
+    @Parameter(name = "orderKey", required = false)
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
-    public CommonResult<Boolean> openRoomDoor(@PathVariable("orderId") Long orderId) {
-        appOrderService.openRoomDoor(orderId);
+    public CommonResult<Boolean> openRoomDoor(@RequestParam(value = "orderKey", required = true) String orderKey) {
+        appOrderService.openRoomDoor(orderKey);
         return success(true);
     }
 
-    @PostMapping("/openRoomLock/{orderId}")
+    @PostMapping("/openRoomLock")
     @Operation(summary = "(开)房间密码门锁", description = "我的订单使用")
-    @PreAuthenticated
-    @Parameter(name = "orderId")
+    @PermitAll//因为有分享订单功能 所以取消权限校验
+    @Parameter(name = "orderKey", required = false)
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
-    public CommonResult<Boolean> openRoomLock(@PathVariable("orderId") Long orderId) {
-        appOrderService.openRoomLock(orderId);
+    public CommonResult<Boolean> openRoomLock(@RequestParam(value = "orderKey", required = true) String orderKey) {
+        appOrderService.openRoomLock(orderKey);
         return success(true);
     }
 

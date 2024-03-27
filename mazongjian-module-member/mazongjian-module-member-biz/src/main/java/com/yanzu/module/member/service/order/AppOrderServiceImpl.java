@@ -11,6 +11,7 @@ import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
+import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
@@ -1155,9 +1156,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         log.info("当前时间:{}", DateUtils.dateToStr(now, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
         boolean night = now.getHours() < 8 && now.getMinutes() == 0;//是否深夜
         log.info("night:{}", night);
-        //取出所有进行中的订单
+        //取出所有需要处理的订单
         List<OrderInfoDO> orderList = orderInfoMapper.getListByJob();
-        //如果存在结束时间已经小于现在的时间的 则把订单状态改为完成
         if (!CollectionUtils.isAnyEmpty(orderList)) {
             Set<Long> startRoomIds = new HashSet<>();
             Set<Long> endRoomIds = new HashSet<>();
@@ -1173,7 +1173,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     switch (x.getStatus()) {
                         case 0:
                             //未开始 达到预订时间后，就开始订单
-                            if (x.getStartTime().after(now)) {
+                            if (x.getStartTime().before(now)) {
                                 startRoomIds.add(x.getRoomId());
                                 startOrderIds.add(x.getOrderId());
                             }
@@ -1325,21 +1325,16 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Override
     @Transactional
-    public void openRoomDoor(Long orderId) {
-        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
+    public void openRoomDoor(String orderKey) {
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(new LambdaQueryWrapperX<OrderInfoDO>().eq(OrderInfoDO::getOrderKey, orderKey));
         if (!ObjectUtils.isEmpty(orderInfoDO)) {
-            //只能操作自己的订单
-            if (orderInfoDO.getUserId().compareTo(getLoginUserId()) != 0) {
-                throw exception(OPRATION_ERROR);
-            }
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
                 //未开始的订单则直接开始
-                startOrder(orderId);
+                startOrder(orderInfoDO.getOrderId());
                 //然后触发开电
-                deviceService.openRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
-
+                deviceService.openRoomDoor(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.openRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
+                deviceService.openRoomDoor(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else {
                 throw exception(CLEAR_OPEN_DOOR_ERROR);
             }
@@ -1350,22 +1345,19 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Override
     @Transactional
-    public void openStoreDoor(Long orderId) {
-        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
+    public void openStoreDoor(String orderKey) {
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(new LambdaQueryWrapperX<OrderInfoDO>().eq(OrderInfoDO::getOrderKey, orderKey));
         if (!ObjectUtils.isEmpty(orderInfoDO)) {
-            //只能操作自己的订单
-            if (orderInfoDO.getUserId().compareTo(getLoginUserId()) != 0) {
-                throw exception(OPRATION_ERROR);
-            }
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
                     || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                //只能提前6小时开门
+                //只能提前X小时开门
+                RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
                 Date now = new Date();
-                long l1 = (orderInfoDO.getStartTime().getTime() - now.getTime()) / 1000 / 60;
-                if (l1 > 360) {
+                long l1 = (orderInfoDO.getStartTime().getTime() - now.getTime()) / 1000 / 60 / 60;
+                if (l1 > roomInfoDO.getLeadHour()) {
                     throw exception(ORDER_START_TIQIAN_ERROR);
                 }
-                deviceService.openStoreDoor(getLoginUserId(), orderInfoDO.getStoreId(), 1);
+                deviceService.openStoreDoor(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), 1);
             } else {
                 throw exception(CLEAR_OPEN_DOOR_ERROR);
             }
@@ -1377,21 +1369,17 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Override
     @Transactional
-    public void openRoomLock(Long orderId) {
-        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
+    public void openRoomLock(String orderKey) {
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(new LambdaQueryWrapperX<OrderInfoDO>().eq(OrderInfoDO::getOrderKey, orderKey));
         if (!ObjectUtils.isEmpty(orderInfoDO)) {
-            //只能操作自己的订单
-            if (orderInfoDO.getUserId().compareTo(getLoginUserId()) != 0) {
-                throw exception(OPRATION_ERROR);
-            }
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
                 //未开始的订单则直接开始
-                startOrder(orderId);
+                startOrder(orderInfoDO.getOrderId());
                 //然后触发开门开电
-                deviceService.openRoomBlueLock(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
-                deviceService.openRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
+                deviceService.openRoomBlueLock(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
+                deviceService.openRoomDoor(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.openRoomBlueLock(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
+                deviceService.openRoomBlueLock(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else {
                 throw exception(CLEAR_OPEN_DOOR_ERROR);
             }

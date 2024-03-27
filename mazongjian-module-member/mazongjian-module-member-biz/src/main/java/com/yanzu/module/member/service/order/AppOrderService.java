@@ -39,11 +39,11 @@ public interface AppOrderService {
 
     void executeMeituanRefreshTokenJob();
 
-    void openRoomDoor(Long orderId);
+    void openRoomDoor(String orderKey);
 
-    void openStoreDoor(Long orderId);
+    void openStoreDoor(String orderKey);
 
-    void openRoomLock(Long orderId);
+    void openRoomLock(String orderKey);
 
 
 

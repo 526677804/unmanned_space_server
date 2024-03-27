@@ -182,7 +182,7 @@
         <if test="null != orderKey and orderKey!=''">
             and o.order_key = #{orderKey}
         </if>
-        <if test="null == orderId">
+        <if test="null == orderId and null!= userId">
             and o.user_id=#{userId}
             and o.end_time>now()
             and o.status in (0,1)
