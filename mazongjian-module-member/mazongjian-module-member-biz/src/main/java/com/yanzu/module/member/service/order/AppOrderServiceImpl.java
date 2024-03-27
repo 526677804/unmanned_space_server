@@ -893,6 +893,12 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (ObjectUtils.isEmpty(orderInfo)) {
             throw exception(ORDER_NOT_FOUND_ERROR);
         }
+        if(!ObjectUtils.isEmpty(orderInfo)){
+            if(orderInfo.getStatus().compareTo(AppEnum.order_status.PENDING.getValue())==0
+                    || orderInfo.getStatus().compareTo(AppEnum.order_status.START.getValue())==0){
+                orderInfo.setOrderKey(HexUtil.encodeHexStr(orderInfo.getOrderNo() + "&mzjkey"));
+            }
+        }
         return orderInfo;
     }
 

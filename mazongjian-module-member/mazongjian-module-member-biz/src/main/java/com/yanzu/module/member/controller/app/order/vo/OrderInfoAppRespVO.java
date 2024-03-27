@@ -23,6 +23,9 @@ public class OrderInfoAppRespVO {
     @Schema(description = "订单编号", requiredMode = Schema.RequiredMode.REQUIRED)
     private String orderNo;
 
+    @Schema(description = "订单key", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String orderKey;
+
     @Schema(description = "门店id", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Long storeId;
 

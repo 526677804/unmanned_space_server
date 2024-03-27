@@ -101,22 +101,24 @@ public class OrderController {
         reqVO.setUserId(getLoginUserId());
         return success(appOrderService.getOrderPage(reqVO));
     }
-    @GetMapping("/getOrderInfo/{orderId}")
+
+    @GetMapping("/getOrderInfo")
     @Operation(summary = "获取订单详情", description = "我的订单使用")
 //    @PreAuthenticated
     @PermitAll//因为有分享订单功能 所以取消权限校验 通过参数校验
     @Parameter(name = "orderId", required = false)
-    public CommonResult<OrderInfoAppRespVO> getOrderInfo(@PathVariable(name = "orderId", required = false) Long orderId
+    @Parameter(name = "orderKey", required = false)
+    public CommonResult<OrderInfoAppRespVO> getOrderInfo(@RequestParam(name = "orderId", required = false) Long orderId
             , @RequestParam(value = "orderKey", required = false) String orderKey) {
         return success(appOrderService.getOrderInfo(orderId, orderKey));
     }
 
-    @GetMapping("/getOrderInfo")
-    @Operation(summary = "获取订单详情(开门按钮)", description = "我的订单使用")
-    @PreAuthenticated
-    public CommonResult<OrderInfoAppRespVO> getOrderInfo1() {
-        return success(appOrderService.getOrderInfo(null, null));
-    }
+//    @GetMapping("/getOrderInfo")
+//    @Operation(summary = "获取订单详情(开门按钮)", description = "我的订单使用")
+//    @PreAuthenticated
+//    public CommonResult<OrderInfoAppRespVO> getOrderInfo1() {
+//        return success(appOrderService.getOrderInfo(null, null));
+//    }
 
     @PostMapping("/startOrder/{orderId}")
     @Operation(summary = "开始订单", description = "我的订单使用")
@@ -177,6 +179,7 @@ public class OrderController {
         appOrderService.openRoomLock(orderId);
         return success(true);
     }
+
     @GetMapping("/getRoomImgs/{roomId}")
     @Operation(summary = "获取房间的图片组 逗号分隔", description = "我的订单使用")
     @PreAuthenticated
