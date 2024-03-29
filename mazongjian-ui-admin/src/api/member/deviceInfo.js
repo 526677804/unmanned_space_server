@@ -85,9 +85,9 @@ export function bind(data) {
     data: data
   })
 }
-export function getEwelinkScope(){
+export function getIotScope(){
   return request({
-    url: '/member/device-info/ewelinkScope',
+    url: '/member/device-info/iotScope',
     method: 'get'
   })
 }

@@ -106,8 +106,9 @@ public class TenantSecurityWebFilter extends ApiRequestFilter {
             return true;
         }
         // 逐个 Ant 路径匹配
+        String requestURI = request.getRequestURI();
         for (String url : tenantProperties.getIgnoreUrls()) {
-            if (pathMatcher.match(url, request.getRequestURI())) {
+            if (pathMatcher.match(url,requestURI)) {
                 return true;
             }
         }

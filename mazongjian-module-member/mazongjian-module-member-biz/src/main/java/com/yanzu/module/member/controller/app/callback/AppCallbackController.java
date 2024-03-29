@@ -1,9 +1,6 @@
 package com.yanzu.module.member.controller.app.callback;
 
-import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
-import com.yanzu.module.member.service.device.DeviceService;
-import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,17 +33,11 @@ public class AppCallbackController {
     @Resource
     private MeituanService meituanService;
 
-    @Resource
-    private DeviceService deviceService;
-
-
-    @Resource
-    private EwlService ewlService;
 
 
     @PostMapping("/wxpay/update")
     @Operation(summary = "微信支付回调")
-    @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
+    @PermitAll // 无需登录
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     @Parameter(name = "xmlData")
     public String updateOrder(@RequestBody String xmlData) {
@@ -56,7 +47,7 @@ public class AppCallbackController {
 
     @PostMapping("/wxpay/urefunded")
     @Operation(summary = "微信退款回调")
-    @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
+    @PermitAll // 无需登录
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public String updateOrderRefunded(@RequestParam(required = false) Map<String, String> params,
                                       @RequestBody(required = false) String body) {
@@ -65,28 +56,17 @@ public class AppCallbackController {
 
     @RequestMapping(value = "/meituan", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Operation(summary = "美团授权回调")
-    @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
+    @PermitAll // 无需登录
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public String meituan(@RequestParam("auth_code") String auth_code, @RequestParam("state") String state) {
         return meituanService.getToken(auth_code, state);
     }
 
-    @PostMapping(value = "/weimenjin")
-    @Operation(summary = "微门禁回调")
-    @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
+    @GetMapping(value = "/iotCallback")
+    @Operation(summary = "物联网平台授权回调")
+    @PermitAll // 无需登录
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
-    public void weimenjin(@RequestBody(required = false) JSONObject body) {
-        log.info("收到智能硬件回调:{}", body);
-        deviceService.weimenjin(body);
+    public void iotCallback(@RequestParam(required = false) Map<String, String> params) {
+        log.info("收到物联网平台授权回调,params:{}", params);
     }
-
-    @GetMapping(value = "/ewelink")
-    @Operation(summary = "易微联授权回调")
-    @PermitAll // 无需登录，安全由 PayDemoOrderService 内部校验实现
-    @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
-    public void eweilink(@RequestParam("code") String code, @RequestParam("state") String state) {
-        log.info("收到易微联授权回调,code:{}", code);
-        ewlService.setToken(code,state);
-    }
-
 }

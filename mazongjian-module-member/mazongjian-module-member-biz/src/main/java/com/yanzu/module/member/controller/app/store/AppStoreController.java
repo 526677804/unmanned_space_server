@@ -144,7 +144,7 @@ public class AppStoreController {
     }
 
     @PostMapping("/closeRoomDoor/{roomId}")
-    @Operation(summary = "关房间的大门", description = "房间管理使用")
+    @Operation(summary = "关房间的门和电源", description = "房间管理使用")
     @PreAuthenticated
     @Parameter(name = "roomId")
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")

@@ -71,7 +71,7 @@ public interface DeviceInfoService {
 
     void bind(DeviceInfoBindReqVO reqVO);
 
-    String ewelinkScope();
+    void iotScope();
 
 
 }

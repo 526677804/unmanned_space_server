@@ -7,11 +7,8 @@ import com.yanzu.module.member.controller.admin.deviceinfo.vo.*;
 import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
-import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
-import com.yanzu.module.member.service.iot.EwlService;
 import com.yanzu.module.member.service.iot.IotService;
-import com.yanzu.module.member.service.iot.TTLockService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -37,10 +34,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     private DeviceInfoMapper deviceInfoMapper;
 
     @Resource
-    private EwlService ewlService;
-
-    @Resource
-    private TTLockService ttLockService;
+    private IotService iotService;
 
 
     @Override
@@ -48,11 +42,6 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     public Long createDeviceInfo(DeviceInfoCreateReqVO createReqVO) {
         // 插入
         DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
-        //如果是密码锁 需要获取一下锁的数据
-        if (createReqVO.getType().compareTo(AppEnum.device_type.LOCK.getValue()) == 0) {
-            String key = ttLockService.getKey(Integer.valueOf(createReqVO.getDeviceSn()));
-            deviceInfo.setDeviceData(key);
-        }
         deviceInfoMapper.insert(deviceInfo);
         return deviceInfo.getDeviceId();
     }
@@ -117,8 +106,8 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     }
 
     @Override
-    public String ewelinkScope() {
-        return ewlService.getAuthUrl();
+    public void iotScope() {
+         iotService.authorize();
     }
 
 }

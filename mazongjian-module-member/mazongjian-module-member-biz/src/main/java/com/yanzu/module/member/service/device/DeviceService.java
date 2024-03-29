@@ -24,8 +24,6 @@ public interface DeviceService {
      */
     void runSound(Long roomId, Integer type);
 
-    void weimenjin(JSONObject body);
-
     void testYunlaba(Long roomId);
 
     void closeLightByRoomId(Long userId,Long storeId,Long roomId, int type);

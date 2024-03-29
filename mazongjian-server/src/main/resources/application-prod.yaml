@@ -217,39 +217,8 @@ douyin:
   appKey: awfftg1h15wwhu3n
   secret: 51763320da7cc3a7f2a7e8c1758e6eef
 
-#微门禁开发者配置
-wmj:
-  v1:
-    appid: wmj_LJjdyQZUOuf
-    secret: hz4NZmaTaRQWlcuH3R87rfXmaVaIzlza
-  v2:
-    appid: d5bac4c4fbc731b59b59914fd4365efe
-    secret: b11e94fe3e2fb72ac4121c0e306cbd2d
-    
-#易微联平台配置
-ewelink:
-  enable: true # 是否开启易微联平台 根据需要开启  不开启就不填下面的信息
-  appid: iSQwkQ8PfVRB75jaOgsPJtwfAdG1678f
-  secret: y0guc89GZnkcbbRDRzOL3HCh7LaXNpgw
-  redirectUrl: https://api.scyanzu.com/app-api/callback/ewelink
-  apiKey: f3bfc723-56e6-4f98-a69f-1a1ab94f3e87
-
-
-
-
-
-#mqtt
-mqtt:
-  enable: true
-  # MQTT服务地址，端口号默认11883，如果有多个，用逗号隔开
-  url: tcp://mqtt.scyanzu.com:8883
-  # 用户名
-  username: mazongjian
-  # 密码
-  password: mazongjiandev
-  # 客户端id(不能重复)
-  client:
-    id: mazongjian-prod
-  # MQTT默认的消息推送主题，实际可在调用接口是指定
-  default:
-    topic: yunlaba
+#硬件开发者配置
+iot:
+  clientId: 73e6ffc6
+  secret: f7f7d8cb-2dbb-47bf-bbce-3242f717ec73
+  redirectUrl: https://api.scyanzu.com/app-api/callback/iotCallback

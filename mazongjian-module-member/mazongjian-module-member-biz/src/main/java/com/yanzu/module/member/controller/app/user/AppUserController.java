@@ -6,12 +6,9 @@ import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
-import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
-import com.yanzu.module.member.service.iot.MyWebSocketClient;
-import com.yanzu.module.member.service.iot.TTLockService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,9 +22,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
@@ -39,9 +34,6 @@ import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getL
 @Validated
 @Slf4j
 public class AppUserController {
-
-    @Resource
-    private MyWebSocketClient myWebSocketClient;
 
     @Resource
     private AppUserService userService;
@@ -179,10 +171,6 @@ public class AppUserController {
     @Resource
     private MyWxService myWxService;
 
-    private static final String MINIAPP_IMG_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='%s'&secret='%s'";
-
-//    @Autowired
-//    EwlService ewlService;
 
 //    @Autowired
 //    MemberUserApi memberUserApi;
@@ -192,10 +180,6 @@ public class AppUserController {
 
     @Resource
     private RoomInfoMapper roomInfoMapper;
-
-
-    @Resource
-    private TTLockService ttLockService;
 
     @Resource
     private DeviceInfoMapper deviceInfoMapper;

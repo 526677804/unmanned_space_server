@@ -44,7 +44,7 @@ import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.douyin.vo.DouyinCancelReqVO;
 import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
-import com.yanzu.module.member.service.iot.EwlService;
+import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.payorder.PayOrderService;
@@ -141,7 +141,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     private WorkWxService workWxService;
 
     @Resource
-    private EwlService ewlService;
+    private IotService iotService;
 
 
     @Autowired
@@ -1316,10 +1316,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
             }
         }
-        //处理ewelink
-        log.info("==========     开始执行易微联授权定时刷新任务     ==========");
-        ewlService.refushTokenCheck();
-        log.info("==========    美团/易微联授权定时刷新任务结束     ==========");
+        //处理硬件平台
+        log.info("==========     开始执行硬件平台授权定时刷新任务     ==========");
+        iotService.refushTokenCheck();
+        log.info("==========    美团/硬件平台授权定时刷新任务结束     ==========");
 
     }
 

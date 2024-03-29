@@ -40,9 +40,9 @@
     </select>
     <select id="getStorePageList"
             resultMap="StorePageList">
-        select s.store_id,s.store_name,s.city_name,s.head_img,s.lat,s.lon,s.address,s.status,s.kefu_phone
+        select s.store_id,s.store_name,s.city_name,s.head_img,s.lat,s.lon,s.address,s.status,s.kefu_phone,
         <if test=" null!=lat and null!=lon">
-            ,(
+            (
             6371 * ACOS(
             COS(RADIANS(#{lat})) *
             COS(RADIANS(lat)) *
@@ -50,6 +50,9 @@
             SIN(RADIANS(#{lat})) * SIN(RADIANS(lat))
             )
             ) AS distance
+        </if>
+        <if test=" null==lat or null==lon">
+           9999 AS distance
         </if>
         from member_store_info s
         <where>

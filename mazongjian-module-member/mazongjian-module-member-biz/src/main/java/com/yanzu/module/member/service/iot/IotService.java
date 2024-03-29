@@ -1,176 +1,122 @@
 package com.yanzu.module.member.service.iot;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yanzu.module.member.forest.IotClient;
-import com.yanzu.module.member.service.iot.iotbean.*;
+import com.yanzu.module.member.service.iot.iotBean.*;
+import com.yanzu.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
-/**
- * @PACKAGE_NAME: com.yanzu.iot
- * @DESCRIPTION:
- * @USER: MrGuan  mrguan@aliyun.com
- * @DATE: 2023/7/17 14:49
- */
+import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+
 @Slf4j
 @Component
 public class IotService {
 
+    @Value("${iot.clientId}")
+    private String clientId;
+    @Value("${iot.secret}")
+    private String secret;
+    @Value("${iot.redirectUrl}")
+    private String redirectUrl;
+
     @Resource
     private IotClient iotClient;
 
-    @Value("${wmj.v1.appid}")
-    private String v1appid;
-    @Value("${wmj.v1.secret}")
-    private String v1secret;
+    @Resource
+    private RedisTemplate redisTemplate;
 
-    @Value("${wmj.v2.appid}")
-    private String v2appid;
-    @Value("${wmj.v2.secret}")
-    private String v2secret;
+    private final String tokenKey = "iot.token";
+    private final String refushTokenKey = "iot.refush_token";
+    private final String tokenExpireTimeKey = "iot.tokenExpireTime";
 
-
-    private IotApiBaseReqVO getIotApiBaseReqVO() {
-        IotApiBaseReqVO vo = new IotApiBaseReqVO();
-        vo.setAppid(v1appid);
-        vo.setAppsecret(v1secret);
-        return vo;
+    /**
+     * 发起授权
+     */
+    public void authorize() {
+        IotAuthReqVO reqVO = new IotAuthReqVO();
+        reqVO.setClient_id(clientId);
+        reqVO.setSecret(secret);
+        reqVO.setRedirect_uri(redirectUrl);
+        iotClient.authorize(reqVO);
     }
 
-    private IotApiV2BaseReqVO getIotApiV2BaseReqVO() {
-        IotApiV2BaseReqVO vo = new IotApiV2BaseReqVO();
-        vo.setApp_id(v2appid);
-        vo.setApp_secret(v2secret);
-        return vo;
-    }
-
-    public boolean regV1(String sn) {
-        IotApiBaseReqVO vo = getIotApiBaseReqVO();
-        vo.setSn(sn);
-        IotApiBaseRespVO respVO = iotClient.regV1(vo);
-        log.info("data:{}", respVO);
-        return respVO.getState() == 1 && respVO.getState_code() == 1;
-    }
-
-    public boolean regV2(String sn) {
-        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
-        vo.setDevice_sn(sn);
-        vo.setType(null);
-        IotApiV2BaseRespVO respVO = iotClient.regV2(vo);
-        log.info("data:{}", respVO);
-        return respVO.getCode() == 0;
-
-    }
-
-    public boolean regV2Door(String sn) {
-        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
-        vo.setDevice_sn(sn);
-        vo.setType(null);
-        IotApiV2RegDoorReqVO data = new IotApiV2RegDoorReqVO();
-        data.setData(new IotApiV2RegDoorDataReqVO());
-        vo.setData(data);
-        IotApiV2BaseRespVO respVO = iotClient.regV2Door(vo);
-        log.info("data:{}", respVO);
-        return respVO.getCode() == 0;
-
-    }
-
-    public boolean configYunlaba(String sn) {
-        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
-        vo.setDevice_sn(sn);
-        YunlabaOpVO<YunlabaConfigReqVO> data = new YunlabaOpVO();
-        YunlabaConfigReqVO info = new YunlabaConfigReqVO();
-        data.setInfo(info);
-        vo.setData(data);
-        IotApiV2BaseRespVO respVO = iotClient.configYunlaba(vo);
-        log.info("data:{}", respVO);
-        return respVO.getCode() == 0;
-
-    }
-
-    public boolean runDoorV1(String sn) {
-        IotApiBaseReqVO vo = getIotApiBaseReqVO();
-        vo.setSn(sn);
-        IotApiBaseRespVO respVO = iotClient.runDoorV1(vo);
-        log.info("data:{}", respVO);
-        return respVO.getState_code() == 1 && respVO.getState_msg().equals("成功");
-    }
-
-    public boolean runDoorV2(String sn) {
-        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
-        vo.setDevice_sn(sn);
-        KongkaiOpVO data = new KongkaiOpVO();
-        data.setCmd_type("open");
-        vo.setData(data);
-        IotApiV2BaseRespVO respVO = iotClient.runKongkai(vo);
-        log.info("data:{}", respVO);
-        return respVO.getCode() == 0;
-    }
-
-    public boolean runKongkai(String sn, String cmd) {
-        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
-        vo.setDevice_sn(sn);
-        KongkaiOpVO data = new KongkaiOpVO();
-        data.setCmd_type(cmd);
-        vo.setData(data);
-        IotApiV2BaseRespVO respVO = iotClient.runKongkai(vo);
-        log.info("data:{}", respVO);
-        return respVO.getCode() == 0;
-    }
-
-    public boolean runConfigWifi(String sn, String cmd) {
-        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
-        vo.setDevice_sn(sn);
-        KongkaiOpVO data = new KongkaiOpVO();
-        data.setCmd_type(cmd);
-        vo.setData(data);
-        IotApiV2BaseRespVO respVO = iotClient.runKongkai(vo);
-        log.info("data:{}", respVO);
-        return respVO.getCode() == 0;
-    }
-
-    public boolean runYunlaba(String sn, String tts, Integer sound) {
-        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
-        vo.setDevice_sn(sn);
-        YunlabaOpVO<YunlabaInfoVO> data = new YunlabaOpVO();
-        YunlabaInfoVO info = new YunlabaInfoVO();
-        info.setTts(tts);
-        info.setInner(10);
-        if (ObjectUtils.isEmpty(sound) || sound == 0) {
-            sound = 2;
+    /**
+     * 获取token
+     */
+    private String getToken(String code) {
+        //获取
+        IotResult<IotTokenRespVO> token = iotClient.getToken(new IotTokenReqVO().setClient_id(clientId).setSecret(secret).setCode(code));
+        if (token.getCode().intValue() == 0) {
+            redisTemplate.opsForValue().set(tokenKey, token.getData().getAccess_token());
+            redisTemplate.opsForValue().set(refushTokenKey, token.getData().getRefresh_token());
+            redisTemplate.opsForValue().set(tokenExpireTimeKey, token.getData().getExpires_in());
+            return token.getData().getAccess_token();
+        } else {
+            log.error("硬件平台获取token失败:{}", token.getMsg());
+            return null;
         }
-        info.setVolume(sound);
-        data.setInfo(info);
-        vo.setData(data);
-        IotApiV2BaseRespVO respVO = iotClient.runYunlaba(vo);
-        log.info("data:{}", respVO);
-        return respVO.getCode() == 0;
+
     }
 
-    public Integer getV1Status(String sn) {
-        IotApiBaseReqVO vo = getIotApiBaseReqVO();
-        vo.setSn(sn);
-        IotApiOnlineDataVO v1Status = iotClient.getV1Status(vo);
-        log.info("data:{}", v1Status);
-        if (v1Status.getState() == 1 && v1Status.getState_code() == 1) {
-            return v1Status.getOnline();
+    private String getToken() {
+        return (String) redisTemplate.opsForValue().get(tokenKey);
+    }
+
+    /**
+     * 刷新token
+     */
+    private void getTokenRefush(String token) {
+        //获取
+        IotResult<IotTokenRespVO> resp = iotClient.getTokenRefush(new IotTokenRefushReqVO().setClient_id(clientId).setSecret(secret).setToken(token));
+        if (resp.getCode().intValue() == 0) {
+            redisTemplate.opsForValue().set(tokenKey, resp.getData().getAccess_token());
+            redisTemplate.opsForValue().set(refushTokenKey, resp.getData().getRefresh_token());
+            redisTemplate.opsForValue().set(tokenExpireTimeKey, resp.getData().getExpires_in());
+        } else {
+            log.error("硬件平台刷新token授权失败:{}", resp.getMsg());
         }
-        return -1;
 
     }
 
+    /**
+     * 设备控制
+     */
+    public Boolean control(IotDeviceBaseVO reqVO) {
+        reqVO.setTs(new Date().getTime());
+        IotResult<Boolean> control = iotClient.control(reqVO, getToken());
+        return control.getCode().intValue() == 0;
 
-    public Integer getV2Status(String sn) {
-        IotApiV2BaseReqVO vo = getIotApiV2BaseReqVO();
-        IotApiV2BaseRespVO<IotApiV2OnlineDataVO> v2Status = iotClient.getV2Status(vo);
-        log.info("data:{}", v2Status);
-        if (v2Status.getCode() == 0) {
-            return v2Status.getData().getOn_line();
+    }
+
+    public void refushTokenCheck() {
+        String token = getToken();
+        if (!ObjectUtils.isEmpty(token) && token.length() > 5) {
+            String refushToken = (String) redisTemplate.opsForValue().get(refushTokenKey);
+            Long tokenExpireTime = (Long) redisTemplate.opsForValue().get(tokenExpireTimeKey);
+            log.info("refushToken:{}", refushToken);
+            log.info("tokenExpireTime:{}", tokenExpireTime);
+            LocalDateTime now = LocalDateTime.now();
+            now = now.plusDays(2);//加2天  用来提前判断过期
+            //时间戳转日期
+            Instant instant = Instant.ofEpochMilli(Long.valueOf(tokenExpireTime)); // 将时间戳转换为Instant对象
+            LocalDateTime t1 = LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
+            if (t1.isBefore(now)) {
+                //过期了 需要刷新
+                //换取新的token
+                getTokenRefush(token);
+            }
         }
-        return -1;
-    }
 
+    }
 }
