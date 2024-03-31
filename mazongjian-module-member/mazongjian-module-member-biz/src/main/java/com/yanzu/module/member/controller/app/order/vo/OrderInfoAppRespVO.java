@@ -32,6 +32,9 @@ public class OrderInfoAppRespVO {
     @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Long roomId;
 
+    @Schema(description = "房间图片")
+    private String roomImg;
+
     @Schema(description = "房间单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private BigDecimal roomPrice;
 

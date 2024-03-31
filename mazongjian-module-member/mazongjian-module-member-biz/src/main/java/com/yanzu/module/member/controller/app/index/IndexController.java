@@ -64,9 +64,8 @@ public class IndexController {
     @PostMapping("/getRoomInfoList/{storeId}")
     @Operation(summary = "首页获取房间信息列表")
     @Parameter(name = "storeId")
-
     public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList(@PathVariable("storeId") Long storeId
-            ,@RequestParam(required = false) Integer roomClass) {
+            ,@RequestParam(required = false,name = "roomClass") Integer roomClass) {
         return success(indexService.getRoomInfoList(storeId,roomClass));
     }
 

@@ -100,6 +100,7 @@
         , r.room_id
         , r.price
         , r.type roomType
+        , r.image_urls roomImg
         , r.room_name
         , o.user_id
         , m.nickname
@@ -144,6 +145,7 @@
         , o.order_no
         , o.order_key
         , r.room_name
+        , r.image_urls roomImg
         , r.price roomPrice
         , r.work_price workPrice
         , gateway.device_id gatewayId
