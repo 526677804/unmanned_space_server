@@ -81,9 +81,6 @@ public class AppIndexStoreInfoRespVO  {
     @Schema(description = "客服按钮照片")
     private String kfImg;
 
-    @Schema(description = "主题色")
-    private String mainColor;
-
     @Schema(description = "订单清洁时间")
     private Integer clearTime;
     @Schema(description = "清洁时开放房间")

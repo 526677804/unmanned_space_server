@@ -58,10 +58,6 @@ public class AppStoreInfoReqVO {
     @NotNull(message = "客服电话不能为空")
     private String kefuPhone;
 
-    @Schema(description = "主题色")
-    @NotNull(message = "主题色不能为空")
-    private String mainColor;
-
 
     @Schema(description = "订单清洁时间")
     private Integer clearTime;

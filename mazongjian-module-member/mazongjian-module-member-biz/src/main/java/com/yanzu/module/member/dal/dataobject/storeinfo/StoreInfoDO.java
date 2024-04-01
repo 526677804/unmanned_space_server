@@ -106,9 +106,6 @@ public class StoreInfoDO extends BaseDO {
      */
     private BigDecimal totalWithdrawal;
 
-    @Schema(description = "主题色")
-    private String mainColor;
-
 
     @Schema(description = "订单清洁时间")
     private Integer clearTime;

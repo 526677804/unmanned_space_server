@@ -53,9 +53,6 @@ public class AppStoreInfoRespVO {
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private Date createTime;
 
-    @Schema(description = "主题色")
-    private String mainColor;
-
     @Schema(description = "订单清洁时间")
     private Integer clearTime;
     @Schema(description = "清洁时开放房间")

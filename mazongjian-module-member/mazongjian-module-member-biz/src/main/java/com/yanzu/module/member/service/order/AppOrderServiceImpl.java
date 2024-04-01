@@ -1198,7 +1198,11 @@ public class AppOrderServiceImpl implements AppOrderService {
                                 } else {
                                     //检查距离结束的时间，发送语音提醒
                                     long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
-                                    if (minutes == 30) {
+                                    long minutesStart = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getStartTime().toInstant()));
+                                    if (minutesStart == 1) {
+                                        //开始一分钟时 播放欢迎语
+                                        deviceService.runSound(x.getRoomId(), 1);
+                                    } else if (minutes == 30) {
                                         deviceService.runSound(x.getRoomId(), 2);
                                     }
                                     //暂时取消15分钟时的提醒
