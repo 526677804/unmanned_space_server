@@ -83,7 +83,9 @@ public class IndexServiceImpl implements IndexService {
     @Override
     public AppIndexStoreInfoRespVO getStoreInfo(Long storeId) {
         AppIndexStoreInfoRespVO storeInfo = storeInfoMapper.getStoreInfo(storeId);
-        storeInfo.setDiscountRules(discountRulesMapper.getRulesByStoreId(storeId));
+        if(!ObjectUtils.isEmpty(storeInfo)){
+            storeInfo.setDiscountRules(discountRulesMapper.getRulesByStoreId(storeId));
+        }
         return storeInfo;
     }
 
@@ -272,7 +274,6 @@ public class IndexServiceImpl implements IndexService {
             timeSlot.set(i, slotRespVO);
         }
         respVO.setTimeSlot(timeSlot);
-
         return respVO;
     }
 
