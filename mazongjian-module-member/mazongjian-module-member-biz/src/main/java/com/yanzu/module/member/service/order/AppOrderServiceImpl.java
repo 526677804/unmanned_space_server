@@ -1281,7 +1281,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //开始发消息
         for (AppRoomListVO vo : roomList) {
             StringBuffer sb = new StringBuffer();
-            sb.append("订单结束,待清洁通知\n");
+            sb.append("订单已结束,待清洁通知\n");
             sb.append(">门店名称:").append(vo.getStoreName()).append("\n");
             sb.append(">房间名称:").append(vo.getRoomName()).append("\n");
             sb.append(">时间:").append(dateStr).append("\n");

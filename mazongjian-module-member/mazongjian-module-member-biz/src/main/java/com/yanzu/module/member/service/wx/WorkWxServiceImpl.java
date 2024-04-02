@@ -1,6 +1,5 @@
 package com.yanzu.module.member.service.wx;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
@@ -81,7 +80,7 @@ public class WorkWxServiceImpl implements WorkWxService {
         JSONObject text = new JSONObject();
         text.put("content", memberUserDO.getMobile());
         msg2.put("text", text);
-        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(),msg2);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg2);
     }
 
     @Override
@@ -149,9 +148,9 @@ public class WorkWxServiceImpl implements WorkWxService {
             msg.put("msgtype", "text");
             JSONObject text = new JSONObject();
             text.put("content", content);
-            JSONArray mentioned_list = new JSONArray();
-            mentioned_list.add("@all");
-            text.put("mentioned_list", mentioned_list);
+//            JSONArray mentioned_list = new JSONArray();
+//            mentioned_list.add("@all");
+//            text.put("mentioned_list", mentioned_list);
             msg.put("text", text);
             workWxClient.sendMDMsg(webhookUrl, msg);
         }
@@ -401,16 +400,41 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append("管理员修改订单通知\n");
         sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
         sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
-        if(oldRoom.compareTo(newRoom)==0){
+        if (oldRoom.compareTo(newRoom) == 0) {
             //没有更换房间
             sb.append(">房间名称:<font color=\"warning\">").append(oldRoomName).append("</font>\n");
-        }else {
+        } else {
             sb.append(">原房间名:<font color=\"warning\">").append(oldRoomName).append("</font>\n");
             sb.append(">新房间名:<font color=\"warning\">").append(newRoomName).append("</font>\n");
         }
         sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(startTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
         sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(endTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
         sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+    }
+
+    @Override
+    @Async
+    public void sendClearFinishMsg(Long storeId, Long roomId, Long userId, String type) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+        String roomName = roomInfoMapper.getNameById(roomId);
+        //异步发送微信通知
+        StringBuffer sb = new StringBuffer();
+        sb.append("保洁").append(type).append("通知\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
+        sb.append(">保洁员:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
         sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         JSONObject msg = new JSONObject();
         msg.put("msgtype", "markdown");

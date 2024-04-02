@@ -14,6 +14,7 @@ import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
+import com.yanzu.module.member.service.wx.WorkWxService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -54,6 +55,9 @@ public class AppClearServiceImpl implements AppClearService {
     @Resource
     private StoreUserMapper storeUserMapper;
 
+    @Resource
+    private WorkWxService workWxService;
+
     @Override
     public PageResult<AppClearPageRespVO> getClearPage(AppClearPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
@@ -93,6 +97,8 @@ public class AppClearServiceImpl implements AppClearService {
                             }
                             clearInfoDO.setStatus(AppEnum.clear_info_status.START.getValue());
                             clearInfoDO.setStartTime(LocalDateTime.now());
+                            //异步发送微信通知
+                            workWxService.sendClearFinishMsg(clearInfoDO.getStoreId(),clearInfoDO.getRoomId(),getLoginUserId(),"开始清洁任务");
                             break;
                         case 3:
                             //取消订单 只有已接单状态才能取消
@@ -101,6 +107,7 @@ public class AppClearServiceImpl implements AppClearService {
                             }
                             clearInfoDO.setUserId(null);
                             clearInfoDO.setStatus(AppEnum.clear_info_status.DEFAULT.getValue());
+                            workWxService.sendClearFinishMsg(clearInfoDO.getStoreId(),clearInfoDO.getRoomId(),getLoginUserId(),"完成房间清洁");
                             break;
                     }
                     clearInfoMapper.updateById(clearInfoDO);
