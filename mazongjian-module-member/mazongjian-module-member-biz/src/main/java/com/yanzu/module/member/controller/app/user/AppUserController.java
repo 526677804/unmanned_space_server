@@ -165,6 +165,10 @@ public class AppUserController {
     }
 
 
+    /**
+     * 下面是方便测试写的临时代码  没有任何作用
+     */
+
     @Resource
     private FileApi fileApi;
 

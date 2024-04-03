@@ -337,6 +337,11 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (!couponInfoDO.getCouponName().contains("通宵")) {
                     throw exception(COUPON_USE_CHECK_ERROR);
                 }
+            } else {
+                //如果不是通宵场，但标题包含了通宵两个字  是不允许的
+                if (couponInfoDO.getCouponName().contains("通宵")) {
+                    throw exception(COUPON_USE_CHECK_ERROR);
+                }
             }
         }
     }
