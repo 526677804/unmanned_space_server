@@ -83,7 +83,7 @@ public class IndexServiceImpl implements IndexService {
     @Override
     public AppIndexStoreInfoRespVO getStoreInfo(Long storeId) {
         AppIndexStoreInfoRespVO storeInfo = storeInfoMapper.getStoreInfo(storeId);
-        if(!ObjectUtils.isEmpty(storeInfo)){
+        if (!ObjectUtils.isEmpty(storeInfo)) {
             storeInfo.setDiscountRules(discountRulesMapper.getRulesByStoreId(storeId));
         }
         return storeInfo;
@@ -105,9 +105,9 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public List<AppRoomInfoListRespVO> getRoomInfoList(Long storeId,Integer roomClass) {
+    public List<AppRoomInfoListRespVO> getRoomInfoList(Long storeId, Integer roomClass) {
         //获取所有房间信息
-        List<AppRoomInfoListRespVO> roomInfoList = storeInfoMapper.getRoomInfoList(storeId,roomClass);
+        List<AppRoomInfoListRespVO> roomInfoList = storeInfoMapper.getRoomInfoList(storeId, roomClass);
         if (!CollectionUtils.isEmpty(roomInfoList)) {
             //找出所有房间的订单
             List<OrderInfoDO> orderList = orderInfoMapper.getByRoomIds(roomInfoList.stream().map(x -> x.getRoomId()).collect(Collectors.toList()));
@@ -118,12 +118,11 @@ public class IndexServiceImpl implements IndexService {
             } else {
                 orederMap = new HashMap<>();
             }
-
             DateTimeFormatter formatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            DateTimeFormatter formatterHour = DateTimeFormatter.ofPattern("HH:mm");
+//            DateTimeFormatter formatterHour = DateTimeFormatter.ofPattern("HH:mm");
             // 获取当前日期
             int hour = LocalDateTime.now().getHour();
-            LocalDate now = LocalDate.now();
+//            LocalDate now = LocalDate.now();
             LocalDate currentDate = LocalDate.now();
             Set<String> days = new HashSet<>(5);
             for (int i = 0; i < 5; i++) {
@@ -139,6 +138,9 @@ public class IndexServiceImpl implements IndexService {
                 //找出该房间所有订单
                 if (orederMap.containsKey(respVO.getRoomId())) {
                     List<OrderInfoDO> sortOrder = orederMap.get(respVO.getRoomId()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
+                    //把第一个订单的开始和结束时间 设置给房间
+                    respVO.setStartTime(sortOrder.get(0).getStartTime());
+                    respVO.setEndTime(sortOrder.get(0).getEndTime());
                     sortOrder.forEach(x -> {
                         bookings.add(new AppOrderTimeVO(x.getStartTime(), x.getEndTime()));
                     });

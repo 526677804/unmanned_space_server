@@ -436,19 +436,20 @@
     </select>
 
     <select id="countByPreOrder" resultType="java.lang.Integer">
-        SELECT COUNT(1)
-        FROM member_order_info
-        WHERE deleted = 0
-        AND room_id = #{roomId}
-        AND (
-            (#{startTime} >= start_time - INTERVAL #{clearTime} MINUTE AND #{startTime} &lt; end_time) OR
-            (#{endTime} > start_time AND #{endTime} &lt;= end_time + INTERVAL #{clearTime} MINUTE) OR
-            (#{startTime} &lt;= start_time AND #{endTime} >= end_time)
-        )
+        SELECT
+        count(1)
+        FROM
+        ( SELECT
+              start_time, DATE_ADD( end_time, INTERVAL 5 MINUTE ) end_time
+          FROM member_order_info
+          WHERE deleted = 0 AND room_id = 15
         <if test="null!=ignoreOrderId and ignoreOrderId!=''">
             and order_id !=#{ignoreOrderId}
         </if>
-
+          ) AS t
+        WHERE
+        ( start_time &lt;= #{startTime} AND end_time > #{startTime} )
+        OR ( start_time &lt; #{startTime} AND end_time >= #{startTime} )
     </select>
 
 </mapper>
