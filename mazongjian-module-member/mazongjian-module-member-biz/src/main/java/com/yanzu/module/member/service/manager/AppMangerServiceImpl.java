@@ -58,6 +58,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -204,6 +205,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //仅限查看当前用户所在门店的优惠券列表
         String storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId()).stream().collect(Collectors.joining(","));
+        if(StringUtils.isEmpty(storeIds)){
+            return new PageResult<>();
+        }
         PageHelper.startPage(reqVO.getPageNo(), reqVO.getPageSize());
         List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPageByAdmin(reqVO, storeIds);
         PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
@@ -431,7 +435,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         reqVO.setUserId(getLoginUserId());
         List<String> storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId());
         if (CollectionUtils.isEmpty(storeIds)) {
-            return new AppRevenueChartRespVO();
+            return new AppRevenueChartRespVO().setTotalOrder(0).setTotalMoney(BigDecimal.ZERO).setWxTotalMoney(BigDecimal.ZERO).setGroupTotalMoney(BigDecimal.ZERO);
         }
         Integer wxTotalMoney = orderInfoMapper.getWxTotalMoney(storeIds,reqVO.getStoreId());
         BigDecimal wxMoney = new BigDecimal(String.valueOf(wxTotalMoney / 100.0));
@@ -654,6 +658,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //查询出账号权限的门店
         List<String> storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId());
+        if(StringUtils.isEmpty(storeIds)){
+            return new PageResult<>();
+        }
         reqVO.setStoreIds(storeIds.stream().collect(Collectors.joining(",")));
         PageHelper.startPage(reqVO);
         List<AppClearPageRespVO> list = clearInfoMapper.getClearManagerPage(reqVO);
