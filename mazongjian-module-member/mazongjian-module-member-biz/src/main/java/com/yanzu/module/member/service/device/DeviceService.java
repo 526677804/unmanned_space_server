@@ -28,8 +28,4 @@ public interface DeviceService {
 
     void clearByRoomId(Long roomId);
 
-
-    boolean bind(String sn);
-
-    boolean unbind(String sn);
 }

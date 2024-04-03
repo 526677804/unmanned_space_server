@@ -103,6 +103,7 @@ public class DeviceServiceImpl implements DeviceService {
             List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
             IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
             iotDeviceContrlReqVO.setOutlet(0).setCmd("on");
+            param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
             boolean flag = iotService.control(reqVO);
             if (!flag) {
@@ -140,6 +141,7 @@ public class DeviceServiceImpl implements DeviceService {
             List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
             IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
             iotDeviceContrlReqVO.setOutlet(0).setCmd(cmd);
+            param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
             boolean flag = iotService.control(reqVO);
             if (!flag) {
@@ -247,6 +249,7 @@ public class DeviceServiceImpl implements DeviceService {
             List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
             IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
             iotDeviceContrlReqVO.setOutlet(0).setCmd(String.valueOf(type)).setType(roomInfoDO.getYunlabaSound());
+            param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
             boolean flag = iotService.control(reqVO);
             if (!flag) {
@@ -287,16 +290,6 @@ public class DeviceServiceImpl implements DeviceService {
         deviceInfoMapper.update(new DeviceInfoDO().setRoomId(null).setStoreId(null),
                 new LambdaUpdateWrapper<DeviceInfoDO>().eq(DeviceInfoDO::getRoomId, roomId)
         );
-    }
-
-    @Override
-    public boolean bind(String sn) {
-        return iotService.bind(sn);
-    }
-
-    @Override
-    public boolean unbind(String sn) {
-        return iotService.unbind(sn);
     }
 
     private void closeLight(Long roomId) {

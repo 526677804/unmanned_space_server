@@ -14,6 +14,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
+import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.DEVICE_IOT_AUTH_ERROR;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.DEVICE_IOT_OP_ERROR;
+
 @Slf4j
 @Component
 public class IotService {
@@ -43,7 +47,10 @@ public class IotService {
         reqVO.setClient_id(clientId);
         reqVO.setSecret(secret);
         reqVO.setRedirect_uri(redirectUrl);
-        iotClient.authorize(reqVO);
+        IotResult authorize = iotClient.authorize(reqVO);
+        if (authorize.getCode().intValue() != 0) {
+            throw exception(DEVICE_IOT_AUTH_ERROR);
+        }
     }
 
     /**
@@ -89,11 +96,15 @@ public class IotService {
      */
 
     public Boolean bind(String sn) {
-        IotDeviceBaseVO reqVO=new IotDeviceBaseVO();
+        IotDeviceBaseVO reqVO = new IotDeviceBaseVO();
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
         IotResult<Boolean> resp = iotClient.bind(reqVO, getToken());
-        return resp.getCode().intValue() == 0;
+        if(resp.getCode().intValue()==0){
+            return true;
+        }else{
+            throw exception(DEVICE_IOT_OP_ERROR,resp.getMsg());
+        }
     }
 
     /**
@@ -101,11 +112,15 @@ public class IotService {
      */
 
     public Boolean unbind(String sn) {
-        IotDeviceBaseVO reqVO=new IotDeviceBaseVO();
+        IotDeviceBaseVO reqVO = new IotDeviceBaseVO();
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
         IotResult<Boolean> resp = iotClient.unbind(reqVO, getToken());
-        return resp.getCode().intValue() == 0;
+        if(resp.getCode().intValue()==0){
+            return true;
+        }else{
+            throw exception(DEVICE_IOT_OP_ERROR,resp.getMsg());
+        }
     }
 
 
@@ -114,9 +129,12 @@ public class IotService {
      */
     public Boolean control(IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO) {
         reqVO.setTs(new Date().getTime());
-
-        IotResult<Boolean> control = iotClient.control(reqVO, getToken());
-        return control.getCode().intValue() == 0;
+        IotResult<Boolean> resp = iotClient.control(reqVO, getToken());
+        if(resp.getCode().intValue()==0){
+            return true;
+        }else{
+            throw exception(DEVICE_IOT_OP_ERROR,resp.getMsg());
+        }
 
     }
 

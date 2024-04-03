@@ -101,13 +101,13 @@
           </el-select>
         </el-form-item>
         <el-form-item label="门店" prop="storeId">
-          <el-select v-model="bindForm.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList"
+          <el-select v-model="form.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList"
             required="true">
             <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="房间" prop="roomId">
-          <el-select v-model="bindForm.roomId" placeholder="请选择房间" clearable size="small">
+          <el-select v-model="form.roomId" placeholder="请选择房间" clearable size="small">
             <el-option v-for="item in roomList" :key="item.value" :label="item.key" :value="item.value" />
           </el-select>
         </el-form-item>

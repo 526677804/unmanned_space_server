@@ -26,7 +26,7 @@ public class IotDeviceBaseVO<T> {
     private Long ts;
 
     @Schema(description = "参数")
-    @NotNull(message = "params不能为空")
+//    @NotNull(message = "params不能为空")
     private List<T> params;
 
 

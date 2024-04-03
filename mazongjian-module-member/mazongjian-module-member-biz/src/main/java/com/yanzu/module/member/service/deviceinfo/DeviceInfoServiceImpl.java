@@ -19,7 +19,7 @@ import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.DATA_NOT_EXISTS;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
  * 设备管理 Service 实现类
@@ -46,6 +46,8 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             // 插入
             DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
             deviceInfoMapper.insert(deviceInfo);
+        }else{
+            throw exception(DEVICE_IOT_OP_ERROR);
         }
     }
 
@@ -57,11 +59,14 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         //只能操作自己的设备
         if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
             // 先解绑
-            iotService.unbind(deviceInfoDO.getDeviceSn());
-            // 删除
-            deviceInfoMapper.deleteById(id);
+            Boolean unbind = iotService.unbind(deviceInfoDO.getDeviceSn());
+            if(unbind){
+                // 删除
+                deviceInfoMapper.deleteById(id);
+            }else{
+                throw exception(DEVICE_IOT_OP_ERROR);
+            }
         }
-
     }
 
     private void validateDeviceInfoExists(Long id) {
