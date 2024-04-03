@@ -65,9 +65,9 @@
           <dict-tag :type="DICT_TYPE.MEMBER_DEVICE_TYPE" :value="scope.row.type" />
         </template>
       </el-table-column>
-      <!-- <el-table-column label="门店" align="center" prop="storeId" /> -->
+      <input id="storeId" type="hidden" />
+      <input id="roomId" type="hidden" />
       <el-table-column label="门店名称" align="center" prop="storeName" />
-      <!-- <el-table-column label="房间" align="center" prop="roomId" /> -->
       <el-table-column label="房间名称" align="center" prop="roomName" />
       <el-table-column label="状态" align="center" :formatter="statusFomat" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
@@ -79,9 +79,6 @@
         <template v-slot="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleBindStore(scope.row)"
             v-hasPermi="['member:device-info:update']">绑定</el-button>
-
-          <el-button size="mini" type="text" @click="handleConfigYunlaba(scope.row.deviceId)"
-            v-hasPermi="['member:device-info:update']">初始化</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
             v-hasPermi="['member:device-info:delete']">删除</el-button>
         </template>
@@ -101,6 +98,17 @@
           <el-select v-model="form.type" placeholder="请选择设备类型">
             <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_DEVICE_TYPE)" :key="dict.value"
               :label="dict.label" :value="dict.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="门店" prop="storeId">
+          <el-select v-model="bindForm.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList"
+            required="true">
+            <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="房间" prop="roomId">
+          <el-select v-model="bindForm.roomId" placeholder="请选择房间" clearable size="small">
+            <el-option v-for="item in roomList" :key="item.value" :label="item.key" :value="item.value" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -300,6 +308,11 @@ export default {
           this.$modal.msgSuccess("操作成功");
           this.bindStore = false;
           this.getList();
+          this.bindForm={
+            deviceId: undefined,
+            storeId: undefined,
+            roomId: undefined,
+          }
         });
       });
     },
@@ -339,13 +352,6 @@ export default {
         });
       }
     },
-    handleConfigYunlaba(deviceId) {
-      this.$modal.confirm('是否确认设备编号为"' + deviceId + '"的数据项进行初始化操作?').then(function () {
-        return configYunlaba(deviceId);
-      }).then(() => {
-        this.$modal.msgSuccess("操作成功");
-      }).catch(() => { });
-    },
     statusFomat(row, column) {
       if (row.status == 0) {
         return "离线";
@@ -355,7 +361,11 @@ export default {
     },
     /** 绑定门店 */
     handleBindStore(row) {
+      console.log(row);
       this.bindForm.deviceId = row.deviceId;
+      this.bindForm.storeId = row.storeId;
+      this.bindForm.roomId = row.roomId;
+      this.loadRoomList(row.storeId)
       this.bindStore = true;
       this.title = "修改设备绑定";
     }

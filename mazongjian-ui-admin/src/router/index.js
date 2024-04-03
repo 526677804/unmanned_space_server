@@ -128,47 +128,7 @@ export const constantRoutes = [
       }
     ]
   },
-  {
-    path: '/property',
-    component: Layout,
-    hidden: true,
-    children: [{
-      path: 'value/:propertyId(\\d+)',
-      component: (resolve) => require(['@/views/mall/product/property/value'], resolve),
-      name: 'ProductPropertyValue',
-      meta: {title: '商品属性值', icon: '', activeMenu: '/product/property'}
-    }
-    ]
-  },
-  {
-    path: '/trade/order',
-    component: Layout,
-    hidden: true,
-    children: [
-      {
-        path: 'detail',
-        name: 'TradeOrderDetail',
-        hidden: true,
-        meta: { title: '订单详情' },
-        component: (resolve) => require(['@/views/mall/trade/order/detail'], resolve)
-      }
-    ]
-  },
-  {
-    path: '/pay',
-    component: Layout,
-    hidden: true,
-    children: [{
-      path: 'cashier',
-      name: 'PayCashier',
-      hidden: true,
-      meta: {
-        title: '收银台',
-        noCache: true
-      },
-      component: (resolve) => require(['@/views/pay/cashier'], resolve)
-    }]
-  }
+  
 ]
 
 // 防止连续点击多次路由报错

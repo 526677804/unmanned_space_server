@@ -20,7 +20,6 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.DEVICE_OPRATION_ERROR;
@@ -69,6 +68,13 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
 
+    /**
+     * 保存设备操作记录
+     * @param userId
+     * @param storeId
+     * @param roomId
+     * @param cmd
+     */
     private void saveDeviceUseRecord(Long userId, Long storeId, Long roomId, String cmd) {
         DeviceUseInfoDO deviceUseInfoDO = new DeviceUseInfoDO();
         deviceUseInfoDO.setUserId(userId);
@@ -77,6 +83,7 @@ public class DeviceServiceImpl implements DeviceService {
         deviceUseInfoDO.setCmd(cmd);
         deviceUseInfoMapper.insert(deviceUseInfoDO);
     }
+
 
     private void openStoreDoor(Long storeId) {
         //获取大门的门禁sn
@@ -280,6 +287,16 @@ public class DeviceServiceImpl implements DeviceService {
         deviceInfoMapper.update(new DeviceInfoDO().setRoomId(null).setStoreId(null),
                 new LambdaUpdateWrapper<DeviceInfoDO>().eq(DeviceInfoDO::getRoomId, roomId)
         );
+    }
+
+    @Override
+    public boolean bind(String sn) {
+        return iotService.bind(sn);
+    }
+
+    @Override
+    public boolean unbind(String sn) {
+        return iotService.unbind(sn);
     }
 
     private void closeLight(Long roomId) {

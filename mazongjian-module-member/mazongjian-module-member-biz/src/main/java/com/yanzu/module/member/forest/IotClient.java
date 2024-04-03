@@ -36,6 +36,19 @@ public interface IotClient {
 
 
     /**
+     * 设备绑定
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/bind", headers = {"Authorization:Bearer ${token}"})
+    IotResult<Boolean> bind(@JSONBody IotDeviceBaseVO reqVO, @Var("token") String token);
+
+    /**
+     * 设备解绑
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/unbind", headers = {"Authorization:Bearer ${token}"})
+    IotResult<Boolean> unbind(@JSONBody IotDeviceBaseVO reqVO, @Var("token") String token);
+
+
+    /**
      * 设备控制
      */
     @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/send", headers = {"Authorization:Bearer ${token}"})

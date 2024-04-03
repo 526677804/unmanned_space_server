@@ -1,6 +1,7 @@
 package com.yanzu.module.member.controller.app.callback;
 
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
+import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +34,8 @@ public class AppCallbackController {
     @Resource
     private MeituanService meituanService;
 
+    @Resource
+    private IotService iotService;
 
 
     @PostMapping("/wxpay/update")
@@ -68,5 +71,6 @@ public class AppCallbackController {
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public void iotCallback(@RequestParam(required = false) Map<String, String> params) {
         log.info("收到物联网平台授权回调,params:{}", params);
+        iotService.getToken(params.get("code"));
     }
 }

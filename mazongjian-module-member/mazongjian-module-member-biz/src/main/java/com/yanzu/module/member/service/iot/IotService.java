@@ -1,13 +1,10 @@
 package com.yanzu.module.member.service.iot;
 
-import com.alibaba.fastjson.JSONObject;
 import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.service.iot.iotBean.*;
-import com.yanzu.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
@@ -16,8 +13,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-
-import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 
 @Slf4j
 @Component
@@ -54,7 +49,7 @@ public class IotService {
     /**
      * 获取token
      */
-    private String getToken(String code) {
+    public String getToken(String code) {
         //获取
         IotResult<IotTokenRespVO> token = iotClient.getToken(new IotTokenReqVO().setClient_id(clientId).setSecret(secret).setCode(code));
         if (token.getCode().intValue() == 0) {
@@ -90,14 +85,41 @@ public class IotService {
     }
 
     /**
+     * 绑定设备
+     */
+
+    public Boolean bind(String sn) {
+        IotDeviceBaseVO reqVO=new IotDeviceBaseVO();
+        reqVO.setDeviceSn(sn);
+        reqVO.setTs(new Date().getTime());
+        IotResult<Boolean> resp = iotClient.bind(reqVO, getToken());
+        return resp.getCode().intValue() == 0;
+    }
+
+    /**
+     * 解绑设备
+     */
+
+    public Boolean unbind(String sn) {
+        IotDeviceBaseVO reqVO=new IotDeviceBaseVO();
+        reqVO.setDeviceSn(sn);
+        reqVO.setTs(new Date().getTime());
+        IotResult<Boolean> resp = iotClient.unbind(reqVO, getToken());
+        return resp.getCode().intValue() == 0;
+    }
+
+
+    /**
      * 设备控制
      */
-    public Boolean control(IotDeviceBaseVO reqVO) {
+    public Boolean control(IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO) {
         reqVO.setTs(new Date().getTime());
+
         IotResult<Boolean> control = iotClient.control(reqVO, getToken());
         return control.getCode().intValue() == 0;
 
     }
+
 
     public void refushTokenCheck() {
         String token = getToken();

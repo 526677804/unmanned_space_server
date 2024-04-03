@@ -21,14 +21,8 @@ public interface DeviceInfoService {
      * @param createReqVO 创建信息
      * @return 编号
      */
-    Long createDeviceInfo(@Valid DeviceInfoCreateReqVO createReqVO);
+    void createDeviceInfo(@Valid DeviceInfoCreateReqVO createReqVO);
 
-    /**
-     * 更新设备管理
-     *
-     * @param updateReqVO 更新信息
-     */
-    void updateDeviceInfo(@Valid DeviceInfoUpdateReqVO updateReqVO);
 
     /**
      * 删除设备管理

@@ -37,8 +37,9 @@ public class DeviceInfoController {
     @PostMapping("/create")
     @Operation(summary = "创建设备管理")
     @PreAuthorize("@ss.hasPermission('member:device-info:create')")
-    public CommonResult<Long> createDeviceInfo(@Valid @RequestBody DeviceInfoCreateReqVO createReqVO) {
-        return success(deviceInfoService.createDeviceInfo(createReqVO));
+    public CommonResult<Boolean> createDeviceInfo(@Valid @RequestBody DeviceInfoCreateReqVO createReqVO) {
+        deviceInfoService.createDeviceInfo(createReqVO);
+        return success(true);
     }
 
     @GetMapping("/iotScope")
@@ -46,14 +47,6 @@ public class DeviceInfoController {
     @PreAuthorize("@ss.hasPermission('member:device-info:create')")
     public CommonResult<Boolean> iotScope() {
         deviceInfoService.iotScope();
-        return success(true);
-    }
-
-    @PutMapping("/bindStore")
-    @Operation(summary = "绑定门店")
-    @PreAuthorize("@ss.hasPermission('member:device-info:update')")
-    public CommonResult<Boolean> updateDeviceInfo(@Valid @RequestBody DeviceInfoUpdateReqVO updateReqVO) {
-        deviceInfoService.updateDeviceInfo(updateReqVO);
         return success(true);
     }
 

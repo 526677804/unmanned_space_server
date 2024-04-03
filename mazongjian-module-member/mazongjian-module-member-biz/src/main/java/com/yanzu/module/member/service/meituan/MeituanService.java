@@ -145,7 +145,11 @@ public class MeituanService {
         reqVO.setSign(sign);
         JSONObject prepare = meituanClient.prepare(reqVO);
         log.info("美团查询券信息:{}", prepare);
-        if (prepare.getInt("code") != 200) {
+        if (prepare.getInt("code") == 1141) {
+            throw exception(GROUP_NO_CHECK_REFLASH_ERROR);
+        } else if (prepare.getInt("code") == 1012) {
+            throw exception(GROUP_NO_CHECK_STORE_ERROR);
+        } else if (prepare.getInt("code") != 200) {
             throw exception(GROUP_NO_CHECK_ERROR);
         }
         JSONObject data = prepare.getJSONObject("data");

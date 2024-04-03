@@ -1,7 +1,5 @@
 package com.yanzu.module.member.service.device;
 
-import com.alibaba.fastjson.JSONObject;
-
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.device
  * @DESCRIPTION:
@@ -29,4 +27,9 @@ public interface DeviceService {
     void closeLightByRoomId(Long userId,Long storeId,Long roomId, int type);
 
     void clearByRoomId(Long roomId);
+
+
+    boolean bind(String sn);
+
+    boolean unbind(String sn);
 }

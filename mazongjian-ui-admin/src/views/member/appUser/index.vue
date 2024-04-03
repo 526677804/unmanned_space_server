@@ -95,8 +95,8 @@
         <template v-slot="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
                      v-hasPermi="['member:app-user:update']">修改</el-button>
-          <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-                     v-hasPermi="['member:app-user:delete']">删除</el-button>
+          <!-- <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
+                     v-hasPermi="['member:app-user:delete']">删除</el-button> -->
         </template>
       </el-table-column>
     </el-table>

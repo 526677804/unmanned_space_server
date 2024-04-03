@@ -205,8 +205,8 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //仅限查看当前用户所在门店的优惠券列表
         String storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId()).stream().collect(Collectors.joining(","));
-        if(StringUtils.isEmpty(storeIds)){
-            return new PageResult<>();
+        if (StringUtils.isEmpty(storeIds)) {
+            return PageResult.empty();
         }
         PageHelper.startPage(reqVO.getPageNo(), reqVO.getPageSize());
         List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPageByAdmin(reqVO, storeIds);
@@ -437,10 +437,10 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (CollectionUtils.isEmpty(storeIds)) {
             return new AppRevenueChartRespVO().setTotalOrder(0).setTotalMoney(BigDecimal.ZERO).setWxTotalMoney(BigDecimal.ZERO).setGroupTotalMoney(BigDecimal.ZERO);
         }
-        Integer wxTotalMoney = orderInfoMapper.getWxTotalMoney(storeIds,reqVO.getStoreId());
+        Integer wxTotalMoney = orderInfoMapper.getWxTotalMoney(storeIds, reqVO.getStoreId());
         BigDecimal wxMoney = new BigDecimal(String.valueOf(wxTotalMoney / 100.0));
-        BigDecimal groupTotalMoney = groupPayInfoMapper.getGroupTotalMoney(storeIds,reqVO.getStoreId());
-        Integer count = orderInfoMapper.countByStoreIds(storeIds,reqVO.getStoreId());
+        BigDecimal groupTotalMoney = groupPayInfoMapper.getGroupTotalMoney(storeIds, reqVO.getStoreId());
+        Integer count = orderInfoMapper.countByStoreIds(storeIds, reqVO.getStoreId());
         AppRevenueChartRespVO respVO = new AppRevenueChartRespVO();
         respVO.setTotalMoney(wxMoney.add(groupTotalMoney));
         respVO.setTotalOrder(count);
@@ -658,8 +658,8 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //查询出账号权限的门店
         List<String> storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId());
-        if(StringUtils.isEmpty(storeIds)){
-            return new PageResult<>();
+        if (CollectionUtils.isEmpty(storeIds)) {
+            return PageResult.empty();
         }
         reqVO.setStoreIds(storeIds.stream().collect(Collectors.joining(",")));
         PageHelper.startPage(reqVO);
@@ -769,7 +769,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
             } else if (countCurrentByRoomId > 0) {
                 roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), orderInfoDO.getRoomId());
-            }  else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
+            } else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
                 // 如果后面还有预约 就改成已预定
                 roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), orderInfoDO.getRoomId());
             } else {

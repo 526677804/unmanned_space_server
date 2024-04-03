@@ -81,11 +81,11 @@ public interface ErrorCodeConstants {
     ErrorCode GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR = new ErrorCode(1004004080, "团购券适用的房间类型，与当前订单预定的房间类型不匹配，请检查!");
     ErrorCode GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR = new ErrorCode(1004004081, "团购券的使用时长，与当前预订时长不匹配，请检查!");
     ErrorCode STORE_MT_TUANGOU_PAY_ERROR = new ErrorCode(1004004082, "当前门店暂不支持团购券支付！请选择其他支付方式！");
-    ErrorCode GROUP_NO_CHECK_ERROR = new ErrorCode(1004004083, "团购券验证失败！请重试！");
+    ErrorCode GROUP_NO_CHECK_ERROR = new ErrorCode(1004004083, "团购券验证失败！请检查券码是否正确或重试！");
     ErrorCode GROUP_NO_CANCEL_TIMEOUT_ERROR = new ErrorCode(1004004084, "团购券退款失败,该团购券不支持退款，或已超过退款时效！");
-    ErrorCode GROUP_NO_CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004085, "通宵券，仅支持23时以后~次日8时使用！请修改预定时间后重试！");
+    ErrorCode GROUP_NO_CHECK_REFLASH_ERROR = new ErrorCode(1004004085, "该券码已被撤销验证，请在团购平台查看新生成的券码！");
     ErrorCode TONGXIAO_ORDER_START_ERROR = new ErrorCode(1004004086, "当前预定的时段为通宵场！不支持提前开始消费！");
-    ErrorCode TONGXIAO_COUPON_USE_ERROR = new ErrorCode(1004004087, "您选择的优惠券！仅支持通宵场(23时以后~次日8时)使用！");
+    ErrorCode GROUP_NO_CHECK_STORE_ERROR = new ErrorCode(1004004087, "此团购券不可在本店消费，请在团购平台查询券信息！");
     ErrorCode STORE_DY_TUANGOU_PAY_ERROR = new ErrorCode(1004004088, "当前店铺暂不支持抖音团购券支付！请选择其他支付方式！");
     ErrorCode GROUP_PAY_WORK_CHECK_ERROR = new ErrorCode(1004004089, "您输入的团购券仅周一至周四可用！请修改预定时间或更换团购券");
     ErrorCode GROUP_PAY_WORK_DAY_CHECK_ERROR = new ErrorCode(1004004090, "您输入的团购券仅工作日可用！请修改预定时间或更换团购券");
@@ -94,9 +94,7 @@ public interface ErrorCodeConstants {
     ErrorCode CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004093, "团购的通宵场时间为23时以后~次日8时！请修改预定时间后重试！");
     ErrorCode CHECK_GROUP_NO_TIME_ERROR = new ErrorCode(1004004094, "团购券未设置抵扣时长，请联系商家！");
 
-
     ErrorCode DELETE_ROOM_ERROR = new ErrorCode(1004004095, "删除失败,房间存在未完成的订单！");
-
 
     ErrorCode STORE_WX_PAY_CONFIG_NOT_FOUND = new ErrorCode(1004004999, "该门店暂不支持微信支付！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");

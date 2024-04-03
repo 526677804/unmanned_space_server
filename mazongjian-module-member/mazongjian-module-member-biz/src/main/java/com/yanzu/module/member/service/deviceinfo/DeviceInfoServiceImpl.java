@@ -7,7 +7,6 @@ import com.yanzu.module.member.controller.admin.deviceinfo.vo.*;
 import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
-import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.iot.IotService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.DATA_NOT_EXISTS;
 
 /**
@@ -39,28 +39,29 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
 
     @Override
     @Transactional
-    public Long createDeviceInfo(DeviceInfoCreateReqVO createReqVO) {
-        // 插入
-        DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
-        deviceInfoMapper.insert(deviceInfo);
-        return deviceInfo.getDeviceId();
+    public void createDeviceInfo(DeviceInfoCreateReqVO createReqVO) {
+        //先在iot平台绑定设备
+        Boolean bind = iotService.bind(createReqVO.getDeviceSn());
+        if (bind) {
+            // 插入
+            DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
+            deviceInfoMapper.insert(deviceInfo);
+        }
     }
 
-    @Override
-    public void updateDeviceInfo(DeviceInfoUpdateReqVO updateReqVO) {
-        // 校验存在
-        validateDeviceInfoExists(updateReqVO.getDeviceId());
-        // 更新
-        DeviceInfoDO updateObj = DeviceInfoConvert.INSTANCE.convert(updateReqVO);
-        deviceInfoMapper.updateById(updateObj);
-    }
 
     @Override
+    @Transactional
     public void deleteDeviceInfo(Long id) {
-        // 校验存在
-        validateDeviceInfoExists(id);
-        // 删除
-        deviceInfoMapper.deleteById(id);
+        DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(id);
+        //只能操作自己的设备
+        if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
+            // 先解绑
+            iotService.unbind(deviceInfoDO.getDeviceSn());
+            // 删除
+            deviceInfoMapper.deleteById(id);
+        }
+
     }
 
     private void validateDeviceInfoExists(Long id) {
@@ -107,7 +108,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
 
     @Override
     public void iotScope() {
-         iotService.authorize();
+        iotService.authorize();
     }
 
 }

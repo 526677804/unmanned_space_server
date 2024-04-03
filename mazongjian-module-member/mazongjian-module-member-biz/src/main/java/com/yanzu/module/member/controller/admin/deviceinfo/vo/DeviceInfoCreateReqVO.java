@@ -21,4 +21,11 @@ public class DeviceInfoCreateReqVO extends DeviceInfoBaseVO {
     @NotNull(message = "设备类型不能为空")
     private Integer type;
 
+
+    @Schema(description = "门店id")
+    private Long storeId;
+
+    @Schema(description = "房间id")
+    private Long roomId;
+
 }
