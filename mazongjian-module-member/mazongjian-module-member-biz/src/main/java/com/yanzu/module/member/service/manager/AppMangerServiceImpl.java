@@ -250,6 +250,9 @@ public class AppMangerServiceImpl implements AppMangerService {
             couponInfoDO.setMinUsePrice(reqVO.getMinUsePrice());
             couponInfoDO.setStoreId(reqVO.getStoreId());
             couponInfoDO.setExpriceTime(reqVO.getExpriceTime());
+            if(reqVO.getExpriceTime().after(new Date())){
+                couponInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
+            }
             couponInfoDO.setRoomType(reqVO.getRoomType());
             couponInfoMapper.updateById(couponInfoDO);
         }
