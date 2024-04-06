@@ -74,4 +74,5 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
     Integer countByPreOrder(@Param("roomId") Long roomId, @Param("clearTime") Integer clearTime,
                             @Param("startTime") Date startTime, @Param("endTime") Date endTime, @Param("ignoreOrderId") Long ignoreOrderId);
 
+    int countByUserAndStoreId(@Param("userId") Long userId, @Param("storeId") Long storeId);
 }

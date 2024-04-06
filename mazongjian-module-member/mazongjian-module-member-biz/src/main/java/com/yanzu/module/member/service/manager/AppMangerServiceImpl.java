@@ -554,7 +554,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             List<String> storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId());
             ids = storeIds.stream().collect(Collectors.joining(","));
         } else {
-            storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
+            storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
             ids = String.valueOf(reqVO.getStoreId());
         }
         PageHelper.startPage(reqVO);

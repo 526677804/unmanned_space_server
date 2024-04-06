@@ -45,6 +45,8 @@ public interface AppOrderService {
 
     void openRoomLock(String orderKey);
 
+    int countByUserAndStoreId(Long userId, Long storeId);
+
 
 
 //    void closeOrder(Long orderId);

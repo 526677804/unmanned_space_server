@@ -18,6 +18,7 @@ import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.convert.franchiseinfo.FranchiseInfoConvert;
 import com.yanzu.module.member.convert.user.UserConvert;
+import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.franchiseinfo.FranchiseInfoDO;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
@@ -62,8 +63,10 @@ import javax.validation.Valid;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -379,6 +382,21 @@ public class AppUserServiceImpl implements AppUserService {
             //下单的时候  要返回可用状态
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
+            //如果该用户，在本店铺是新用户，就送他一张新人抵抗券,一个月有效
+            int cCount = couponInfoMapper.countNewUserByStoreId(reqVO.getUserId(), storeInfoDO.getStoreId());
+            if (cCount == 0) {
+                CouponInfoDO couponInfoDO = new CouponInfoDO();
+                couponInfoDO.setCouponName("新用户1小时抵扣券")
+                        .setStatus(0)
+                        .setPrice(BigDecimal.valueOf(1))
+                        .setMinUsePrice(BigDecimal.valueOf(1))
+                        .setUserId(reqVO.getUserId())
+                        .setCreateUserId(1L)
+                        .setStoreId(storeInfoDO.getStoreId())
+                        .setType(1)
+                        .setExpriceTime(Date.from(LocalDateTime.now().plusMonths(1).atZone(ZoneId.systemDefault()).toInstant()));
+                couponInfoMapper.insert(couponInfoDO);
+            }
             //先计算出订单价格
             BigDecimal mathPrice = appOrderService.mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(),
                     roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null);

@@ -440,16 +440,28 @@
         count(1)
         FROM
         ( SELECT
-              start_time, DATE_ADD( end_time, INTERVAL 5 MINUTE ) end_time
-          FROM member_order_info
-          WHERE deleted = 0 AND room_id = 15
+        start_time, DATE_ADD( end_time, INTERVAL 5 MINUTE ) end_time
+        FROM member_order_info
+        WHERE deleted = 0 AND room_id = #{roomId}
         <if test="null!=ignoreOrderId and ignoreOrderId!=''">
             and order_id !=#{ignoreOrderId}
         </if>
-          ) AS t
+        ) AS t
         WHERE
-        ( start_time &lt;= #{startTime} AND end_time > #{startTime} )
-        OR ( start_time &lt; #{startTime} AND end_time >= #{startTime} )
+        (
+        (end_time >=#{startTime} AND end_time&lt;=#{endTime})
+        OR (start_time>=#{startTime} AND start_time&lt;=#{endTime})
+        OR (start_time>=#{startTime} AND end_time&lt;=#{endTime})
+        OR (start_time&lt;=#{startTime} AND end_time>=#{endTime})
+        )
+    </select>
+    <select id="countByUserAndStoreId" resultType="java.lang.Integer">
+        select count(1)
+        from member_order_info
+        WHERE deleted = 0
+          and store_id = #{storeId}
+          and user_id = #{userId}
+          and status !=3
     </select>
 
 </mapper>
