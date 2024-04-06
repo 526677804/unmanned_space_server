@@ -208,6 +208,9 @@ public class IndexServiceImpl implements IndexService {
         //把订单按照房间id分组
         Map<Long, List<OrderInfoDO>> orederMap;
         if (!CollectionUtils.isEmpty(orderList)) {
+            //把第一个订单的信息设置给房间
+            respVO.setStartTime(orderList.get(0).getStartTime());
+            respVO.setEndTime(orderList.get(0).getEndTime());
             orederMap = orderList.stream().collect(Collectors.groupingBy(x -> x.getRoomId()));
         } else {
             orederMap = new HashMap<>();

@@ -59,13 +59,13 @@ public class OrderController {
     }
 
 
-    /*@GetMapping("/queryWxOrder/{orderNo}")
-    @Operation(summary = "主动查询微信支付订单是否支付", description = "下单使用")
+    @PostMapping("/lockWxOrder")
+    @Operation(summary = "锁定微信支付订单,避免房间被占用时无法下单成功", description = "下单使用")
     @PreAuthenticated
-    @Parameter(name = "orderNo")
-    public CommonResult<Boolean> queryWxOrder(@PathVariable("orderNo") String orderNo) {
-        return success(appOrderService.queryWxOrder(orderNo));
-    }*/
+    public CommonResult<Boolean> lockWxOrder(@RequestBody @Valid OrderPreReqVO reqVO) {
+        appOrderService.lockWxOrder(reqVO);
+        return success(true);
+    }
 
 
     @PostMapping("/save")

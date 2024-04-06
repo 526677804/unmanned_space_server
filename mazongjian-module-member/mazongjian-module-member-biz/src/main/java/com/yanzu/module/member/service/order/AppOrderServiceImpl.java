@@ -225,6 +225,17 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(ORDER_TIME_CHECK_ERROR);
             }
         }
+        //再检查该房间有没有正被锁定的订单
+        String redisKey = "wx_order_lock_room_" + roomId;
+        if (redisTemplate.hasKey(redisKey)) {
+            //有 再看看锁定的是不是自己
+            OrderPreReqVO orderPreReqVO = (OrderPreReqVO) redisTemplate.opsForValue().get(redisKey);
+            if (orderPreReqVO.getUserId().compareTo(getLoginUserId()) != 0) {
+                //不是自己  则报错
+                throw exception(ORDER_ROOM_SUMBIT_ERROR);
+            }
+            //是自己就忽略，反正1分钟就解除锁定了
+        }
         //再检查是否在禁用时间范围内
         if (!ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart()) && !ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart())) {
             // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
@@ -1401,6 +1412,25 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Override
     public int countByUserAndStoreId(Long userId, Long storeId) {
         return orderInfoMapper.countByUserAndStoreId(userId, storeId);
+    }
+
+    @Override
+    public void lockWxOrder(OrderPreReqVO reqVO) {
+        //以房间id作为key
+        String redisKey = "wx_order_lock_room_" + reqVO.getRoomId();
+        Long userId = getLoginUserId();
+        if (redisTemplate.hasKey(redisKey)) {
+            //已经有了，取出来看看是不是用一个用户
+            OrderPreReqVO value = (OrderPreReqVO) redisTemplate.opsForValue().get(redisKey);
+            if (value.getUserId().compareTo(userId) != 0) {
+                //不同 说明是冲突的，不锁定订单
+                throw exception(ORDER_ROOM_SUMBIT_ERROR);
+            }
+            //还是这个用户  就删除之前的  把最新的订单信息锁定
+        }
+        //订单信息作为value,1分钟有效
+        reqVO.setUserId(userId);
+        redisTemplate.opsForValue().set(redisKey, reqVO, 1, TimeUnit.MINUTES);
     }
 
 }

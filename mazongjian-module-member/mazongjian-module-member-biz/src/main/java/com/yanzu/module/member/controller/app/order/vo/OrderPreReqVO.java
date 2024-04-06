@@ -27,6 +27,9 @@ import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 @Builder
 public class OrderPreReqVO {
 
+    @Schema(description = "不需要传", example = "1", hidden = true)
+    private Long userId;
+
     @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     @NotNull(message = "房间id不能为空")
     private Long roomId;

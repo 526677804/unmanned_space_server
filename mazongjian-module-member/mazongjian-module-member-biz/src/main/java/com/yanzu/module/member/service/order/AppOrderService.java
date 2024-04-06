@@ -47,6 +47,7 @@ public interface AppOrderService {
 
     int countByUserAndStoreId(Long userId, Long storeId);
 
+    void lockWxOrder(OrderPreReqVO reqVO);
 
 
 //    void closeOrder(Long orderId);
