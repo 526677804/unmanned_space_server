@@ -49,10 +49,6 @@
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport" :loading="exportLoading"
           v-hasPermi="['member:device-info:export']">导出</el-button>
       </el-col>
-      <el-col :span="3">
-        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleIotScope"
-          v-hasPermi="['member:device-info:create']">硬件平台授权</el-button>
-      </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -145,7 +141,7 @@
 </template>
 
 <script>
-import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, configYunlaba, getStoreList, getRoomList,bind,getIotScope } from "@/api/member/deviceInfo";
+import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, getStoreList, getRoomList,bind } from "@/api/member/deviceInfo";
 import { DICT_TYPE, getDictDatas} from "@/utils/dict";
 export default {
   name: "DeviceInfo",
@@ -325,11 +321,6 @@ export default {
         this.getList();
         this.$modal.msgSuccess("删除成功");
       }).catch(() => { });
-    },
-    handleIotScope(){
-      getIotScope().then(response => {
-        this.$modal.msgSuccess("操作成功");
-      });
     },
     /** 导出按钮操作 */
     handleExport() {
