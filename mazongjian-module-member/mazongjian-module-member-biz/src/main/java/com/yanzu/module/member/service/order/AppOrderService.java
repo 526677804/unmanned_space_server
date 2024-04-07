@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface AppOrderService {
 
-    WxPayOrderRespVO preOrder(Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, Long ignoreOrderId, boolean tongxiao, boolean wxpay);
+    WxPayOrderRespVO preOrder(Long userId,Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, Long ignoreOrderId, boolean tongxiao, boolean wxpay);
 
     BigDecimal mathPrice(BigDecimal price,BigDecimal workPrice,Boolean enableWorkPrice, BigDecimal tongxiaoPrice,Integer txHour,Date startTime, Date endTime,Boolean nightLong, CouponInfoDO couponInfoDO);
 

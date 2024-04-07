@@ -639,7 +639,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (orderInfoDO.getEndTime().before(reqVO.getEndTime())) {
             //增加时间
             //管理员续费  不需要算钱了，但是要校验时间冲突
-            appOrderService.preOrder(orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
+            appOrderService.preOrder(userId,orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
             //如果状态是已完成  则状态改成进行中 并触发一次通电 还要清除保洁订单信息
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0 && reqVO.getEndTime().after(new Date())) {
                 orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
@@ -866,7 +866,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (flag) {
             //检查时间
-            appOrderService.preOrder(orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
+            appOrderService.preOrder(getLoginUserId(),orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
             //开始修改
             //改时间
             orderInfoDO.setStartTime(reqVO.getStartTime());

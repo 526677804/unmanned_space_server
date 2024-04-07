@@ -55,7 +55,7 @@ public class OrderController {
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
         }
-        return success(appOrderService.preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), true));
+        return success(appOrderService.preOrder(getLoginUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), true));
     }
 
 

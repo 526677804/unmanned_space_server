@@ -164,7 +164,7 @@ public class AppOrderServiceImpl implements AppOrderService {
      * @return
      */
     @Override
-    public WxPayOrderRespVO preOrder(Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, Long ignoreOrderId, boolean nightLong, boolean wxpay) {
+    public WxPayOrderRespVO preOrder(Long userId, Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, Long ignoreOrderId, boolean nightLong, boolean wxpay) {
         //秒位处理为0
         startTime.setSeconds(0);
         endTime.setSeconds(0);
@@ -228,10 +228,10 @@ public class AppOrderServiceImpl implements AppOrderService {
         //再检查该房间有没有正被锁定的订单
         String redisKey = "wx_order_lock_room_" + roomId;
         Object rValue = redisTemplate.opsForValue().get(redisKey);
-        if (!ObjectUtils.isEmpty(rValue)) {
+        if (!ObjectUtils.isEmpty(rValue) && !ObjectUtils.isEmpty(userId)) {
             OrderPreReqVO orderPreReqVO = (OrderPreReqVO) rValue;
             //有 再看看锁定的是不是自己
-            if (getLoginUserId().compareTo(orderPreReqVO.getUserId()) != 0) {
+            if (userId.compareTo(orderPreReqVO.getUserId()) != 0) {
                 //不是自己  则报错
                 throw exception(ORDER_ROOM_SUMBIT_ERROR);
             }
@@ -567,7 +567,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
         }
         //下单之前仍然再检查一遍 并计算出应付总金额
-        WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, null, reqVO.getNightLong(), false);
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, null, reqVO.getNightLong(), false);
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
         BigDecimal oldPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
         //判断是否有填团购券  先预声明一些团购要的字段
@@ -787,7 +787,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         Date startTime = orderInfoDO.getEndTime();
         Date endTime = reqVO.getEndTime();
         log.info("订单:{},续费开始时间:{}，结束时间：{}", orderInfoDO.getOrderId(), startTime, endTime);
-        WxPayOrderRespVO wxPayOrderRespVO = preOrder(orderInfoDO.getRoomId(), startTime, endTime, null, reqVO.getOrderId(), false, false);
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(userId, orderInfoDO.getRoomId(), startTime, endTime, null, reqVO.getOrderId(), false, false);
         //订单价格
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
         switch (reqVO.getPayType()) {
@@ -894,7 +894,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     public OrderInfoAppRespVO getOrderInfo(Long orderId, String orderKey) {
         //如果没有传订单id 就返回该用户最新创建的一笔订单
         OrderInfoAppRespVO orderInfo = null;
-        if (StringUtils.isEmpty(orderKey)) {
+        if (StringUtils.isEmpty(orderKey) || "null".equals(orderKey)) {
             //校验权限
             orderInfo = orderInfoMapper.getOrderInfo(orderId, null, getLoginUserId());
         } else {
@@ -941,7 +941,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(ORDER_CHANGE_ROOM_ERROR);
             } else {
                 //检查是否可用
-                preOrder(roomId, orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), null, null, false, false);
+                preOrder(loginUserId, roomId, orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), null, null, false, false);
                 //开始更换
                 orderInfoDO.setRoomId(roomId);
                 orderInfoMapper.updateById(orderInfoDO);
@@ -1147,7 +1147,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     log.info("订单：{}，提前开始消费！", orderInfoDO.getOrderNo());
                     orderInfoDO.setStartTime(now);
                     //校验时间冲突
-                    preOrder(orderInfoDO.getRoomId(), now, orderInfoDO.getEndTime(), null, orderId, false, false);
+                    preOrder(loginUserId, orderInfoDO.getRoomId(), now, orderInfoDO.getEndTime(), null, orderId, false, false);
                 }
             }
             //开始订单
