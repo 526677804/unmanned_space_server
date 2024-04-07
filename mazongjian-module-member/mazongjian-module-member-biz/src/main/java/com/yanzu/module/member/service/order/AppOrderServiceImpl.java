@@ -227,9 +227,10 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //再检查该房间有没有正被锁定的订单
         String redisKey = "wx_order_lock_room_" + roomId;
-        if (redisTemplate.hasKey(redisKey)) {
+        Object rValue = redisTemplate.opsForValue().get(redisKey);
+        if (!ObjectUtils.isEmpty(rValue)) {
+            OrderPreReqVO orderPreReqVO = (OrderPreReqVO) rValue;
             //有 再看看锁定的是不是自己
-            OrderPreReqVO orderPreReqVO = (OrderPreReqVO) redisTemplate.opsForValue().get(redisKey);
             if (getLoginUserId().compareTo(orderPreReqVO.getUserId()) != 0) {
                 //不是自己  则报错
                 throw exception(ORDER_ROOM_SUMBIT_ERROR);
