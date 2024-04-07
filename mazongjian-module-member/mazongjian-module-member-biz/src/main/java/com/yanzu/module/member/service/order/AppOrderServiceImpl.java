@@ -230,7 +230,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (redisTemplate.hasKey(redisKey)) {
             //有 再看看锁定的是不是自己
             OrderPreReqVO orderPreReqVO = (OrderPreReqVO) redisTemplate.opsForValue().get(redisKey);
-            if (orderPreReqVO.getUserId().compareTo(getLoginUserId()) != 0) {
+            if (getLoginUserId().compareTo(orderPreReqVO.getUserId()) != 0) {
                 //不是自己  则报错
                 throw exception(ORDER_ROOM_SUMBIT_ERROR);
             }

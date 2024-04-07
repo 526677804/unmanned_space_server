@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.Date;
 
 import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
@@ -25,7 +26,7 @@ import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderPreReqVO {
+public class OrderPreReqVO implements Serializable {
 
     @Schema(description = "不需要传", example = "1", hidden = true)
     private Long userId;
