@@ -299,12 +299,12 @@ public class DeviceServiceImpl implements DeviceService {
             //关灯
             opSwitch(lightSn,"off");
         }
-        //关灯的同时一定会关电  可能电已经关了，这里保守起见，再关一次
-        //获取房间空开设备的sn
-        String kongKaiSN = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
-        if (!ObjectUtils.isEmpty(kongKaiSN)) {
-            opSwitch(kongKaiSN,"off");
-        }
+//        //关灯的同时一定会关电  可能电已经关了，这里保守起见，再关一次
+//        //获取房间空开设备的sn
+//        String kongKaiSN = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
+//        if (!ObjectUtils.isEmpty(kongKaiSN)) {
+//            opSwitch(kongKaiSN,"off");
+//        }
     }
 
 }
