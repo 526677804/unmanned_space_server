@@ -278,19 +278,17 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     @Transactional
     public void deleteClearUser(Long storeId, Long userId) {
-        //权限检查
-        StoreUserDO do2 = storeUserMapper.getByUserIdAndStoreId(getLoginUserId(), storeId);
-        if (!ObjectUtils.isEmpty(do2) && (do2.getType().intValue() == AppEnum.member_user_type.BOSS.getValue() || do2.getType().intValue() == AppEnum.member_user_type.ADMIN.getValue())) {
-            //检查该用户在这个门店，有没有未结算的任务
-            List<ClearInfoDO> clearInfoDOS = clearInfoMapper.getByUserIdAndStatusAndStoreId(userId, AppEnum.clear_info_status.FINISH.getValue(), storeId);
-            if (CollectionUtils.isEmpty(clearInfoDOS)) {
-                storeUserMapper.deleteClearUserAndStoreId(userId, storeId);
-            } else {
-                throw exception(CLEAR_USER_DELETE_ERROR);
-            }
+        // 校验权限
+        storeInfoService.checkPermisson(storeId, getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        //检查该用户在这个门店，有没有未结算的任务
+        List<ClearInfoDO> clearInfoDOS = clearInfoMapper.getByUserIdAndStatusAndStoreId(userId, AppEnum.clear_info_status.FINISH.getValue(), storeId);
+        if (CollectionUtils.isEmpty(clearInfoDOS)) {
+            StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, storeId);
+            storeUserMapper.updateById(new StoreUserDO().setId(storeUserDO.getId()).setType(AppEnum.member_user_type.MEMBER.getValue()));
         } else {
-            throw exception(AUTH_PROMISSION_ERROR);
+            throw exception(CLEAR_USER_DELETE_ERROR);
         }
+
     }
 
     @Override
