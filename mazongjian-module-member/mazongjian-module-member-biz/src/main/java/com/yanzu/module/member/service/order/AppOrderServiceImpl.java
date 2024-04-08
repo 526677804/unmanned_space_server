@@ -1199,19 +1199,18 @@ public class AppOrderServiceImpl implements AppOrderService {
                             //进行中 主要是完成订单，和关电
                             try {
                                 if (x.getEndTime().before(now)) {
-                                    endRoomIds.add(x.getRoomId());
-                                    endOrderIds.add(x.getOrderId());
                                     //关电
                                     deviceService.closeRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
                                     //如果该门店，没有设置延时关灯，那么还需要关灯
                                     if (!storeInfoDO.getDelayLight()) {
                                         deviceService.closeLightByRoomId(null, x.getStoreId(), x.getRoomId(), 4);
                                     }
+                                    endRoomIds.add(x.getRoomId());
+                                    endOrderIds.add(x.getOrderId());
                                     //添加保洁记录
                                     ClearInfoDO clearInfoDO = new ClearInfoDO();
                                     clearInfoDO.setOrderId(x.getOrderId()).setStoreId(x.getStoreId()).setOrderNo(x.getOrderNo()).setRoomId(x.getRoomId());
                                     clearInfoDOList.add(clearInfoDO);
-
                                 } else {
                                     //检查距离结束的时间，发送语音提醒
                                     long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
@@ -1242,7 +1241,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                                 }
                             } catch (Exception e) {
                                 //异常时不影响其他订单关闭
-                                e.printStackTrace();
+//                                e.printStackTrace();
 //                                throw new RuntimeException(e);
                             }
                             break;
