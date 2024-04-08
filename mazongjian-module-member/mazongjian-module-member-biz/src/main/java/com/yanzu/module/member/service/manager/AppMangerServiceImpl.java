@@ -250,7 +250,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             couponInfoDO.setMinUsePrice(reqVO.getMinUsePrice());
             couponInfoDO.setStoreId(reqVO.getStoreId());
             couponInfoDO.setExpriceTime(reqVO.getExpriceTime());
-            if(reqVO.getExpriceTime().after(new Date())){
+            if (reqVO.getExpriceTime().after(new Date())) {
                 couponInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
             }
             couponInfoDO.setRoomType(reqVO.getRoomType());
@@ -296,6 +296,8 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     @Transactional
     public void saveClearUser(AppClearUserDetailReqVO reqVO) {
+        // 校验权限
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //通过该手机号，查询出用户
         MemberUserDO memberUserDO = memberUserMapper.selectByMobile(reqVO.getMobile());
         if (ObjectUtils.isEmpty(memberUserDO)) {
@@ -316,21 +318,15 @@ public class AppMangerServiceImpl implements AppMangerService {
         //已经绑定的门店不能再绑定
         StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(memberUserDO.getId(), reqVO.getStoreId());
         if (ObjectUtils.isEmpty(storeUserDO)) {
-            //权限检查
-            StoreUserDO do2 = storeUserMapper.getByUserIdAndStoreId(getLoginUserId(), reqVO.getStoreId());
-            if (!ObjectUtils.isEmpty(do2) && (do2.getType().intValue() == AppEnum.member_user_type.BOSS.getValue() || do2.getType().intValue() == AppEnum.member_user_type.ADMIN.getValue())) {
-                //新增
-                storeUserDO = new StoreUserDO();
-                storeUserDO.setUserId(memberUserDO.getId());
-                storeUserDO.setType(AppEnum.member_user_type.CLEAR.getValue());
-                storeUserDO.setStoreId(reqVO.getStoreId());
-                storeUserDO.setName(reqVO.getName());
-                storeUserMapper.insert(storeUserDO);
-            } else {
-                throw exception(AUTH_PROMISSION_ERROR);
-            }
+            //新增
+            storeUserDO = new StoreUserDO();
+            storeUserDO.setUserId(memberUserDO.getId());
+            storeUserDO.setType(AppEnum.member_user_type.CLEAR.getValue());
+            storeUserDO.setStoreId(reqVO.getStoreId());
+            storeUserDO.setName(reqVO.getName());
+            storeUserMapper.insert(storeUserDO);
         } else {
-            throw exception(DATA_EXISTS_ERROR);
+            storeUserMapper.updateById(new StoreUserDO().setId(storeUserDO.getId()).setType(AppEnum.member_user_type.CLEAR.getValue()));
         }
     }
 
@@ -639,7 +635,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (orderInfoDO.getEndTime().before(reqVO.getEndTime())) {
             //增加时间
             //管理员续费  不需要算钱了，但是要校验时间冲突
-            appOrderService.preOrder(userId,orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
+            appOrderService.preOrder(userId, orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
             //如果状态是已完成  则状态改成进行中 并触发一次通电 还要清除保洁订单信息
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0 && reqVO.getEndTime().after(new Date())) {
                 orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
@@ -866,7 +862,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (flag) {
             //检查时间
-            appOrderService.preOrder(getLoginUserId(),orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
+            appOrderService.preOrder(getLoginUserId(), orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
             //开始修改
             //改时间
             orderInfoDO.setStartTime(reqVO.getStartTime());
