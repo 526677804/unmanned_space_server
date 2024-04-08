@@ -150,7 +150,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             // 获取小程序二维码生成实例
             try {
                 WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
-                String path = "pages/doorList/doorList?storeId=" + storeInfoDO.getStoreId();
+                String path = "pages/index/index?storeId=" + storeInfoDO.getStoreId();
                 byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
                 String file = fileApi.createFile(bytes);
                 storeInfoMapper.updateById(new StoreInfoDO().setStoreId(storeInfoDO.getStoreId()).setQrCode(file));

@@ -1,7 +1,5 @@
 package com.yanzu.module.member.controller.app.user;
 
-import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
-import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
@@ -11,6 +9,7 @@ import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
+import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -188,18 +187,40 @@ public class AppUserController {
     private RoomInfoMapper roomInfoMapper;
 
     @Resource
+    private StoreInfoMapper storeInfoMapper;
+
+    @Resource
     private DeviceInfoMapper deviceInfoMapper;
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
-//        WxPayService wxPayService = myWxService.initWxPay(6L);
-//        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-//        refundRequest.setOutTradeNo("2024040624617958");
-//        refundRequest.setOutRefundNo("TK" + refundRequest.getOutRefundNo());
-//        refundRequest.setTotalFee(4800);
-//        refundRequest.setRefundFee(4800);
-//        refundRequest.setRefundDesc("订单确认失败退款");
-//        wxPayService.refund(refundRequest);
+//        WxMaService wxMaService = myWxService.initWxMa();
+//        List<RoomInfoDO> roomInfoDOS = roomInfoMapper.selectList();
+//        roomInfoDOS.forEach(x->{
+//            // 获取小程序二维码生成实例
+//            try {
+//                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+//                String path = "pages/orderSubmit/orderSubmit?storeId=" + x.getStoreId() + "&roomId=" + x.getRoomId() + "&timeselectindex=0";
+//                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
+//                String file = fileApi.createFile(bytes);
+//                roomInfoMapper.updateById(new RoomInfoDO().setRoomId(x.getRoomId()).setQrCode(file));
+//            } catch (WxErrorException e) {
+////                throw new RuntimeException(e);
+//            }
+//        });
+//        List<StoreInfoDO> storeInfoDOS = storeInfoMapper.selectList();
+//        storeInfoDOS.forEach(x->{
+//            // 获取小程序二维码生成实例
+//            try {
+//                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+//                String path = "pages/index/index?storeId=" + x.getStoreId();
+//                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
+//                String file = fileApi.createFile(bytes);
+//                storeInfoMapper.updateById(new StoreInfoDO().setStoreId(x.getStoreId()).setQrCode(file));
+//            } catch (WxErrorException e) {
+////                throw new RuntimeException(e);
+//            }
+//        });
         return success("1");
     }
 
