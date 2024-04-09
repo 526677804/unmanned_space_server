@@ -1,8 +1,8 @@
 {
   "name": "mazongjian-ui-admin",
   "version": "1.7.3-snapshot",
-  "description": "麻总监管理系统",
-  "author": "芋道",
+  "description": "无人自助管理系统",
+  "author": "四川彦祖科技有限公司",
   "license": "MIT",
   "scripts": {
     "local": "vue-cli-service serve --mode local",
@@ -36,10 +36,7 @@
     "admin-template",
     "management-system"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/YunaiV/ruoyi-vue-pro"
-  },
+
   "dependencies": {
     "@babel/parser": "7.18.4",
     "@riophae/vue-treeselect": "0.4.0",
