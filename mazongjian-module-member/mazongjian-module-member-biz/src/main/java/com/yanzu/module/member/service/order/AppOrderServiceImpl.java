@@ -466,7 +466,7 @@ public class AppOrderServiceImpl implements AppOrderService {
      * @param roomType
      * @param nightLong
      */
-    private void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong) {
+    private void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong, Integer txHour) {
         if (nightLong) {
             //团购的通宵场 要求团购券必须包含 “通宵”两个字
             if (title.indexOf("通宵") == -1) {
@@ -520,20 +520,24 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR);
             }
         }
-        //判断时长是否匹配
         int timeHour = 0;
-        int timeIndex = title.indexOf("小时");
-        if (timeIndex == -1) {
-            //没找到 再尝试找一下  “个小时”
-            timeIndex = title.indexOf("个小时");
+        //判断时长是否匹配 通宵场根据门店的设置来校验
+        if (nightLong) {
+            timeHour = txHour;
+        } else {
+            int timeIndex = title.indexOf("个小时");
+            if (timeIndex == -1) {
+                //没找到 再尝试找一下  “个小时”
+                timeIndex = title.indexOf("小时");
+            }
+            //还是没找到  就报错了
+            if (timeIndex == -1) {
+                throw exception(CHECK_GROUP_NO_TIME_ERROR);
+            }
+            // 取时间
+            String timeStr = title.substring(timeIndex - 1, timeIndex);
+            timeHour = Integer.valueOf(timeStr);
         }
-        //还是没找到  就报错了
-        if (timeIndex == -1) {
-            throw exception(CHECK_GROUP_NO_TIME_ERROR);
-        }
-        // 取时间
-        String timeStr = title.substring(timeIndex - 1, timeIndex);
-        timeHour = Integer.valueOf(timeStr);
         long l = (endTime.getTime() - startTime.getTime()) / 1000 / 60;
         if (l / 60 != timeHour) {
             throw exception(GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR);
@@ -577,6 +581,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         Integer groupType = null;
         BigDecimal groupPrice = BigDecimal.ZERO;
         if (!ObjectUtils.isEmpty(reqVO.getGroupPayNo())) {
+            StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
             //设置订单的支付类型为团购
             reqVO.setPayType(AppEnum.order_pay_type.TUANGOU.getValue());
             //处理掉中间有空格的情况
@@ -591,7 +596,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 groupNo = reqVO.getGroupPayNo();
                 groupPrice = prepare.getPayAmount();
                 groupShopId = prepare.getDealId();
-                checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong());
+                checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxHour());
                 //检验通过  把团购券给使用了
                 meituanService.consume(roomInfoDO.getStoreId(), reqVO.getUserId(), reqVO.getGroupPayNo(), groupShopId);
             } else {
@@ -600,7 +605,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
                 groupName = prepare.getTitle();
                 groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
-                checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong());
+                checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxHour());
                 //检验通过  把团购券给使用了
                 String verify = douyinService.verify(roomInfoDO.getStoreId(), reqVO.getUserId(), prepare);
                 groupNo = verify;
