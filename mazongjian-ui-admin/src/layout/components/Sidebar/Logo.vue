@@ -35,7 +35,7 @@ export default {
   },
   data() {
     return {
-      title: '麻总监管理系统',
+      title: '无人自助管理系统',
       logo: logoImg
     }
   }

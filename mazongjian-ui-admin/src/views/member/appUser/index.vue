@@ -114,12 +114,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="手机号" prop="mobile">
-          <el-input v-model="form.mobile" placeholder="请输入手机号" disabled />
+          <el-input v-model="form.mobile" placeholder="请输入手机号" />
         </el-form-item>
         <el-form-item label="用户类型" prop="userType">
           <el-select v-model="form.userType" placeholder="请选择用户类型">
             <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_USER_TYPE)"
-                       :key="dict.value" :label="dict.label" :value="parseInt(dict.value)" />
+                       :key="dict.value" :label="dict.label" :value="parseInt(dict.value)"/>
           </el-select>
         </el-form-item>
       </el-form>

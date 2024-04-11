@@ -12,6 +12,7 @@ public interface ErrorCodeConstants {
     // ========== 用户相关  1004001000============
     ErrorCode USER_NOT_EXISTS = new ErrorCode(1004001000, "用户不存在");
     ErrorCode USER_PASSWORD_FAILED = new ErrorCode(1004001001, "密码校验失败");
+    ErrorCode USER_EXISTS = new ErrorCode(1004001002, "用户已存在，请勿重复添加");
 
     // ========== AUTH 模块 1004003000 ==========
     ErrorCode AUTH_LOGIN_BAD_CREDENTIALS = new ErrorCode(1004003000, "登录失败，账号密码不正确");

@@ -34,6 +34,15 @@ public class MemberUserController {
     @Resource
     private MemberUserService memberUserService;
 
+    @PostMapping("/create")
+    @Operation(summary = "添加用户管理")
+    @PreAuthorize("@ss.hasPermission('member:app-user:create')")
+    public CommonResult<Long> createAppUser(@Valid @RequestBody AppUserCreateReqVO createReqVO) {
+        createReqVO.setMobile(createReqVO.getMobile().trim());
+        return success(memberUserService.createAppUser(createReqVO));
+    }
+
+
     @PutMapping("/update")
     @Operation(summary = "更新用户管理")
     @PreAuthorize("@ss.hasPermission('member:app-user:update')")
