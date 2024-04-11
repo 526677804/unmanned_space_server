@@ -437,9 +437,13 @@ public class AppMangerServiceImpl implements AppMangerService {
         Integer wxTotalMoney = orderInfoMapper.getWxTotalMoney(storeIds, reqVO.getStoreId());
         BigDecimal wxMoney = new BigDecimal(String.valueOf(wxTotalMoney / 100.0));
         BigDecimal groupTotalMoney = groupPayInfoMapper.getGroupTotalMoney(storeIds, reqVO.getStoreId());
+        BigDecimal mtTotalMoney = groupPayInfoMapper.getMtTotalMoney(storeIds, reqVO.getStoreId());
+        BigDecimal dyTotalMoney = groupPayInfoMapper.getDyTotalMoney(storeIds, reqVO.getStoreId());
         Integer count = orderInfoMapper.countByStoreIds(storeIds, reqVO.getStoreId());
         AppRevenueChartRespVO respVO = new AppRevenueChartRespVO();
         respVO.setTotalMoney(wxMoney.add(groupTotalMoney));
+        respVO.setMtTotalMoney(mtTotalMoney);
+        respVO.setDyTotalMoney(dyTotalMoney);
         respVO.setTotalOrder(count);
         respVO.setWxTotalMoney(wxMoney);
         respVO.setGroupTotalMoney(groupTotalMoney);
@@ -454,13 +458,19 @@ public class AppMangerServiceImpl implements AppMangerService {
         reqVO.setUserId(getLoginUserId());
         //订单数
         Integer orderNum = orderInfoMapper.getCountOrder(reqVO);
+        Integer userNum = orderInfoMapper.countUser(reqVO);
         //团购收入
         BigDecimal tgMoney = groupPayInfoMapper.getBusinessStatistics(reqVO).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal mtMoney = groupPayInfoMapper.getMtBusinessStatistics(reqVO).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal dyMoney = groupPayInfoMapper.getDyBusinessStatistics(reqVO).setScale(2, BigDecimal.ROUND_HALF_UP);
         //微信支付收入
         BigDecimal money = payOrderMapper.getMoney(reqVO).setScale(2, BigDecimal.ROUND_HALF_UP);
         AppBusinessStatisticsRespVO respVO = new AppBusinessStatisticsRespVO();
         respVO.setOrderCount(orderNum);
+        respVO.setUserCount(userNum);
         respVO.setTgMoney(tgMoney);
+        respVO.setMtMoney(mtMoney);
+        respVO.setDyMoney(dyMoney);
         respVO.setMoney(money);
         respVO.setTotal(money.add(tgMoney));
         return respVO;

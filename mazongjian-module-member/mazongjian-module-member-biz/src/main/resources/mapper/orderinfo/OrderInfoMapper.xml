@@ -463,5 +463,20 @@
           and user_id = #{userId}
           and status !=3
     </select>
+    <select id="countUser" resultType="java.lang.Integer">
+        select count(distinct user_id)
+        from member_order_info
+        where deleted = 0 AND status!=3
+        <if test="null!=startTime and null!=endTime">
+            and to_days(create_time) >= to_days(#{startTime})
+            and to_days(create_time) &lt;= to_days(#{endTime})
+        </if>
+        <if test="null!=storeId and storeId!=''">
+            and store_id=#{storeId}
+        </if>
+        <if test="null==storeId or storeId==''">
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} and type IN (12,13))
+        </if>
+    </select>
 
 </mapper>
