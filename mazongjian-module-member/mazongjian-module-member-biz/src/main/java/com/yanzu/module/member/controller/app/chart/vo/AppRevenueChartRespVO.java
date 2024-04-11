@@ -26,6 +26,12 @@ public class AppRevenueChartRespVO {
     @Schema(description = "团购总收入")
     private BigDecimal groupTotalMoney;
 
+    @Schema(description = "美团总收入")
+    private BigDecimal mtTotalMoney;
+
+    @Schema(description = "抖音总收入")
+    private BigDecimal dyTotalMoney;
+
     @Schema(description = "总收入")
     private BigDecimal totalMoney;
 

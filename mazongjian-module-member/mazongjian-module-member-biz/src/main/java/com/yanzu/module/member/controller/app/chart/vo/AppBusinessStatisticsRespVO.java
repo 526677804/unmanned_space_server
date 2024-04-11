@@ -20,11 +20,20 @@ public class AppBusinessStatisticsRespVO {
     @Schema(description = "总收入")
     private BigDecimal total;
 
+    @Schema(description = "下单用户数")
+    private Integer userCount;
+
     @Schema(description = "微信收入")
     private BigDecimal money;
 
     @Schema(description = "团购收入")
     private BigDecimal tgMoney;
+
+    @Schema(description = "美团总收入")
+    private BigDecimal mtMoney;
+
+    @Schema(description = "抖音总收入")
+    private BigDecimal dyMoney;
 
     @Schema(description = "累积订单数")
     private Integer orderCount;

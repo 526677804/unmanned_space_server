@@ -52,4 +52,11 @@ public interface GroupPayInfoMapper extends BaseMapperX<GroupPayInfoDO> {
 
     List<GroupPayInfoRespVO> getPage(GroupPayInfoPageReqVO pageReqVO);
 
+    BigDecimal getMtTotalMoney(@Param("storeIds") List<String> storeIds, @Param("storeId") Long storeId);
+
+    BigDecimal getDyTotalMoney(@Param("storeIds") List<String> storeIds, @Param("storeId") Long storeId);
+
+    BigDecimal getMtBusinessStatistics(AppChartDataReqVO reqVO);
+
+    BigDecimal getDyBusinessStatistics(AppChartDataReqVO reqVO);
 }
