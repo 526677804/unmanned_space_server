@@ -44,6 +44,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Resource;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -291,6 +292,10 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             discountRulesDO.setStoreId(reqVO.getStoreId());
             discountRulesDO.setPayMoney(reqVO.getPayMoney());
             discountRulesDO.setGiftMoney(reqVO.getGiftMoney());
+            //如果过期时间是正常的 那么就改为正常
+            if (discountRulesDO.getExpriceTime().isAfter(LocalDateTime.now())) {
+                discountRulesDO.setStatus(AppEnum.discount_rules_status.ENABLE.getValue());
+            }
             discountRulesMapper.updateById(discountRulesDO);
         }
     }
