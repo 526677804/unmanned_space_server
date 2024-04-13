@@ -68,4 +68,5 @@ public interface DeviceInfoService {
     void iotScope();
 
 
+    void configWifi(DeviceInfoConfigWifiReqVO reqVO);
 }

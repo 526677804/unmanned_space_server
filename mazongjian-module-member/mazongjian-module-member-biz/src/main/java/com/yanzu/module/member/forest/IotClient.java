@@ -54,4 +54,10 @@ public interface IotClient {
     @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/send", headers = {"Authorization:Bearer ${token}"})
     IotResult<Boolean> control(@JSONBody IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO, @Var("token") String token);
 
+    /**
+     * 重置wifi
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/configWifi", headers = {"Authorization:Bearer ${token}"})
+    IotResult<Boolean> configWifi(@JSONBody IotDeviceBaseVO<IotDeviceConfigWifiReqVO> reqVO, @Var("token") String token);
+
 }

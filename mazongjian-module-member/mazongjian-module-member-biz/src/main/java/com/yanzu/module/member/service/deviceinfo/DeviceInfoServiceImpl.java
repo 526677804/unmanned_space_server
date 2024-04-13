@@ -8,6 +8,8 @@ import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.service.iot.IotService;
+import com.yanzu.module.member.service.iot.iotBean.IotDeviceBaseVO;
+import com.yanzu.module.member.service.iot.iotBean.IotDeviceConfigWifiReqVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -46,7 +48,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             // 插入
             DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
             deviceInfoMapper.insert(deviceInfo);
-        }else{
+        } else {
             throw exception(DEVICE_IOT_OP_ERROR);
         }
     }
@@ -60,10 +62,10 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
             // 先解绑
             Boolean unbind = iotService.unbind(deviceInfoDO.getDeviceSn());
-            if(unbind){
+            if (unbind) {
                 // 删除
                 deviceInfoMapper.deleteById(id);
-            }else{
+            } else {
                 throw exception(DEVICE_IOT_OP_ERROR);
             }
         }
@@ -114,6 +116,22 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     @Override
     public void iotScope() {
         iotService.authorize();
+    }
+
+    @Override
+    public void configWifi(DeviceInfoConfigWifiReqVO reqVO) {
+        DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(reqVO.getDeviceId());
+        //只能操作自己的设备
+        if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
+            IotDeviceConfigWifiReqVO vo = new IotDeviceConfigWifiReqVO();
+            vo.setDeviceSn(deviceInfoDO.getDeviceSn());
+            vo.setSsid(reqVO.getSsid());
+            vo.setPasswd(reqVO.getPasswd());
+            Boolean result = iotService.configWifi(vo);
+            if (!result) {
+                throw exception(DEVICE_IOT_OP_ERROR);
+            }
+        }
     }
 
 }

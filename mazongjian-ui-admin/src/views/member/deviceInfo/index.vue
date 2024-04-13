@@ -75,6 +75,8 @@
         <template v-slot="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleBindStore(scope.row)"
             v-hasPermi="['member:device-info:update']">绑定</el-button>
+            <el-button size="mini" type="text" icon="el-icon-edit" @click="handleConfig(scope.row)"
+            v-hasPermi="['member:device-info:update']">重置wifi</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
             v-hasPermi="['member:device-info:delete']">删除</el-button>
         </template>
@@ -137,11 +139,30 @@
         <el-button @click="cancelBind">取 消</el-button>
       </div>
     </el-dialog>
+     <!-- 对话框(重置wifi) -->
+     <el-dialog :title="title" :visible.sync="configWifiShow" width="500px" v-dialogDrag append-to-body>
+      <el-form ref="configForm" :model="configForm" :rules="configrules" label-width="80px">
+        <input type="hidden"  prop="deviceId" v-model="configForm.deviceId"/>
+        <el-form-item label="设备sn" prop="deviceSn">
+          <el-input v-model="configForm.deviceSn"  readonly/>
+        </el-form-item>
+        <el-form-item label="wifi名称" prop="ssid">
+          <el-input v-model="configForm.ssid" placeholder="请输入wifi名称(只支持2.4G,英文和数字组成)" required="true"/>
+        </el-form-item>
+        <el-form-item label="wifi密码" prop="passwd">
+          <el-input v-model="configForm.passwd" placeholder="请输入wifi密码(最小8位)" required="true"/>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitConfigForm">确 定</el-button>
+        <el-button @click="cancelConfig">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, getStoreList, getRoomList,bind } from "@/api/member/deviceInfo";
+import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, getStoreList, getRoomList,bind,configWifi } from "@/api/member/deviceInfo";
 import { DICT_TYPE, getDictDatas} from "@/utils/dict";
 export default {
   name: "DeviceInfo",
@@ -167,6 +188,7 @@ export default {
       open: false,
       bindStore: false,
       bindRoom: false,
+      configWifiShow: false,
       // 查询参数
       queryParams: {
         pageNo: 1,
@@ -185,6 +207,12 @@ export default {
         storeId:null,
         roomId:null
       },
+      configForm: {
+        deviceSn:null,
+        deviceId:null,
+        ssid:null,
+        passwd:null
+      },
       // 表单校验
       rules: {
         deviceSn: [{ required: true, message: "设备sn不能为空", trigger: "blur" }],
@@ -192,6 +220,11 @@ export default {
       },
       bindrules: {
         storeId: [{ required: true, message: "门店不能为空", trigger: "blur" }],
+      },
+      configrules: {
+        deviceId: [{ required: true, message: "设备不能为空", trigger: "blur" }],
+        ssid: [{ required: true, message: "wifi名称不能为空", trigger: "blur" }],
+        passwd: [{ required: true, message: "wifi密码不能为空", trigger: "blur" }],
       },
       optionsStas: [
         {
@@ -237,6 +270,15 @@ export default {
         roomId: undefined,
       }
     },
+    cancelConfig(){
+      this.configWifiShow = false;
+      this.configForm={
+        deviceSn:null,
+        deviceId:null,
+        ssid:null,
+        passwd:null
+      }
+    },
     /** 表单重置 */
     reset() {
       this.form = {
@@ -245,6 +287,15 @@ export default {
         type: undefined,
       };
       this.resetForm("form");
+    },
+    resetConfig() {
+      this.configForm={
+        deviceSn:null,
+        deviceId:null,
+        ssid:null,
+        passwd:null
+      },
+      this.resetForm("configForm");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -271,6 +322,19 @@ export default {
         this.open = true;
         this.title = "修改设备管理";
       });
+    },
+     /** 配置wifi按钮操作 */
+     handleConfig(row) {
+      
+      this.resetConfig();
+        this.configForm = {
+          deviceSn: row.deviceSn,
+          deviceId: row.deviceId,
+          ssid:null,
+          passwd:null
+        };
+        this.configWifiShow = true;
+        this.title = "修改设备wifi配置";
     },
     /** 提交按钮 */
     submitForm() {
@@ -311,6 +375,26 @@ export default {
           }
         });
       });
+    },
+    submitConfigForm() {
+      this.$modal.confirm('请仔细检查wifi信息是否正确，否则设备可能无法正常工作,只有部分设备支持在线重置！是否确认进行WiFi重置?').then(function () {
+      }).then(() => {
+        this.$refs["configForm"].validate(valid => {
+        if (!valid) {
+          return;
+        }
+        configWifi(this.configForm).then(response => {
+          this.$modal.msgSuccess("操作成功");
+          this.configWifiShow = false;
+          this.configForm={
+            deviceId:null,
+            deviceSn:null,
+            ssid:null,
+            passwd:null
+          }
+        });
+        });
+      }).catch(() => { });
     },
     /** 删除按钮操作 */
     handleDelete(row) {

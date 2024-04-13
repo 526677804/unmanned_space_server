@@ -70,10 +70,11 @@ export function getRoomList(storeId) {
 }
 
 // 配网
-export function configYunlaba(deviceId) {
+export function configWifi(data) {
   return request({
-    url: '/member/device-info/configYunlaba/'+deviceId,
-    method: 'put'
+    url: '/member/device-info/configWifi',
+    method: 'post',
+    data: data
   })
 }
 
