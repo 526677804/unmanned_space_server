@@ -50,7 +50,15 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- 添加 XJar 依赖 -->
+            <dependency>
+                <groupId>com.github.core-lib</groupId>
+                <artifactId>xjar</artifactId>
+                <version>4.0.2</version>
+                <!-- <scope>test</scope> -->
+            </dependency>
         </dependencies>
+
     </dependencyManagement>
 
     <build>
@@ -95,6 +103,11 @@
 
     <!-- 使用 huawei / aliyun 的 Maven 源，提升下载速度 -->
     <repositories>
+        <!-- 设置 jitpack.io 仓库 -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
         <repository>
             <id>huaweicloud</id>
             <name>huawei</name>
