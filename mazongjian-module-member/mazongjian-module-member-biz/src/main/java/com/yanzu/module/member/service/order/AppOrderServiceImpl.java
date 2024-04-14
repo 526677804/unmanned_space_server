@@ -12,6 +12,8 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.yanzu.framework.security.core.LoginUser;
+import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
@@ -311,8 +313,15 @@ public class AppOrderServiceImpl implements AppOrderService {
                 } else {
                     payOrderService.create(getLoginUserId(), orderNo, roomInfoDO.getStoreId(), "续费订单", price);
                 }
+                Long tenantId = TenantContextHolder.getTenantId();
+                // 如果获取不到租户编号，则尝试使用登陆用户的租户编号
+                if (tenantId == null) {
+                    LoginUser user = SecurityFrameworkUtils.getLoginUser();
+                    tenantId = user.getTenantId();
+                }
                 //把这个信息存储到redis，在回调处验证后删除 最长1天过期
-                WxPayOrderInfo wxPayOrderInfo = new WxPayOrderInfo(orderNo, getLoginUserId(), TenantContextHolder.getTenantId(), roomInfoDO.getStoreId(), roomId, startTime, endTime, ObjectUtils.isEmpty(couponInfoDO) ? null : couponInfoDO.getCouponId(), ignoreOrderId, price, nightLong);
+                WxPayOrderInfo wxPayOrderInfo = new WxPayOrderInfo(orderNo, getLoginUserId(), tenantId, roomInfoDO.getStoreId(), roomId, startTime, endTime, ObjectUtils.isEmpty(couponInfoDO) ? null : couponInfoDO.getCouponId(), ignoreOrderId, price, nightLong);
+
                 redisTemplate.opsForValue().set(String.format(WX_PAY_ORDER, orderNo), wxPayOrderInfo, 1, TimeUnit.DAYS);
             }
         }
