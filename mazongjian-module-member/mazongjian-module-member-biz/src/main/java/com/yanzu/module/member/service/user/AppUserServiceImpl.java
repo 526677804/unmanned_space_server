@@ -11,6 +11,8 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.annotations.VisibleForTesting;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.security.core.LoginUser;
+import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
@@ -479,7 +481,13 @@ public class AppUserServiceImpl implements AppUserService {
             payOrderService.create(reqVO.getUserId(), orderNo, reqVO.getStoreId(), "余额充值订单", reqVO.getPrice());
             //把订单号存到redis 如果已经充值了 就移除这个订单号
             String redisKey = String.format(WX_PAY_ORDER, orderNo);
-            redisTemplate.opsForValue().set(redisKey, new WxPayOrderInfo(orderNo, reqVO.getUserId(), TenantContextHolder.getTenantId()
+            Long tenantId = TenantContextHolder.getTenantId();
+            // 如果获取不到租户编号，则尝试使用登陆用户的租户编号
+            if (tenantId == null) {
+                LoginUser user = SecurityFrameworkUtils.getLoginUser();
+                tenantId = user.getTenantId();
+            }
+            redisTemplate.opsForValue().set(redisKey, new WxPayOrderInfo(orderNo, reqVO.getUserId(), tenantId
                     , reqVO.getStoreId(), reqVO.getPrice()), 1, TimeUnit.DAYS);
         }
         return respVO;
