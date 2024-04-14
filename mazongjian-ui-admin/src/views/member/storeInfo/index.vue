@@ -57,8 +57,8 @@
       <el-table-column label="美团key" align="center" prop="meituanKey" />
       <el-table-column label="美团Secret" align="center" prop="meituanSecret" /> -->
       <el-table-column label="房间数量" align="center" prop="roomNum" />
-      <el-table-column label="总收入" align="center" prop="totalMoney" />
-      <el-table-column label="已提现" align="center" prop="totalWithdrawal" />
+      <!-- <el-table-column label="总收入" align="center" prop="totalMoney" /> -->
+      <!-- <el-table-column label="已提现" align="center" prop="totalWithdrawal" /> -->
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template v-slot="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
