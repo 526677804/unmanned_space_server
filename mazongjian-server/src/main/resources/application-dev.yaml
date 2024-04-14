@@ -46,14 +46,14 @@ spring:
         master:
           url: jdbc:mysql://127.0.0.1:3306/mazongjian?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: mazongjian
-          password: admin123
+          password: 22H2zYzPkXc3cMBA
 
   # Redis 配置
   redis:
     host: 127.0.0.1 # 地址 
     port: 6379 # 端口
     database: 0 # 数据库索引
-    password: admin123 # 密码，建议生产环境开启
+    password: redispwd123 # 密码，建议生产环境开启
 
 # 微信支付回调
 wx:
@@ -83,7 +83,7 @@ douyin:
 
 #硬件开发者配置
 iot:
-  clientId: xxxxxxx-xxxxxx
-  secret: xxxxxx-xxxxx-xxxxxxxxxxxx
+  clientId: 5d3cf1ed-d534
+  secret: 5942a5b9-292b-4be5-b00e-aceef1e832f5
   redirectUrl: https://wq.scyanzu.com/app-api/callback/iotCallback
 
