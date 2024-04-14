@@ -45,7 +45,7 @@
         </template>
       </el-table-column>
       <el-table-column label="标题" align="center" prop="title" />
-      <el-table-column label="跳转地址/页面路径" align="center" prop="jumpUrl" />
+      <!-- <el-table-column label="跳转地址/页面路径" align="center" prop="jumpUrl" /> -->
       <el-table-column label="排序" align="center" prop="sortId" />
       <el-table-column label="广告类型" align="center" prop="type">
         <template v-slot="scope">
@@ -79,9 +79,9 @@
         <el-form-item label="标题" prop="title">
           <el-input v-model="form.title" placeholder="请输入标题" />
         </el-form-item>
-        <el-form-item label="跳转地址/页面路径" prop="jumpUrl">
+        <!-- <el-form-item label="跳转地址/页面路径" prop="jumpUrl">
           <el-input v-model="form.jumpUrl" placeholder="请输入跳转地址/页面路径" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="排序" prop="sortId">
           <el-input v-model="form.sortId" placeholder="请输入排序" />
         </el-form-item>
@@ -168,7 +168,7 @@ export default {
         id: undefined,
         imgUrl: undefined,
         title: undefined,
-        jumpUrl: undefined,
+        // jumpUrl: undefined,
         sortId: undefined,
         type: undefined,
       };

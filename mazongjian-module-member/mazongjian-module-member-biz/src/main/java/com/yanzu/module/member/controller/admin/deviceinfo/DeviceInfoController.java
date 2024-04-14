@@ -102,4 +102,12 @@ public class DeviceInfoController {
         deviceInfoService.bind(reqVO);
         return success(true);
     }
+
+    @PostMapping("/configWifi")
+    @Operation(summary = "重置设备wifi")
+    @PreAuthorize("@ss.hasPermission('member:device-info:update')")
+    public CommonResult<Boolean> configWifi(@RequestBody @Valid DeviceInfoConfigWifiReqVO reqVO) {
+        deviceInfoService.configWifi(reqVO);
+        return success(true);
+    }
 }

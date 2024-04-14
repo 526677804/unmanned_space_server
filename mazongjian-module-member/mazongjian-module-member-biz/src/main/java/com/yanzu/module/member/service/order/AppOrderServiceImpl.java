@@ -885,6 +885,9 @@ public class AppOrderServiceImpl implements AppOrderService {
             LocalDateTime now = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             list.forEach(x -> {
                 x.setRenewBtn(false);
+                if (!ObjectUtils.isEmpty(x.getRoomImg())) {
+                    x.setRoomImg(x.getRoomImg().split(",")[0]);
+                }
                 if (x.getStatus().compareTo(AppEnum.order_status.CANCEL.getValue()) != 0) {
                     LocalDateTime endDate = x.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plusMinutes(5);
                     x.setRenewBtn(endDate.isAfter(now));
@@ -910,6 +913,9 @@ public class AppOrderServiceImpl implements AppOrderService {
             throw exception(ORDER_NOT_FOUND_ERROR);
         }
         if (!ObjectUtils.isEmpty(orderInfo)) {
+            if (!ObjectUtils.isEmpty(orderInfo.getRoomImg())) {
+                orderInfo.setRoomImg(orderInfo.getRoomImg().split(",")[0]);
+            }
             if (orderInfo.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
                     || orderInfo.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                 orderInfo.setRenewBtn(true);

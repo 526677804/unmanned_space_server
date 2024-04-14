@@ -22,7 +22,7 @@
         <el-input v-model="queryParams.mobile" placeholder="请输入手机号" clearable @keyup.enter.native="handleQuery"/>
       </el-form-item>
       
-      <el-form-item label="收入" prop="money">
+      <!-- <el-form-item label="收入" prop="money">
         <el-input v-model="queryParams.money" placeholder="请输入收入" clearable @keyup.enter.native="handleQuery"/>
       </el-form-item>
       <el-form-item label="提现金额" prop="withdrawalMoney">
@@ -30,7 +30,7 @@
       </el-form-item>
       <el-form-item label="账户余额" prop="balance">
         <el-input v-model="queryParams.balance" placeholder="请输入账户余额" clearable @keyup.enter.native="handleQuery"/>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="创建时间" prop="createTime">
         <el-date-picker v-model="queryParams.createTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
                         range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']" />
@@ -76,9 +76,9 @@
           <dict-tag :type="DICT_TYPE.MEMBER_USER_TYPE" :value="scope.row.userType" />
         </template>
       </el-table-column>
-      <el-table-column label="收入" align="center" prop="money" />
+      <!-- <el-table-column label="收入" align="center" prop="money" />
       <el-table-column label="提现金额" align="center" prop="withdrawalMoney" />
-      <el-table-column label="账户余额" align="center" prop="balance" />
+      <el-table-column label="账户余额" align="center" prop="balance" /> -->
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template v-slot="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>

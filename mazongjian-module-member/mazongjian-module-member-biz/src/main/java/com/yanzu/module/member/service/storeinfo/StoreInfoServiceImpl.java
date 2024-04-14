@@ -145,6 +145,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             storeUserDO.setStoreId(storeInfoDO.getStoreId());
             storeUserDO.setUserId(getLoginUserId());
             storeUserDO.setType(AppEnum.member_user_type.BOSS.getValue());
+            storeUserDO.setGiftBalance(BigDecimal.valueOf(999999));
             storeUserMapper.insert(storeUserDO);
             //生成小程序码
             WxMaService wxMaService = myWxService.initWxMa();

@@ -151,6 +151,9 @@ public class AppMangerServiceImpl implements AppMangerService {
             //如果状态是已取消以外的状态  并且订单结束时间不超过5分钟，那么允许续费
             LocalDateTime now = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             list.forEach(x -> {
+                if (!ObjectUtils.isEmpty(x.getRoomImg())) {
+                    x.setRoomImg(x.getRoomImg().split(",")[0]);
+                }
                 x.setRenewBtn(false);
                 if (x.getStatus().compareTo(AppEnum.order_status.CANCEL.getValue()) != 0) {
                     LocalDateTime endDate = x.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plusMinutes(5);

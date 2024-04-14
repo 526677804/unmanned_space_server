@@ -100,10 +100,10 @@ public class IotService {
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
         IotResult<Boolean> resp = iotClient.bind(reqVO, getToken());
-        if(resp.getCode().intValue()==0){
+        if (resp.getCode().intValue() == 0) {
             return true;
-        }else{
-            throw exception(DEVICE_IOT_OP_ERROR,resp.getMsg());
+        } else {
+            throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
         }
     }
 
@@ -116,10 +116,10 @@ public class IotService {
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
         IotResult<Boolean> resp = iotClient.unbind(reqVO, getToken());
-        if(resp.getCode().intValue()==0){
+        if (resp.getCode().intValue() == 0) {
             return true;
-        }else{
-            throw exception(DEVICE_IOT_OP_ERROR,resp.getMsg());
+        } else {
+            throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
         }
     }
 
@@ -130,14 +130,28 @@ public class IotService {
     public Boolean control(IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO) {
         reqVO.setTs(new Date().getTime());
         IotResult<Boolean> resp = iotClient.control(reqVO, getToken());
-        if(resp.getCode().intValue()==0){
+        if (resp.getCode().intValue() == 0) {
             return true;
-        }else{
-            throw exception(DEVICE_IOT_OP_ERROR,resp.getMsg());
+        } else {
+            throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
         }
 
     }
 
+
+    /**
+     * 重置wifi
+     */
+    public Boolean configWifi(IotDeviceBaseVO<IotDeviceConfigWifiReqVO> reqVO) {
+        reqVO.setTs(new Date().getTime());
+        IotResult<Boolean> resp = iotClient.configWifi(reqVO, getToken());
+        if (resp.getCode().intValue() == 0) {
+            return true;
+        } else {
+            throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
+        }
+
+    }
 
     public void refushTokenCheck() {
         String token = getToken();
