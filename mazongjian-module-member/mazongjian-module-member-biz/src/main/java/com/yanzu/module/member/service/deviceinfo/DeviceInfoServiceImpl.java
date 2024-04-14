@@ -43,14 +43,12 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     @Transactional
     public void createDeviceInfo(DeviceInfoCreateReqVO createReqVO) {
         //先在iot平台绑定设备
-        Boolean bind = iotService.bind(createReqVO.getDeviceSn());
-        if (bind) {
-            // 插入
-            DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
-            deviceInfoMapper.insert(deviceInfo);
-        } else {
-            throw exception(DEVICE_IOT_OP_ERROR);
-        }
+        String data = iotService.bind(createReqVO.getDeviceSn());
+        // 插入
+        DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
+        deviceInfo.setDeviceData(data);
+        deviceInfoMapper.insert(deviceInfo);
+
     }
 
 

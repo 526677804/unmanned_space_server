@@ -95,13 +95,13 @@ public class IotService {
      * 绑定设备
      */
 
-    public Boolean bind(String sn) {
+    public String bind(String sn) {
         IotDeviceBaseVO reqVO = new IotDeviceBaseVO();
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
-        IotResult<Boolean> resp = iotClient.bind(reqVO, getToken());
+        IotResult<String> resp = iotClient.bind(reqVO, getToken());
         if (resp.getCode().intValue() == 0) {
-            return true;
+            return resp.getData();
         } else {
             throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
         }
