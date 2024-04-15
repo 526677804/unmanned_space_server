@@ -31,7 +31,7 @@ public interface IotClient {
      * @param reqVO
      * @return
      */
-    @Post(url = "https://iot.scyanzu.com/admin-api/system/oauth2/refresh")
+    @Post(url = "https://iot.scyanzu.com/admin-api/system/oauth2/refreshToken")
     IotResult<IotTokenRespVO> getTokenRefush(@Query IotTokenRefushReqVO reqVO);
 
 

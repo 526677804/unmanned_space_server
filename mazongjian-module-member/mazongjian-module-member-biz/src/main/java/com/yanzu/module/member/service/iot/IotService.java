@@ -12,6 +12,7 @@ import javax.annotation.Resource;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -62,7 +63,8 @@ public class IotService {
         if (token.getCode().intValue() == 0) {
             redisTemplate.opsForValue().set(tokenKey, token.getData().getAccess_token());
             redisTemplate.opsForValue().set(refushTokenKey, token.getData().getRefresh_token());
-            redisTemplate.opsForValue().set(tokenExpireTimeKey, token.getData().getExpires_in());
+            LocalDateTime now = LocalDateTime.now().plusSeconds(token.getData().getExpires_in());
+            redisTemplate.opsForValue().set(tokenExpireTimeKey, now.atZone(ZoneId.systemDefault()).toEpochSecond());
             return token.getData().getAccess_token();
         } else {
             log.error("硬件平台获取token失败:{}", token.getMsg());
@@ -78,13 +80,15 @@ public class IotService {
     /**
      * 刷新token
      */
-    private void getTokenRefush(String token) {
+    private void getTokenRefush(String refushToken) {
         //获取
-        IotResult<IotTokenRespVO> resp = iotClient.getTokenRefush(new IotTokenRefushReqVO().setClient_id(clientId).setSecret(secret).setToken(token));
+        IotResult<IotTokenRespVO> resp = iotClient.getTokenRefush(new IotTokenRefushReqVO().setClient_id(clientId).setClient_secret(secret).setRefresh_token(refushToken));
         if (resp.getCode().intValue() == 0) {
             redisTemplate.opsForValue().set(tokenKey, resp.getData().getAccess_token());
             redisTemplate.opsForValue().set(refushTokenKey, resp.getData().getRefresh_token());
-            redisTemplate.opsForValue().set(tokenExpireTimeKey, resp.getData().getExpires_in());
+            LocalDateTime now = LocalDateTime.now().plusSeconds(resp.getData().getExpires_in());
+            redisTemplate.opsForValue().set(tokenExpireTimeKey, now.atZone(ZoneId.systemDefault()).toEpochSecond());
+
         } else {
             log.error("硬件平台刷新token授权失败:{}", resp.getMsg());
         }
@@ -154,23 +158,26 @@ public class IotService {
     }
 
     public void refushTokenCheck() {
-        String token = getToken();
-        if (!ObjectUtils.isEmpty(token) && token.length() > 5) {
+        String tokenExpireTime = String.valueOf(redisTemplate.opsForValue().get(tokenExpireTimeKey));
+        log.info("tokenExpireTime:{}", tokenExpireTime);
+        LocalDateTime now = LocalDateTime.now();
+        now = now.plusDays(2);//加2天  用来提前判断过期
+        //时间戳转日期
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.valueOf(tokenExpireTime)), ZoneId.systemDefault());
+        // 假设你想要转换为系统默认时区下的LocalDateTime
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        log.info("tokenExpireTime:{}", dateTime.format(format));
+        if (dateTime.isBefore(now)) {
+            log.info("硬件平台token过期，刷新token");
+            //过期了 需要刷新
             String refushToken = (String) redisTemplate.opsForValue().get(refushTokenKey);
-            Long tokenExpireTime = (Long) redisTemplate.opsForValue().get(tokenExpireTimeKey);
-            log.info("refushToken:{}", refushToken);
-            log.info("tokenExpireTime:{}", tokenExpireTime);
-            LocalDateTime now = LocalDateTime.now();
-            now = now.plusDays(2);//加2天  用来提前判断过期
-            //时间戳转日期
-            Instant instant = Instant.ofEpochMilli(Long.valueOf(tokenExpireTime)); // 将时间戳转换为Instant对象
-            LocalDateTime t1 = LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
-            if (t1.isBefore(now)) {
-                //过期了 需要刷新
-                //换取新的token
-                getTokenRefush(token);
-            }
+            //换取新的token
+            getTokenRefush(refushToken);
+        } else {
+            log.info("硬件平台token未过期，无需处理");
         }
 
     }
+
+
 }

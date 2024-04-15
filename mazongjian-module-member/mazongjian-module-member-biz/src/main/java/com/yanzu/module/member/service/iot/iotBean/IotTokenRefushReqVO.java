@@ -8,9 +8,9 @@ public class IotTokenRefushReqVO {
     private String client_id;
 
     //应用密钥
-    private String secret;
+    private String client_secret;
 
     //token
-    private String token;
+    private String refresh_token;
 
 }
