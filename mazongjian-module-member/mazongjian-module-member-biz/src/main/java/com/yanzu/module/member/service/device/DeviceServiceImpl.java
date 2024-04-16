@@ -225,7 +225,7 @@ public class DeviceServiceImpl implements DeviceService {
                 //管理员 保洁也不限制关
                 closeRoomDoor(roomId);
                 //管理员关的 还要尝试关灯
-                closeLightByRoomId(userId, storeId, roomId, 3);
+                closeLightByRoomId(userId, storeId, roomId, 2);
                 break;
             case 4:
                 //系统关
@@ -275,7 +275,8 @@ public class DeviceServiceImpl implements DeviceService {
             case 1://1用户关灯 目前没有用户关灯的情况
                 break;
             case 2:
-            case 3://管理员和保洁目前也没有单独关灯的需求  都是关电的时候，同时关灯
+            case 3://管理员和保洁关灯
+                closeLight(roomId);
                 break;
             case 4:
                 closeLight(roomId);
