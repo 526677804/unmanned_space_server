@@ -112,9 +112,9 @@ public class IndexServiceImpl implements IndexService {
             //找出所有房间的订单
             List<OrderInfoDO> orderList = orderInfoMapper.getByRoomIds(roomInfoList.stream().map(x -> x.getRoomId()).collect(Collectors.toList()));
             //把订单按照房间id分组
-            Map<Long, List<OrderInfoDO>> orederMap;
+            Map<String, List<OrderInfoDO>> orederMap;
             if (!CollectionUtils.isEmpty(orderList)) {
-                orederMap = orderList.stream().collect(Collectors.groupingBy(x -> x.getRoomId()));
+                orederMap = orderList.stream().collect(Collectors.groupingBy(x -> String.valueOf(x.getRoomId())));
             } else {
                 orederMap = new HashMap<>();
             }
@@ -136,8 +136,8 @@ public class IndexServiceImpl implements IndexService {
                 //暂存所有禁用的时间段
                 List<AppOrderTimeVO> bookings = new ArrayList<>();
                 //找出该房间所有订单
-                if (orederMap.containsKey(respVO.getRoomId())) {
-                    List<OrderInfoDO> sortOrder = orederMap.get(respVO.getRoomId()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
+                if (orederMap.containsKey(respVO.getRoomId().toString())) {
+                    List<OrderInfoDO> sortOrder = orederMap.get(respVO.getRoomId().toString()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
                     //把第一个订单的开始和结束时间 设置给房间
                     respVO.setStartTime(sortOrder.get(0).getStartTime());
                     respVO.setEndTime(sortOrder.get(0).getEndTime());

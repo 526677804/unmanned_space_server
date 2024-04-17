@@ -83,6 +83,14 @@ public class AppStoreController {
         return success(storeInfoService.getRoomInfoList(storeId));
     }
 
+    @PostMapping("/getRoomInfoList")
+    @Operation(summary = "获取门店的房间列表")
+    @PreAuthenticated
+    @Parameter(name = "storeId")
+    public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList2(@RequestParam(value = "storeId", required = false) Long storeId) {
+        return success(storeInfoService.getRoomInfoList2(storeId));
+    }
+
     @GetMapping("/getRoomDetail/{roomId}")
     @Operation(summary = "获取房间详情")
     @PreAuthenticated
@@ -109,6 +117,7 @@ public class AppStoreController {
         deviceService.testYunlaba(roomId);
         return success(true);
     }
+
     @PostMapping("/deleteRoomInfo/{roomId}")
     @Operation(summary = "删除房间", description = "房间管理使用")
     @PreAuthenticated
@@ -127,7 +136,7 @@ public class AppStoreController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户开门 2管理员开门 3保洁开门
-        deviceService.openRoomDoor(getLoginUserId(),null,roomId, 2);
+        deviceService.openRoomDoor(getLoginUserId(), null, roomId, 2);
         return success(true);
     }
 
@@ -139,7 +148,7 @@ public class AppStoreController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> openRoomLock(@PathVariable("roomId") Long roomId) {
         //1用户开门 2管理员开门 3保洁开门
-        deviceService.openRoomBlueLock(getLoginUserId(),null,roomId, 2);
+        deviceService.openRoomBlueLock(getLoginUserId(), null, roomId, 2);
         return success(true);
     }
 
@@ -150,7 +159,7 @@ public class AppStoreController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> closeRoomDoor(@PathVariable("roomId") Long roomId) {
         //1用户关门 2管理员关门 3保洁关门
-        deviceService.closeRoomDoor(getLoginUserId(),null,roomId, 2);
+        deviceService.closeRoomDoor(getLoginUserId(), null, roomId, 2);
         return success(true);
     }
 

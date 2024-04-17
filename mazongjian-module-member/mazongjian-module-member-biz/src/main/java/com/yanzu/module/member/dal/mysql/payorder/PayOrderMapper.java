@@ -28,6 +28,7 @@ public interface PayOrderMapper extends BaseMapperX<PayOrderDO> {
                 .likeIfPresent(PayOrderDO::getPayOrderNo, reqVO.getPayOrderNo())
                 .betweenIfPresent(PayOrderDO::getPayTime, reqVO.getPayTime())
                 .likeIfPresent(PayOrderDO::getPayRefundNo, reqVO.getPayRefundNo())
+                .in(PayOrderDO::getStoreId, reqVO.getStoreIds())
                 .betweenIfPresent(PayOrderDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(PayOrderDO::getId));
     }
@@ -44,6 +45,7 @@ public interface PayOrderMapper extends BaseMapperX<PayOrderDO> {
     }
 
     PayOrderDO selectByOrderNoAndPayNo(PayOrderNotifyReqDTO notifyReqDTO);
+
     PayOrderDO getByPayNo(String payNo);
 
     PayOrderDO getByOrderNo(String orderNo);

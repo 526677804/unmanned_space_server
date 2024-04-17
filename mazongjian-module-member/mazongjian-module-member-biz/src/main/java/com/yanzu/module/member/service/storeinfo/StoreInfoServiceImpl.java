@@ -11,6 +11,7 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
+import com.yanzu.module.member.controller.app.index.vo.AppOrderTimeVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
 import com.yanzu.module.member.convert.roominfo.RoomInfoConvert;
@@ -45,10 +46,8 @@ import javax.annotation.Resource;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
@@ -539,6 +538,34 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         storeInfoMapper.updateById(new StoreInfoDO().setStoreId(storeInfoDO.getStoreId()).setRoomNum(storeInfoDO.getRoomNum() - 1));
         //清除该房间的设备
         deviceService.clearByRoomId(roomId);
+
+    }
+
+    @Override
+    public List<AppRoomInfoListRespVO> getRoomInfoList2(Long storeId) {
+        List<String> storeIds = storeUserMapper.getIdsByEmploy(getLoginUserId());
+        List<AppRoomInfoListRespVO> list = roomInfoMapper.getRoomInfoList2(storeIds, storeId);
+        if (!CollectionUtils.isEmpty(list)) {
+            //找出所有房间的订单
+            List<OrderInfoDO> orderList = orderInfoMapper.getByRoomIds(list.stream().map(x -> x.getRoomId()).collect(Collectors.toList()));
+            //把订单按照房间id分组
+            Map<String, List<OrderInfoDO>> orederMap;
+            if (!CollectionUtils.isEmpty(orderList)) {
+                orederMap = orderList.stream().collect(Collectors.groupingBy(x -> String.valueOf(x.getRoomId())));
+            } else {
+                orederMap = new HashMap<>();
+            }
+            list.forEach(x -> {
+                //找出该房间所有订单
+                if (orederMap.containsKey(x.getRoomId().toString())) {
+                    List<OrderInfoDO> sortOrder = orederMap.get(x.getRoomId().toString()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
+                    //把第一个订单的开始和结束时间 设置给房间
+                    x.setStartTime(sortOrder.get(0).getStartTime());
+                    x.setEndTime(sortOrder.get(0).getEndTime());
+                }
+            });
+        }
+        return list;
 
     }
 
