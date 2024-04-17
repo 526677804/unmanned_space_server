@@ -34,6 +34,8 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
     List<String> getIdsByUserId(Long userId);
     List<String> getIdsByUserIdAndAdmin(Long userId);
 
+    List<String> getIdsByEmploy(Long userId);
+
     int deleteClearUser(@Param("userId") Long userId, @Param("storeIds") List<Long> storeIds);
 
     int deleteClearUserAndStoreId(@Param("userId") Long userId, @Param("storeId") Long storeId);

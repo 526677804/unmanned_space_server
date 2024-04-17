@@ -6,6 +6,7 @@ import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.module.member.controller.admin.roominfo.vo.RoomInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.roominfo.vo.RoomInfoPageReqVO;
+import com.yanzu.module.member.controller.app.store.vo.AppRoomInfoListRespVO;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
@@ -62,4 +63,5 @@ public interface RoomInfoMapper extends BaseMapperX<RoomInfoDO> {
 
     List<AppRoomListVO> getListByIds(@Param("roomIds") Set<Long> roomIds);
 
+    List<AppRoomInfoListRespVO> getRoomInfoList2(@Param("storeIds") List<String> storeIds, @Param("storeId") Long storeId);
 }

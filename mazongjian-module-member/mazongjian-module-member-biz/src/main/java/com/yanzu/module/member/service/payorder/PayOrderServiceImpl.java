@@ -8,6 +8,7 @@ import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.exception.ServiceException;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
@@ -16,7 +17,9 @@ import com.yanzu.module.member.controller.app.order.vo.OrderSaveReqVO;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
 import com.yanzu.module.member.controller.app.user.vo.AppRechargeBalanceReqVO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
+import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
+import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
@@ -27,6 +30,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
@@ -35,6 +39,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
@@ -61,6 +66,12 @@ public class PayOrderServiceImpl implements PayOrderService {
     @Resource
     @Lazy // 延迟，避免循环依赖报错
     private AppOrderService appOrderService;
+
+
+    @Resource
+    private StoreInfoMapper storeInfoMapper;
+
+
     @Resource
     private RedisTemplate redisTemplate;
 
@@ -81,7 +92,16 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     public PageResult<PayOrderDO> getPayOrderPage(PayOrderPageReqVO pageReqVO) {
-        return payOrderMapper.selectPage(pageReqVO);
+        //只能查询自己门店的
+//        Long tenantId = TenantContextHolder.getTenantId();
+        List<StoreInfoDO> storeInfoDOS = storeInfoMapper.selectList();
+        if (!CollectionUtils.isEmpty(storeInfoDOS)) {
+            pageReqVO.setStoreIds(storeInfoDOS.stream().map(x -> x.getStoreId()).collect(Collectors.toList()));
+            return payOrderMapper.selectPage(pageReqVO);
+        } else {
+            return PageResult.empty();
+        }
+
     }
 
     @Override

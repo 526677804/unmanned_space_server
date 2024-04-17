@@ -2,6 +2,7 @@ package com.yanzu.module.member.controller.admin.storeinfo;
 
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoCreateReqVO;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoPageReqVO;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoRespVO;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoUpdateReqVO;
@@ -29,12 +30,12 @@ public class StoreInfoController {
     @Resource
     private StoreInfoService storeInfoService;
 
-//    @PostMapping("/create")
-//    @Operation(summary = "创建门店管理")
-//    @PreAuthorize("@ss.hasPermission('member:store-info:create')")
-//    public CommonResult<Long> createStoreInfo(@Valid @RequestBody StoreInfoCreateReqVO createReqVO) {
-//        return success(storeInfoService.createStoreInfo(createReqVO));
-//    }
+    @PostMapping("/create")
+    @Operation(summary = "创建门店管理")
+    @PreAuthorize("@ss.hasPermission('member:store-info:create')")
+    public CommonResult<Long> createStoreInfo(@Valid @RequestBody StoreInfoCreateReqVO createReqVO) {
+        return success(storeInfoService.createStoreInfo(createReqVO));
+    }
 
     @PutMapping("/update")
     @Operation(summary = "更新门店管理")

@@ -7,8 +7,8 @@ import javax.validation.constraints.*;
 
 @Schema(description = "管理后台 - 门店管理创建 Request VO")
 @Data
-@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class StoreInfoCreateReqVO extends StoreInfoBaseVO {
+public class StoreInfoCreateReqVO  {
+
 
 }

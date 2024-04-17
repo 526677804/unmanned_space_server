@@ -94,4 +94,30 @@
             #{item}
         </foreach>
     </select>
+    <select id="getRoomInfoList2"
+            resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomInfoListRespVO">
+        select s.store_id,
+        s.store_name,
+        r.room_id,
+        r.room_name,
+        r.type,
+        r.status,
+        l.device_data lockData,
+        gateway.device_id gatewayId
+        from member_room_info r
+        left join member_store_info s ON r.store_id = s.store_id
+        left join member_device_info l ON l.room_id = r.room_id and l.type = 5 and l.deleted = 0
+        left join member_device_info gateway
+        ON gateway.room_id = r.room_id and gateway.type = 6 and gateway.deleted = 0
+        where r.deleted = 0
+        and r.store_id IN
+        <foreach collection="storeIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="null!=storeId">
+            AND r.store_id=#{storeId}
+        </if>
+        order by r.store_id asc,r.sort_id asc
+
+    </select>
 </mapper>

@@ -158,5 +158,11 @@
         where deleted = 0 and type in (12,13)
           and user_id = #{userId}
     </select>
+    <select id="getIdsByEmploy" resultType="java.lang.String">
+        select store_id
+        from member_store_user
+        where deleted = 0 and type in (12,13,14)
+          and user_id = #{userId}
+    </select>
 
 </mapper>

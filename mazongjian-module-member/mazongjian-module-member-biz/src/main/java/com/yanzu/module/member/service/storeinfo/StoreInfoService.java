@@ -115,4 +115,6 @@ public interface StoreInfoService {
     void syncPrice(Long storeId);
 
     void deleteRoomInfo(Long roomId);
+
+    List<AppRoomInfoListRespVO> getRoomInfoList2(Long storeId);
 }

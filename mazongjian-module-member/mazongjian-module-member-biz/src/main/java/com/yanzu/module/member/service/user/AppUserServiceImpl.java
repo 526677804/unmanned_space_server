@@ -150,7 +150,7 @@ public class AppUserServiceImpl implements AppUserService {
     @Resource
     private StoreInfoService storeInfoService;
 
-    @Value("${sys.user.init-avatar:null}")
+    @Value("${sys.user.init-avatar}")
     private String userInitAvatar;
 
     @Override
@@ -180,7 +180,9 @@ public class AppUserServiceImpl implements AppUserService {
         // 插入用户
         MemberUserDO user = new MemberUserDO();
         user.setNickname("用户" + mobile.substring(5, 11));
-        user.setAvatar(userInitAvatar);
+        if(!ObjectUtils.isEmpty(userInitAvatar)){
+            user.setAvatar(userInitAvatar);
+        }
         user.setMobile(mobile);
         user.setStatus(CommonStatusEnum.ENABLE.getStatus()); // 默认开启
         user.setPassword(encodePassword(password)); // 加密密码
