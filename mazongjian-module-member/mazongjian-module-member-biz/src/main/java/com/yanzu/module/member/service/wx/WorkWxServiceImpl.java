@@ -189,7 +189,7 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
         if (!isAdmin) {
             sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(payType)).append("</font>\n");
-            sb.append(">续费金额:<font color=\"warning\">").append(price).append("</font>\n");
+//            sb.append(">续费金额:<font color=\"warning\">").append(price).append("</font>\n");
         }
         sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(endTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
         sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
