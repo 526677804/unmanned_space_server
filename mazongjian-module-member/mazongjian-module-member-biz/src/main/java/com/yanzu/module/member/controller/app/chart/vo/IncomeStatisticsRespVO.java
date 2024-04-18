@@ -20,14 +20,14 @@ import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 @Data
 public class IncomeStatisticsRespVO {
 
-    @Schema(description = "房间名称")
+    @Schema(description = "门店名称")
     private String storeName;
 
     @Schema(description = "金额")
     private BigDecimal price;
 
-    @Schema(description = "类型")
-    private String type;
+    @Schema(description = "支付类型")
+    private Integer payType;
 
     @Schema(description = "时间")
     @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)

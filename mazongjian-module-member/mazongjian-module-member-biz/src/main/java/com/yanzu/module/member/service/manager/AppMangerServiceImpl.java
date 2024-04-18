@@ -919,6 +919,9 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Override
     public List<IncomeStatisticsRespVO> getIncomeStatistics(AppChartDataReqVO reqVO) {
-        return null;
+        //仅管理员使用
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        reqVO.setUserId(getLoginUserId());
+        return orderInfoMapper.getIncomeStatistics(reqVO);
     }
 }

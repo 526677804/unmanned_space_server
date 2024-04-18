@@ -3,6 +3,7 @@ package com.yanzu.module.member.dal.mysql.orderinfo;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
+import com.yanzu.module.member.controller.app.chart.vo.IncomeStatisticsRespVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderInfoAppRespVO;
@@ -77,5 +78,7 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
     int countByUserAndStoreId(@Param("userId") Long userId, @Param("storeId") Long storeId);
 
     Integer countUser(AppChartDataReqVO reqVO);
+
+    List<IncomeStatisticsRespVO> getIncomeStatistics(AppChartDataReqVO reqVO);
 
 }
