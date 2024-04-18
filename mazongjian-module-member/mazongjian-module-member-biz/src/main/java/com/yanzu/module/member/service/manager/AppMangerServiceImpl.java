@@ -8,10 +8,7 @@ import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.api.user.MemberUserApi;
-import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
-import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
-import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
-import com.yanzu.module.member.controller.app.chart.vo.IncomeStatisticsRespVO;
+import com.yanzu.module.member.controller.app.chart.vo.*;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
@@ -918,10 +915,18 @@ public class AppMangerServiceImpl implements AppMangerService {
     }
 
     @Override
-    public List<IncomeStatisticsRespVO> getIncomeStatistics(AppChartDataReqVO reqVO) {
+    public List<AppIncomeStatisticsRespVO> getIncomeStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getIncomeStatistics(reqVO);
+    }
+
+    @Override
+    public List<AppRechargeStatisticsRespVO> getRechargeStatistics(AppChartDataReqVO reqVO) {
+        //仅管理员使用
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        reqVO.setUserId(getLoginUserId());
+        return orderInfoMapper.getRechargeStatistics(reqVO);
     }
 }

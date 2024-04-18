@@ -479,11 +479,11 @@
         </if>
     </select>
     <select id="getIncomeStatistics"
-            resultType="com.yanzu.module.member.controller.app.chart.vo.IncomeStatisticsRespVO">
+            resultType="com.yanzu.module.member.controller.app.chart.vo.AppIncomeStatisticsRespVO">
         select t.* from (
         SELECT
         s.store_name,
-        p.price,
+        (p.price/100) price,
         '微信' AS payType,
         p.create_time
         FROM
@@ -532,6 +532,32 @@
         </if>
         ) as t
         order by t.create_time desc
+    </select>
+    <select id="getRechargeStatistics"
+            resultType="com.yanzu.module.member.controller.app.chart.vo.AppRechargeStatisticsRespVO">
+        SELECT
+        s.store_name,
+        (p.price/100) price,
+        p.create_time
+        FROM
+        member_pay_order p
+        LEFT JOIN member_store_info s ON p.store_id = s.store_id
+        WHERE
+        p.deleted = 0
+        AND p.pay_status = 1
+        AND p.order_no like 'CZ%'
+        AND p.refund_price = 0
+        <if test="null!=startTime and null!=endTime">
+            and to_days(p.create_time) >= to_days(#{startTime})
+            and to_days(p.create_time) &lt;= to_days(#{endTime})
+        </if>
+        <if test="null!=storeId and storeId!=''">
+            and p.store_id=#{storeId}
+        </if>
+        <if test="null==storeId or storeId==''">
+            and p.store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type
+            IN (12,13))
+        </if>
     </select>
 
 </mapper>

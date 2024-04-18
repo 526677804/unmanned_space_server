@@ -2,10 +2,7 @@ package com.yanzu.module.member.service.manager;
 
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
-import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
-import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
-import com.yanzu.module.member.controller.app.chart.vo.IncomeStatisticsRespVO;
+import com.yanzu.module.member.controller.app.chart.vo.*;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
@@ -80,6 +77,7 @@ public interface AppMangerService {
 
     void changeOrderTime(AppChangeOrderTimeReqVO reqVO);
 
-    List<IncomeStatisticsRespVO> getIncomeStatistics(AppChartDataReqVO reqVO);
+    List<AppIncomeStatisticsRespVO> getIncomeStatistics(AppChartDataReqVO reqVO);
 
+    List<AppRechargeStatisticsRespVO> getRechargeStatistics(AppChartDataReqVO reqVO);
 }

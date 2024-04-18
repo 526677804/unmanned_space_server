@@ -18,7 +18,7 @@ import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
  * @DATE: 2024/4/18 18:05
  */
 @Data
-public class IncomeStatisticsRespVO {
+public class AppIncomeStatisticsRespVO {
 
     @Schema(description = "门店名称")
     private String storeName;
@@ -27,11 +27,11 @@ public class IncomeStatisticsRespVO {
     private BigDecimal price;
 
     @Schema(description = "支付类型")
-    private Integer payType;
+    private String payType;
 
     @Schema(description = "时间")
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
-    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    @JsonFormat(pattern = DateUtils.FORMAT_MONTH_DAY_HOUR_MINUTE, timezone = TIME_ZONE_DEFAULT)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_MONTH_DAY_HOUR_MINUTE)
     private Date createTime;
 
 

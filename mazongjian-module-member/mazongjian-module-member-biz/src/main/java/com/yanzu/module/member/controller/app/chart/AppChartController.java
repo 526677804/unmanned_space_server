@@ -3,10 +3,7 @@ package com.yanzu.module.member.controller.app.chart;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
-import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
-import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
-import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
-import com.yanzu.module.member.controller.app.chart.vo.IncomeStatisticsRespVO;
+import com.yanzu.module.member.controller.app.chart.vo.*;
 import com.yanzu.module.member.service.manager.AppMangerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -107,9 +104,17 @@ public class AppChartController {
     }
 
     @PostMapping("/getIncomeStatistics")
-    @Operation(summary = "获取收入统计")
+    @Operation(summary = "获取收入明细")
     @PreAuthenticated
-    public CommonResult<List<IncomeStatisticsRespVO>> getIncomeStatistics(@RequestBody AppChartDataReqVO reqVO) {
+    public CommonResult<List<AppIncomeStatisticsRespVO>> getIncomeStatistics(@RequestBody AppChartDataReqVO reqVO) {
         return success(appMangerService.getIncomeStatistics(reqVO));
     }
+
+    @PostMapping("/getRechargeStatistics")
+    @Operation(summary = "获取充值明细")
+    @PreAuthenticated
+    public CommonResult<List<AppRechargeStatisticsRespVO>> getRechargeStatistics(@RequestBody AppChartDataReqVO reqVO) {
+        return success(appMangerService.getRechargeStatistics(reqVO));
+    }
+
 }
