@@ -6,12 +6,16 @@ import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
+import com.yanzu.module.member.controller.app.chart.vo.IncomeStatisticsRespVO;
 import com.yanzu.module.member.service.manager.AppMangerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -100,5 +104,12 @@ public class AppChartController {
     @PreAuthenticated
     public CommonResult<List<KeyValue<String, BigDecimal>>> getRoomUseHourStatistics(@RequestBody AppChartDataReqVO reqVO) {
         return success(appMangerService.getRoomUseHourStatistics(reqVO));
+    }
+
+    @PostMapping("/getIncomeStatistics")
+    @Operation(summary = "获取收入统计")
+    @PreAuthenticated
+    public CommonResult<List<IncomeStatisticsRespVO>> getIncomeStatistics(@RequestBody AppChartDataReqVO reqVO) {
+        return success(appMangerService.getIncomeStatistics(reqVO));
     }
 }

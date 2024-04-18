@@ -11,6 +11,7 @@ import com.yanzu.module.member.api.user.MemberUserApi;
 import com.yanzu.module.member.controller.app.chart.vo.AppBusinessStatisticsRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppRevenueChartRespVO;
+import com.yanzu.module.member.controller.app.chart.vo.IncomeStatisticsRespVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
@@ -914,5 +915,10 @@ public class AppMangerServiceImpl implements AppMangerService {
         } else {
             throw exception(ADMIN_ORDER_OPRATION_ERROR);
         }
+    }
+
+    @Override
+    public List<IncomeStatisticsRespVO> getIncomeStatistics(AppChartDataReqVO reqVO) {
+        return null;
     }
 }
