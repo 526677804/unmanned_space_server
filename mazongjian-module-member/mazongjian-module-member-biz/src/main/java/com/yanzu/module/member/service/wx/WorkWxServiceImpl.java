@@ -58,7 +58,7 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
         sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
         sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
-        sb.append(">订单金额:<font color=\"warning\">").append(price).append("</font>\n");
+//        sb.append(">订单金额:<font color=\"warning\">").append(price).append("</font>\n");
         sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(payType)).append("</font>\n");
         if (!ObjectUtils.isEmpty(couponInfoDO)) {
             sb.append(">使用卡券:<font color=\"warning\">").append(couponInfoDO.getCouponName()).append("</font>\n");
@@ -75,12 +75,13 @@ public class WorkWxServiceImpl implements WorkWxService {
         markdown.put("content", sb.toString());
         msg.put("markdown", markdown);
         workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
-        JSONObject msg2 = new JSONObject();
-        msg2.put("msgtype", "text");
-        JSONObject text = new JSONObject();
-        text.put("content", memberUserDO.getMobile());
-        msg2.put("text", text);
-        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg2);
+//        重复发一遍手机号
+//        JSONObject msg2 = new JSONObject();
+//        msg2.put("msgtype", "text");
+//        JSONObject text = new JSONObject();
+//        text.put("content", memberUserDO.getMobile());
+//        msg2.put("text", text);
+//        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg2);
     }
 
     @Override
@@ -105,7 +106,7 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
         sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
         sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
-        sb.append(">订单金额:<font color=\"warning\">").append(price).append("</font>\n");
+//        sb.append(">订单金额:<font color=\"warning\">").append(price).append("</font>\n");
         sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(payType)).append("</font>\n");
         if (!ObjectUtils.isEmpty(couponInfoDO)) {
             sb.append(">使用卡券:<font color=\"warning\">").append(couponInfoDO.getCouponName()).append("</font>\n");
