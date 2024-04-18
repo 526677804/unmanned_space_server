@@ -359,7 +359,6 @@ public class AppMangerServiceImpl implements AppMangerService {
         //权限校验：管理员和加盟商允许
         // 校验用户类型
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
-
         //先找出来
         ClearInfoDO clearInfoDO = clearInfoMapper.selectById(reqVO.getClearId());
         //只能操作已完成或已驳回的记录

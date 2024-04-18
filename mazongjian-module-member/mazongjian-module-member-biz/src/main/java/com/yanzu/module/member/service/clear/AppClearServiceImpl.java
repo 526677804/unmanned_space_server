@@ -201,8 +201,8 @@ public class AppClearServiceImpl implements AppClearService {
                 deviceService.closeRoomDoor(getLoginUserId(),clearInfoDO.getStoreId(),clearInfoDO.getRoomId(), 4);
             } else {
                 // 否则 改成空闲
-                roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), clearInfoDO.getRoomId());
                 deviceService.closeRoomDoor(getLoginUserId(),clearInfoDO.getStoreId(),clearInfoDO.getRoomId(), 4);
+                roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), clearInfoDO.getRoomId());
             }
         } else {
             throw exception(OPRATION_ERROR);

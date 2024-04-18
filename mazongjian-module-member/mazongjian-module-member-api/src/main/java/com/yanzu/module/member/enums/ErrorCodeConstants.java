@@ -72,7 +72,7 @@ public interface ErrorCodeConstants {
     ErrorCode MEMBER_PAGE_PARAM_ERROR = new ErrorCode(1004004060, "参数错误！");
     ErrorCode ORDER_PAGE_PARAM_ERROR = new ErrorCode(1004004061, "参数错误！");
     ErrorCode NOT_FINISH_CLEAR_IONF_ERROR = new ErrorCode(1004004062, "该条件下没有可结算的订单！");
-    ErrorCode CLEAR_INFO_STATUS_OPRATION_ERROR = new ErrorCode(1004004063, "当前状态不能操作！");
+    ErrorCode CLEAR_INFO_STATUS_OPRATION_ERROR = new ErrorCode(1004004063, "当前状态不能操作,请确认保洁订单状态！");
     ErrorCode CLEAR_IMAGE_NOT_FOUNT_ERROR = new ErrorCode(1004004064, "请上传清洁完成的图片！");
     ErrorCode CLEAR_OPEN_DOOR_ERROR = new ErrorCode(1004004065, "当前状态不支持开门！");
     ErrorCode DEVICE_IOT_OP_ERROR = new ErrorCode(1004004070, "设备平台操作失败！");
