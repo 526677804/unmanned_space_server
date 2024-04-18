@@ -40,4 +40,6 @@ public interface ClearInfoMapper extends BaseMapperX<ClearInfoDO> {
     List<Long> getSettlementList(AppSettlementClearUserReqVO reqVO);
 
     int settlementByIds(List<Long> ids);
+
+    ClearInfoDO getCurrent(@Param("userId") Long userId, @Param("roomId") Long roomId);
 }

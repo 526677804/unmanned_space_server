@@ -1,9 +1,11 @@
 package com.yanzu.module.member.service.device;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
+import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.CLEAR_INFO_STATUS_OPRATION_ERROR;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.DEVICE_OPRATION_ERROR;
 
 /**
@@ -45,6 +48,10 @@ public class DeviceServiceImpl implements DeviceService {
     private DeviceInfoMapper deviceInfoMapper;
 
     @Resource
+    private ClearInfoMapper clearInfoMapper;
+
+
+    @Resource
     private IotService iotService;
 
     @Override
@@ -64,12 +71,13 @@ public class DeviceServiceImpl implements DeviceService {
                 break;
         }
         //增加开门记录
-        saveDeviceUseRecord(userId, storeId, null, "openStoreDoor");
+        saveDeviceUseRecord(userId, storeId, null, "开门店大门");
     }
 
 
     /**
      * 保存设备操作记录
+     *
      * @param userId
      * @param storeId
      * @param roomId
@@ -171,8 +179,12 @@ public class DeviceServiceImpl implements DeviceService {
                 openRoomDoor(roomId);
                 break;
             case 2:
+                //管理员不限制
+                openRoomDoor(roomId);
+                break;
             case 3:
-                //管理员不限制 保洁开门权限在调用处控制 只能开待清洁的房间
+                //保洁开门
+                getClearInfoByRoom(userId, roomId);
                 openRoomDoor(roomId);
                 break;
             case 4:
@@ -180,7 +192,16 @@ public class DeviceServiceImpl implements DeviceService {
                 break;
         }
         //增加开门记录
-        saveDeviceUseRecord(userId, storeId, roomId, "openRoomDoor");
+        saveDeviceUseRecord(userId, storeId, roomId, "打开房间电源");
+    }
+
+
+    private ClearInfoDO getClearInfoByRoom(Long userId, Long roomId) {
+        ClearInfoDO clearInfoDO = clearInfoMapper.getCurrent(userId, roomId);
+        if (ObjectUtils.isEmpty(clearInfoDO)) {
+            throw exception(CLEAR_INFO_STATUS_OPRATION_ERROR);
+        }
+        return clearInfoDO;
     }
 
     @Override
@@ -196,8 +217,12 @@ public class DeviceServiceImpl implements DeviceService {
                 openRoomDoor(roomId);
                 break;
             case 2:
+                //管理员不限制
+                openRoomDoor(roomId);
+                break;
             case 3:
-                //管理员不限制 保洁开门权限在调用处控制 只能开待清洁的房间
+                //保洁
+                getClearInfoByRoom(userId, roomId);
                 openRoomDoor(roomId);
                 break;
             case 4:
@@ -221,11 +246,17 @@ public class DeviceServiceImpl implements DeviceService {
                 closeRoomDoor(roomId);
                 break;
             case 2:
-            case 3:
-                //管理员 保洁也不限制关
+                //管理员 不限制关
                 closeRoomDoor(roomId);
-                //管理员关的 还要尝试关灯
+                //还要尝试关灯
                 closeLightByRoomId(userId, storeId, roomId, 2);
+                break;
+            case 3:
+                //保洁
+                getClearInfoByRoom(userId, roomId);
+                closeRoomDoor(roomId);
+                //还要尝试关灯
+                closeLightByRoomId(userId, storeId, roomId, 3);
                 break;
             case 4:
                 //系统关
@@ -233,7 +264,7 @@ public class DeviceServiceImpl implements DeviceService {
                 break;
         }
         //增加记录
-        saveDeviceUseRecord(userId, storeId, roomId, "closeRoomDoor");
+        saveDeviceUseRecord(userId, storeId, roomId, "关闭房间电源");
     }
 
     //提示语类型 1欢迎语 2结束时间30分钟提醒  3结束时间15分钟提示  4 结束时间5分钟提醒
@@ -283,7 +314,7 @@ public class DeviceServiceImpl implements DeviceService {
                 break;
         }
         //增加关灯记录
-        saveDeviceUseRecord(userId, storeId, roomId, "closeRoomLight");
+        saveDeviceUseRecord(userId, storeId, roomId, "关灯");
     }
 
     @Override
@@ -298,7 +329,7 @@ public class DeviceServiceImpl implements DeviceService {
         String lightSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 4);
         if (!StringUtils.isEmpty(lightSn)) {
             //关灯
-            opSwitch(lightSn,"off");
+            opSwitch(lightSn, "off");
         }
 //        //关灯的同时一定会关电  可能电已经关了，这里保守起见，再关一次
 //        //获取房间空开设备的sn

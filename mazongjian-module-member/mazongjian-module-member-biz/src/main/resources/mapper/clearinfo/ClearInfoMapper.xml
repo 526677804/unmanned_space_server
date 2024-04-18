@@ -135,4 +135,14 @@
             and to_days(create_time) &lt;= to_days(#{endTime})
         </if>
     </select>
+    <select id="getCurrent" resultType="com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO">
+        select *
+        from member_clear_info
+        where deleted = 0
+          and user_id = #{userId}
+          and room_id = #{roomId}
+          and status IN (1,2)
+        order by create_time desc
+        limit 1
+    </select>
 </mapper>

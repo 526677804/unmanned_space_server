@@ -36,9 +36,6 @@ public class MemberUserServiceImpl implements MemberUserService {
     @Resource
     private OAuth2TokenApi oAuth2TokenApi;
 
-    @Value("${sys.user.init-avatar:null}")
-    private String userInitAvatar;
-
     @Override
     public void updateAppUser(AppUserUpdateReqVO updateReqVO) {
         // 校验存在
@@ -98,7 +95,6 @@ public class MemberUserServiceImpl implements MemberUserService {
         }
         AppUserDO user = new AppUserDO();
         user.setNickname("用户" + createReqVO.getMobile().substring(5, 11));
-        user.setAvatar(userInitAvatar);
         user.setMobile(createReqVO.getMobile());
         user.setStatus(createReqVO.getStatus());
         user.setUserType(createReqVO.getUserType());
