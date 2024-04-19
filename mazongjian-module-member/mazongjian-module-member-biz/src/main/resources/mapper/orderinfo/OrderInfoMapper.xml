@@ -559,5 +559,13 @@
             IN (12,13))
         </if>
     </select>
+    <select id="getRepeatOrder" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
+        select *
+        from member_order_info
+        where deleted = 0
+          and room_id = #{roomId}
+          and end_time &lt; #{startTime}
+        order by end_time desc limit 1
+    </select>
 
 </mapper>

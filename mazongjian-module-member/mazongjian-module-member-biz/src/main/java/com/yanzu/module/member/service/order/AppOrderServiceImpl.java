@@ -733,9 +733,21 @@ public class AppOrderServiceImpl implements AppOrderService {
             //异步发送微信通知
             workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), totalPrice, couponInfoDO, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         }
+        checkRepeatOrder(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), roomInfoDO.getRoomName(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getUserId());
         return orderInfoDO.getOrderId();
 
     }
+
+    @Async
+    public void checkRepeatOrder(Long storeId, Long roomId, String roomName, Date startTime, Date endTime, Long userId) {
+        OrderInfoDO repeatOrder = orderInfoMapper.getRepeatOrder(roomId, startTime);
+        if (!ObjectUtils.isEmpty(repeatOrder) && repeatOrder.getUserId().compareTo(userId) == 0) {
+            //用户重复下单
+            workWxService.sendRepeatOrderMsg(storeId, roomName, startTime, endTime, userId);
+        }
+
+    }
+
 
     /**
      * 保存团购券使用记录

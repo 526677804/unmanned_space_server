@@ -35,4 +35,6 @@ public interface WorkWxService {
 
     void sendClearFinishMsg(Long storeId, Long roomId, Long loginUserId, String type);
 
+    void sendRepeatOrderMsg(Long storeId, String roomName, Date startTime, Date endTime, Long userId);
+
 }

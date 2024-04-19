@@ -445,6 +445,30 @@ public class WorkWxServiceImpl implements WorkWxService {
         workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
     }
 
+    @Override
+    public void sendRepeatOrderMsg(Long storeId, String roomName, Date startTime, Date endTime, Long userId) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+        log.info("发送订单消息到配置的企业微信");
+        StringBuffer sb = new StringBuffer();
+        sb.append("用户重复下单同一房间通知\n");
+        sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">手机号码:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+    }
+
     private String getPayTypeStr(Integer type) {
         switch (type) {
             case 1:
