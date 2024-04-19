@@ -99,6 +99,15 @@ public class AppManagerController {
         return success(true);
     }
 
+    @PostMapping("/changeOrderTime")
+    @Operation(summary = "订单改时间", description = "管理员订单管理使用")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> changeOrderTime(@RequestBody @Valid OrderRenewalReqVO reqVO) {
+        appMangerService.renew(reqVO);
+        return success(true);
+    }
+
     @PostMapping("/getClearManagerPage")
     @Operation(summary = "管理员获取保洁任务分页列表")
     @PreAuthenticated
