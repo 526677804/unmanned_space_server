@@ -512,7 +512,6 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (!CollectionUtils.isEmpty(roomUseStatistics)) {
             Integer count = roomInfoMapper.countByStoreIdAndUserId(reqVO.getStoreId(), reqVO.getUserId());
             //%.2f  %.表示 小数点前任意位数   2 表示两位小数 格式后的结果为f 表示浮点型
-            System.out.println();
             for (KeyValue<String, Long> vo : roomUseStatistics) {
 //                vo.setValue(vo.getValue() / (count * 1.0));
                 KeyValue<String, String> kv = new KeyValue();
@@ -525,11 +524,16 @@ public class AppMangerServiceImpl implements AppMangerService {
     }
 
     @Override
-    public List<KeyValue<String, BigDecimal>> getRoomUseHourStatistics(AppChartDataReqVO reqVO) {
+    public List<KeyValue<String, String>> getRoomUseHourStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
-        return orderInfoMapper.getRoomUseHourStatistics(reqVO);
+        List<KeyValue<String, String>> roomUseHourStatistics = orderInfoMapper.getRoomUseHourStatistics(reqVO);
+        if (!CollectionUtils.isEmpty(roomUseHourStatistics)) {
+            roomUseHourStatistics.forEach(x->x.setValue(String.format("%.2f", x.getValue())));
+            //%.2f  %.表示 小数点前任意位数   2 表示两位小数 格式后的结果为f 表示浮点型
+        }
+        return roomUseHourStatistics;
     }
 
     @Override
