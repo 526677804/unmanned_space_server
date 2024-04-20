@@ -99,7 +99,7 @@ public class AppChartController {
     @PostMapping("/getRoomUseHourStatistics")
     @Operation(summary = "获取房间使用时长统计")
     @PreAuthenticated
-    public CommonResult<List<KeyValue<String, BigDecimal>>> getRoomUseHourStatistics(@RequestBody AppChartDataReqVO reqVO) {
+    public CommonResult<List<KeyValue<String, String>>> getRoomUseHourStatistics(@RequestBody AppChartDataReqVO reqVO) {
         return success(appMangerService.getRoomUseHourStatistics(reqVO));
     }
 

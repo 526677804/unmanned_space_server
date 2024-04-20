@@ -34,13 +34,11 @@
     </select>
     <select id="getRoomInfoList"
             resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO">
-        select r.*, device.device_data lockData, gateway.device_id gatewayId
+        select r.*, device.device_data lockData
         from member_room_info r
                  left join member_store_user su ON su.store_id = r.store_id and su.deleted = 0
                  left join member_device_info device
                            ON device.room_id = r.room_id and device.type = 5 and device.deleted = 0
-                 left join member_device_info gateway
-                           ON gateway.room_id = r.room_id and gateway.type = 6 and gateway.deleted = 0
         where r.deleted = 0
           and su.user_id = #{userId}
           and su.type in (12, 13)

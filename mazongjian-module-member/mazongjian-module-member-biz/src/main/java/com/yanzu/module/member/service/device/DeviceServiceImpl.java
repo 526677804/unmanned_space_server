@@ -13,6 +13,7 @@ import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceBaseVO;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceContrlReqVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -125,7 +126,8 @@ public class DeviceServiceImpl implements DeviceService {
      *
      * @param roomId
      */
-    private void openRoomDoor(Long roomId) {
+    @Async
+    protected void openRoomDoor(Long storeId, Long roomId) {
         //开门 等于是开门+通电
         //获取房间设备的sn 1=门禁 2=空开 4=灯具 5=密码锁 6=网关
         String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
@@ -136,6 +138,13 @@ public class DeviceServiceImpl implements DeviceService {
         //可能有灯具
         String lightSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 4);
         opSwitch(lightSn, "on");
+        //如果有密码锁  并且有网关 就尝试网关开锁
+        String blueLock = deviceInfoMapper.getSnByRoomIdAndType(roomId, 5);
+        if (!ObjectUtils.isEmpty(blueLock)) {
+            if (countGateway(storeId) > 0) {
+                openDoor(blueLock);
+            }
+        }
     }
 
     /**
@@ -176,19 +185,19 @@ public class DeviceServiceImpl implements DeviceService {
         //1用户开门 2管理员开门 3保洁开门 4系统开门
         switch (type) {
             case 1://1用户开门 这里的 roomId肯定不是空
-                openRoomDoor(roomId);
+                openRoomDoor(storeId, roomId);
                 break;
             case 2:
                 //管理员不限制
-                openRoomDoor(roomId);
+                openRoomDoor(storeId, roomId);
                 break;
             case 3:
                 //保洁开门
                 getClearInfoByRoom(userId, roomId);
-                openRoomDoor(roomId);
+                openRoomDoor(storeId, roomId);
                 break;
             case 4:
-                openRoomDoor(roomId);
+                openRoomDoor(storeId, roomId);
                 break;
         }
         //增加开门记录
@@ -214,19 +223,19 @@ public class DeviceServiceImpl implements DeviceService {
         //1用户开门 2管理员开门 3保洁开门 4系统开门
         switch (type) {
             case 1://1用户开门 这里的 roomId肯定不是空
-                openRoomDoor(roomId);
+                openRoomDoor(storeId, roomId);
                 break;
             case 2:
                 //管理员不限制
-                openRoomDoor(roomId);
+                openRoomDoor(storeId, roomId);
                 break;
             case 3:
                 //保洁
                 getClearInfoByRoom(userId, roomId);
-                openRoomDoor(roomId);
+                openRoomDoor(storeId, roomId);
                 break;
             case 4:
-                openRoomDoor(roomId);
+                openRoomDoor(storeId, roomId);
                 break;
         }
         //增加开门记录
@@ -322,6 +331,11 @@ public class DeviceServiceImpl implements DeviceService {
         deviceInfoMapper.update(new DeviceInfoDO().setRoomId(null).setStoreId(null),
                 new LambdaUpdateWrapper<DeviceInfoDO>().eq(DeviceInfoDO::getRoomId, roomId)
         );
+    }
+
+    @Override
+    public int countGateway(Long storeId) {
+        return deviceInfoMapper.countGateway(storeId);
     }
 
     private void closeLight(Long roomId) {

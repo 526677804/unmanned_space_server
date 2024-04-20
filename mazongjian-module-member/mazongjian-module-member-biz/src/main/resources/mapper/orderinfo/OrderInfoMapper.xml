@@ -104,6 +104,7 @@
         , r.room_name
         , o.user_id
         , m.nickname
+        , m.mobile
         , o.start_time as startTime
         , o.end_time
         , ROUND(TIMESTAMPDIFF(SECOND, o.start_time,o.end_time) / 3600, 1) AS orderHour
@@ -148,7 +149,6 @@
         , r.image_urls roomImg
         , r.price roomPrice
         , r.work_price workPrice
-        , gateway.device_id gatewayId
         , device.device_data lockData
         , o.room_id
         , o.store_id
@@ -176,7 +176,6 @@
         left join member_user m ON m.id = o.user_id
         left join member_coupon_info c ON o.coupon_id = c.coupon_id
         left join member_device_info device ON device.room_id=r.room_id and device.type=5 and device.deleted=0
-        left join member_device_info gateway ON gateway.room_id=r.room_id and gateway.type=6 and gateway.deleted=0
         where o.deleted = 0
         <if test="null != orderId">
             and o.order_id = #{orderId}
@@ -286,7 +285,7 @@
 
     </select>
     <select id="getRoomUseStatistics" resultType="com.yanzu.framework.common.core.KeyValue">
-        select DATE_FORMAT(create_time, '%m-%d') `key`,count(distinct room_id) `value`
+        select DATE_FORMAT(create_time, '%m-%d') `key`,count(1) `value`
         from member_order_info
         where deleted = 0
         and status in (1, 2)
@@ -320,7 +319,7 @@
             and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
         </if>
         group by DATE_FORMAT(create_time, '%Y-%m-%d')
-        order by create_time asc
+        order by create_time DESC
 
     </select>
     <select id="getByStatus" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
@@ -558,6 +557,14 @@
             and p.store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type
             IN (12,13))
         </if>
+    </select>
+    <select id="getRepeatOrder" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
+        select *
+        from member_order_info
+        where deleted = 0
+          and room_id = #{roomId}
+          and end_time &lt; #{startTime}
+        order by end_time desc limit 1
     </select>
 
 </mapper>

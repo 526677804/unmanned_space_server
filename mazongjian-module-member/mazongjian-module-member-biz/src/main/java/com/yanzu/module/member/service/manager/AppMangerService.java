@@ -55,7 +55,7 @@ public interface AppMangerService {
 
     List<KeyValue<String, String>> getRoomUseStatistics(AppChartDataReqVO reqVO);
 
-    List<KeyValue<String, BigDecimal>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
+    List<KeyValue<String, String>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
 
     void giftCoupon(AppGiftCouponReqVO reqVO);
 
@@ -69,13 +69,13 @@ public interface AppMangerService {
 
     PageResult<AppClearPageRespVO> getClearManagerPage(AppClearPageReqVO reqVO);
 
-    void cancelOrder(Long orderId);
+    void cancelOrder(Long orderId,boolean refund);
 
     void useGroupNo(AppUseGroupNoReqVO reqVO);
 
     void changeOrderUser(AppChangeOrderUserReqVO reqVO);
 
-    void changeOrderTime(AppChangeOrderTimeReqVO reqVO);
+    void changeOrder(OrderChangeReqVO reqVO);
 
     List<AppIncomeStatisticsRespVO> getIncomeStatistics(AppChartDataReqVO reqVO);
 

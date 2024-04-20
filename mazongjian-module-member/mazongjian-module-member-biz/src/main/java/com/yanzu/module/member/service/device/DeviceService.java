@@ -28,4 +28,5 @@ public interface DeviceService {
 
     void clearByRoomId(Long roomId);
 
+    int countGateway(Long storeId);
 }

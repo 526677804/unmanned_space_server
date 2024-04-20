@@ -57,4 +57,11 @@
         </if>
         order by d.store_id,d.room_id
     </select>
+    <select id="countGateway" resultType="java.lang.Integer">
+        select count(1)
+        from member_device_info
+        where deleted = 0
+          and store_id = #{storeId}
+
+    </select>
 </mapper>

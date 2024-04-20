@@ -49,7 +49,7 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     List<KeyValue<String, Long>> getRoomUseStatistics(AppChartDataReqVO reqVO);
 
-    List<KeyValue<String, BigDecimal>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
+    List<KeyValue<String, String>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
 
     List<OrderInfoDO> getByStatus(Integer status);
     List<OrderInfoDO> getListByJob();
@@ -84,4 +84,5 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     List<AppRechargeStatisticsRespVO> getRechargeStatistics(AppChartDataReqVO reqVO);
 
+    OrderInfoDO getRepeatOrder(@Param("roomId") Long roomId, @Param("startTime") Date startTime);
 }

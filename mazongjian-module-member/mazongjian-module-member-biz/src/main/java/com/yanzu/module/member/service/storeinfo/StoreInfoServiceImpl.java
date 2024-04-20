@@ -31,6 +31,7 @@ import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -86,6 +87,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Resource
     private StoreMeituanInfoMapper storeMeituanInfoMapper;
+
+    @Resource
+    private AppOrderService appOrderService;
 
     @Resource
     private FileApi fileApi;
@@ -181,7 +185,13 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Override
     public List<AppRoomListRespVO> getRoomInfoList(Long storeId) {
-        return roomInfoMapper.getRoomInfoList(storeId, getLoginUserId());
+        List<AppRoomListRespVO> roomInfoList = roomInfoMapper.getRoomInfoList(storeId, getLoginUserId());
+        if (!CollectionUtils.isEmpty(roomInfoList)) {
+            if (deviceService.countGateway(storeId) > 0) {
+                roomInfoList.forEach(x -> x.setGatewayId(1L));
+            }
+        }
+        return roomInfoList;
     }
 
     @Override
@@ -459,17 +469,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         }
         //取消掉该房间 未完成的所有保洁订单
         clearInfoMapper.cancelByRoomId(roomId);
-        //取消后  如果有未完成的保洁订单 状态就是待保洁
-        int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(roomInfoDO.getRoomId());
-        if (countCurrentByRoomId > 0) {
-            roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), roomInfoDO.getRoomId());
-        } else if (orderInfoMapper.countByRoomId(roomInfoDO.getRoomId(), null) > 0) {
-            // 如果后面还有预约 就改成已预定
-            roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), roomInfoDO.getRoomId());
-        } else {
-            // 否则 改成空闲
-            roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomInfoDO.getRoomId());
-        }
+        //刷新房间状态
+        appOrderService.flushRoomStatus(roomId);
         //关电
         deviceService.closeRoomDoor(getLoginUserId(), roomInfoDO.getStoreId(), roomId, 4);
         //发通知
@@ -554,6 +555,11 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 orederMap = orderList.stream().collect(Collectors.groupingBy(x -> String.valueOf(x.getRoomId())));
             } else {
                 orederMap = new HashMap<>();
+            }
+            if (!CollectionUtils.isEmpty(list)) {
+                if (deviceService.countGateway(storeId) > 0) {
+                    list.forEach(x -> x.setGatewayId(1L));
+                }
             }
             list.forEach(x -> {
                 //找出该房间所有订单

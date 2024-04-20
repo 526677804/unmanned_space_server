@@ -50,5 +50,5 @@ public interface AppOrderService {
     void lockWxOrder(OrderPreReqVO reqVO);
 
 
-//    void closeOrder(Long orderId);
+    void flushRoomStatus(Long roomId);
 }

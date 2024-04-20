@@ -99,6 +99,15 @@ public class AppManagerController {
         return success(true);
     }
 
+    @PostMapping("/changeOrder")
+    @Operation(summary = "订单修改", description = "管理员订单管理使用")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> changeOrder(@RequestBody @Valid OrderChangeReqVO reqVO) {
+        appMangerService.changeOrder(reqVO);
+        return success(true);
+    }
+
     @PostMapping("/getClearManagerPage")
     @Operation(summary = "管理员获取保洁任务分页列表")
     @PreAuthenticated
@@ -107,12 +116,23 @@ public class AppManagerController {
     }
 
     @PostMapping("/cancelOrder/{orderId}")
-    @Operation(summary = "管理员取消订单 ", description = "我的订单使用")
+    @Operation(summary = "管理员取消订单 ", description = "订单管理使用")
     @PreAuthenticated
     @Parameter(name = "orderId")
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> cancelOrder(@PathVariable("orderId") Long orderId) {
-        appMangerService.cancelOrder(orderId);
+        appMangerService.cancelOrder(orderId,false);
+        return success(true);
+    }
+
+
+    @PostMapping("/refundOrder/{orderId}")
+    @Operation(summary = "管理员退款订单 ", description = "订单管理使用")
+    @PreAuthenticated
+    @Parameter(name = "orderId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> refundOrder(@PathVariable("orderId") Long orderId) {
+        appMangerService.cancelOrder(orderId,true);
         return success(true);
     }
 

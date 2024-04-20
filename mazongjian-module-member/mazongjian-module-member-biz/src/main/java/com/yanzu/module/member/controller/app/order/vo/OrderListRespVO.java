@@ -35,6 +35,7 @@ public class OrderListRespVO {
 
     @Schema(description = "门店id", requiredMode = Schema.RequiredMode.REQUIRED, example = "第一总店")
     private Long storeId;
+
     @Schema(description = "门店名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "第一总店")
     private String storeName;
 
@@ -52,6 +53,9 @@ public class OrderListRespVO {
 
     @Schema(description = "用户id", requiredMode = Schema.RequiredMode.REQUIRED, example = "4765")
     private Long userId;
+
+    @Schema(description = "手机号", requiredMode = Schema.RequiredMode.REQUIRED, example = "4765")
+    private String mobile;
 
     @Schema(description = "用户昵称", requiredMode = Schema.RequiredMode.REQUIRED, example = "4765")
     private String nickname;
@@ -89,7 +93,7 @@ public class OrderListRespVO {
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date createTime;
 
-    @Schema(description = "是否允许续费",  example = "false")
+    @Schema(description = "是否允许续费", example = "false")
     private Boolean renewBtn;
 
 

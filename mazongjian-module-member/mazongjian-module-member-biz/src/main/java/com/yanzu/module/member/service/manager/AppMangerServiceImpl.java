@@ -512,7 +512,6 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (!CollectionUtils.isEmpty(roomUseStatistics)) {
             Integer count = roomInfoMapper.countByStoreIdAndUserId(reqVO.getStoreId(), reqVO.getUserId());
             //%.2f  %.表示 小数点前任意位数   2 表示两位小数 格式后的结果为f 表示浮点型
-            System.out.println();
             for (KeyValue<String, Long> vo : roomUseStatistics) {
 //                vo.setValue(vo.getValue() / (count * 1.0));
                 KeyValue<String, String> kv = new KeyValue();
@@ -525,11 +524,16 @@ public class AppMangerServiceImpl implements AppMangerService {
     }
 
     @Override
-    public List<KeyValue<String, BigDecimal>> getRoomUseHourStatistics(AppChartDataReqVO reqVO) {
+    public List<KeyValue<String, String>> getRoomUseHourStatistics(AppChartDataReqVO reqVO) {
         //仅管理员使用
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
-        return orderInfoMapper.getRoomUseHourStatistics(reqVO);
+        List<KeyValue<String, String>> roomUseHourStatistics = orderInfoMapper.getRoomUseHourStatistics(reqVO);
+        if (!CollectionUtils.isEmpty(roomUseHourStatistics)) {
+            roomUseHourStatistics.forEach(x -> x.setValue(String.format("%.2f", x.getValue())));
+            //%.2f  %.表示 小数点前任意位数   2 表示两位小数 格式后的结果为f 表示浮点型
+        }
+        return roomUseHourStatistics;
     }
 
     @Override
@@ -677,7 +681,7 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Override
     @Transactional
-    public void cancelOrder(Long orderId) {
+    public void cancelOrder(Long orderId,boolean refund) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
         Long userId = orderInfoDO.getUserId();
         CouponInfoDO couponInfoDO = null;
@@ -687,81 +691,83 @@ public class AppMangerServiceImpl implements AppMangerService {
         //对于管理员 未开始和进行中的订单  都可以取消  不判断下单时间  但是团购下单的不退团购券
         cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (cancelFlag) {
-            //判断支付方式
-            if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
-                //团购支付的  管理员取消 不退团购券
-            } else {
-                //实际支付金额为0  就不退款了
-                if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {
-                    if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
-                        //创建微信支付实例
-                        WxPayService wxPayService = myWxService.initWxPay(orderInfoDO.getStoreId());
-                        //微信退款
-                        PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
-                        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-                        refundRequest.setOutTradeNo(orderInfoDO.getOrderNo());
-                        refundRequest.setOutRefundNo("TK" + orderInfoDO.getOrderNo());
-                        refundRequest.setTotalFee(payOrderDO.getPrice());
-                        refundRequest.setRefundFee(payOrderDO.getPrice());
-                        try {
-                            wxPayService.refund(refundRequest);
-                            payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
-                            payOrderDO.setRefundPrice(payOrderDO.getPrice());
-                            payOrderDO.setRefundTime(LocalDateTime.now());
-                            payOrderMapper.updateById(payOrderDO);
-                        } catch (WxPayException e) {
-                            e.printStackTrace();
+            if(refund){
+                //判断支付方式 进行退款
+                if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
+                    //团购支付的  管理员取消 不退团购券
+                } else {
+                    //实际支付金额为0  就不退款了
+                    if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {
+                        if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
+                            //创建微信支付实例
+                            WxPayService wxPayService = myWxService.initWxPay(orderInfoDO.getStoreId());
+                            //微信退款
+                            PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderInfoDO.getOrderNo());
+                            WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+                            refundRequest.setOutTradeNo(orderInfoDO.getOrderNo());
+                            refundRequest.setOutRefundNo("TK" + orderInfoDO.getOrderNo());
+                            refundRequest.setTotalFee(payOrderDO.getPrice());
+                            refundRequest.setRefundFee(payOrderDO.getPrice());
+                            try {
+                                wxPayService.refund(refundRequest);
+                                payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
+                                payOrderDO.setRefundPrice(payOrderDO.getPrice());
+                                payOrderDO.setRefundTime(LocalDateTime.now());
+                                payOrderMapper.updateById(payOrderDO);
+                            } catch (WxPayException e) {
+                                e.printStackTrace();
 //                        throw new RuntimeException(e);
-                            throw exception(USER_WEIXIN_PAY_REFUND_ERROR);
-                        }
-                    } else {
-                        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, orderInfoDO.getStoreId());
-                        //余额退款  把支付记录找出来
-                        List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
-                        if (!org.springframework.util.CollectionUtils.isEmpty(userMoneyBillDOList)) {
-                            for (UserMoneyBillDO billDO : userMoneyBillDOList) {
-                                UserMoneyBillDO newUserMoneyBillDO = new UserMoneyBillDO();
-                                BeanUtils.copyProperties(billDO, newUserMoneyBillDO);
-                                newUserMoneyBillDO.setId(null);
-                                newUserMoneyBillDO.setCreateTime(null);
-                                newUserMoneyBillDO.setCreator(null);
-                                newUserMoneyBillDO.setUpdateTime(null);
-                                newUserMoneyBillDO.setUpdater(null);
-                                newUserMoneyBillDO.setType(AppEnum.user_money_bill_type.REFUND.getValue());//改成退款状态
-                                newUserMoneyBillDO.setRemark(newUserMoneyBillDO.getRemark().replace("支付", "退款"));
-                                if (billDO.getMoneyType().intValue() == 1) {
-                                    //账户余额  加回去
-                                    storeUserDO.setBalance(storeUserDO.getBalance().add(billDO.getMoney()));
-                                    synchronized (this) {
-                                        storeUserMapper.updateById(storeUserDO);
+                                throw exception(USER_WEIXIN_PAY_REFUND_ERROR);
+                            }
+                        } else {
+                            StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, orderInfoDO.getStoreId());
+                            //余额退款  把支付记录找出来
+                            List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
+                            if (!org.springframework.util.CollectionUtils.isEmpty(userMoneyBillDOList)) {
+                                for (UserMoneyBillDO billDO : userMoneyBillDOList) {
+                                    UserMoneyBillDO newUserMoneyBillDO = new UserMoneyBillDO();
+                                    BeanUtils.copyProperties(billDO, newUserMoneyBillDO);
+                                    newUserMoneyBillDO.setId(null);
+                                    newUserMoneyBillDO.setCreateTime(null);
+                                    newUserMoneyBillDO.setCreator(null);
+                                    newUserMoneyBillDO.setUpdateTime(null);
+                                    newUserMoneyBillDO.setUpdater(null);
+                                    newUserMoneyBillDO.setType(AppEnum.user_money_bill_type.REFUND.getValue());//改成退款状态
+                                    newUserMoneyBillDO.setRemark(newUserMoneyBillDO.getRemark().replace("支付", "退款"));
+                                    if (billDO.getMoneyType().intValue() == 1) {
+                                        //账户余额  加回去
+                                        storeUserDO.setBalance(storeUserDO.getBalance().add(billDO.getMoney()));
+                                        synchronized (this) {
+                                            storeUserMapper.updateById(storeUserDO);
+                                        }
+                                        newUserMoneyBillDO.setTotalMoney(storeUserDO.getBalance());
+                                    } else if (billDO.getMoneyType().intValue() == 2) {
+                                        //赠送余额  加回去
+                                        storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().add(billDO.getMoney()));
+                                        synchronized (this) {
+                                            storeUserMapper.updateById(storeUserDO);
+                                        }
+                                        newUserMoneyBillDO.setTotalGiftMoney(storeUserDO.getGiftBalance());
+                                    } else {
+                                        throw exception(OPRATION_ERROR);
                                     }
-                                    newUserMoneyBillDO.setTotalMoney(storeUserDO.getBalance());
-                                } else if (billDO.getMoneyType().intValue() == 2) {
-                                    //赠送余额  加回去
-                                    storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().add(billDO.getMoney()));
-                                    synchronized (this) {
-                                        storeUserMapper.updateById(storeUserDO);
-                                    }
-                                    newUserMoneyBillDO.setTotalGiftMoney(storeUserDO.getGiftBalance());
-                                } else {
-                                    throw exception(OPRATION_ERROR);
+                                    userMoneyBillMapper.insert(newUserMoneyBillDO);
                                 }
-                                userMoneyBillMapper.insert(newUserMoneyBillDO);
                             }
                         }
                     }
-                }
-                //退还优惠券
-                if (!ObjectUtils.isEmpty(orderInfoDO.getCouponId())) {
-                    couponInfoDO = couponInfoMapper.selectById(orderInfoDO.getCouponId());
-                    if (couponInfoDO.getExpriceTime().after(new Date())) {
-                        couponInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
-                    } else {
-                        couponInfoDO.setStatus(AppEnum.coupon_status.EXPIRE.getValue());
+                    //退还优惠券
+                    if (!ObjectUtils.isEmpty(orderInfoDO.getCouponId())) {
+                        couponInfoDO = couponInfoMapper.selectById(orderInfoDO.getCouponId());
+                        if (couponInfoDO.getExpriceTime().after(new Date())) {
+                            couponInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
+                        } else {
+                            couponInfoDO.setStatus(AppEnum.coupon_status.EXPIRE.getValue());
+                        }
+                        couponInfoMapper.updateById(couponInfoDO);
                     }
-                    couponInfoMapper.updateById(couponInfoDO);
+                    orderInfoDO.setRefundPrice(orderInfoDO.getPayPrice());
                 }
-                orderInfoDO.setRefundPrice(orderInfoDO.getPayPrice());
             }
             //取消的订单已开始  那就触发一下关门
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
@@ -769,21 +775,9 @@ public class AppMangerServiceImpl implements AppMangerService {
             }
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
-            //取消后  如果有未完成的保洁订单 状态就是待保洁
-            int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(orderInfoDO.getRoomId());
-            if (orderInfoMapper.countByRoomCurrent(orderInfoDO.getRoomId(), orderId) > 0) {
-                // 如果当前有订单进行 就改成进行中
-                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
-            } else if (countCurrentByRoomId > 0) {
-                roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), orderInfoDO.getRoomId());
-            } else if (orderInfoMapper.countByRoomId(orderInfoDO.getRoomId(), orderId) > 0) {
-                // 如果后面还有预约 就改成已预定
-                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), orderInfoDO.getRoomId());
-            } else {
-                // 否则 改成空闲
-                roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), orderInfoDO.getRoomId());
-            }
             orderInfoMapper.updateById(orderInfoDO);
+            //刷新房间状态
+            appOrderService.flushRoomStatus(orderInfoDO.getRoomId());
             //异步发送微信通知
             workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), userId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice()
                     , couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo(), true);
@@ -858,10 +852,10 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Override
     @Transactional
-    public void changeOrderTime(AppChangeOrderTimeReqVO reqVO) {
+    public void changeOrder(OrderChangeReqVO reqVO) {
         //检查订单时间合法性
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(reqVO.getOrderId());
-        Long roomId = orderInfoDO.getRoomId();
+        Long oldRoomId = orderInfoDO.getRoomId();
         Long userId = orderInfoDO.getUserId();
         //权限检查
         storeInfoService.checkPermisson(orderInfoDO.getStoreId(), userId, null, AppEnum.member_user_type.ADMIN.getValue());
@@ -869,45 +863,28 @@ public class AppMangerServiceImpl implements AppMangerService {
         boolean flag = true;//默认允许修改订单
         flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (flag) {
+            Date newEndTime = new Date(reqVO.getStartTime().getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime()));
             //检查时间
-            appOrderService.preOrder(getLoginUserId(), orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
+            appOrderService.preOrder(getLoginUserId(), orderInfoDO.getRoomId(), reqVO.getStartTime(), newEndTime, null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
             //开始修改
             //改时间
             orderInfoDO.setStartTime(reqVO.getStartTime());
-            orderInfoDO.setEndTime(reqVO.getEndTime());
-            orderInfoMapper.updateById(orderInfoDO);
-            //判断有没有换房间
-            if (reqVO.getRoomId().compareTo(orderInfoDO.getRoomId()) != 0) {
-                //改新房间的状态  如果订单是开始 改成进行中  否则改成已预订
-                if (orderInfoDO.getStartTime().before(new Date())) {
-                    //订单开始时间在当前时间之前  说明订单已开始
-                    roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), reqVO.getRoomId());
-                    orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
-                } else {
-                    //订单开始时间在当前时间之后  说明订单未开始
-                    roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), reqVO.getRoomId());
-                    orderInfoDO.setStatus(AppEnum.order_status.PENDING.getValue());
-                }
-                orderInfoMapper.updateById(orderInfoDO);
-                //改旧房间的状态
-                Long oldRoomId = orderInfoDO.getRoomId();
-                //如果有未完成的保洁订单 状态就是待保洁
-                int countCurrentByRoomId = clearInfoMapper.countCurrentByRoomId(oldRoomId);
-                if (countCurrentByRoomId > 0) {
-                    roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), oldRoomId);
-                } else if (orderInfoMapper.countByRoomCurrent(oldRoomId, reqVO.getOrderId()) > 0) {
-                    // 如果当前有订单进行 就改成进行中
-                    roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), oldRoomId);
-                } else if (orderInfoMapper.countByRoomId(oldRoomId, reqVO.getOrderId()) > 0) {
-                    // 如果后面还有预约 就改成已预定
-                    roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), oldRoomId);
-                } else {
-                    // 否则 改成空闲
-                    roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), oldRoomId);
-                }
+            orderInfoDO.setEndTime(newEndTime);
+            orderInfoDO.setRoomId(orderInfoDO.getRoomId());
+            if(reqVO.getStartTime().after(new Date())){
+                //开始时间在当前时间以后 订单改成未开始
+                orderInfoDO.setStatus(AppEnum.order_status.PENDING.getValue());
             }
+            orderInfoMapper.updateById(orderInfoDO);
+          /*  //判断有没有换房间
+            if (reqVO.getRoomId().compareTo(oldRoomId) != 0) {
+                //刷新新房间的状态
+                appOrderService.flushRoomStatus(reqVO.getRoomId());
+            }*/
+            //刷新房间的状态
+            appOrderService.flushRoomStatus(oldRoomId);
             //发送消息到企业微信
-            workWxService.sendChangeMsg(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), roomId, reqVO.getRoomId(), userId);
+            workWxService.sendChangeMsg(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), oldRoomId, orderInfoDO.getRoomId(), userId);
 
         } else {
             throw exception(ADMIN_ORDER_OPRATION_ERROR);
