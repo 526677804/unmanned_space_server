@@ -69,13 +69,13 @@ public interface AppMangerService {
 
     PageResult<AppClearPageRespVO> getClearManagerPage(AppClearPageReqVO reqVO);
 
-    void cancelOrder(Long orderId);
+    void cancelOrder(Long orderId,boolean refund);
 
     void useGroupNo(AppUseGroupNoReqVO reqVO);
 
     void changeOrderUser(AppChangeOrderUserReqVO reqVO);
 
-    void changeOrderTime(AppChangeOrderTimeReqVO reqVO);
+    void changeOrder(OrderChangeReqVO reqVO);
 
     List<AppIncomeStatisticsRespVO> getIncomeStatistics(AppChartDataReqVO reqVO);
 

@@ -13,6 +13,7 @@ import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,9 @@ public class AppClearServiceImpl implements AppClearService {
 
     @Resource
     private StoreUserMapper storeUserMapper;
+
+    @Resource
+    private AppOrderService appOrderService;
 
     @Resource
     private WorkWxService workWxService;
@@ -107,7 +111,6 @@ public class AppClearServiceImpl implements AppClearService {
                             }
                             clearInfoDO.setUserId(null);
                             clearInfoDO.setStatus(AppEnum.clear_info_status.DEFAULT.getValue());
-                            workWxService.sendClearFinishMsg(clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), getLoginUserId(), "完成房间清洁");
                             break;
                     }
                     clearInfoMapper.updateById(clearInfoDO);
@@ -197,14 +200,10 @@ public class AppClearServiceImpl implements AppClearService {
 //                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), clearInfoDO.getRoomId());
                 // 4.19修改 如果有订单进行中 就不允许完成
                 throw exception(CLEAR_FINISH_ORDER_START_ERROR);
-            } else if (orderInfoMapper.countByRoomId(clearInfoDO.getRoomId(), null) > 0) {
-                // 如果后面还有预约 就改成已预定
-                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), clearInfoDO.getRoomId());
-                deviceService.closeRoomDoor(getLoginUserId(), clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), 4);
             } else {
-                // 否则 改成空闲
+                appOrderService.flushRoomStatus(clearInfoDO.getRoomId());
                 deviceService.closeRoomDoor(getLoginUserId(), clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), 4);
-                roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), clearInfoDO.getRoomId());
+                workWxService.sendClearFinishMsg(clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), getLoginUserId(), "完成房间清洁");
             }
         } else {
             throw exception(OPRATION_ERROR);

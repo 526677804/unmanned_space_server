@@ -35,4 +35,7 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
     List<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO);
 
     int updateStatusBySN(@Param("deviceSn") String deviceSn, @Param("state") Integer state);
+
+    int countGateway(Long storeId);
+
 }

@@ -104,6 +104,7 @@
         , r.room_name
         , o.user_id
         , m.nickname
+        , m.mobile
         , o.start_time as startTime
         , o.end_time
         , ROUND(TIMESTAMPDIFF(SECOND, o.start_time,o.end_time) / 3600, 1) AS orderHour
@@ -148,7 +149,6 @@
         , r.image_urls roomImg
         , r.price roomPrice
         , r.work_price workPrice
-        , gateway.device_id gatewayId
         , device.device_data lockData
         , o.room_id
         , o.store_id
@@ -176,7 +176,6 @@
         left join member_user m ON m.id = o.user_id
         left join member_coupon_info c ON o.coupon_id = c.coupon_id
         left join member_device_info device ON device.room_id=r.room_id and device.type=5 and device.deleted=0
-        left join member_device_info gateway ON gateway.room_id=r.room_id and gateway.type=6 and gateway.deleted=0
         where o.deleted = 0
         <if test="null != orderId">
             and o.order_id = #{orderId}
