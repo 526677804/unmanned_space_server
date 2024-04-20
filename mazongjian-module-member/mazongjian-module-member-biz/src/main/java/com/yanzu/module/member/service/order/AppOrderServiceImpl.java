@@ -1455,8 +1455,6 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
-    @Async
-    @Transactional
     public void flushRoomStatus(Long roomId) {
         if (orderInfoMapper.countByRoomCurrent(roomId, null) > 0) {
             // 如果房间当前有订单进行 就改成进行中
