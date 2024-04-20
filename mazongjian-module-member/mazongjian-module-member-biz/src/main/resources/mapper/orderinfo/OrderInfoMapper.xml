@@ -402,8 +402,6 @@
         <if test="null!=ignoreOrderId and ignoreOrderId!=''">
             and order_id !=#{ignoreOrderId}
         </if>
-        and start_time &lt;= now()
-        and end_time > now()
     </select>
     <select id="getCountOrder" resultType="java.lang.Integer">
         select count(1)

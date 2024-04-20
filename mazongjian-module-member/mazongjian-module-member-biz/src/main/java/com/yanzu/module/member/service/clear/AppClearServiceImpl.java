@@ -201,10 +201,12 @@ public class AppClearServiceImpl implements AppClearService {
                 // 4.19修改 如果有订单进行中 就不允许完成
                 throw exception(CLEAR_FINISH_ORDER_START_ERROR);
             } else {
-                appOrderService.flushRoomStatus(clearInfoDO.getRoomId());
+                //没有订单进行中 关闭电源
                 deviceService.closeRoomDoor(getLoginUserId(), clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), 4);
-                workWxService.sendClearFinishMsg(clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), getLoginUserId(), "完成房间清洁");
             }
+            appOrderService.flushRoomStatus(clearInfoDO.getRoomId());
+            workWxService.sendClearFinishMsg(clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), getLoginUserId(), "完成房间清洁");
+
         } else {
             throw exception(OPRATION_ERROR);
         }

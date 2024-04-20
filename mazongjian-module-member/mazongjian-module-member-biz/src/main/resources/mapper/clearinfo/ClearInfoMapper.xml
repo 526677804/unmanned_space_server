@@ -121,7 +121,6 @@
         where deleted = 0
           and room_id = #{roomId}
           and status IN (0, 1, 2)
-
     </select>
     <select id="getSettlementList" resultType="java.lang.Long">
         select clear_id
