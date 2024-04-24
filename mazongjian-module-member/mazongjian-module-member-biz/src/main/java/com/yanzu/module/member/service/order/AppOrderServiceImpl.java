@@ -220,7 +220,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(ORDER_TIME_CHECK_ERROR);
             }
         } else {
-            //续费
+            //续费 或者提前开始
             //查询出该房间，存在时间交集的订单 不考虑计算清洁时间
             Integer c = orderInfoMapper.countByPreOrder(roomId, 0, startTime, endTime, ignoreOrderId);
             if (c > 0) {
@@ -242,20 +242,24 @@ public class AppOrderServiceImpl implements AppOrderService {
         //再检查是否在禁用时间范围内
         if (!ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart()) && !ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart())) {
             // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
-            LocalTime bstart = LocalTime.parse(roomInfoDO.getBanTimeStart());
-            LocalTime bend = LocalTime.parse(roomInfoDO.getBanTimeEnd());
-            LocalDateTime bindS = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            bindS.with(bindS);
-            LocalDateTime endS = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            endS.with(bend);
+            LocalTime bHStart = LocalTime.parse(roomInfoDO.getBanTimeStart());
+            LocalTime bHEnd = LocalTime.parse(roomInfoDO.getBanTimeEnd());
+            //取下单开始时间
+            LocalDateTime bTStart = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            bTStart = bTStart.with(bHStart);
+            LocalDateTime bTEnd = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            bTEnd = bTEnd.with(bHEnd);
             // 判断是否跨日
-            if (bend.isBefore(bstart)) {
+            if (bHEnd.isBefore(bHStart)) {
                 //跨日了
-                endS.plusDays(1);
+                bTEnd = bTEnd.plusDays(1);
             }
-            if (startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isBefore(endS)
-                    && bindS.isBefore(endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
-                //存在交集
+            LocalDateTime orderStartTime = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime orderEndTime = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            if ((orderStartTime.isBefore(bTStart) && orderEndTime.isBefore(bTStart))
+                    || (orderStartTime.isAfter(bTEnd) && orderEndTime.isAfter(bTEnd))) {
+                //时间合法
+            } else {
                 throw exception(ORDER_TIME_CHECK_ERROR);
             }
         }
@@ -715,7 +719,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //如果房间状态是待清洁，就发送提醒保洁的通知
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {
             //异步发送微信通知
-            workWxService.sendOrderClearMsg(roomInfoDO.getStoreId(),  roomInfoDO.getRoomName(),  orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
+            workWxService.sendOrderClearMsg(roomInfoDO.getStoreId(), roomInfoDO.getRoomName(), orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         }
         //如果房间状态是空闲，就改成已预定
         else if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.ENABLE.getValue()) == 0) {
