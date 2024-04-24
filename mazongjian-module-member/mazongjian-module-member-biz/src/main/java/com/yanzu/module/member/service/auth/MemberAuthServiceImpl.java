@@ -133,6 +133,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         try {
             phoneNumberInfo = wxMaService.getUserService().getNewPhoneNoInfo(reqVO.getPhoneCode());
         } catch (Exception exception) {
+            exception.printStackTrace();
             throw exception(AUTH_WEIXIN_MINI_APP_PHONE_CODE_ERROR);
         }
         // 获得获得注册用户
