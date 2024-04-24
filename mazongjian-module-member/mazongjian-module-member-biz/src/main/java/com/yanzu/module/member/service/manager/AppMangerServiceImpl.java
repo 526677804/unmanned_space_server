@@ -635,7 +635,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                 //未开始和进行中  直接续费
                 break;
             case 2://已完成，5分钟内可以续费，超过5分钟只能重新下单
-                if (((new Date().getTime() - orderInfoDO.getEndTime().getTime()) / 1000 / 60) > 5) {
+                if (((new Date().getTime() - orderInfoDO.getEndTime().getTime()) / 1000 / 60) > 6) {
                     throw exception(ORDER_STATUS_FINISH_OPRATION_ERROR);
                 }
                 break;
