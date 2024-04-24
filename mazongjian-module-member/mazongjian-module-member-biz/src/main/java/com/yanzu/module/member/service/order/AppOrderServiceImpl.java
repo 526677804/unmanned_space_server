@@ -246,7 +246,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             LocalTime bend = LocalTime.parse(roomInfoDO.getBanTimeEnd());
             LocalDateTime bindS = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             bindS.with(bindS);
-            LocalDateTime endS = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime endS = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             endS.with(bend);
             // 判断是否跨日
             if (bend.isBefore(bstart)) {
@@ -1133,9 +1133,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         Long loginUserId = getLoginUserId();
         //只能操作自己的订单
-        if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
-            throw exception(OPRATION_ERROR);
-        }
+//        if (orderInfoDO.getUserId().compareTo(loginUserId) != 0) {
+//            throw exception(OPRATION_ERROR);
+//        }
         Date now = new Date();
         now.setSeconds(0);//秒数取0 方便计算
         //只有未开始的订单才能开始
