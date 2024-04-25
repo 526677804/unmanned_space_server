@@ -97,7 +97,18 @@ public class DeviceServiceImpl implements DeviceService {
     private void openStoreDoor(Long storeId) {
         //获取大门的门禁sn
         String sn = deviceInfoMapper.getSnByStoreId(storeId);
-        openDoor(sn);
+        if (!ObjectUtils.isEmpty(sn)) {
+            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+            List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+            iotDeviceContrlReqVO.setOutlet(0).setCmd("pulse");
+            param.add(iotDeviceContrlReqVO);
+            reqVO.setDeviceSn(sn).setParams(param);
+            boolean flag = iotService.control(reqVO);
+            if (!flag) {
+                throw exception(DEVICE_OPRATION_ERROR);
+            }
+        }
     }
 
 
