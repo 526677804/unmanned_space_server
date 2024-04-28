@@ -190,14 +190,22 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
             throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
         }
+        //检查优惠券是否允许使用
+        checkCouponUse(couponInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime);
+        //计算订单价格
+        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(),
+                storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO);
         if (ObjectUtils.isEmpty(ignoreOrderId)) {
             //下单
+            //如果使用了加时券，则直接增加指定的小时
+            if (!ObjectUtils.isEmpty(couponInfoDO) && couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
+                endTime = new Date(endTime.getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue());
+            }
             //检查订单时间 是否符合最小下单时间要求
             long orderMinutes = Math.abs(ChronoUnit.MINUTES.between(startTime.toInstant(), endTime.toInstant()));
             if ((orderMinutes / 60) < roomInfoDO.getMinHour()) {
                 throw exception(ORDER_MIN_HOUR_ERROR);
             }
-
             //下单需要,检查时间有没有超过提前设置的范围
             Instant instant1 = startTime.toInstant();
             Instant instant2 = now.toInstant();
@@ -263,11 +271,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(ORDER_TIME_CHECK_ERROR);
             }
         }
-        //检查优惠券是否允许使用
-        checkCouponUse(couponInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime);
-        //计算订单价格
-        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(),
-                storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO);
+
         //随机生成一个订单号
         String orderNo = getOrderNo();
         //价格转成分为单位 微信支付使用
@@ -434,6 +438,13 @@ public class AppOrderServiceImpl implements AppOrderService {
                         totalPrice = totalPrice.subtract(couponInfoDO.getPrice());
                     }
                     break;
+                case 3://加时券
+                    //加时券 不影响价格  只是会多算一个小时
+                    //判断门槛
+                    if (couponInfoDO.getMinUsePrice().compareTo(hours) > 0) {
+                        throw exception(COUPON_MIN_USER_PRICE_ERROR);
+                    }
+                    break;
             }
         }
         //结果保留2位小数
@@ -582,6 +593,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         CouponInfoDO couponInfoDO = null;
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
+            if (couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
+                reqVO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
+            }
         }
         //下单之前仍然再检查一遍 并计算出应付总金额
         WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, null, reqVO.getNightLong(), false);

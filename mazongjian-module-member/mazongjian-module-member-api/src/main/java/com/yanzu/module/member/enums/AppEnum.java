@@ -281,7 +281,8 @@ public class AppEnum {
     public enum coupon_type {
 
         DIKOU(1),
-        MANJIAN(2);
+        MANJIAN(2),
+        JIASHI(3);
 
         private final Integer value;
     }

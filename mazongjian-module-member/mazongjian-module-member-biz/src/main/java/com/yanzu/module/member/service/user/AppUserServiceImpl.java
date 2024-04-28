@@ -405,8 +405,8 @@ public class AppUserServiceImpl implements AppUserService {
             if (!CollectionUtils.isEmpty(list)) {
                 list.stream().forEach(x -> {
                     boolean f1 = false;
-                    if (x.getType().compareTo(AppEnum.coupon_type.DIKOU.getValue()) == 0) {
-                        //抵扣时长
+                    if (x.getType().compareTo(AppEnum.coupon_type.DIKOU.getValue()) == 0||x.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
+                        //抵扣或加时
                         f1 = hours.compareTo(x.getMinUsePrice()) >= 0;
                     } else if (x.getType().compareTo(AppEnum.coupon_type.MANJIAN.getValue()) == 0) {
                         //满减
