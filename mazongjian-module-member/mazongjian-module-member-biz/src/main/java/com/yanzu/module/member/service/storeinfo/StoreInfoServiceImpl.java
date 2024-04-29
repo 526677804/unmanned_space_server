@@ -451,7 +451,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     public void clearAndFinish(Long roomId) {
         //检查权限
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
-        checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.CLEAR.getValue());
         //只有状态为进行中 或 待清洁，才能处理
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) == 0) {
             //使用中  订单结束时间改为当前  房间状态改为空闲
