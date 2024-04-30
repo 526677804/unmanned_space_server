@@ -104,7 +104,7 @@ public class DeviceServiceImpl implements DeviceService {
                 IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
                 List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
                 IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
-                iotDeviceContrlReqVO.setOutlet(0).setCmd("on");
+                iotDeviceContrlReqVO.setOutlet(0).setCmd("pulse");
                 param.add(iotDeviceContrlReqVO);
                 reqVO.setDeviceSn(sn).setParams(param);
                 boolean flag = iotService.control(reqVO);
