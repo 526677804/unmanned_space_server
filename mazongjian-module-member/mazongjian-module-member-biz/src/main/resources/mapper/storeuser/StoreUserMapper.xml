@@ -97,7 +97,7 @@
                   and store_id = #{storeId}) as finishCount
              , (select count(1)
                 from member_clear_info
-                where status = 7
+                where status = 6
                   and user_id = su.user_id
                   and store_id = #{storeId}) as settlementCount
         from member_store_user su

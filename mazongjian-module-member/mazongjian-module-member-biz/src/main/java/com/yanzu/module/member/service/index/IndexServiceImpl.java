@@ -81,9 +81,12 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public AppIndexStoreInfoRespVO getStoreInfo(Long storeId) {
-        AppIndexStoreInfoRespVO storeInfo = storeInfoMapper.getStoreInfo(storeId);
+    public AppIndexStoreInfoRespVO getStoreInfo(Long storeId, String lat, String lon) {
+        AppIndexStoreInfoRespVO storeInfo = storeInfoMapper.getStoreInfo(storeId, lat, lon);
         if (!ObjectUtils.isEmpty(storeInfo)) {
+            if(ObjectUtils.isEmpty(storeInfo.getDistance())){
+                storeInfo.setDistance(new BigDecimal(9999));
+            }
             storeInfo.setDiscountRules(discountRulesMapper.getRulesByStoreId(storeId));
         }
         return storeInfo;

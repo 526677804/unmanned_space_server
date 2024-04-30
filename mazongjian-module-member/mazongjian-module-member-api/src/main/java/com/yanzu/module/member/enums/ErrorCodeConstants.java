@@ -67,7 +67,7 @@ public interface ErrorCodeConstants {
 
     ErrorCode CLEAR_ORDER_NOT_JIEDAN = new ErrorCode(1004004040, "订单已经被其他人抢走！");
     ErrorCode CLEAR_ORDER_STATUS_ERROR = new ErrorCode(1004004041, "订单当前状态不允许进行此操作！");
-    ErrorCode USER_TYPE_CHECK_ERROR = new ErrorCode(1004004042, "用户类型检查异常！选择的用户不支持进行此操作！");
+    ErrorCode USER_TYPE_CHECK_ERROR = new ErrorCode(1004004042, "用户类型检查异常！用户不能同时成为管理员和保洁员！");
     ErrorCode CHECK_STORE_PROMISSION_ERROR = new ErrorCode(1004004050, "选择的门店中包含未授权的门店！");
     ErrorCode MEMBER_PAGE_PARAM_ERROR = new ErrorCode(1004004060, "参数错误！");
     ErrorCode ORDER_PAGE_PARAM_ERROR = new ErrorCode(1004004061, "参数错误！");

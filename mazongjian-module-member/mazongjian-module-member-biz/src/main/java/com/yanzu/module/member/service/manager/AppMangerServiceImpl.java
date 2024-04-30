@@ -49,6 +49,8 @@ import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
+import com.yanzu.module.member.service.user.AppUserService;
+import com.yanzu.module.member.service.user.MemberUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import org.springframework.beans.BeanUtils;
@@ -71,6 +73,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.framework.common.util.servlet.ServletUtils.getClientIP;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
@@ -136,6 +139,9 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Resource
     private MemberUserApi memberUserApi;
+
+    @Resource
+    private AppUserService appUserService;
 
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
@@ -300,7 +306,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         //通过该手机号，查询出用户
         MemberUserDO memberUserDO = memberUserMapper.selectByMobile(reqVO.getMobile());
         if (ObjectUtils.isEmpty(memberUserDO)) {
-            throw exception(AUTH_USER_PHONE_ERROR);
+            //不存在则创建用户
+            memberUserDO = appUserService.createUserIfAbsent(memberUserDO.getMobile(), getClientIP());
+//            throw exception(AUTH_USER_PHONE_ERROR);
         }
         if (memberUserDO.getId().compareTo(getLoginUserId()) == 0) {
             throw exception(OPRATION_ERROR);
@@ -586,7 +594,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         //找出用户
         MemberUserDO memberUserDO = memberUserMapper.selectByMobile(reqVO.getMobile());
         if (ObjectUtils.isEmpty(memberUserDO)) {
-            throw exception(AUTH_USER_PHONE_ERROR);
+            //不存在则创建用户
+            memberUserDO = appUserService.createUserIfAbsent(memberUserDO.getMobile(), getClientIP());
+//            throw exception(AUTH_USER_PHONE_ERROR);
         }
         if (memberUserDO.getId().compareTo(getLoginUserId()) == 0) {
             throw exception(OPRATION_ERROR);
@@ -681,7 +691,7 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Override
     @Transactional
-    public void cancelOrder(Long orderId,boolean refund) {
+    public void cancelOrder(Long orderId, boolean refund) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
         Long userId = orderInfoDO.getUserId();
         CouponInfoDO couponInfoDO = null;
@@ -691,7 +701,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         //对于管理员 未开始和进行中的订单  都可以取消  不判断下单时间  但是团购下单的不退团购券
         cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (cancelFlag) {
-            if(refund){
+            if (refund) {
                 //判断支付方式 进行退款
                 if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
                     //团购支付的  管理员取消 不退团购券
@@ -871,7 +881,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             orderInfoDO.setStartTime(reqVO.getStartTime());
             orderInfoDO.setEndTime(newEndTime);
             orderInfoDO.setRoomId(orderInfoDO.getRoomId());
-            if(reqVO.getStartTime().after(new Date())){
+            if (reqVO.getStartTime().after(new Date())) {
                 //开始时间在当前时间以后 订单改成未开始
                 orderInfoDO.setStatus(AppEnum.order_status.PENDING.getValue());
             }

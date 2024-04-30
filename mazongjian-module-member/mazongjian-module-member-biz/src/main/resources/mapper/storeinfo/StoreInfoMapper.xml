@@ -72,10 +72,20 @@
     <select id="getStoreInfo"
             resultType="com.yanzu.module.member.controller.app.index.vo.AppIndexStoreInfoRespVO">
         select *
+        <if test="null!=lat and null!=lon and lat!='' and lon!=''">
+            ,(
+            6371 * ACOS(
+            COS(RADIANS(#{lat})) *
+            COS(RADIANS(lat)) *
+            COS(RADIANS(lon) - RADIANS(#{lon})) +
+            SIN(RADIANS(#{lat})) * SIN(RADIANS(lat))
+            )
+            ) AS distance
+        </if>
         from member_store_info
         where deleted = 0
-          and status = 0
-          and store_id = #{storeId}
+        and status = 0
+        and store_id = #{storeId}
 
     </select>
     <select id="getStoreList" resultType="com.yanzu.framework.common.core.KeyValue">
@@ -95,14 +105,15 @@
     </select>
     <select id="getRoomInfoList"
             resultType="com.yanzu.module.member.controller.app.index.vo.AppRoomInfoListRespVO">
-        select *
-        from member_room_info
-        where deleted = 0
-          and store_id = #{storeId}
+        select r.*,s.clear_time
+        from member_room_info r
+        left join member_store_info s ON r.store_id=s.store_id
+        where r.deleted = 0
+          and r.store_id = #{storeId}
         <if test="null!=roomClass">
-            and room_class=#{roomClass}
+            and r.room_class=#{roomClass}
         </if>
-        order by sort_id asc
+        order by r.sort_id asc
     </select>
     <select id="getPageList" resultType="com.yanzu.module.member.controller.app.store.vo.AppStoreAdminRespVO">
         SELECT

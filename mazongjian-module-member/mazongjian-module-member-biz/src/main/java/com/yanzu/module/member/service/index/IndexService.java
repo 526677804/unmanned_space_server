@@ -13,7 +13,7 @@ public interface IndexService {
 
     PageResult<AppStorePageRespVO> getStorePageList(AppStorePageReqVO reqVO);
 
-    AppIndexStoreInfoRespVO getStoreInfo(Long storeId);
+    AppIndexStoreInfoRespVO getStoreInfo(Long storeId,String lat,String lon);
 
     List<KeyValue<String, Long>> getStoreList(String name,String cityName);
 

@@ -56,8 +56,9 @@ public class IndexController {
     @GetMapping("/getStoreInfo/{storeId}")
     @Operation(summary = "首页获取门店信息详情")
     @Parameter(name = "storeId")
-    public CommonResult<AppIndexStoreInfoRespVO> getStoreInfo(@PathVariable("storeId") Long storeId) {
-        return success(indexService.getStoreInfo(storeId));
+    public CommonResult<AppIndexStoreInfoRespVO> getStoreInfo(@PathVariable("storeId") Long storeId
+            , @RequestParam(value = "lat", required = false) String lat, @RequestParam(value = "lon", required = false) String lon) {
+        return success(indexService.getStoreInfo(storeId,lat,lon));
     }
 
 
@@ -65,8 +66,8 @@ public class IndexController {
     @Operation(summary = "首页获取房间信息列表")
     @Parameter(name = "storeId")
     public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList(@PathVariable("storeId") Long storeId
-            ,@RequestParam(required = false,name = "roomClass") Integer roomClass) {
-        return success(indexService.getRoomInfoList(storeId,roomClass));
+            , @RequestParam(required = false, name = "roomClass") Integer roomClass) {
+        return success(indexService.getRoomInfoList(storeId, roomClass));
     }
 
     @PostMapping("/getRoomInfo/{roomId}")
@@ -81,7 +82,7 @@ public class IndexController {
     @PreAuthenticated
     public CommonResult<List<KeyValue<String, Long>>> getStoreList(@RequestParam(value = "name", required = false) String name
             , @RequestParam(value = "cityName", required = false) String cityName) {
-        return success(indexService.getStoreList(name,cityName));
+        return success(indexService.getStoreList(name, cityName));
     }
 
     @GetMapping("/getRoomList/{storeId}")
