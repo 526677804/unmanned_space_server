@@ -78,6 +78,9 @@
                 and c.user_id=#{userId}
             </if>
         </if>
+        <if test="null==status">
+            and ( c.user_id=#{userId} or c.user_id is null)
+        </if>
         order by c.create_time desc
     </select>
     <select id="getByRoomId" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">

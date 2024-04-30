@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -20,6 +21,9 @@ public class AppIndexStoreInfoRespVO  {
 
     @Schema(description = "城市名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "赵六")
     private String cityName;
+
+    @Schema(description = "距离")
+    private BigDecimal distance;
 
     @Schema(description = "门店富文本详情")
     private String content;
