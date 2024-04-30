@@ -307,7 +307,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         MemberUserDO memberUserDO = memberUserMapper.selectByMobile(reqVO.getMobile());
         if (ObjectUtils.isEmpty(memberUserDO)) {
             //不存在则创建用户
-            memberUserDO = appUserService.createUserIfAbsent(memberUserDO.getMobile(), getClientIP());
+            memberUserDO = appUserService.createUserIfAbsent(reqVO.getMobile(), getClientIP());
 //            throw exception(AUTH_USER_PHONE_ERROR);
         }
         if (memberUserDO.getId().compareTo(getLoginUserId()) == 0) {
@@ -595,7 +595,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         MemberUserDO memberUserDO = memberUserMapper.selectByMobile(reqVO.getMobile());
         if (ObjectUtils.isEmpty(memberUserDO)) {
             //不存在则创建用户
-            memberUserDO = appUserService.createUserIfAbsent(memberUserDO.getMobile(), getClientIP());
+            memberUserDO = appUserService.createUserIfAbsent(reqVO.getMobile(), getClientIP());
 //            throw exception(AUTH_USER_PHONE_ERROR);
         }
         if (memberUserDO.getId().compareTo(getLoginUserId()) == 0) {
