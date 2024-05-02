@@ -96,8 +96,23 @@ public class DeviceServiceImpl implements DeviceService {
 
     private void openStoreDoor(Long storeId) {
         //获取大门的门禁sn
-        String sn = deviceInfoMapper.getSnByStoreId(storeId);
-        if (!ObjectUtils.isEmpty(sn)) {
+        String sn = deviceInfoMapper.getSnByStoreIdAndType(storeId, 1);
+        if (ObjectUtils.isEmpty(sn)) {
+            //可能用的密码锁
+            sn = deviceInfoMapper.getSnByStoreIdAndType(storeId, 5);
+            if (!ObjectUtils.isEmpty(sn)) {
+                IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+                List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+                IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+                iotDeviceContrlReqVO.setOutlet(0).setCmd("pulse");
+                param.add(iotDeviceContrlReqVO);
+                reqVO.setDeviceSn(sn).setParams(param);
+                boolean flag = iotService.control(reqVO);
+                if (!flag) {
+                    throw exception(DEVICE_OPRATION_ERROR);
+                }
+            }
+        }else{
             IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
             List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
             IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
@@ -131,6 +146,7 @@ public class DeviceServiceImpl implements DeviceService {
             }
         }
     }
+
     /**
      * 关门禁
      *
@@ -294,24 +310,24 @@ public class DeviceServiceImpl implements DeviceService {
         //1用户关 2管理员关 3保洁关  4系统关
         switch (type) {
             case 1://1用户关
-                closeRoomDoor(storeId,roomId);
+                closeRoomDoor(storeId, roomId);
                 break;
             case 2:
                 //管理员 不限制关
-                closeRoomDoor(storeId,roomId);
+                closeRoomDoor(storeId, roomId);
                 //还要尝试关灯
                 closeLightByRoomId(userId, storeId, roomId, 2);
                 break;
             case 3:
                 //保洁
                 getClearInfoByRoom(userId, roomId);
-                closeRoomDoor(storeId,roomId);
+                closeRoomDoor(storeId, roomId);
                 //还要尝试关灯
                 closeLightByRoomId(userId, storeId, roomId, 3);
                 break;
             case 4:
                 //系统关
-                closeRoomDoor(storeId,roomId);
+                closeRoomDoor(storeId, roomId);
                 break;
         }
         //增加记录
