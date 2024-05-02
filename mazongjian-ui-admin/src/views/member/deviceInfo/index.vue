@@ -75,8 +75,10 @@
         <template v-slot="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleBindStore(scope.row)"
             v-hasPermi="['member:device-info:update']">绑定</el-button>
-            <el-button size="mini" type="text" icon="el-icon-edit" @click="handleConfig(scope.row)"
+          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleConfig(scope.row)"
             v-hasPermi="['member:device-info:update']">重置wifi</el-button>
+            <el-button size="mini" type="text" icon="el-icon-edit" @click="handleAutoLock(scope.row)"
+            v-hasPermi="['member:device-info:update']" v-if="scope.row.type==5">设置关锁时间</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
             v-hasPermi="['member:device-info:delete']">删除</el-button>
         </template>
@@ -158,11 +160,29 @@
         <el-button @click="cancelConfig">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 对话框(设置自动关锁) -->
+    <el-dialog :title="title" :visible.sync="LockShow" width="500px" v-dialogDrag append-to-body>
+      <el-form ref="LockForm" :model="LockForm" :rules="Lockrules" label-width="80px">
+        <input type="hidden"  prop="deviceId" v-model="LockForm.deviceId"/>
+        <el-form-item label="设备sn" prop="deviceSn">
+          <el-input v-model="LockForm.deviceSn"  readonly/>
+        </el-form-item>
+        <el-form-item label="关锁时间" prop="ssid">
+          <el-input-number v-model="LockForm.secend"  :step="5" :min="0" required="true"/>（秒）
+          <p>0表示常开，5表示开锁后5秒自动关锁</p>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitLockForm">确 定</el-button>
+        <el-button @click="cancelLock">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, getStoreList, getRoomList,bind,configWifi } from "@/api/member/deviceInfo";
+import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, getStoreList, getRoomList,bind,configWifi,setAutoLock } from "@/api/member/deviceInfo";
 import { DICT_TYPE, getDictDatas} from "@/utils/dict";
 export default {
   name: "DeviceInfo",
@@ -189,6 +209,7 @@ export default {
       bindStore: false,
       bindRoom: false,
       configWifiShow: false,
+      LockShow: false,
       // 查询参数
       queryParams: {
         pageNo: 1,
@@ -213,6 +234,10 @@ export default {
         ssid:null,
         passwd:null
       },
+      LockForm: {
+        deviceSn:null,
+        secend:0,
+      },
       // 表单校验
       rules: {
         deviceSn: [{ required: true, message: "设备sn不能为空", trigger: "blur" }],
@@ -225,6 +250,9 @@ export default {
         deviceId: [{ required: true, message: "设备不能为空", trigger: "blur" }],
         ssid: [{ required: true, message: "wifi名称不能为空", trigger: "blur" }],
         passwd: [{ required: true, message: "wifi密码不能为空", trigger: "blur" }],
+      },
+      Lockrules: {
+        secend: [{ required: true, message: "自动关锁时间不能为空", trigger: "blur" }],
       },
       optionsStas: [
         {
@@ -279,6 +307,14 @@ export default {
         passwd:null
       }
     },
+    cancelLock(){
+      this.LockShow = false;
+      this.LockForm={
+        deviceSn:null,
+        deviceId:null,
+        secend:0
+      }
+    },
     /** 表单重置 */
     reset() {
       this.form = {
@@ -296,6 +332,14 @@ export default {
         passwd:null
       },
       this.resetForm("configForm");
+    },
+    resetLock() {
+      this.LockForm={
+        deviceSn:null,
+        deviceId:null,
+        secend:null
+      },
+      this.resetForm("LockForm");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -323,9 +367,8 @@ export default {
         this.title = "修改设备管理";
       });
     },
-     /** 配置wifi按钮操作 */
-     handleConfig(row) {
-      
+    /** 配置wifi按钮操作 */
+    handleConfig(row) {
       this.resetConfig();
         this.configForm = {
           deviceSn: row.deviceSn,
@@ -335,6 +378,17 @@ export default {
         };
         this.configWifiShow = true;
         this.title = "修改设备wifi配置";
+    },
+    /** 配置自动关锁 */
+    handleAutoLock(row) {
+      this.resetLock();
+        this.LockForm = {
+          deviceId: row.deviceId,
+          deviceSn: row.deviceSn,
+          secend: 0,
+        };
+        this.LockShow = true;
+        this.title = "修改自动关锁设置";
     },
     /** 提交按钮 */
     submitForm() {
@@ -393,6 +447,20 @@ export default {
             passwd:null
           }
         });
+        });
+      }).catch(() => { });
+    },
+    submitLockForm() {
+      this.$modal.confirm('需要配置了网关，才能修改此设置。是否确认修改?').then(function () {
+      }).then(() => {
+        setAutoLock(this.LockForm).then(response => {
+          this.$modal.msgSuccess("操作成功");
+          this.LockShow = false;
+          this.LockForm={
+            deviceId:null,
+            deviceSn:null,
+            secend: 0
+          }
         });
       }).catch(() => { });
     },

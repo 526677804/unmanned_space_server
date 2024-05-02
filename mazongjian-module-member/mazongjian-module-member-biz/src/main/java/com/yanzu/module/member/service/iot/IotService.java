@@ -180,4 +180,13 @@ public class IotService {
     }
 
 
+    public Boolean setLockAutoLock(IotDeviceSetAutoLockReqVO reqVO) {
+        reqVO.setTs(new Date().getTime());
+        IotResult<Boolean> resp = iotClient.setLockAutoLock(reqVO, getToken());
+        if (resp.getCode().intValue() == 0) {
+            return true;
+        } else {
+            throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
+        }
+    }
 }

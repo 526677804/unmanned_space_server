@@ -110,4 +110,12 @@ public class DeviceInfoController {
         deviceInfoService.configWifi(reqVO);
         return success(true);
     }
+
+    @PostMapping("/setAutoLock")
+    @Operation(summary = "设置门锁自动关锁时间")
+    @PreAuthorize("@ss.hasPermission('member:device-info:update')")
+    public CommonResult<Boolean> setAutoLock(@RequestBody @Valid DeviceInfoSetAutoLockReqVO reqVO) {
+        deviceInfoService.setLockAutoLock(reqVO);
+        return success(true);
+    }
 }
