@@ -92,7 +92,7 @@ public interface ErrorCodeConstants {
     ErrorCode GROUP_PAY_WORK_DAY_CHECK_ERROR = new ErrorCode(1004004090, "您输入的团购券仅工作日可用！请修改预定时间或更换团购券");
     ErrorCode GROUP_PAY_ROOM_TYPE_CHECK_ERROR = new ErrorCode(1004004091, "您输入的团购券仅【小包】可用！请修改预订的包间！");
     ErrorCode ORDER_START_TIQIAN_ERROR = new ErrorCode(1004004092, "提前消费，不允许超过门店设定的最大提前时间！");
-    ErrorCode CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004093, "团购的通宵场时间为23时以后~次日8时！请修改预定时间后重试！");
+    ErrorCode CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004093, "通宵场开始时间不符合规则！请修改预定时间后重试！");
     ErrorCode CHECK_GROUP_NO_TIME_ERROR = new ErrorCode(1004004094, "团购券未设置抵扣时长，请联系商家！");
     ErrorCode DELETE_ROOM_ERROR = new ErrorCode(1004004095, "删除失败,房间存在未完成的订单！");
     ErrorCode ORDER_ROOM_SUMBIT_ERROR = new ErrorCode(1004004096, "该房间存在其他用户已提交未支付的订单，请1分钟后刷新重试！");

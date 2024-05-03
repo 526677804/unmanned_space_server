@@ -490,11 +490,15 @@ public class AppOrderServiceImpl implements AppOrderService {
      * @param roomType
      * @param nightLong
      */
-    private void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong, Integer txHour) {
+    private void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong, Integer txStartHour, Integer txHour) {
         if (nightLong) {
             //团购的通宵场 要求团购券必须包含 “通宵”两个字
             if (title.indexOf("通宵") == -1) {
                 throw exception(GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR);
+            }
+            //再判断通宵的开始时间是不是在设置的规则范围内  因为团购的通宵 只能到时间后开始
+            if (startTime.getHours() < txStartHour) {
+                throw exception(CHECK_TONGXIAO_TIME_ERROR);
             }
         }
         //判断工作日限制情况  标题包含工作日和周一 就视为工作日券
@@ -623,7 +627,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 groupNo = reqVO.getGroupPayNo();
                 groupPrice = prepare.getPayAmount();
                 groupShopId = prepare.getDealId();
-                checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxHour());
+                checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
                 //检验通过  把团购券给使用了
                 meituanService.consume(roomInfoDO.getStoreId(), reqVO.getUserId(), reqVO.getGroupPayNo(), groupShopId);
             } else {
@@ -632,7 +636,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
                 groupName = prepare.getTitle();
                 groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
-                checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxHour());
+                checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
                 //检验通过  把团购券给使用了
                 String verify = douyinService.verify(roomInfoDO.getStoreId(), reqVO.getUserId(), prepare);
                 groupNo = verify;
