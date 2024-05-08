@@ -201,7 +201,7 @@ public class OrderController {
 
     @GetMapping("/getDiscountRules/{storeId}")
     @Operation(summary = "获取指定门店的充值优惠信息列表")
-    @PreAuthenticated
+    @PermitAll
     @Parameter(name = "storeId")
     public CommonResult<List<AppDiscountRulesRespVO>> getDiscountRules(@PathVariable("storeId") Long storeId) {
         return success(appOrderService.getDiscountRules(storeId));
