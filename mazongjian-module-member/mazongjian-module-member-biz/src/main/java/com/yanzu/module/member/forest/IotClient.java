@@ -60,4 +60,12 @@ public interface IotClient {
     @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/configWifi", headers = {"Authorization:Bearer ${token}"})
     IotResult<Boolean> configWifi(@JSONBody IotDeviceBaseVO<IotDeviceConfigWifiReqVO> reqVO, @Var("token") String token);
 
+    /**
+     * 设置门锁自动关锁
+     * @param reqVO
+     * @param token
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/setLockAutoLock", headers = {"Authorization:Bearer ${token}"})
+    IotResult<Boolean> setLockAutoLock(@JSONBody IotDeviceSetAutoLockReqVO reqVO, @Var("token")String token);
 }

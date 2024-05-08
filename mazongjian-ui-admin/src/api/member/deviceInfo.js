@@ -86,9 +86,18 @@ export function bind(data) {
     data: data
   })
 }
+
 export function getIotScope(){
   return request({
     url: '/member/device-info/iotScope',
     method: 'get'
+  })
+}
+
+export function setAutoLock(data){
+  return request({
+    url: '/member/device-info/setAutoLock',
+    method: 'post',
+    data: data
   })
 }

@@ -10,6 +10,7 @@ import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceBaseVO;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceConfigWifiReqVO;
+import com.yanzu.module.member.service.iot.iotBean.IotDeviceSetAutoLockReqVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -132,4 +133,19 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         }
     }
 
+    @Override
+    public void setLockAutoLock(DeviceInfoSetAutoLockReqVO reqVO) {
+        DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(reqVO.getDeviceId());
+        //只能操作自己的设备
+        if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
+            IotDeviceSetAutoLockReqVO vo = new IotDeviceSetAutoLockReqVO();
+            vo.setDeviceSn(deviceInfoDO.getDeviceSn());
+            vo.setSecend(reqVO.getSecend());
+            Boolean result = iotService.setLockAutoLock(vo);
+            if (!result) {
+                throw exception(DEVICE_IOT_OP_ERROR);
+            }
+        }
+
+    }
 }

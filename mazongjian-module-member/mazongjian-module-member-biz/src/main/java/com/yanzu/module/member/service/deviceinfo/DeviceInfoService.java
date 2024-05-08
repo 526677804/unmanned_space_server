@@ -69,4 +69,7 @@ public interface DeviceInfoService {
 
 
     void configWifi(DeviceInfoConfigWifiReqVO reqVO);
+
+    void setLockAutoLock(DeviceInfoSetAutoLockReqVO reqVO);
+
 }
