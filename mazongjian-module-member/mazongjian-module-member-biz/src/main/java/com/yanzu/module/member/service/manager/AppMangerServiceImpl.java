@@ -868,7 +868,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         Long oldRoomId = orderInfoDO.getRoomId();
         Long userId = orderInfoDO.getUserId();
         //权限检查
-        storeInfoService.checkPermisson(orderInfoDO.getStoreId(), userId, null, AppEnum.member_user_type.ADMIN.getValue());
+        storeInfoService.checkPermisson(orderInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         //订单状态检查 只有未开始、进行中的订单，才允许修改
         boolean flag = true;//默认允许修改订单
         flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
