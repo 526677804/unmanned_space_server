@@ -1493,4 +1493,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
     }
 
+    @Override
+    public int countNewUserByStoreId(Long userId, Long storeId) {
+        return orderInfoMapper.countNewUserByStoreId(userId,storeId);
+    }
+
 }

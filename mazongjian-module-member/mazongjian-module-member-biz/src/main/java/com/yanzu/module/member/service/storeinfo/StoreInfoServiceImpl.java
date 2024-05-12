@@ -545,6 +545,10 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public List<AppRoomInfoListRespVO> getRoomInfoList2(Long storeId) {
         List<String> storeIds = storeUserMapper.getIdsByEmploy(getLoginUserId());
+        if(CollectionUtils.isEmpty(storeIds)){
+            return new ArrayList<>();
+        }
+
         List<AppRoomInfoListRespVO> list = roomInfoMapper.getRoomInfoList2(storeIds, storeId);
         if (!CollectionUtils.isEmpty(list)) {
             //找出所有房间的订单

@@ -567,5 +567,13 @@
           and end_time &lt; #{startTime}
         order by end_time desc limit 1
     </select>
+    <select id="countNewUserByStoreId" resultType="java.lang.Integer">
+        select count(1)
+        from member_order_info
+        where deleted = 0
+          AND user_id = #{userId}
+          AND store_id = #{storeId}
+          AND status!=3
+    </select>
 
 </mapper>

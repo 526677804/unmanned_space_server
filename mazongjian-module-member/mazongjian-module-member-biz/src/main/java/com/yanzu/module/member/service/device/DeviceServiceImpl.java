@@ -9,6 +9,7 @@ import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
+import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceBaseVO;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceContrlReqVO;
@@ -16,12 +17,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -112,7 +115,7 @@ public class DeviceServiceImpl implements DeviceService {
                     throw exception(DEVICE_OPRATION_ERROR);
                 }
             }
-        }else{
+        } else {
             IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
             List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
             IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
@@ -175,22 +178,33 @@ public class DeviceServiceImpl implements DeviceService {
      */
     @Async
     protected void openRoomDoor(Long storeId, Long roomId) {
-        //开门 等于是开门+通电
-        //获取房间设备的sn 1=门禁 2=空开 4=灯具 5=密码锁 6=网关
-        String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
-        opSwitch(sn, "on");
-        //可能有门禁  获取一下门禁
-        String doorSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 1);
-        openDoor(doorSn);
-        //可能有灯具
-        String lightSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 4);
-        opSwitch(lightSn, "on");
-        //如果有密码锁  并且有网关 就尝试网关开锁
-        String blueLock = deviceInfoMapper.getSnByRoomIdAndType(roomId, 5);
-        if (!ObjectUtils.isEmpty(blueLock)) {
-            if (countGateway(storeId) > 0) {
-                openDoor(blueLock);
-            }
+        //开门 等于是开门+通电 把房间内所有设备操作一遍
+        List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomId(roomId);
+        if (!CollectionUtils.isEmpty(deviceList)) {
+            //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座
+            deviceList.forEach(x -> {
+                switch (x.getType().intValue()) {
+                    case 1:
+                        openDoor(x.getDeviceSn());
+                        break;
+                    case 2:
+                    case 4:
+                    case 7:
+                        opSwitch(x.getDeviceSn(), "on");
+                        break;
+                    case 5:
+                        //如果有网关 就尝试网关开锁
+                        if (countGateway(storeId) > 0) {
+                            openDoor(x.getDeviceSn());
+                        }
+                        break;
+                    case 6:
+                        break;
+
+                }
+
+
+            });
         }
     }
 
@@ -215,22 +229,31 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     private void closeRoomDoor(Long storeId, Long roomId) {
-        //获取房间空开设备的sn
-        String kongKaiSN = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
-        if (!ObjectUtils.isEmpty(kongKaiSN)) {
-            opSwitch(kongKaiSN, "off");
-        }
-        //可能有门禁  获取一下门禁
-        String doorSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 1);
-        closeDoor(doorSn);
-        //如果有密码锁  并且有网关 就尝试网关关锁
-        String blueLock = deviceInfoMapper.getSnByRoomIdAndType(roomId, 5);
-        if (!ObjectUtils.isEmpty(blueLock)) {
-            if (countGateway(storeId) > 0) {
-                closeDoor(blueLock);
-            }
-        }
+        //关门断电 把房间内所有设备操作一遍   关灯不在这里处理  因为有延时关灯的功能
+        List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomId(roomId);
+        if (!CollectionUtils.isEmpty(deviceList)) {
+            //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座
+            deviceList.forEach(x -> {
+                switch (x.getType().intValue()) {
+                    case 1:
+                        closeDoor(x.getDeviceSn());
+                        break;
+                    case 2:
+                    case 7:
+                        opSwitch(x.getDeviceSn(), "off");
+                        break;
+                    case 5:
+                        //如果有网关 就尝试网关关锁
+                        if (countGateway(storeId) > 0) {
+                            closeDoor(x.getDeviceSn());
+                        }
+                        break;
+                    case 6:
+                        break;
 
+                }
+            });
+        }
     }
 
     @Override

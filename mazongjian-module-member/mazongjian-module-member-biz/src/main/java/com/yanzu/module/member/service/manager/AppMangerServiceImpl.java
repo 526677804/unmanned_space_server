@@ -880,17 +880,22 @@ public class AppMangerServiceImpl implements AppMangerService {
             //改时间
             orderInfoDO.setStartTime(reqVO.getStartTime());
             orderInfoDO.setEndTime(newEndTime);
-            orderInfoDO.setRoomId(orderInfoDO.getRoomId());
+            if (!ObjectUtils.isEmpty(reqVO.getRoomId())) {
+                orderInfoDO.setRoomId(reqVO.getRoomId());
+                if (reqVO.getRoomId().compareTo(oldRoomId) != 0) {
+                    //如果这个订单在进行中  则关闭房间电源
+                    if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                        deviceService.closeRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), oldRoomId, 2);
+                    }
+                    //刷新 新房间的状态
+                    appOrderService.flushRoomStatus(reqVO.getRoomId());
+                }
+            }
             if (reqVO.getStartTime().after(new Date())) {
                 //开始时间在当前时间以后 订单改成未开始
                 orderInfoDO.setStatus(AppEnum.order_status.PENDING.getValue());
             }
             orderInfoMapper.updateById(orderInfoDO);
-          /*  //判断有没有换房间
-            if (reqVO.getRoomId().compareTo(oldRoomId) != 0) {
-                //刷新新房间的状态
-                appOrderService.flushRoomStatus(reqVO.getRoomId());
-            }*/
             //刷新房间的状态
             appOrderService.flushRoomStatus(oldRoomId);
             //发送消息到企业微信
