@@ -32,9 +32,9 @@ public class OrderChangeReqVO {
     private Long orderId;
 
 
-//    @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED)
 //    @NotNull(message = "房间不能为空")
-//    private Long roomId;
+    private Long roomId;
 
     @Schema(description = "订单新开锁时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED, example = "2023-07-30 18:11:11")
     @JsonFormat(pattern = DateUtils.FORMAT_ORDER_TIME, timezone = TIME_ZONE_DEFAULT)

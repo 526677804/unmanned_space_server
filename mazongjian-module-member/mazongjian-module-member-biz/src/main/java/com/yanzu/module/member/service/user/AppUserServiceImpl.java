@@ -380,18 +380,18 @@ public class AppUserServiceImpl implements AppUserService {
             //下单的时候  要返回可用状态
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
-            //如果该用户，在本店铺是新用户，就送他一张新人抵抗券,一个月有效
+            //如果该用户，在本店铺是新用户，就送他一张新人加时券,一个月有效
             int cCount = couponInfoMapper.countNewUserByStoreId(reqVO.getUserId(), storeInfoDO.getStoreId());
             if (cCount == 0) {
                 CouponInfoDO couponInfoDO = new CouponInfoDO();
-                couponInfoDO.setCouponName("新用户1小时抵扣券")
+                couponInfoDO.setCouponName("新用户1小时加时券")
                         .setStatus(0)
                         .setPrice(BigDecimal.valueOf(1))
                         .setMinUsePrice(BigDecimal.valueOf(1))
                         .setUserId(reqVO.getUserId())
                         .setCreateUserId(1L)
                         .setStoreId(storeInfoDO.getStoreId())
-                        .setType(1)
+                        .setType(AppEnum.coupon_type.JIASHI.getValue())
                         .setExpriceTime(Date.from(LocalDateTime.now().plusMonths(1).atZone(ZoneId.systemDefault()).toInstant()));
                 couponInfoMapper.insert(couponInfoDO);
             }

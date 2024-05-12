@@ -195,14 +195,14 @@ public class AppClearServiceImpl implements AppClearService {
             clearInfoDO.setFinishTime(LocalDateTime.now());
             clearInfoMapper.updateById(clearInfoDO);
             //任务完成了  要关闭房间电源 但是如果房间已经开始后面的订单  就不关闭电源
-            if (orderInfoMapper.countByRoomCurrent(clearInfoDO.getRoomId(), null) > 0) {
+            if (orderInfoMapper.countByRoomCurrent(clearInfoDO.getRoomId(), null) == 0) {
+                //房间目前没有订单是进行中 关闭电源
+                deviceService.closeRoomDoor(getLoginUserId(), clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), 4);
+            } else {
                 // 如果当前有订单进行 就改成进行中
 //                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), clearInfoDO.getRoomId());
-                // 4.19修改 如果有订单进行中 就不允许完成
-                throw exception(CLEAR_FINISH_ORDER_START_ERROR);
-            } else {
-                //没有订单进行中 关闭电源
-                deviceService.closeRoomDoor(getLoginUserId(), clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), 4);
+//                 4.19修改 如果有订单进行中 就不允许完成
+//                throw exception(CLEAR_FINISH_ORDER_START_ERROR);
             }
             appOrderService.flushRoomStatus(clearInfoDO.getRoomId());
             workWxService.sendClearFinishMsg(clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), getLoginUserId(), "完成房间清洁");

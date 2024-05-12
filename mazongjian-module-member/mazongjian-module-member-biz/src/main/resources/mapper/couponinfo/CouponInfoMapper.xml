@@ -84,6 +84,6 @@
         where deleted = 0
           and user_id = #{userId}
           and store_id = #{storeId}
-          and coupon_name = '新用户1小时抵扣券'
+          and coupon_name = '新用户1小时加时券'
     </select>
 </mapper>

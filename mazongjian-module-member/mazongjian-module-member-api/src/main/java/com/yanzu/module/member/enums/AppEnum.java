@@ -230,6 +230,7 @@ public class AppEnum {
         //灯具 4
         //密码锁 5
         //网关 6
+        //插座 7
 
         DOOR(1),
         ELECTRIC(2),
@@ -237,6 +238,7 @@ public class AppEnum {
         LIGHT(4),
         LOCK(5),
         GATEWAY(6),
+        SOCKET(7),
 
         ;
 
