@@ -78,12 +78,4 @@
     <select id="getByIdAndAdmin" resultType="com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO">
         select * from member_coupon_info where deleted=0 and user_id is null and exprice_time>now() and coupon_id=#{couponId}
     </select>
-    <select id="countNewUserByStoreId" resultType="java.lang.Integer">
-        SELECT count(1)
-        from member_coupon_info
-        where deleted = 0
-          and user_id = #{userId}
-          and store_id = #{storeId}
-          and coupon_name = '新用户1小时加时券'
-    </select>
 </mapper>
