@@ -381,7 +381,7 @@ public class AppUserServiceImpl implements AppUserService {
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
             //如果该用户，在本店铺是新用户，就送他一张新人加时券,一个月有效
-            int cCount = couponInfoMapper.countNewUserByStoreId(reqVO.getUserId(), storeInfoDO.getStoreId());
+            int cCount = appOrderService.countNewUserByStoreId(reqVO.getUserId(), storeInfoDO.getStoreId());
             if (cCount == 0) {
                 CouponInfoDO couponInfoDO = new CouponInfoDO();
                 couponInfoDO.setCouponName("新用户1小时加时券")

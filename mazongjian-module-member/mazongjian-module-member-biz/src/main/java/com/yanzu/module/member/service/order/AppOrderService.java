@@ -51,4 +51,6 @@ public interface AppOrderService {
 
 
     void flushRoomStatus(Long roomId);
+
+    int countNewUserByStoreId(Long userId, Long storeId);
 }

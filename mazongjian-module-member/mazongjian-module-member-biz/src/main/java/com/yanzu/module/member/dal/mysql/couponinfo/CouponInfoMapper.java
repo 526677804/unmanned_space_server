@@ -34,5 +34,4 @@ public interface CouponInfoMapper extends BaseMapperX<CouponInfoDO> {
 
     int executeCouponExpire();
 
-    int countNewUserByStoreId(@Param("userId") Long userId, @Param("storeId") Long storeId);
 }

@@ -85,4 +85,6 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
     List<AppRechargeStatisticsRespVO> getRechargeStatistics(AppChartDataReqVO reqVO);
 
     OrderInfoDO getRepeatOrder(@Param("roomId") Long roomId, @Param("startTime") Date startTime);
+
+    int countNewUserByStoreId(@Param("userId") Long userId, @Param("storeId") Long storeId);
 }
