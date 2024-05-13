@@ -75,7 +75,7 @@ public interface ErrorCodeConstants {
     ErrorCode CLEAR_INFO_STATUS_OPRATION_ERROR = new ErrorCode(1004004063, "当前状态不能操作,请确认保洁订单状态！");
     ErrorCode CLEAR_IMAGE_NOT_FOUNT_ERROR = new ErrorCode(1004004064, "请上传清洁完成的图片！");
     ErrorCode CLEAR_OPEN_DOOR_ERROR = new ErrorCode(1004004065, "当前状态不支持开门！");
-    ErrorCode DEVICE_IOT_OP_ERROR = new ErrorCode(1004004070, "设备平台操作失败！");
+    ErrorCode DEVICE_IOT_OP_ERROR = new ErrorCode(1004004070, "设备平台操作失败,错误信息:{}");
     ErrorCode DEVICE_IOT_AUTH_ERROR = new ErrorCode(1004004071, "设备平台认证失败！");
     ErrorCode CLEAR_AND_FINISH_ROOM_STATUS_ERROR = new ErrorCode(1004004072, "房间当前状态不允许执行此操作！");
     ErrorCode ORDER_MIN_HOUR_ERROR = new ErrorCode(1004004073, "订单时长必须达到设置的起步时长！");

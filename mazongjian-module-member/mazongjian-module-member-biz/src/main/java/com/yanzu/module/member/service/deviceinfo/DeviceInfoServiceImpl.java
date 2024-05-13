@@ -60,13 +60,10 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         //只能操作自己的设备
         if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
             // 先解绑
-            Boolean unbind = iotService.unbind(deviceInfoDO.getDeviceSn());
-            if (unbind) {
-                // 删除
-                deviceInfoMapper.deleteById(id);
-            } else {
-                throw exception(DEVICE_IOT_OP_ERROR);
-            }
+            iotService.unbind(deviceInfoDO.getDeviceSn());
+            // 删除
+            deviceInfoMapper.deleteById(id);
+
         }
     }
 
@@ -126,10 +123,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             vo.setDeviceSn(deviceInfoDO.getDeviceSn());
             vo.setSsid(reqVO.getSsid());
             vo.setPasswd(reqVO.getPasswd());
-            Boolean result = iotService.configWifi(vo);
-            if (!result) {
-                throw exception(DEVICE_IOT_OP_ERROR);
-            }
+            iotService.configWifi(vo);
         }
     }
 
@@ -141,10 +135,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             IotDeviceSetAutoLockReqVO vo = new IotDeviceSetAutoLockReqVO();
             vo.setDeviceSn(deviceInfoDO.getDeviceSn());
             vo.setSecend(reqVO.getSecend());
-            Boolean result = iotService.setLockAutoLock(vo);
-            if (!result) {
-                throw exception(DEVICE_IOT_OP_ERROR);
-            }
+            iotService.setLockAutoLock(vo);
         }
 
     }

@@ -171,6 +171,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         startTime.setSeconds(0);
         endTime.setSeconds(0);
         Date now = new Date();
+        Date oldStartTime = new Date(startTime.getTime());
+        Date oldEndTime = new Date(endTime.getTime());
         //参数校验
         //开始时间不能小于结束时间
         if (startTime.after(endTime)) {
@@ -193,8 +195,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //检查优惠券是否允许使用
         checkCouponUse(couponInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime);
         //计算订单价格
-        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(),
-                storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO);
+        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO);
         if (ObjectUtils.isEmpty(ignoreOrderId)) {
             //下单
             //如果使用了加时券，则直接增加指定的小时
@@ -264,14 +265,12 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             LocalDateTime orderStartTime = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             LocalDateTime orderEndTime = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            if ((orderStartTime.isBefore(bTStart) && orderEndTime.isBefore(bTStart))
-                    || (orderStartTime.isAfter(bTEnd) && orderEndTime.isAfter(bTEnd))) {
+            if ((orderStartTime.isBefore(bTStart) && orderEndTime.isBefore(bTStart)) || (orderStartTime.isAfter(bTEnd) && orderEndTime.isAfter(bTEnd))) {
                 //时间合法
             } else {
                 throw exception(ORDER_TIME_CHECK_ERROR);
             }
         }
-
         //随机生成一个订单号
         String orderNo = getOrderNo();
         //价格转成分为单位 微信支付使用
@@ -328,11 +327,11 @@ public class AppOrderServiceImpl implements AppOrderService {
                     tenantId = user.getTenantId();
                 }
                 //把这个信息存储到redis，在回调处验证后删除 最长1天过期
-                WxPayOrderInfo wxPayOrderInfo = new WxPayOrderInfo(orderNo, getLoginUserId(), tenantId, roomInfoDO.getStoreId(), roomId, startTime, endTime, ObjectUtils.isEmpty(couponInfoDO) ? null : couponInfoDO.getCouponId(), ignoreOrderId, price, nightLong);
-
+                WxPayOrderInfo wxPayOrderInfo = new WxPayOrderInfo(orderNo, getLoginUserId(), tenantId, roomInfoDO.getStoreId(), roomId, oldStartTime, oldEndTime, ObjectUtils.isEmpty(couponInfoDO) ? null : couponInfoDO.getCouponId(), ignoreOrderId, price, nightLong);
                 redisTemplate.opsForValue().set(String.format(WX_PAY_ORDER, orderNo), wxPayOrderInfo, 1, TimeUnit.DAYS);
             }
         }
+        log.info("预下单:{}", respVO);
         return respVO;
     }
 
@@ -377,8 +376,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 
 
     @Override
-    public BigDecimal mathPrice(BigDecimal price, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour,
-                                Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO) {
+    public BigDecimal mathPrice(BigDecimal price, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO) {
         if (enableWorkPrice) {
             //以订单开始时间算，如果开始时间在周一至周四，那么就按工作日价格计算
             Calendar calendar = Calendar.getInstance();
@@ -412,7 +410,6 @@ public class AppOrderServiceImpl implements AppOrderService {
             //判断类型
             switch (couponInfoDO.getType()) {
                 case 1://1抵扣券
-                case 3://3加时券
                     //判断门槛
                     if (couponInfoDO.getMinUsePrice().compareTo(hours) > 0) {
                         throw exception(COUPON_MIN_USER_PRICE_ERROR);
@@ -439,9 +436,15 @@ public class AppOrderServiceImpl implements AppOrderService {
                         totalPrice = totalPrice.subtract(couponInfoDO.getPrice());
                     }
                     break;
+                case 3: //3加时券
+                    //判断门槛
+                    if (couponInfoDO.getMinUsePrice().compareTo(hours) > 0) {
+                        throw exception(COUPON_MIN_USER_PRICE_ERROR);
+                    }
+                    break;
             }
         }
-        log.info("计算订单价格为:{}", totalPrice);
+
         //结果保留2位小数
         return totalPrice.setScale(2, BigDecimal.ROUND_HALF_UP);
     }
@@ -502,25 +505,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             checkWorkDay(startTime);
         }
         //判断包间限制情况  标题包含：不限包间
-        if (title.indexOf("不限包间") != -1
-                || title.indexOf("任意包间") != -1
-                || title.indexOf("不分包间") != -1
-                || title.indexOf("所有包间") != -1
-                || title.indexOf("全部包间") != -1
-                || title.indexOf("包间任选") != -1
-                || title.indexOf("不限房间") != -1
-                || title.indexOf("任意房间") != -1
-                || title.indexOf("不分房间") != -1
-                || title.indexOf("所有房间") != -1
-                || title.indexOf("全部房间") != -1
-                || title.indexOf("房间任选") != -1
-                || title.indexOf("不限球桌") != -1
-                || title.indexOf("任意球桌") != -1
-                || title.indexOf("不分球桌") != -1
-                || title.indexOf("所有球桌") != -1
-                || title.indexOf("全部球桌") != -1
-                || title.indexOf("球桌任选") != -1
-        ) {
+        if (title.indexOf("不限包间") != -1 || title.indexOf("任意包间") != -1 || title.indexOf("不分包间") != -1 || title.indexOf("所有包间") != -1 || title.indexOf("全部包间") != -1 || title.indexOf("包间任选") != -1 || title.indexOf("不限房间") != -1 || title.indexOf("任意房间") != -1 || title.indexOf("不分房间") != -1 || title.indexOf("所有房间") != -1 || title.indexOf("全部房间") != -1 || title.indexOf("房间任选") != -1 || title.indexOf("不限球桌") != -1 || title.indexOf("任意球桌") != -1 || title.indexOf("不分球桌") != -1 || title.indexOf("所有球桌") != -1 || title.indexOf("全部球桌") != -1 || title.indexOf("球桌任选") != -1) {
             //不校验
         } else {
             Integer checkRoomType = 0;
@@ -592,9 +577,6 @@ public class AppOrderServiceImpl implements AppOrderService {
         CouponInfoDO couponInfoDO = null;
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
-            if (couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
-                reqVO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
-            }
         }
         //下单之前仍然再检查一遍 并计算出应付总金额
         WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, null, reqVO.getNightLong(), false);
@@ -718,6 +700,10 @@ public class AppOrderServiceImpl implements AppOrderService {
         orderInfoDO.setRoomId(roomInfoDO.getRoomId());
         orderInfoDO.setUserId(reqVO.getUserId());
         orderInfoDO.setStartTime(reqVO.getStartTime());
+        //处理加时券
+        if (!ObjectUtils.isEmpty(couponInfoDO) && couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
+            reqVO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
+        }
         orderInfoDO.setEndTime(reqVO.getEndTime());
         orderInfoDO.setNightLong(reqVO.getNightLong());
         orderInfoDO.setPrice(oldPrice);
@@ -964,8 +950,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (!ObjectUtils.isEmpty(orderInfo.getRoomImg())) {
                 orderInfo.setRoomImg(orderInfo.getRoomImg().split(",")[0]);
             }
-            if (orderInfo.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
-                    || orderInfo.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+            if (orderInfo.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfo.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                 orderInfo.setRenewBtn(true);
             } else {
                 orderInfo.setRenewBtn(false);
@@ -1406,8 +1391,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     public void openStoreDoor(String orderKey) {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(new LambdaQueryWrapperX<OrderInfoDO>().eq(OrderInfoDO::getOrderKey, orderKey));
         if (!ObjectUtils.isEmpty(orderInfoDO)) {
-            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
-                    || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                 //只能提前X小时开门
                 RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
                 Date now = new Date();

@@ -150,7 +150,6 @@ public class PayOrderServiceImpl implements PayOrderService {
                                 reqVO.setStartTime(wxPayOrderInfo.getStartTime());
                                 reqVO.setEndTime(wxPayOrderInfo.getEndTime());
                                 reqVO.setUserId(wxPayOrderInfo.getUserId());
-                                reqVO.setUserId(payOrderDO.getUserId());
                                 appOrderService.save(reqVO);
                             } else {
                                 //续费
