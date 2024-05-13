@@ -597,12 +597,14 @@ public class AppOrderServiceImpl implements AppOrderService {
         CouponInfoDO couponInfoDO = null;
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
+        }
+        //下单之前仍然再检查一遍 并计算出应付总金额
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, null, reqVO.getNightLong(), false);
+        if (!ObjectUtils.isEmpty(couponInfoDO)) {
             if (couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
                 reqVO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
             }
         }
-        //下单之前仍然再检查一遍 并计算出应付总金额
-        WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, null, reqVO.getNightLong(), false);
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
         BigDecimal oldPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
         //判断是否有填团购券  先预声明一些团购要的字段
