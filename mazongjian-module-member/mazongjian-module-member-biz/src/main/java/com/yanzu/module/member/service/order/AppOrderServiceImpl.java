@@ -412,6 +412,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //判断类型
             switch (couponInfoDO.getType()) {
                 case 1://1抵扣券
+                case 3://3加时券
                     //判断门槛
                     if (couponInfoDO.getMinUsePrice().compareTo(hours) > 0) {
                         throw exception(COUPON_MIN_USER_PRICE_ERROR);
@@ -438,15 +439,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                         totalPrice = totalPrice.subtract(couponInfoDO.getPrice());
                     }
                     break;
-                case 3://加时券
-                    //加时券 不影响价格  只是会多算一个小时
-                    //判断门槛
-                    if (couponInfoDO.getMinUsePrice().compareTo(hours) > 0) {
-                        throw exception(COUPON_MIN_USER_PRICE_ERROR);
-                    }
-                    break;
             }
         }
+        log.info("计算订单价格为:{}", totalPrice);
         //结果保留2位小数
         return totalPrice.setScale(2, BigDecimal.ROUND_HALF_UP);
     }
@@ -597,14 +592,12 @@ public class AppOrderServiceImpl implements AppOrderService {
         CouponInfoDO couponInfoDO = null;
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
-        }
-        //下单之前仍然再检查一遍 并计算出应付总金额
-        WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, null, reqVO.getNightLong(), false);
-        if (!ObjectUtils.isEmpty(couponInfoDO)) {
             if (couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
                 reqVO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
             }
         }
+        //下单之前仍然再检查一遍 并计算出应付总金额
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(reqVO.getUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, null, reqVO.getNightLong(), false);
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
         BigDecimal oldPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
         //判断是否有填团购券  先预声明一些团购要的字段
@@ -1497,7 +1490,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Override
     public int countNewUserByStoreId(Long userId, Long storeId) {
-        return orderInfoMapper.countNewUserByStoreId(userId,storeId);
+        return orderInfoMapper.countNewUserByStoreId(userId, storeId);
     }
 
 }

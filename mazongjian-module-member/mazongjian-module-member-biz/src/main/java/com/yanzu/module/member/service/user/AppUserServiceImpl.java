@@ -381,8 +381,8 @@ public class AppUserServiceImpl implements AppUserService {
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
             //如果该用户，在本店铺是新用户，就送他一张新人加时券,一个月有效
-            int cCount = appOrderService.countNewUserByStoreId(reqVO.getUserId(), storeInfoDO.getStoreId());
-            if (cCount == 0) {
+//            int cCount = appOrderService.countNewUserByStoreId(reqVO.getUserId(), storeInfoDO.getStoreId());
+            if (couponInfoMapper.countNewUserByStoreId(reqVO.getUserId(), storeInfoDO.getStoreId()) == 0) {
                 CouponInfoDO couponInfoDO = new CouponInfoDO();
                 couponInfoDO.setCouponName("新用户1小时加时券")
                         .setStatus(0)
@@ -405,7 +405,7 @@ public class AppUserServiceImpl implements AppUserService {
             if (!CollectionUtils.isEmpty(list)) {
                 list.stream().forEach(x -> {
                     boolean f1 = false;
-                    if (x.getType().compareTo(AppEnum.coupon_type.DIKOU.getValue()) == 0||x.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
+                    if (x.getType().compareTo(AppEnum.coupon_type.DIKOU.getValue()) == 0 || x.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
                         //抵扣或加时
                         f1 = hours.compareTo(x.getMinUsePrice()) >= 0;
                     } else if (x.getType().compareTo(AppEnum.coupon_type.MANJIAN.getValue()) == 0) {
