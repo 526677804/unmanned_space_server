@@ -493,6 +493,34 @@ public class WorkWxServiceImpl implements WorkWxService {
         workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
     }
 
+    @Override
+    @Async
+    public void sendOrderSubmitMsg(Long storeId, Long userId, String mobile,String roomName, String orderNo, Date startTime, Date endTime) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+        log.info("发送订单消息到配置的企业微信");
+        StringBuffer sb = new StringBuffer();
+        sb.append("管理员代用户下单通知\n");
+        sb.append(">管理员:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
+        sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
+        sb.append(">用户手机:<font color=\"warning\">").append(mobile).append("</font>\n");
+        sb.append(">开始时间:<font color=\"warning\">").append(DateUtils.dateToStr(startTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">结束时间:<font color=\"warning\">").append(DateUtils.dateToStr(endTime, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+    }
+
     private String getPayTypeStr(Integer type) {
         switch (type) {
             case 1:

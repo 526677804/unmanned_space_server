@@ -2,6 +2,7 @@ package com.yanzu.module.member.controller.app.manager.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yanzu.framework.common.util.date.DateUtils;
+import com.yanzu.framework.common.validation.Mobile;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,35 +19,33 @@ import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order.vo
  * @DESCRIPTION:
  * @USER: MrGuan  mrguan@aliyun.com
- * @DATE: 2023/7/26 15:25
+ * @DATE: 2023/7/26 18:25
  */
-@Schema(description = "miniapp - 订单续费Req VO")
+@Schema(description = "miniapp - 管理员提交订单Req VO")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderChangeReqVO {
+public class OrderSubmitReqVO {
 
-    @Schema(description = "订单id", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "订单不能为空")
-    private Long orderId;
-
-
-    @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED)
-//    @NotNull(message = "房间不能为空")
+    @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "2319")
+    @NotNull(message = "房间id不能为空")
     private Long roomId;
 
-    @Schema(description = "订单新开始时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED, example = "2023-07-30 18:11:11")
+    @Schema(description = "订单开始时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonFormat(pattern = DateUtils.FORMAT_ORDER_TIME, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_ORDER_TIME)
-    @NotNull(message = "订单新开始时间不能为空")
+    @NotNull(message = "订单开始时间不能为空")
     private Date startTime;
 
-    @Schema(description = "订单新结束时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED, example = "2023-07-30 18:11:11")
+    @Schema(description = "订单结束时间 yyyy-MM-dd HH:mm", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonFormat(pattern = DateUtils.FORMAT_ORDER_TIME, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_ORDER_TIME)
-    @NotNull(message = "订单新开始时间不能为空")
+    @NotNull(message = "订单结束时间不能为空")
     private Date endTime;
 
+    @Schema(description = "下单的手机号", example = "266")
+    @Mobile
+    private String mobile;
 
 }

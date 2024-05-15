@@ -96,5 +96,7 @@ public class AppStoreInfoReqVO {
     private Boolean delayLight;
     @Schema(description = "启用工作日价格")
     private Boolean workPrice;
+    @Schema(description = "订单门禁常开")
+    private Boolean orderDoorOpen;
 
 }

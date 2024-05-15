@@ -9,6 +9,7 @@ import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
+import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceBaseVO;
@@ -47,6 +48,9 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Resource
     private RoomInfoMapper roomInfoMapper;
+
+    @Resource
+    private StoreInfoMapper storeInfoMapper;
 
     @Resource
     private DeviceInfoMapper deviceInfoMapper;
@@ -135,12 +139,13 @@ public class DeviceServiceImpl implements DeviceService {
      *
      * @param sn
      */
-    private void openDoor(String sn) {
+    private void openDoor(String sn, Long storeId) {
         if (!ObjectUtils.isEmpty(sn)) {
+            boolean orderDoorOpen = storeInfoMapper.getOrderDoorOpen(storeId);
             IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
             List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
             IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
-            iotDeviceContrlReqVO.setOutlet(0).setCmd("on");
+            iotDeviceContrlReqVO.setOutlet(0).setCmd(orderDoorOpen ? "on" : "pulse");
             param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
             boolean flag = iotService.control(reqVO);
@@ -185,7 +190,7 @@ public class DeviceServiceImpl implements DeviceService {
             deviceList.forEach(x -> {
                 switch (x.getType().intValue()) {
                     case 1:
-                        openDoor(x.getDeviceSn());
+                        openDoor(x.getDeviceSn(), storeId);
                         break;
                     case 2:
                     case 4:
@@ -195,7 +200,7 @@ public class DeviceServiceImpl implements DeviceService {
                     case 5:
                         //如果有网关 就尝试网关开锁
                         if (countGateway(storeId) > 0) {
-                            openDoor(x.getDeviceSn());
+                            openDoor(x.getDeviceSn(), storeId);
                         }
                         break;
                     case 6:

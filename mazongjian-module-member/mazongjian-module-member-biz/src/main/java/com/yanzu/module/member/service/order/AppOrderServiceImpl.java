@@ -178,8 +178,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (startTime.after(endTime)) {
             throw exception(ORDER_START_TIME_GT_END_ERROR);
         }
-        if (startTime.before(now)) {
-            //开始时间在当前之前，不能超过5分钟  不然间隔太久了
+        if (ObjectUtils.isEmpty(ignoreOrderId) && startTime.before(now)) {
+            //新下单的 开始时间在当前之前，不能超过5分钟  不然间隔太久了
             long l = (now.getTime() - startTime.getTime()) / 1000 / 60;
             if (l >= 5) {
                 throw exception(ORDER_START_TIME_LT_NOW_ERROR);

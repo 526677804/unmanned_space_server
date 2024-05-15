@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.manager;
 
+import cn.hutool.core.util.HexUtil;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
@@ -15,6 +16,7 @@ import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
+import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
@@ -66,10 +68,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -873,13 +872,12 @@ public class AppMangerServiceImpl implements AppMangerService {
         boolean flag = true;//默认允许修改订单
         flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (flag) {
-            Date newEndTime = new Date(reqVO.getStartTime().getTime() + (orderInfoDO.getEndTime().getTime() - orderInfoDO.getStartTime().getTime()));
             //检查时间
-            appOrderService.preOrder(getLoginUserId(), orderInfoDO.getRoomId(), reqVO.getStartTime(), newEndTime, null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
+            appOrderService.preOrder(getLoginUserId(), orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
             //开始修改
             //改时间
             orderInfoDO.setStartTime(reqVO.getStartTime());
-            orderInfoDO.setEndTime(newEndTime);
+            orderInfoDO.setEndTime(reqVO.getEndTime());
             if (!ObjectUtils.isEmpty(reqVO.getRoomId())) {
                 orderInfoDO.setRoomId(reqVO.getRoomId());
                 if (reqVO.getRoomId().compareTo(oldRoomId) != 0) {
@@ -887,8 +885,6 @@ public class AppMangerServiceImpl implements AppMangerService {
                     if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                         deviceService.closeRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), oldRoomId, 2);
                     }
-                    //刷新 新房间的状态
-                    appOrderService.flushRoomStatus(reqVO.getRoomId());
                 }
             }
             if (reqVO.getStartTime().after(new Date())) {
@@ -896,7 +892,13 @@ public class AppMangerServiceImpl implements AppMangerService {
                 orderInfoDO.setStatus(AppEnum.order_status.PENDING.getValue());
             }
             orderInfoMapper.updateById(orderInfoDO);
-            //刷新房间的状态
+            if (!ObjectUtils.isEmpty(reqVO.getRoomId())) {
+                if (reqVO.getRoomId().compareTo(oldRoomId) != 0) {
+                    //刷新 新房间的状态
+                    appOrderService.flushRoomStatus(reqVO.getRoomId());
+                }
+            }
+            //刷新 旧房间的状态
             appOrderService.flushRoomStatus(oldRoomId);
             //发送消息到企业微信
             workWxService.sendChangeMsg(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), oldRoomId, orderInfoDO.getRoomId(), userId);
@@ -920,5 +922,61 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         reqVO.setUserId(getLoginUserId());
         return orderInfoMapper.getRechargeStatistics(reqVO);
+    }
+
+    private String getOrderNo() {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        String currentDate = currentDateTime.format(dateFormatter);
+        Random random = new Random();
+        int randomNum = random.nextInt(1000000000);
+        String randomNumString = String.format("%09d", randomNum);
+        return currentDate + randomNumString;
+    }
+
+    @Override
+    @Transactional
+    public Long submitOrder(OrderSubmitReqVO reqVO) {
+        //根据手机号 查询出用户
+        MemberUserDO user = appUserService.getUserByMobile(reqVO.getMobile());
+        if (ObjectUtils.isEmpty(user)) {
+//            throw exception(USER_NOT_EXISTS);
+            //用户不存在则自动创建
+            user = appUserService.createUserIfAbsent(reqVO.getMobile(), getClientIP());
+        }
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
+        //仅管理员使用
+        storeInfoService.checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        //定义一些参数 备用
+        OrderInfoDO orderInfoDO = new OrderInfoDO();
+        //下单检查一遍可用时间
+        WxPayOrderRespVO wxPayOrderRespVO = appOrderService.preOrder(user.getId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, false, false);
+        //生成订单，并修改房间状态
+        orderInfoDO.setOrderNo(getOrderNo());
+        orderInfoDO.setOrderKey(HexUtil.encodeHexStr(orderInfoDO.getOrderNo() + UUID.randomUUID().toString()));
+        orderInfoDO.setStoreId(roomInfoDO.getStoreId());
+        orderInfoDO.setRoomId(roomInfoDO.getRoomId());
+        orderInfoDO.setUserId(user.getId());
+        orderInfoDO.setStartTime(reqVO.getStartTime());
+        orderInfoDO.setEndTime(reqVO.getEndTime());
+        orderInfoDO.setNightLong(false);
+        orderInfoDO.setPrice(BigDecimal.ZERO);
+        orderInfoDO.setPayPrice(BigDecimal.ZERO);
+        orderInfoDO.setRefundPrice(BigDecimal.ZERO);
+        orderInfoDO.setPayType(AppEnum.order_pay_type.WALLET.getValue());
+        orderInfoMapper.insert(orderInfoDO);
+        //如果房间状态是待清洁，就发送提醒保洁的通知
+        if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {
+            //异步发送微信通知
+            workWxService.sendOrderClearMsg(roomInfoDO.getStoreId(), roomInfoDO.getRoomName(), orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
+        }
+        //如果房间状态是空闲，就改成已预定
+        else if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.ENABLE.getValue()) == 0) {
+            roomInfoDO.setStatus(AppEnum.room_status.PENDING.getValue());
+            roomInfoMapper.updateById(roomInfoDO);
+        }
+        //异步发送微信通知
+        workWxService.sendOrderSubmitMsg(roomInfoDO.getStoreId(), getLoginUserId(), reqVO.getMobile(), roomInfoDO.getRoomName(), orderInfoDO.getOrderNo(), orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
+        return orderInfoDO.getOrderId();
     }
 }

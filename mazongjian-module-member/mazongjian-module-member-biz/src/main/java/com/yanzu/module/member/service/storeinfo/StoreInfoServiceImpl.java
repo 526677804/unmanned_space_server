@@ -167,18 +167,18 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //校验门店权限
 //            checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
             StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
-            //生成小程序码
-            WxMaService wxMaService = myWxService.initWxMa();
-            // 获取小程序二维码生成实例
-            try {
-                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
-                String path = "pages/index/index?storeId=" + storeInfoDO.getStoreId();
-                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
-                String file = fileApi.createFile(bytes);
-                storeInfoDO.setQrCode(file);
-            } catch (WxErrorException e) {
-//                throw new RuntimeException(e);
-            }
+//            //生成小程序码
+//            WxMaService wxMaService = myWxService.initWxMa();
+//            // 获取小程序二维码生成实例
+//            try {
+//                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+//                String path = "pages/index/index?storeId=" + storeInfoDO.getStoreId();
+//                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
+//                String file = fileApi.createFile(bytes);
+//                storeInfoDO.setQrCode(file);
+//            } catch (WxErrorException e) {
+////                throw new RuntimeException(e);
+//            }
             storeInfoMapper.updateById(storeInfoDO);
         }
     }
@@ -232,37 +232,21 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 //                throw new RuntimeException(e);
             }
         } else {
-            //修改 只有所有者才可以修改
-            RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
             //校验门店权限
             checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
-            roomInfoDO.setRoomName(reqVO.getRoomName());
-            roomInfoDO.setType(reqVO.getType());
-            roomInfoDO.setPrice(reqVO.getPrice());
-            roomInfoDO.setWorkPrice(reqVO.getWorkPrice());
-            roomInfoDO.setTongxiaoPrice(reqVO.getTongxiaoPrice());
-            roomInfoDO.setLabel(reqVO.getLabel());
-            roomInfoDO.setImageUrls(reqVO.getImageUrls());
-            roomInfoDO.setStoreId(reqVO.getStoreId());
-            roomInfoDO.setBanTimeStart(reqVO.getBanTimeStart());
-            roomInfoDO.setBanTimeEnd(reqVO.getBanTimeEnd());
-            roomInfoDO.setSortId(reqVO.getSortId());
-            roomInfoDO.setYunlabaSound(reqVO.getYunlabaSound());
-            roomInfoDO.setLeadDay(reqVO.getLeadDay());
-            roomInfoDO.setLeadHour(reqVO.getLeadHour());
-            roomInfoDO.setMinHour(reqVO.getMinHour());
-            //生成小程序码
-            WxMaService wxMaService = myWxService.initWxMa();
-            // 获取小程序二维码生成实例
-            try {
-                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
-                String path = "pages/orderSubmit/orderSubmit?storeId=" + reqVO.getStoreId() + "&roomId=" + roomInfoDO.getRoomId() + "&timeselectindex=0";
-                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
-                String file = fileApi.createFile(bytes);
-                roomInfoDO.setQrCode(file);
-            } catch (WxErrorException e) {
-//                throw new RuntimeException(e);
-            }
+            RoomInfoDO roomInfoDO =RoomInfoConvert.INSTANCE.convert3(reqVO);
+//            //生成小程序码
+//            WxMaService wxMaService = myWxService.initWxMa();
+//            // 获取小程序二维码生成实例
+//            try {
+//                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+//                String path = "pages/orderSubmit/orderSubmit?storeId=" + reqVO.getStoreId() + "&roomId=" + roomInfoDO.getRoomId() + "&timeselectindex=0";
+//                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
+//                String file = fileApi.createFile(bytes);
+//                roomInfoDO.setQrCode(file);
+//            } catch (WxErrorException e) {
+////                throw new RuntimeException(e);
+//            }
             roomInfoMapper.updateById(roomInfoDO);
         }
     }
@@ -504,7 +488,19 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
             //改成空闲
-            roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomId);
+            if (orderInfoMapper.countByRoomCurrent(roomId, null) > 0) {
+                // 如果房间当前有订单进行 就改成进行中
+                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomId);
+            } else if (clearInfoMapper.countCurrentByRoomId(roomId) > 0) {
+                //如果有未完成的保洁订单 状态就是待保洁
+                roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), roomId);
+            } else if (orderInfoMapper.countByRoomId(roomId, null) > 0) {
+                // 如果后面还有预约 就改成已预定
+                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), roomId);
+            } else {
+                // 否则 改成空闲
+                roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomId);
+            }
         } else {
             //改成禁用
             roomInfoMapper.updateStatusById(AppEnum.room_status.DISABLE.getValue(), roomId);

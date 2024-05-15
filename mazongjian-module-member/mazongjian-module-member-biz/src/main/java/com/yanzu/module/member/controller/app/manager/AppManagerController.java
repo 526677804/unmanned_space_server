@@ -243,6 +243,15 @@ public class AppManagerController {
         return success(true);
     }
 
+    @PostMapping("/submitOrder")
+    @Operation(summary = "管理员提交订单", description = "下单使用")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Long> submitOrder(@RequestBody @Valid OrderSubmitReqVO reqVO) {
+        return success(appMangerService.submitOrder(reqVO));
+    }
+
+
 //    @PostMapping("/changeOrderTime")
 //    @Operation(summary = "管理员修改订单时间")
 //    @PreAuthenticated

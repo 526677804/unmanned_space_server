@@ -193,5 +193,10 @@
         where deleted = 0
           and store_id = #{storeId}
     </select>
+    <select id="getOrderDoorOpen" resultType="java.lang.Boolean">
+        select order_door_open
+        from member_store_info
+        where deleted = 0 store_id=#{storeId}
+    </select>
 
 </mapper>

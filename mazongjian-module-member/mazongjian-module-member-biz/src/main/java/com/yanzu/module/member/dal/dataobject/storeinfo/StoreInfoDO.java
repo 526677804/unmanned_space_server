@@ -152,6 +152,9 @@ public class StoreInfoDO extends BaseDO {
     @Schema(description = "工作日价格")
     private Boolean workPrice;
 
+    @Schema(description = "订单门禁常开")
+    private Boolean orderDoorOpen;
+
 
 
 

@@ -80,4 +80,6 @@ public interface AppMangerService {
     List<AppIncomeStatisticsRespVO> getIncomeStatistics(AppChartDataReqVO reqVO);
 
     List<AppRechargeStatisticsRespVO> getRechargeStatistics(AppChartDataReqVO reqVO);
+
+    Long submitOrder(OrderSubmitReqVO reqVO);
 }
