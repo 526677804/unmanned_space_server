@@ -279,7 +279,7 @@ public class DeviceServiceImpl implements DeviceService {
                 break;
             case 3:
                 //保洁开门
-                getClearInfoByRoom(userId, roomId);
+//                getClearInfoByRoom(userId, roomId);
                 openRoomDoor(storeId, roomId);
                 break;
             case 4:
@@ -317,7 +317,7 @@ public class DeviceServiceImpl implements DeviceService {
                 break;
             case 3:
                 //保洁
-                getClearInfoByRoom(userId, roomId);
+//                getClearInfoByRoom(userId, roomId);
                 openRoomDoor(storeId, roomId);
                 break;
             case 4:
@@ -347,7 +347,7 @@ public class DeviceServiceImpl implements DeviceService {
                 break;
             case 3:
                 //保洁
-                getClearInfoByRoom(userId, roomId);
+//                getClearInfoByRoom(userId, roomId);
                 closeRoomDoor(storeId, roomId);
                 //还要尝试关灯
                 closeLightByRoomId(userId, storeId, roomId, 3);
