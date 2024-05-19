@@ -834,25 +834,28 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Override
     @Transactional
     public void changeOrderUser(AppChangeOrderUserReqVO reqVO) {
-        MemberUserDO memberUserDO = memberUserMapper.selectByMobile(reqVO.getMobile());
-        if (ObjectUtils.isEmpty(memberUserDO)) {
-            throw exception(USER_NOT_EXISTS);
+        //根据手机号 查询出用户
+        MemberUserDO user = appUserService.getUserByMobile(reqVO.getMobile());
+        if (ObjectUtils.isEmpty(user)) {
+//            throw exception(USER_NOT_EXISTS);
+            //用户不存在则自动创建
+            user = appUserService.createUserIfAbsent(reqVO.getMobile(), getClientIP());
         }
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(reqVO.getOrderId());
         if (!ObjectUtils.isEmpty(orderInfoDO)) {
             //权限检查
             storeInfoService.checkPermisson(orderInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
-            if (orderInfoDO.getUserId().compareTo(memberUserDO.getId()) == 0) {
+            if (orderInfoDO.getUserId().compareTo(user.getId()) == 0) {
                 return;
             }
             //订单状态检查
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
                     || orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 1) {
                 //只有未开始和进行中可以更换用户  其他状态也没有更换的必要
-                orderInfoMapper.changeOrderUser(reqVO.getOrderId(), memberUserDO.getId());
+                orderInfoMapper.changeOrderUser(reqVO.getOrderId(), user.getId());
                 //发送企业微信通知
                 workWxService.sendOrderChangeUserMsg(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getRoomId()
-                        , orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), memberUserDO.getId());
+                        , orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), user.getId());
             } else {
                 throw exception(CLEAR_ORDER_STATUS_ERROR);
             }
