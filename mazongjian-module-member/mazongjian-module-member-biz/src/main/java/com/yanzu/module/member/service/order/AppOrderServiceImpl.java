@@ -1112,7 +1112,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             //被取消的订单已开始了  那就触发一下关门
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.closeRoomDoor(loginUserId, orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 4);
+                deviceService.closeRoomDoor(loginUserId, orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             }
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
@@ -1232,8 +1232,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                                     //检查距离结束的时间，发送语音提醒
                                     long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
                                     long minutesStart = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getStartTime().toInstant()));
-                                    if (minutesStart == 5) {
-                                        //开始5分钟时 播放欢迎语
+                                    if (minutesStart == 3) {
+                                        //开始3分钟时 播放欢迎语
                                         deviceService.runSound(x.getRoomId(), 1);
                                     } else if (minutes == 30) {
                                         deviceService.runSound(x.getRoomId(), 2);

@@ -337,9 +337,8 @@ public class DeviceServiceImpl implements DeviceService {
         }
         //1用户关 2管理员关 3保洁关  4系统关
         switch (type) {
-            case 1://1用户关
-                closeRoomDoor(storeId, roomId);
-                break;
+            case 1:
+                //1用户关
             case 2:
                 //管理员 不限制关
                 closeRoomDoor(storeId, roomId);

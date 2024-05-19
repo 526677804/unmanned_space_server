@@ -456,7 +456,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         //刷新房间状态
         appOrderService.flushRoomStatus(roomId);
         //关电
-        deviceService.closeRoomDoor(getLoginUserId(), roomInfoDO.getStoreId(), roomId, 4);
+        deviceService.closeRoomDoor(getLoginUserId(), roomInfoDO.getStoreId(), roomId, 2);
         //发通知
         workWxService.sendClearRoomMsg(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), getLoginUserId(), "设置房间空闲");
     }

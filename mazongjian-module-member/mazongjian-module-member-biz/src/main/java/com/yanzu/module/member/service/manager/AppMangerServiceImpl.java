@@ -698,7 +698,8 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(orderInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         boolean cancelFlag = true;//默认允许取消订单
         //对于管理员 未开始和进行中的订单  都可以取消  不判断下单时间  但是团购下单的不退团购券
-        cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
+        cancelFlag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
+                || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (cancelFlag) {
             if (refund) {
                 //判断支付方式 进行退款
@@ -780,7 +781,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             }
             //取消的订单已开始  那就触发一下关门
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.closeRoomDoor(userId, orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 4);
+                deviceService.closeRoomDoor(userId, orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 2);
             }
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
