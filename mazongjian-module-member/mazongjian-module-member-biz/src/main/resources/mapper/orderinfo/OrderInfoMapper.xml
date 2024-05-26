@@ -440,7 +440,7 @@
         count(1)
         FROM
         ( SELECT
-        start_time, DATE_ADD( end_time, INTERVAL 5 MINUTE ) end_time
+        start_time, DATE_ADD( end_time, INTERVAL #{clearTime} MINUTE ) end_time
         FROM member_order_info
         WHERE deleted = 0 AND status IN (0,1) AND room_id = #{roomId}
         <if test="null!=ignoreOrderId and ignoreOrderId!=''">

@@ -43,6 +43,11 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     @Override
     @Transactional
     public void createDeviceInfo(DeviceInfoCreateReqVO createReqVO) {
+        //新增的设备不能存在
+        int i = deviceInfoMapper.countBySN(createReqVO.getDeviceSn());
+        if (i > 0) {
+            throw exception(DEVICE_DATA_EXISTS_ERROR);
+        }
         //先在iot平台绑定设备
         String data = iotService.bind(createReqVO.getDeviceSn());
         // 插入

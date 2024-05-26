@@ -3,6 +3,7 @@ package com.yanzu.module.member.controller.admin.deviceinfo;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.excel.core.util.ExcelUtils;
+import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.*;
 import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
@@ -21,6 +22,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
 import static com.yanzu.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
@@ -36,6 +38,7 @@ public class DeviceInfoController {
 
     @PostMapping("/create")
     @Operation(summary = "创建设备管理")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     @PreAuthorize("@ss.hasPermission('member:device-info:create')")
     public CommonResult<Boolean> createDeviceInfo(@Valid @RequestBody DeviceInfoCreateReqVO createReqVO) {
         deviceInfoService.createDeviceInfo(createReqVO);
@@ -44,6 +47,7 @@ public class DeviceInfoController {
 
     @GetMapping("/iotScope")
     @Operation(summary = "硬件平台授权")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     @PreAuthorize("@ss.hasPermission('member:device-info:create')")
     public CommonResult<Boolean> iotScope() {
         deviceInfoService.iotScope();
@@ -98,6 +102,7 @@ public class DeviceInfoController {
     @PostMapping("/bind")
     @Operation(summary = "设备绑定门店/房间")
     @PreAuthorize("@ss.hasPermission('member:device-info:update')")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> bind(@RequestBody @Valid DeviceInfoBindReqVO reqVO) {
         deviceInfoService.bind(reqVO);
         return success(true);
@@ -106,6 +111,7 @@ public class DeviceInfoController {
     @PostMapping("/configWifi")
     @Operation(summary = "重置设备wifi")
     @PreAuthorize("@ss.hasPermission('member:device-info:update')")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> configWifi(@RequestBody @Valid DeviceInfoConfigWifiReqVO reqVO) {
         deviceInfoService.configWifi(reqVO);
         return success(true);
@@ -114,6 +120,7 @@ public class DeviceInfoController {
     @PostMapping("/setAutoLock")
     @Operation(summary = "设置门锁自动关锁时间")
     @PreAuthorize("@ss.hasPermission('member:device-info:update')")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> setAutoLock(@RequestBody @Valid DeviceInfoSetAutoLockReqVO reqVO) {
         deviceInfoService.setLockAutoLock(reqVO);
         return success(true);

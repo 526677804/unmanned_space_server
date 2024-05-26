@@ -167,18 +167,21 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //校验门店权限
 //            checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
             StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
-//            //生成小程序码
-//            WxMaService wxMaService = myWxService.initWxMa();
-//            // 获取小程序二维码生成实例
-//            try {
-//                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
-//                String path = "pages/index/index?storeId=" + storeInfoDO.getStoreId();
-//                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
-//                String file = fileApi.createFile(bytes);
-//                storeInfoDO.setQrCode(file);
-//            } catch (WxErrorException e) {
-////                throw new RuntimeException(e);
-//            }
+            StoreInfoDO infoDO = storeInfoMapper.selectById(reqVO.getStoreId());
+            if(ObjectUtils.isEmpty(infoDO.getQrCode())){
+                //生成小程序码
+                WxMaService wxMaService = myWxService.initWxMa();
+                // 获取小程序二维码生成实例
+                try {
+                    WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+                    String path = "pages/index/index?storeId=" + storeInfoDO.getStoreId();
+                    byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
+                    String file = fileApi.createFile(bytes);
+                    storeInfoDO.setQrCode(file);
+                } catch (WxErrorException e) {
+        //                throw new RuntimeException(e);
+                }
+            }
             storeInfoMapper.updateById(storeInfoDO);
         }
     }
@@ -531,11 +534,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         //开始删除
         roomInfoMapper.deleteById(roomId);
         //房间数量-1
-
         storeInfoMapper.updateById(new StoreInfoDO().setStoreId(storeInfoDO.getStoreId()).setRoomNum(storeInfoDO.getRoomNum() - 1));
         //清除该房间的设备
         deviceService.clearByRoomId(roomId);
-
     }
 
     @Override

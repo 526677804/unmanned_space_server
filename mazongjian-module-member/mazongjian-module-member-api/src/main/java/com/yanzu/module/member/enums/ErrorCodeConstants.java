@@ -97,6 +97,9 @@ public interface ErrorCodeConstants {
     ErrorCode DELETE_ROOM_ERROR = new ErrorCode(1004004095, "删除失败,房间存在未完成的订单！");
     ErrorCode ORDER_ROOM_SUMBIT_ERROR = new ErrorCode(1004004096, "该房间存在其他用户已提交未支付的订单，请1分钟后刷新重试！");
     ErrorCode CLEAR_FINISH_ORDER_START_ERROR = new ErrorCode(1004004097, "该房间有订单进行中，无法完成保洁订单！");
+    ErrorCode DEVICE_DATA_EXISTS_ERROR = new ErrorCode(1004004098, "该设备已存在，请勿重复添加！");
+
+
 
     ErrorCode STORE_WX_PAY_CONFIG_NOT_FOUND = new ErrorCode(1004004999, "该门店暂不支持微信支付！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");

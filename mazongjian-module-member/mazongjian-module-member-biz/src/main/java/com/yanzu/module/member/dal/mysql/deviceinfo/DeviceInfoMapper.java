@@ -40,4 +40,6 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
 
     int countGateway(Long storeId);
 
+    int countBySN(String deviceSn);
+
 }
