@@ -595,7 +595,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //处理掉中间有空格的情况
             reqVO.setGroupPayNo(reqVO.getGroupPayNo().replaceAll(" ", ""));
             //判断是抖音券还是美团券
-            if (reqVO.getGroupPayNo().length() <= 12) {
+            if (reqVO.getGroupPayNo().length() <= 13) {
                 //美团券
                 groupType = AppEnum.member_group_no_type.MEITUAN.getValue();
                 //查询券信息
