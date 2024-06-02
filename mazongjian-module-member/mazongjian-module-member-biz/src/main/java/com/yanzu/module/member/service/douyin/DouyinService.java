@@ -119,6 +119,7 @@ public class DouyinService {
             log.error("查询抖音团购券信息失败:{}", prepare.getString("description"));
             throw exception(GROUP_NO_CHECK_ERROR);
         } else {
+            log.info("抖音团购券:{}",data);
             //用户实际支付价格  单位 分
             Integer pay_amount = data.getJSONArray("certificates").getJSONObject(0).getJSONObject("amount").getInteger("pay_amount");
             //团购名称

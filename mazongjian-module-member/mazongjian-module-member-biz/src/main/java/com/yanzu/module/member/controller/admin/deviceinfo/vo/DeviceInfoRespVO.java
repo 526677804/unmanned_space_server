@@ -34,6 +34,9 @@ public class DeviceInfoRespVO extends DeviceInfoBaseVO {
     @Schema(description = "状态", example = "2")
     private Integer status;
 
+    @Schema(description = "信号强度")
+    private Integer rssi;
+
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime createTime;
 

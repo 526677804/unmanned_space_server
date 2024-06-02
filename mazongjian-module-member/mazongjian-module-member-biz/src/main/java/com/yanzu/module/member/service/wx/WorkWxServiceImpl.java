@@ -495,7 +495,7 @@ public class WorkWxServiceImpl implements WorkWxService {
 
     @Override
     @Async
-    public void sendOrderSubmitMsg(Long storeId, Long userId, String mobile,String roomName, String orderNo, Date startTime, Date endTime) {
+    public void sendOrderSubmitMsg(Long storeId, Long userId, String mobile, String roomName, String orderNo, Date startTime, Date endTime) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
         if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
@@ -529,6 +529,8 @@ public class WorkWxServiceImpl implements WorkWxService {
                 return "余额";
             case 3:
                 return "团购";
+            case 4:
+                return "套餐";
         }
         return "";
     }
@@ -541,6 +543,8 @@ public class WorkWxServiceImpl implements WorkWxService {
                 return "中包";
             case 3:
                 return "大包";
+            case 4:
+                return "豪包";
         }
         return "";
     }

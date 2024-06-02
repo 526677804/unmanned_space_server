@@ -52,4 +52,10 @@ public class DeviceInfoDO extends BaseDO {
      */
     private Integer status;
 
+    /**
+     * 信号强度
+     */
+    private Integer rssi;
+
+
 }

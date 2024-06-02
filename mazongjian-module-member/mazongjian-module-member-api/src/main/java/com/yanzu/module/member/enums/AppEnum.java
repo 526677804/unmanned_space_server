@@ -134,10 +134,12 @@ public class AppEnum {
         //小包	1
         //中包	2
         //大包	3
+        //豪包	4
 
         XIAO(1),
         ZHONG(2),
-        DA(3);
+        DA(3),
+        HAO(4);
 
 
         private final Integer value;
@@ -170,12 +172,12 @@ public class AppEnum {
         //微信	1
         //余额	2
         //团购	3
-        //大众点评	4
-        //抖音	5
+        //套餐	4
 
         WEIXIN(1),
         WALLET(2),
         TUANGOU(3),
+        PKG(4)
         ;
 //        DAZONG(4),
 //        DOUYIN(5);

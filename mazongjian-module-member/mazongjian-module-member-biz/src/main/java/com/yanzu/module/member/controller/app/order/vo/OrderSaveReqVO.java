@@ -43,7 +43,7 @@ public class OrderSaveReqVO {
     @NotNull(message = "订单结束时间不能为空")
     private Date endTime;
 
-    @Schema(description = "支付方式 1微信 2余额 3团购", example = "1")
+    @Schema(description = "支付方式 1微信 2余额 3团购 4套餐", example = "1")
     @NotNull(message = "支付方式不能为空")
     private Integer payType;
 
@@ -56,6 +56,9 @@ public class OrderSaveReqVO {
 
     @Schema(description = "优惠券Id", example = "31071")
     private Long couponId;
+
+    @Schema(description = "套餐id", example = "1")
+    private Long pkgId;
 
     @Schema(description = "下单的userId", example = "266")
     private Long userId;

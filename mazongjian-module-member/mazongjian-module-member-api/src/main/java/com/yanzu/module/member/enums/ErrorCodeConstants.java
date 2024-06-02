@@ -99,7 +99,21 @@ public interface ErrorCodeConstants {
     ErrorCode CLEAR_FINISH_ORDER_START_ERROR = new ErrorCode(1004004097, "该房间有订单进行中，无法完成保洁订单！");
     ErrorCode DEVICE_DATA_EXISTS_ERROR = new ErrorCode(1004004098, "该设备已存在，请勿重复添加！");
 
+    ErrorCode ROOM_BAN_TIME_ERROR = new ErrorCode(1004004099, "房间禁用时间请填写完整！");
 
+
+    ErrorCode PKG_BUY_MAX_NUM_ERROR = new ErrorCode(1004004200, "超过购买该套餐的最大数量限制！");
+    ErrorCode PKG_BUY_DISABLE_ERROR = new ErrorCode(1004004201, "该套餐不支持购买！");
+    ErrorCode PKG_USE_STATUS_ERROR = new ErrorCode(1004004202, "该套餐状态无法使用！");
+    ErrorCode PKG_USE_STORE_ERROR = new ErrorCode(1004004203, "该套餐不能在当前门店使用！");
+
+    ErrorCode PKG_USE_CHECK_TIME_ERROR = new ErrorCode(1004004204, "该套餐可用时间段与订单时间段不匹配！");
+    ErrorCode PKG_USE_CHECK_ROOM_TYPE_ERROR = new ErrorCode(1004004205, "该套餐可用房间类型与订单不匹配！");
+    ErrorCode PKG_USE_CHECK_WEEK_ERROR = new ErrorCode(1004004206, "该套餐可用星期与订单不匹配！");
+    ErrorCode PKG_USE_CHECK_HOLIDAY_ERROR = new ErrorCode(1004004207, "该套餐节假日不可使用！");
+    ErrorCode PKG_USE_CHECK_HOUR_ERROR = new ErrorCode(1004004208, "该套餐的抵扣时长与选择的订单时长不匹配！");
+
+    ErrorCode PKG_ORDER_PAY_TYPE_ERROR = new ErrorCode(1004004209, "套餐暂不支持余额支付，请使用微信支付！");
 
     ErrorCode STORE_WX_PAY_CONFIG_NOT_FOUND = new ErrorCode(1004004999, "该门店暂不支持微信支付！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");

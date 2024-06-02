@@ -26,6 +26,7 @@ import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
+import com.yanzu.module.member.dal.dataobject.pkguserinfo.PkgUserInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
@@ -37,6 +38,7 @@ import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.groupPay.GroupPayInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
+import com.yanzu.module.member.dal.mysql.pkguserinfo.PkgUserInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
@@ -135,6 +137,9 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Resource
     private GroupPayInfoMapper groupPayInfoMapper;
+
+    @Resource
+    private PkgUserInfoMapper pkgUserInfoMapper;
 
     @Resource
     private MemberUserApi memberUserApi;
@@ -656,7 +661,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (orderInfoDO.getEndTime().before(reqVO.getEndTime())) {
             //增加时间
             //管理员续费  不需要算钱了，但是要校验时间冲突
-            appOrderService.preOrder(userId, orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), false, false);
+            appOrderService.preOrder(userId, orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null,null, reqVO.getOrderId(), false, false);
             //如果状态是已完成  则状态改成进行中 并触发一次通电 还要清除保洁订单信息
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0 && reqVO.getEndTime().after(new Date())) {
                 orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
@@ -709,6 +714,11 @@ public class AppMangerServiceImpl implements AppMangerService {
                     //实际支付金额为0  就不退款了
                     if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {
                         if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.WEIXIN.getValue()) == 0) {
+                            //如果有使用套餐，则把套餐设置过期  然后再退款
+                            PkgUserInfoDO pkgUserInfoDO = pkgUserInfoMapper.getByOrderId(orderId);
+                            if (!ObjectUtils.isEmpty(pkgUserInfoDO)) {
+                                pkgUserInfoMapper.updateById(new PkgUserInfoDO().setId(pkgUserInfoDO.getId()).setStatus(AppEnum.coupon_status.EXPIRE.getValue()));
+                            }
                             //创建微信支付实例
                             WxPayService wxPayService = myWxService.initWxPay(orderInfoDO.getStoreId());
                             //微信退款
@@ -877,7 +887,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (flag) {
             //检查时间
-            appOrderService.preOrder(getLoginUserId(), orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
+            appOrderService.preOrder(getLoginUserId(), orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null,reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
             //开始修改
             //改时间
             orderInfoDO.setStartTime(reqVO.getStartTime());
@@ -954,7 +964,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         //定义一些参数 备用
         OrderInfoDO orderInfoDO = new OrderInfoDO();
         //下单检查一遍可用时间
-        WxPayOrderRespVO wxPayOrderRespVO = appOrderService.preOrder(user.getId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, false, false);
+        WxPayOrderRespVO wxPayOrderRespVO = appOrderService.preOrder(user.getId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, null,false, false);
         //生成订单，并修改房间状态
         orderInfoDO.setOrderNo(getOrderNo());
         orderInfoDO.setOrderKey(HexUtil.encodeHexStr(orderInfoDO.getOrderNo() + UUID.randomUUID().toString()));

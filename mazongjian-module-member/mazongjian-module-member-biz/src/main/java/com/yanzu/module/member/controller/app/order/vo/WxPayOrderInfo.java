@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.app.order.vo;
 
+import com.yanzu.module.member.enums.AppWxPayTypeEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,21 +30,26 @@ public class WxPayOrderInfo implements Serializable {
     private Date endTime;
     //优惠券信息
     private Long couponId;
+    //套餐信息
+    private Long pkgId;
     //如果是下单 这个字段是为空的
     private Long ignoreOrderId;
     private int price;
     //是否通宵
     private Boolean nightLong;
+    //回调消息类型 1=下单 2=续费 3=充值 4=套餐购买
+    private AppWxPayTypeEnum wxPayTypeEnum;
 
     /**
-     *
+     * @param wxPayTypeEnum
      * @param orderNo
      * @param userId
      * @param tenantId
      * @param storeId
      * @param price
      */
-    public WxPayOrderInfo(String orderNo, Long userId, Long tenantId, Long storeId, int price) {
+    public WxPayOrderInfo(AppWxPayTypeEnum wxPayTypeEnum, String orderNo, Long userId, Long tenantId, Long storeId, int price) {
+        this.wxPayTypeEnum = wxPayTypeEnum;
         this.orderNo = orderNo;
         this.userId = userId;
         this.tenantId = tenantId;
@@ -53,6 +59,26 @@ public class WxPayOrderInfo implements Serializable {
 
     /**
      *
+     * @param wxPayTypeEnum
+     * @param orderNo
+     * @param userId
+     * @param tenantId
+     * @param storeId
+     * @param price
+     * @param pkgId
+     */
+    public WxPayOrderInfo(AppWxPayTypeEnum wxPayTypeEnum,String orderNo, Long userId, Long tenantId, Long storeId, int price, Long pkgId) {
+        this.wxPayTypeEnum = wxPayTypeEnum;
+        this.orderNo = orderNo;
+        this.userId = userId;
+        this.tenantId = tenantId;
+        this.storeId = storeId;
+        this.price = price;
+        this.pkgId = pkgId;
+    }
+
+    /**
+     * @param wxPayTypeEnum
      * @param orderNo
      * @param userId
      * @param tenantId
@@ -65,7 +91,8 @@ public class WxPayOrderInfo implements Serializable {
      * @param price
      * @param nightLong
      */
-    public WxPayOrderInfo(String orderNo, Long userId, Long tenantId, Long storeId, Long roomId, Date startTime, Date endTime, Long couponId, Long ignoreOrderId, int price, Boolean nightLong) {
+    public WxPayOrderInfo(AppWxPayTypeEnum wxPayTypeEnum,String orderNo, Long userId, Long tenantId, Long storeId, Long roomId, Date startTime, Date endTime, Long couponId,Long pkgId, Long ignoreOrderId, int price, Boolean nightLong) {
+        this.wxPayTypeEnum = wxPayTypeEnum;
         this.orderNo = orderNo;
         this.userId = userId;
         this.tenantId = tenantId;
@@ -74,6 +101,7 @@ public class WxPayOrderInfo implements Serializable {
         this.startTime = startTime;
         this.endTime = endTime;
         this.couponId = couponId;
+        this.pkgId = pkgId;
         this.ignoreOrderId = ignoreOrderId;
         this.price = price;
         this.nightLong = nightLong;

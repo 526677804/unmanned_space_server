@@ -66,11 +66,13 @@ public class AppCallbackController {
     }
 
     @GetMapping(value = "/iotCallback")
-    @Operation(summary = "物联网平台授权回调")
+    @Operation(summary = "物联网平台回调")
     @PermitAll // 无需登录
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public void iotCallback(@RequestParam(required = false) Map<String, String> params) {
         log.info("收到物联网平台授权回调,params:{}", params);
-        iotService.getToken(params.get("code"));
+        iotService.iotCallback(params);
     }
+
+
 }

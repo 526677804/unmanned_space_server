@@ -38,6 +38,7 @@ import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.enums.AppWxPayTypeEnum;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
@@ -397,7 +398,7 @@ public class AppUserServiceImpl implements AppUserService {
             }
             //先计算出订单价格
             BigDecimal mathPrice = appOrderService.mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(),
-                    roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null);
+                    roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null,null);
             //再计算出时长 精确到小数点后两位
             BigDecimal hours = new BigDecimal(String.valueOf((reqVO.getEndTime().getTime() - reqVO.getStartTime().getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
             List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
@@ -483,7 +484,7 @@ public class AppUserServiceImpl implements AppUserService {
                 LoginUser user = SecurityFrameworkUtils.getLoginUser();
                 tenantId = user.getTenantId();
             }
-            redisTemplate.opsForValue().set(redisKey, new WxPayOrderInfo(orderNo, reqVO.getUserId(), tenantId
+            redisTemplate.opsForValue().set(redisKey, new WxPayOrderInfo(AppWxPayTypeEnum.RECHARGE,orderNo, reqVO.getUserId(), tenantId
                     , reqVO.getStoreId(), reqVO.getPrice()), 1, TimeUnit.DAYS);
         }
         return respVO;

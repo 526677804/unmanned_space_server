@@ -41,6 +41,12 @@ public class OrderRenewalReqVO {
     @NotNull(message = "支付方式不能为空")
     private Integer payType;
 
+    @Schema(description = "团购券码", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String groupPayNo;
+
+    @Schema(description = "套餐id", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long pkgId;
+
     @Schema(description = "订单号 预下单接口返回的", requiredMode = Schema.RequiredMode.REQUIRED, example = "")
     @NotNull(message = "订单号不能为空")
     private String orderNo;

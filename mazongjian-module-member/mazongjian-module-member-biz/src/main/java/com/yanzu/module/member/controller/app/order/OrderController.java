@@ -6,7 +6,9 @@ import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
+import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
+import com.yanzu.module.member.dal.mysql.pkginfo.PkgInfoMapper;
 import com.yanzu.module.member.service.order.AppOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,6 +48,8 @@ public class OrderController {
     @Resource
     private CouponInfoMapper couponInfoMapper;
 
+    @Resource
+    private PkgInfoMapper pkgInfoMapper;
 
     @PostMapping("/preOrder")
     @Operation(summary = "预下单,预订和续费前需调用此接口，会返回需要支付的价格以及微信支付需要的参数", description = "下单使用")
@@ -55,7 +59,12 @@ public class OrderController {
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
         }
-        return success(appOrderService.preOrder(getLoginUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), true));
+        PkgInfoDO pkgInfoDO = null;
+        if (!ObjectUtils.isEmpty(reqVO.getPkgId())) {
+            pkgInfoDO = pkgInfoMapper.selectById(reqVO.getPkgId());
+        }
+        return success(appOrderService.preOrder(getLoginUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(),
+                couponInfoDO, pkgInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), true));
     }
 
 

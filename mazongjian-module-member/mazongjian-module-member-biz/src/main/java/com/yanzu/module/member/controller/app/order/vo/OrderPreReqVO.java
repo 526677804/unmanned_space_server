@@ -54,6 +54,10 @@ public class OrderPreReqVO implements Serializable {
     private Date endTime;
 
 
+    @Schema(description = "套餐id")
+    private Long pkgId;
+
+
     @Schema(description = "是否通宵局", example = "false")
     private boolean nightLong;
 

@@ -214,6 +214,15 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //默认设置音量为2
             reqVO.setYunlabaSound(2);
         }
+        if(!StringUtils.isEmpty(reqVO.getBanTimeStart())&&StringUtils.isEmpty(reqVO.getBanTimeEnd())){
+            //任意一个为空都不行
+            throw exception(ROOM_BAN_TIME_ERROR);
+
+        }else if(!StringUtils.isEmpty(reqVO.getBanTimeEnd())&&StringUtils.isEmpty(reqVO.getBanTimeStart())) {
+            //任意一个为空都不行
+            throw exception(ROOM_BAN_TIME_ERROR);
+        }
+
         if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //新增
             RoomInfoDO roomInfoDO = RoomInfoConvert.INSTANCE.convert3(reqVO);

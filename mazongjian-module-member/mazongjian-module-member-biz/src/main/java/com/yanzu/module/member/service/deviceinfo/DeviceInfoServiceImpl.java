@@ -7,10 +7,12 @@ import com.yanzu.module.member.controller.admin.deviceinfo.vo.*;
 import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
+import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceBaseVO;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceConfigWifiReqVO;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceSetAutoLockReqVO;
+import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -22,6 +24,7 @@ import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
@@ -38,6 +41,9 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
 
     @Resource
     private IotService iotService;
+
+    @Resource
+    private StoreInfoService storeInfoService;
 
 
     @Override
@@ -90,6 +96,8 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
 
     @Override
     public PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO) {
+        //检查权限
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         PageHelper.startPage(pageReqVO);
         List<DeviceInfoRespVO> list = deviceInfoMapper.getDeviceInfoPage(pageReqVO);
         PageInfo<DeviceInfoRespVO> pageInfo = new PageInfo<>(list);

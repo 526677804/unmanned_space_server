@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yanzu.module.member.dal.mysql.pkginfo.PkgInfoMapper">
+
+    <!--
+        一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
+        无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
+     -->
+    <resultMap id="AdminPkgPageResultMap" type="com.yanzu.module.member.controller.app.pkg.vo.AppAdminPkgPageRespVO">
+        <id column="pkg_id" property="pkgId"/>
+        <result column="pkg_name" property="pkgName"/>
+        <result column="store_id" property="storeId"/>
+        <result column="room_type" property="roomType"/>
+        <result column="enable_time" property="enableTime"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
+        <result column="enable_week" property="enableWeek"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
+        <result column="enable_holiday" property="enableHoliday"/>
+        <result column="price" property="price"/>
+        <result column="expire_day" property="expireDay"/>
+        <result column="max_num" property="maxNum"/>
+        <result column="enable" property="enable"/>
+        <result column="sort_id" property="sortId"/>
+        <result column="store_name" property="storeName"/>
+    </resultMap>
+
+    <select id="getAdminPkgPage"
+            resultMap="AdminPkgPageResultMap">
+        select p.pkg_id,
+        p.pkg_name,
+        p.hours,
+        p.store_id,
+        p.room_type,
+        p.enable_time,
+        p.enable_week,
+        p.enable_holiday,
+        p.price,
+        p.expire_day,
+        p.max_num,
+        p.enable,
+        p.sort_id,
+        s.store_name
+        from member_pkg_info p
+        left join member_store_info s ON p.store_id = s.store_id
+        where p.deleted = 0
+        and p.store_id IN (${storeIds})
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.storeId">
+                and p.store_id=#{reqVO.storeId}
+            </if>
+            <if test="null!=reqVO.enable">
+                and p.enable=#{reqVO.enable}
+            </if>
+        </if>
+        order by p.sort_id asc
+
+    </select>
+
+    <resultMap id="PkgPageResultMap" type="com.yanzu.module.member.controller.app.pkg.vo.AppPkgPageRespVO">
+        <id column="pkg_id" property="pkgId"/>
+        <result column="pkg_name" property="pkgName"/>
+        <result column="store_id" property="storeId"/>
+        <result column="store_name" property="storeName"/>
+        <result column="hours" property="hours"/>
+        <result column="room_type" property="roomType"/>
+        <result column="enable_time" property="enableTime"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
+        <result column="enable_week" property="enableWeek"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
+        <result column="enable_holiday" property="enableHoliday"/>
+        <result column="expire_day" property="expireDay"/>
+        <result column="price" property="price"/>
+        <result column="max_num" property="maxNum"/>
+        <result column="enable" property="enable"/>
+    </resultMap>
+    <select id="getPkgPage" resultMap="PkgPageResultMap">
+        select
+        p.pkg_id,
+        p.pkg_name,
+        p.hours,
+        p.store_id,
+        s.store_name,
+        p.room_type,
+        p.enable_time,
+        p.enable_week,
+        p.enable_holiday,
+        p.price,
+        p.expire_day,
+        p.max_num,
+        p.enable
+        from member_pkg_info p
+        left join member_store_info s ON p.store_id = s.store_id
+        where p.deleted = 0 and p.enable=1
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.storeId">
+                and p.store_id=#{reqVO.storeId}
+            </if>
+            <if test="null!=reqVO.roomId">
+                and (p.room_type is null or p.room_type=0 or p.room_type=(
+                select type from member_room_info where room_id=#{reqVO.roomId}
+                ))
+            </if>
+            <if test="null!=reqVO.hours">
+                and p.hours>=#{reqVO.hours}
+            </if>
+        </if>
+        order by p.sort_id asc
+    </select>
+    <resultMap id="PkgMyPageResultMap" type="com.yanzu.module.member.controller.app.pkg.vo.AppPkgMyPageRespVO">
+        <id column="pkg_id" property="pkgId"/>
+        <result column="pkg_name" property="pkgName"/>
+        <result column="store_id" property="storeId"/>
+        <result column="store_name" property="storeName"/>
+        <result column="hours" property="hours"/>
+        <result column="room_type" property="roomType"/>
+        <result column="enable_time" property="enableTime"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
+        <result column="enable_week" property="enableWeek"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
+        <result column="enable_holiday" property="enableHoliday"/>
+        <result column="status" property="status"/>
+        <result column="price" property="price"/>
+        <result column="expire_date" property="expireDate"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+    <select id="getMyPkgPage" resultMap="PkgMyPageResultMap">
+        select
+        p.pkg_id,
+        p.pkg_name,
+        p.hours,
+        p.store_id,
+        p.room_type,
+        p.enable_time,
+        p.enable_week,
+        p.enable_holiday,
+        p.price,
+        pu.expire_date,
+        p.status,
+        s.store_name,
+        pu.create_time
+        from member_pkg_user_info pu
+        left join member_pkg_info p ON pu.pkg_id=p.pkg_id
+        left join member_store_info s ON p.store_id = s.store_id
+        where pu.deleted=0 and pu.user_id=#{userId}
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.storeId">
+                and pu.store_id=#{reqVO.storeId}
+            </if>
+            <if test="null!=reqVO.status">
+                and pu.status=#{reqVO.status}
+            </if>
+        </if>
+        order by pu.expire_date ASC
+    </select>
+</mapper>

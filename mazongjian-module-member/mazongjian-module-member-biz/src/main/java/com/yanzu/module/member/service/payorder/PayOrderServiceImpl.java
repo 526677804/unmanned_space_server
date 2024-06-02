@@ -8,20 +8,22 @@ import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.exception.ServiceException;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderSaveReqVO;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
+import com.yanzu.module.member.controller.app.pkg.vo.AppBuyPkgReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppRechargeBalanceReqVO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.enums.AppWxPayTypeEnum;
 import com.yanzu.module.member.service.order.AppOrderService;
+import com.yanzu.module.member.service.pkg.PkgService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +69,9 @@ public class PayOrderServiceImpl implements PayOrderService {
     @Lazy // 延迟，避免循环依赖报错
     private AppOrderService appOrderService;
 
+    @Resource
+    @Lazy // 延迟，避免循环依赖报错
+    private PkgService pkgService;
 
     @Resource
     private StoreInfoMapper storeInfoMapper;
@@ -128,42 +133,47 @@ public class PayOrderServiceImpl implements PayOrderService {
                     tenantId = wxPayOrderInfo.getTenantId();
                     //模拟租户 处理支付订单
                     TenantUtils.execute(tenantId, () -> {
-                        //没有房间id 就是充值
-                        if (ObjectUtils.isEmpty(wxPayOrderInfo.getRoomId())) {
-                            //充值
-                            AppRechargeBalanceReqVO reqVO = new AppRechargeBalanceReqVO();
-                            reqVO.setUserId(wxPayOrderInfo.getUserId());
+                        if (wxPayOrderInfo.getWxPayTypeEnum().compareTo(AppWxPayTypeEnum.ORDER) == 0) {
+                            //下单
+                            OrderSaveReqVO reqVO = new OrderSaveReqVO();
                             reqVO.setOrderNo(orderNo);
-                            reqVO.setStoreId(wxPayOrderInfo.getStoreId());
-                            reqVO.setPrice(payOrderDO.getPrice());
-                            appUserService.eechargeBalance(reqVO);
-                        } else {
-                            //没有IgnoreOrderId 就是下单 (因为续费的时候要传当前订单 用来跳过时间冲突判断)
-                            if (ObjectUtils.isEmpty(wxPayOrderInfo.getIgnoreOrderId())) {
-                                //下单
-                                OrderSaveReqVO reqVO = new OrderSaveReqVO();
-                                reqVO.setOrderNo(orderNo);
-                                reqVO.setPayType(AppEnum.order_pay_type.WEIXIN.getValue());
-                                reqVO.setCouponId(wxPayOrderInfo.getCouponId());
-                                reqVO.setNightLong(wxPayOrderInfo.getNightLong());
-                                reqVO.setRoomId(wxPayOrderInfo.getRoomId());
-                                reqVO.setStartTime(wxPayOrderInfo.getStartTime());
-                                reqVO.setEndTime(wxPayOrderInfo.getEndTime());
-                                reqVO.setUserId(wxPayOrderInfo.getUserId());
-                                appOrderService.save(reqVO);
-                            } else {
-                                //续费
-                                OrderRenewalReqVO reqVO = new OrderRenewalReqVO();
-                                reqVO.setOrderId(wxPayOrderInfo.getIgnoreOrderId());
-                                reqVO.setOrderNo(wxPayOrderInfo.getOrderNo());
-                                reqVO.setEndTime(wxPayOrderInfo.getEndTime());
-                                reqVO.setPayType(AppEnum.order_pay_type.WEIXIN.getValue());
-                                reqVO.setUserId(wxPayOrderInfo.getUserId());
-                                appOrderService.renew(reqVO);
-                            }
+                            reqVO.setPayType(AppEnum.order_pay_type.WEIXIN.getValue());
+                            reqVO.setCouponId(wxPayOrderInfo.getCouponId());
+                            reqVO.setNightLong(wxPayOrderInfo.getNightLong());
+                            reqVO.setRoomId(wxPayOrderInfo.getRoomId());
+                            reqVO.setStartTime(wxPayOrderInfo.getStartTime());
+                            reqVO.setEndTime(wxPayOrderInfo.getEndTime());
+                            reqVO.setUserId(wxPayOrderInfo.getUserId());
+                            reqVO.setPkgId(wxPayOrderInfo.getPkgId());
+                            appOrderService.save(reqVO);
+                        } else if (wxPayOrderInfo.getWxPayTypeEnum().compareTo(AppWxPayTypeEnum.RENEW) == 0) {
+                            //续费
+                            OrderRenewalReqVO orderRenewalReqVO = new OrderRenewalReqVO();
+                            orderRenewalReqVO.setOrderId(wxPayOrderInfo.getIgnoreOrderId());
+                            orderRenewalReqVO.setOrderNo(wxPayOrderInfo.getOrderNo());
+                            orderRenewalReqVO.setEndTime(wxPayOrderInfo.getEndTime());
+                            orderRenewalReqVO.setPayType(AppEnum.order_pay_type.WEIXIN.getValue());
+                            orderRenewalReqVO.setUserId(wxPayOrderInfo.getUserId());
+                            orderRenewalReqVO.setPkgId(wxPayOrderInfo.getPkgId());
+                            appOrderService.renew(orderRenewalReqVO);
+                        } else if (wxPayOrderInfo.getWxPayTypeEnum().compareTo(AppWxPayTypeEnum.RECHARGE) == 0) {
+                            //充值
+                            AppRechargeBalanceReqVO rechargeBalanceReqVO = new AppRechargeBalanceReqVO();
+                            rechargeBalanceReqVO.setUserId(wxPayOrderInfo.getUserId());
+                            rechargeBalanceReqVO.setOrderNo(orderNo);
+                            rechargeBalanceReqVO.setStoreId(wxPayOrderInfo.getStoreId());
+                            rechargeBalanceReqVO.setPrice(payOrderDO.getPrice());
+                            appUserService.eechargeBalance(rechargeBalanceReqVO);
+                        } else if (wxPayOrderInfo.getWxPayTypeEnum().compareTo(AppWxPayTypeEnum.PKG) == 0) {
+                            //购买套餐
+                            AppBuyPkgReqVO reqVO = new AppBuyPkgReqVO();
+                            reqVO.setOrderNo(orderNo);
+                            reqVO.setUserId(wxPayOrderInfo.getUserId());
+                            reqVO.setPkgId(wxPayOrderInfo.getPkgId());
+                            reqVO.setPrice(reqVO.getPrice());
+                            pkgService.buyPkg(reqVO);
                         }
                     });
-
                 }
             }
             return WxPayNotifyResponse.success("接收成功!");

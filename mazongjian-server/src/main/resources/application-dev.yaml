@@ -44,13 +44,13 @@ spring:
       datasource:
         #修改为自己创建的mysql信息 支持5.7或8.0
         master:
-          url: jdbc:mysql://127.0.0.1:3306/mazongjian?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://101.43.208.88:3306/mazongjian?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: mazongjian
           password: 22H2zYzPkXc3cMBA
 
   # Redis 配置
   redis:
-    host: 127.0.0.1 # 地址 
+    host: 101.43.208.88 # 地址
     port: 6379 # 端口
     database: 0 # 数据库索引
     password: redispwd123 # 密码，建议生产环境开启

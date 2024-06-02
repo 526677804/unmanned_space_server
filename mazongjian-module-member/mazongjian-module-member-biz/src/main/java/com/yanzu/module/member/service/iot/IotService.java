@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.iot;
 
+import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.service.iot.iotBean.*;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Map;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.DEVICE_IOT_AUTH_ERROR;
@@ -35,6 +37,9 @@ public class IotService {
 
     @Resource
     private RedisTemplate redisTemplate;
+
+    @Resource
+    private DeviceInfoMapper deviceInfoMapper;
 
     private final String tokenKey = "iot.token";
     private final String refushTokenKey = "iot.refush_token";
@@ -187,6 +192,16 @@ public class IotService {
             return true;
         } else {
             throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
+        }
+    }
+
+
+    public void iotCallback(Map<String, String> params) {
+        if (params.containsKey("code")) {
+            getToken(params.get("code"));
+        } else if (params.containsKey("status") && params.containsKey("sn")) {
+            //更新设备状态
+            deviceInfoMapper.updateStatusBySN(params.get("sn"), Integer.valueOf(params.get("status")));
         }
     }
 }

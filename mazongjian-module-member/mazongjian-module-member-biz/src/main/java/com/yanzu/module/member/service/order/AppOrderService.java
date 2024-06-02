@@ -3,6 +3,7 @@ package com.yanzu.module.member.service.order;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
+import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -10,9 +11,9 @@ import java.util.List;
 
 public interface AppOrderService {
 
-    WxPayOrderRespVO preOrder(Long userId,Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, Long ignoreOrderId, boolean tongxiao, boolean wxpay);
+    WxPayOrderRespVO preOrder(Long userId, Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO, Long ignoreOrderId, boolean tongxiao, boolean wxpay);
 
-    BigDecimal mathPrice(BigDecimal price,BigDecimal workPrice,Boolean enableWorkPrice, BigDecimal tongxiaoPrice,Integer txHour,Date startTime, Date endTime,Boolean nightLong, CouponInfoDO couponInfoDO);
+    BigDecimal mathPrice(BigDecimal price,BigDecimal workPrice,Boolean enableWorkPrice, BigDecimal tongxiaoPrice,Integer txHour,Date startTime, Date endTime,Boolean nightLong, CouponInfoDO couponInfoDO,PkgInfoDO pkgInfoDO);
 
     Long save(OrderSaveReqVO reqVO);
 
