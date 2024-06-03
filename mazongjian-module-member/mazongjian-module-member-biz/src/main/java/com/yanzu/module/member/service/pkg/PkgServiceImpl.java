@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -192,7 +193,7 @@ public class PkgServiceImpl implements PkgService {
         //生成微信支付
         String orderNo = getOrderNo();
         WxPayOrderRespVO respVO = new WxPayOrderRespVO();
-        respVO.setPrice(pkgInfoDO.getPrice().intValue() * 100);
+        respVO.setPrice(pkgInfoDO.getPrice().multiply(new BigDecimal("100")).intValue());
         respVO.setOrderNo(orderNo);
         //需要微信下单  先获取到该用户的openId
         String openId = socialUserApi.getUserOpenIdByType(getLoginUserId(), SocialTypeEnum.WECHAT_MINI_APP.getType());

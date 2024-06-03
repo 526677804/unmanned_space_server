@@ -170,7 +170,7 @@ public class PayOrderServiceImpl implements PayOrderService {
                             reqVO.setOrderNo(orderNo);
                             reqVO.setUserId(wxPayOrderInfo.getUserId());
                             reqVO.setPkgId(wxPayOrderInfo.getPkgId());
-                            reqVO.setPrice(reqVO.getPrice());
+                            reqVO.setPrice(payOrderDO.getPrice());
                             pkgService.buyPkg(reqVO);
                         }
                     });
