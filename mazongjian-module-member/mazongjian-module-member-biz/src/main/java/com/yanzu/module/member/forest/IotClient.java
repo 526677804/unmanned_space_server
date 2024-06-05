@@ -38,34 +38,55 @@ public interface IotClient {
     /**
      * 设备绑定
      */
-    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/bind", headers = {"Authorization:Bearer ${token}"})
-    IotResult<String> bind(@JSONBody IotDeviceBaseVO reqVO, @Var("token") String token);
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/bind",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<String> bind(@JSONBody IotDeviceBaseVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
     /**
      * 设备解绑
      */
-    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/unbind", headers = {"Authorization:Bearer ${token}"})
-    IotResult<Boolean> unbind(@JSONBody IotDeviceBaseVO reqVO, @Var("token") String token);
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/unbind",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<Boolean> unbind(@JSONBody IotDeviceBaseVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
 
     /**
      * 设备控制
      */
-    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/send", headers = {"Authorization:Bearer ${token}"})
-    IotResult<Boolean> control(@JSONBody IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO, @Var("token") String token);
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/send",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<Boolean> control(@JSONBody IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
     /**
      * 重置wifi
      */
-    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/configWifi", headers = {"Authorization:Bearer ${token}"})
-    IotResult<Boolean> configWifi(@JSONBody IotDeviceBaseVO<IotDeviceConfigWifiReqVO> reqVO, @Var("token") String token);
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/configWifi",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<Boolean> configWifi(@JSONBody IotDeviceBaseVO<IotDeviceConfigWifiReqVO> reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
     /**
      * 设置门锁自动关锁
+     *
      * @param reqVO
      * @param token
      * @return
      */
-    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/setLockAutoLock", headers = {"Authorization:Bearer ${token}"})
-    IotResult<Boolean> setLockAutoLock(@JSONBody IotDeviceSetAutoLockReqVO reqVO, @Var("token")String token);
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/setLockAutoLock",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<Boolean> setLockAutoLock(@JSONBody IotDeviceSetAutoLockReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 }

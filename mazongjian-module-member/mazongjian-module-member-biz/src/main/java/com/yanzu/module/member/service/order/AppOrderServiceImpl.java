@@ -1521,15 +1521,6 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
             }
         }
-        //处理硬件平台
-        log.info("==========     开始执行硬件平台授权定时刷新任务     ==========");
-        try {
-            iotService.refushTokenCheck();
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("硬件平台刷新授权失败！");
-//            throw new RuntimeException(e);
-        }
         log.info("==========    美团/硬件平台授权定时刷新任务结束     ==========");
 
     }

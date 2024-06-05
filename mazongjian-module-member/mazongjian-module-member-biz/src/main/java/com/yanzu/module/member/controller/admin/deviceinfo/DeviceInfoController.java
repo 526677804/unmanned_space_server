@@ -50,7 +50,7 @@ public class DeviceInfoController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     @PreAuthorize("@ss.hasPermission('member:device-info:create')")
     public CommonResult<Boolean> iotScope() {
-        deviceInfoService.iotScope();
+//        deviceInfoService.iotScope();
         return success(true);
     }
 

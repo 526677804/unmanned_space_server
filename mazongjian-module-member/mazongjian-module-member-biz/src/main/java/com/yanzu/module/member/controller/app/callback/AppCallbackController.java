@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.app.callback;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
 import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.meituan.MeituanService;
@@ -65,13 +66,13 @@ public class AppCallbackController {
         return meituanService.getToken(auth_code, state);
     }
 
-    @GetMapping(value = "/iotCallback")
+    @PostMapping(value = "/iotCallback")
     @Operation(summary = "物联网平台回调")
     @PermitAll // 无需登录
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
-    public void iotCallback(@RequestParam(required = false) Map<String, String> params) {
-        log.info("收到物联网平台授权回调,params:{}", params);
-        iotService.iotCallback(params);
+    public void iotCallback(@RequestBody JSONObject json) {
+        log.info("收到物联网平台回调,params:{}", json);
+        iotService.iotCallback(json);
     }
 
 
