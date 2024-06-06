@@ -20,7 +20,7 @@ public interface ErrorCodeConstants {
     ErrorCode AUTH_PROMISSION_ERROR = new ErrorCode(1004003002, "暂无操作权限");
     ErrorCode AUTH_TOKEN_EXPIRED = new ErrorCode(1004003004, "Token 已经过期");
     ErrorCode AUTH_THIRD_LOGIN_NOT_BIND = new ErrorCode(1004003005, "未绑定账号，需要进行绑定");
-    ErrorCode AUTH_WEIXIN_MINI_APP_PHONE_CODE_ERROR = new ErrorCode(1004003006, "获得手机号失败");
+    ErrorCode AUTH_WEIXIN_MINI_APP_PHONE_CODE_ERROR = new ErrorCode(1004003006, "获得手机号失败!{}");
     ErrorCode AUTH_USER_PHONE_ERROR = new ErrorCode(1004003007, "该手机号未注册或未绑定用户！");
     ErrorCode AUTH_USER_BIND_MINIAPP_ERROR = new ErrorCode(1004003008, "该用户未授权微信登录，无法下单！");
     ErrorCode USER_WEIXIN_PAY_ERROR = new ErrorCode(1004003009, "微信支付失败！");

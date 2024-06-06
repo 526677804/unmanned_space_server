@@ -134,7 +134,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
             phoneNumberInfo = wxMaService.getUserService().getNewPhoneNoInfo(reqVO.getPhoneCode());
         } catch (Exception exception) {
             exception.printStackTrace();
-            throw exception(AUTH_WEIXIN_MINI_APP_PHONE_CODE_ERROR);
+            throw exception(AUTH_WEIXIN_MINI_APP_PHONE_CODE_ERROR, exception.getMessage());
         }
         // 获得获得注册用户
         MemberUserDO user = userService.createUserIfAbsent(phoneNumberInfo.getPurePhoneNumber(), getClientIP());
@@ -298,7 +298,6 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         MemberUserDO user = userService.getUser(userId);
         return user != null ? user.getMobile() : null;
     }
-
 
 
 }
