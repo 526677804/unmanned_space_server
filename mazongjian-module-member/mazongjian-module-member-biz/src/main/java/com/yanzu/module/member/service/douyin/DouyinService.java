@@ -112,7 +112,7 @@ public class DouyinService {
         }
         String clientToken = getClientToken();
 //        String clientToken = "clt.3efe71a01b1fc7a1a2eba0acc388e737VhlUsOfIP0X251tB7dSyNA1ReNJl";
-        System.out.println(clientToken);
+//        System.out.println(clientToken);
         JSONObject prepare = douyinClient.prepare(url, clientToken);
         JSONObject data = prepare.getJSONObject("data");
         if (data.getInteger("error_code") != 0) {
