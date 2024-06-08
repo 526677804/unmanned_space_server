@@ -22,6 +22,7 @@
         <result column="expire_day" property="expireDay"/>
         <result column="max_num" property="maxNum"/>
         <result column="enable" property="enable"/>
+        <result column="balance_buy" property="balanceBuy"/>
         <result column="sort_id" property="sortId"/>
         <result column="store_name" property="storeName"/>
     </resultMap>
@@ -40,6 +41,7 @@
         p.expire_day,
         p.max_num,
         p.enable,
+        p.balance_buy,
         p.sort_id,
         s.store_name
         from member_pkg_info p
@@ -74,6 +76,7 @@
         <result column="price" property="price"/>
         <result column="max_num" property="maxNum"/>
         <result column="enable" property="enable"/>
+        <result column="balance_buy" property="balanceBuy"/>
     </resultMap>
     <select id="getPkgPage" resultMap="PkgPageResultMap">
         select
@@ -89,7 +92,8 @@
         p.price,
         p.expire_day,
         p.max_num,
-        p.enable
+        p.enable,
+        p.balance_buy
         from member_pkg_info p
         left join member_store_info s ON p.store_id = s.store_id
         where p.deleted = 0 and p.enable=1
@@ -124,6 +128,7 @@
         <result column="price" property="price"/>
         <result column="expire_date" property="expireDate"/>
         <result column="create_time" property="createTime"/>
+        <result column="balance_buy" property="balanceBuy"/>
     </resultMap>
     <select id="getMyPkgPage" resultMap="PkgMyPageResultMap">
         select
@@ -139,7 +144,8 @@
         pu.expire_date,
         p.status,
         s.store_name,
-        pu.create_time
+        pu.create_time,
+        p.balance_buy
         from member_pkg_user_info pu
         left join member_pkg_info p ON pu.pkg_id=p.pkg_id
         left join member_store_info s ON p.store_id = s.store_id

@@ -1,15 +1,11 @@
 package com.yanzu.module.member.controller.app.pkg.vo;
 
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
 
 @Data
 public class AppAdminPkgPageRespVO {
@@ -52,6 +48,9 @@ public class AppAdminPkgPageRespVO {
 
     @Schema(description = "是否启用")
     private Boolean enable;
+
+    @Schema(description = "支持余额下单")
+    private Boolean balanceBuy;
 
     @Schema(description = "排序")
     private Integer sortId;

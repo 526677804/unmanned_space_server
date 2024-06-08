@@ -6,7 +6,6 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
 
 @Data
 public class AppAdminPkgSaveReqVO {
@@ -26,7 +25,7 @@ public class AppAdminPkgSaveReqVO {
     @NotNull(message = "门店不能为空")
     private Long storeId;
 
-    @Schema(description = "房间类型 空=不限 1小包 2中包 3大包 4豪包")
+    @Schema(description = "房间类型 空=不限 1小包 2中包 3大包 4豪包 5商务包")
     private Integer roomType;
 
     @Schema(description = "可用时间 0-23数字，空表示不限")
@@ -52,6 +51,9 @@ public class AppAdminPkgSaveReqVO {
 
     @Schema(description = "是否启用")
     private Boolean enable;
+
+    @Schema(description = "支持余额下单")
+    private Boolean balanceBuy;
 
     @Schema(description = "排序 ")
     private Integer sortId;

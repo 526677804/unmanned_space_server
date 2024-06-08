@@ -589,6 +589,9 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     private String getRoomNameByType(Integer roomType) {
+        if (roomType.compareTo(AppEnum.room_type.SW.getValue()) == 0) {
+            return "商务包";
+        }
         if (roomType.compareTo(AppEnum.room_type.HAO.getValue()) == 0) {
             return "豪包";
         }
@@ -651,7 +654,10 @@ public class AppOrderServiceImpl implements AppOrderService {
             //不校验
         } else {
             Integer checkRoomType = 0;
-            if (title.indexOf("豪包") != -1) {
+            if (title.indexOf("商务包") != -1) {
+                //商务包
+                checkRoomType = AppEnum.room_type.SW.getValue();
+            } else if (title.indexOf("豪包") != -1) {
                 //豪包
                 checkRoomType = AppEnum.room_type.HAO.getValue();
             } else if (title.indexOf("大包") != -1) {
@@ -802,7 +808,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                         break;
                     case 2://余额
                         if (!ObjectUtils.isEmpty(reqVO.getPkgId())) {
-                            throw exception(PKG_ORDER_PAY_TYPE_ERROR);
+                            //检查套餐是否支持余额支付
+                            if (!pkgInfoDO.getBalanceBuy()) {
+                                throw exception(PKG_ORDER_PAY_TYPE_ERROR);
+                            }
                         }
                         StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(reqVO.getUserId(), roomInfoDO.getStoreId());
                         if (ObjectUtils.isEmpty(storeUserDO)) {
@@ -1349,7 +1358,7 @@ public class AppOrderServiceImpl implements AppOrderService {
      * 订单处理的定时任务，每分钟执行一次， 用于到时间开始订单 或者 结束订单
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Synchronized
     public void executeOrderJob() {
         log.info("==========     开始执行订单定时检查任务     ==========");
@@ -1504,7 +1513,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
-    @Synchronized
+//    @Synchronized
     @Transactional
     public void executeMeituanRefreshTokenJob() {
         log.info("==========     开始执行美团授权定时刷新任务     ==========");
@@ -1634,6 +1643,21 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Override
     public int countNewUserByStoreId(Long userId, Long storeId) {
         return orderInfoMapper.countNewUserByStoreId(userId, storeId);
+    }
+
+    @Override
+    public OrderInfoAppRespVO getOrderByRoomId(Long roomId) {
+        OrderInfoDO orderInfoDO = orderInfoMapper.getByRoomCurrent(roomId);
+        if (!ObjectUtils.isEmpty(orderInfoDO)) {
+            OrderInfoAppRespVO orderInfo = getOrderInfo(orderInfoDO.getOrderId(), null);
+            if (!ObjectUtils.isEmpty(orderInfo)) {
+                //因为安全问题，不返回order key
+                orderInfo.setOrderKey(null);
+            }
+            return orderInfo;
+        } else {
+            throw exception(ORDER_NOT_FOUND_ERROR);
+        }
     }
 
 }

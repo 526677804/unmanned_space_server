@@ -135,11 +135,13 @@ public class AppEnum {
         //中包	2
         //大包	3
         //豪包	4
+        //商务包	5
 
         XIAO(1),
         ZHONG(2),
         DA(3),
-        HAO(4);
+        HAO(4),
+        SW(5);
 
 
         private final Integer value;

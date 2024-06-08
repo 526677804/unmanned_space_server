@@ -369,7 +369,7 @@
         select *
         from member_order_info
         where deleted = 0
-          and status = 1
+          and status IN (0,1)
           and room_id = #{roomId}
           and start_time &lt;= now()
           and end_time > now() limit 1

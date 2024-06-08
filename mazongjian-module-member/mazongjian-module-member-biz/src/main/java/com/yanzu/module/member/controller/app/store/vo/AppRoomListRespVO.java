@@ -31,6 +31,9 @@ public class AppRoomListRespVO {
     @Schema(description = "房间小程序码")
     private String qrCode;
 
+    @Schema(description = "房间续费码")
+    private String renewCode;
+
     @Schema(description = "房间类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer type;
 

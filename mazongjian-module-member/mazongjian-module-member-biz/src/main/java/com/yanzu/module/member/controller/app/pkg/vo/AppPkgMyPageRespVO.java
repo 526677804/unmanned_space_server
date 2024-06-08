@@ -60,4 +60,7 @@ public class AppPkgMyPageRespVO {
     @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date createTime;
 
+    @Schema(description = "支持余额下单")
+    private Boolean balanceBuy;
+
 }

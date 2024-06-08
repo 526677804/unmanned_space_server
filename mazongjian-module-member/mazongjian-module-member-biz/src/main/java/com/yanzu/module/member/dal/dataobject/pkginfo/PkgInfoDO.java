@@ -1,21 +1,22 @@
 package com.yanzu.module.member.dal.dataobject.pkginfo;
 
-import com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler;
-import com.yanzu.framework.mybatis.core.type.JsonLongSetTypeHandler;
-import lombok.*;
-import java.util.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
+import com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 套餐信息 DO
  *
  * @author 超级管理员
  */
-@TableName(value = "member_pkg_info",autoResultMap = true)
+@TableName(value = "member_pkg_info", autoResultMap = true)
 @KeySequence("member_pkg_info_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -81,6 +82,11 @@ public class PkgInfoDO extends BaseDO {
      * 排序id
      */
     private Integer sortId;
+    /**
+     * 支持余额购买
+     */
+    private Boolean balanceBuy;
+
 
     /**
      * 创建用户id

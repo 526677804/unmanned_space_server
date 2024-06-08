@@ -1,19 +1,11 @@
 package com.yanzu.module.member.controller.app.pkg.vo;
 
 
-import com.dtflys.forest.annotation.JSONBody;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
-
-import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 
 @Data
 public class AppPkgPageRespVO {
@@ -56,5 +48,8 @@ public class AppPkgPageRespVO {
 
     @Schema(description = "是否可用")
     private Boolean enable;
+
+    @Schema(description = "支持余额下单")
+    private Boolean balanceBuy;
 
 }

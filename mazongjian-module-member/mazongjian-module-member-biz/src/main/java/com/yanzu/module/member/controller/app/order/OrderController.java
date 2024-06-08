@@ -94,6 +94,16 @@ public class OrderController {
         return success(true);
     }
 
+
+    @PostMapping("/getOrderByRoomId/{roomId}")
+    @Operation(summary = "房间码续费获取订单详情", description = "订单详情使用")
+    @PermitAll
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    @Parameter(name = "roomId")
+    public CommonResult<OrderInfoAppRespVO> getOrderByRoomId(@PathVariable("roomId")Long roomId) {
+        return success(appOrderService.getOrderByRoomId(roomId));
+    }
+
     @PostMapping("/getOrderPage")
     @Operation(summary = "获取订单列表分页", description = "我的订单使用")
     @PreAuthenticated

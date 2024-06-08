@@ -545,6 +545,8 @@ public class WorkWxServiceImpl implements WorkWxService {
                 return "大包";
             case 4:
                 return "豪包";
+            case 5:
+                return "商务包";
         }
         return "";
     }

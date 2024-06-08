@@ -11,7 +11,6 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
-import com.yanzu.module.member.controller.app.index.vo.AppOrderTimeVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
 import com.yanzu.module.member.convert.roominfo.RoomInfoConvert;
@@ -168,7 +167,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 //            checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
             StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
             StoreInfoDO infoDO = storeInfoMapper.selectById(reqVO.getStoreId());
-            if(ObjectUtils.isEmpty(infoDO.getQrCode())){
+            if (ObjectUtils.isEmpty(infoDO.getQrCode())) {
                 //生成小程序码
                 WxMaService wxMaService = myWxService.initWxMa();
                 // 获取小程序二维码生成实例
@@ -179,7 +178,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                     String file = fileApi.createFile(bytes);
                     storeInfoDO.setQrCode(file);
                 } catch (WxErrorException e) {
-        //                throw new RuntimeException(e);
+                    //                throw new RuntimeException(e);
                 }
             }
             storeInfoMapper.updateById(storeInfoDO);
@@ -210,15 +209,18 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //没有填通宵场价格  那么默认设置为单价*6个小时
             reqVO.setTongxiaoPrice(reqVO.getPrice().multiply(BigDecimal.valueOf(6)));
         }
+        if (ObjectUtils.isEmpty(reqVO.getWorkPrice())) {
+            reqVO.setWorkPrice(reqVO.getPrice());
+        }
         if (ObjectUtils.isEmpty(reqVO.getYunlabaSound())) {
             //默认设置音量为2
             reqVO.setYunlabaSound(2);
         }
-        if(!StringUtils.isEmpty(reqVO.getBanTimeStart())&&StringUtils.isEmpty(reqVO.getBanTimeEnd())){
+        if (!StringUtils.isEmpty(reqVO.getBanTimeStart()) && StringUtils.isEmpty(reqVO.getBanTimeEnd())) {
             //任意一个为空都不行
             throw exception(ROOM_BAN_TIME_ERROR);
 
-        }else if(!StringUtils.isEmpty(reqVO.getBanTimeEnd())&&StringUtils.isEmpty(reqVO.getBanTimeStart())) {
+        } else if (!StringUtils.isEmpty(reqVO.getBanTimeEnd()) && StringUtils.isEmpty(reqVO.getBanTimeStart())) {
             //任意一个为空都不行
             throw exception(ROOM_BAN_TIME_ERROR);
         }
@@ -243,12 +245,35 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             } catch (WxErrorException e) {
 //                throw new RuntimeException(e);
             }
+            //生成续费码
+            try {
+                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+                String path = "pages/roomRenew/roomRenew?storeId=" + storeInfoDO.getStoreId() + "&roomId=" + roomInfoDO.getRoomId();
+                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
+                String file = fileApi.createFile(bytes);
+                roomInfoMapper.updateById(new RoomInfoDO().setRoomId(roomInfoDO.getRoomId()).setRenewCode(file));
+            } catch (WxErrorException e) {
+//                throw new RuntimeException(e);
+            }
         } else {
             //校验门店权限
             checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
-            RoomInfoDO roomInfoDO =RoomInfoConvert.INSTANCE.convert3(reqVO);
+            RoomInfoDO roomInfoDO = RoomInfoConvert.INSTANCE.convert3(reqVO);
+            if (ObjectUtils.isEmpty(roomInfoDO.getRenewCode())) {
+                //生成续费码
+                WxMaService wxMaService = myWxService.initWxMa();
+                try {
+                    WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+                    String path = "pages/roomRenew/roomRenew?storeId=" + roomInfoDO.getStoreId() + "&roomId=" + roomInfoDO.getRoomId();
+                    byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
+                    String file = fileApi.createFile(bytes);
+                    roomInfoMapper.updateById(new RoomInfoDO().setRoomId(roomInfoDO.getRoomId()).setRenewCode(file));
+                } catch (WxErrorException e) {
+//                throw new RuntimeException(e);
+                }
+            }
 //            //生成小程序码
-//            WxMaService wxMaService = myWxService.initWxMa();
+//
 //            // 获取小程序二维码生成实例
 //            try {
 //                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
@@ -551,7 +576,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public List<AppRoomInfoListRespVO> getRoomInfoList2(Long storeId) {
         List<String> storeIds = storeUserMapper.getIdsByEmploy(getLoginUserId());
-        if(CollectionUtils.isEmpty(storeIds)){
+        if (CollectionUtils.isEmpty(storeIds)) {
             return new ArrayList<>();
         }
 

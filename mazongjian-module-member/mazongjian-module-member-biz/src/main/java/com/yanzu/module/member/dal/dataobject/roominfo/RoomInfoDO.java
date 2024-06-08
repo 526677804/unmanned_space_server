@@ -44,6 +44,12 @@ public class RoomInfoDO extends BaseDO {
      * 房间小程序码
      */
     private String qrCode;
+
+    /**
+     * 续费二维码
+     */
+    private String renewCode;
+
     /**
      * 门店id
      */

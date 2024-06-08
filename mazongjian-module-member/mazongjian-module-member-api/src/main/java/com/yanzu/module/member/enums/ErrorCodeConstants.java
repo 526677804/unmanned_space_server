@@ -113,7 +113,7 @@ public interface ErrorCodeConstants {
     ErrorCode PKG_USE_CHECK_HOLIDAY_ERROR = new ErrorCode(1004004207, "该套餐节假日不可使用！");
     ErrorCode PKG_USE_CHECK_HOUR_ERROR = new ErrorCode(1004004208, "该套餐的抵扣时长与选择的订单时长不匹配！");
 
-    ErrorCode PKG_ORDER_PAY_TYPE_ERROR = new ErrorCode(1004004209, "套餐暂不支持余额支付，请使用微信支付！");
+    ErrorCode PKG_ORDER_PAY_TYPE_ERROR = new ErrorCode(1004004209, "此套餐暂不支持余额支付，请使用微信支付！");
 
     ErrorCode STORE_WX_PAY_CONFIG_NOT_FOUND = new ErrorCode(1004004999, "该门店暂不支持微信支付！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");
