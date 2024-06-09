@@ -1,13 +1,13 @@
 package com.yanzu.module.member.service.order;
 
 import cn.hutool.core.util.HexUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
@@ -1080,12 +1080,12 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
-        PageHelper.startPage(reqVO);
-        List<OrderListRespVO> list = orderInfoMapper.getOrderPage(reqVO);
-        if (!org.springframework.util.CollectionUtils.isEmpty(list)) {
+        IPage<OrderListRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        orderInfoMapper.getOrderPage(page,reqVO);
+        if(!org.springframework.util.CollectionUtils.isEmpty(page.getRecords())){
             //如果状态是已取消以外的状态  并且订单结束时间不超过5分钟，那么允许续费
             LocalDateTime now = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            list.forEach(x -> {
+            page.getRecords().forEach(x -> {
                 x.setRenewBtn(false);
                 if (!ObjectUtils.isEmpty(x.getRoomImg())) {
                     x.setRoomImg(x.getRoomImg().split(",")[0]);
@@ -1096,8 +1096,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
             });
         }
-        PageInfo<OrderListRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override

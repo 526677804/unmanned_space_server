@@ -1,7 +1,7 @@
 package com.yanzu.module.member.service.deviceinfo;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.*;
 import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
@@ -95,13 +95,12 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     }
 
     @Override
-    public PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO) {
+    public PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO reqVO) {
         //检查权限
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
-        PageHelper.startPage(pageReqVO);
-        List<DeviceInfoRespVO> list = deviceInfoMapper.getDeviceInfoPage(pageReqVO);
-        PageInfo<DeviceInfoRespVO> pageInfo = new PageInfo<>(list);
-        return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
+        IPage<DeviceInfoRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        deviceInfoMapper.getDeviceInfoPage(page,reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.yanzu.module.member.service.groupPay;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoPageReqVO;
@@ -39,10 +39,9 @@ public class GroupPayInfoServiceImpl implements GroupPayInfoService {
 
     @Override
     public PageResult<GroupPayInfoRespVO> getGroupPayInfoPage(GroupPayInfoPageReqVO pageReqVO) {
-        PageHelper.startPage(pageReqVO);
-        List<GroupPayInfoRespVO> list = groupPayInfoMapper.getPage(pageReqVO);
-        PageInfo<GroupPayInfoRespVO> pageInfo = new PageInfo<>(list);
-        return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
+        IPage<GroupPayInfoRespVO> page=new Page(pageReqVO.getPageNo(),pageReqVO.getPageSize());
+        groupPayInfoMapper.getPage(page,pageReqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override

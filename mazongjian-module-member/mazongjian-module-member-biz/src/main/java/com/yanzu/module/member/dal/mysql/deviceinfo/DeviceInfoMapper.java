@@ -1,5 +1,6 @@
 package com.yanzu.module.member.dal.mysql.deviceinfo;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
@@ -34,7 +35,7 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
 
     List<DeviceInfoDO> getByRoomId(@Param("roomId") Long roomId);
 
-    List<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO);
+    List<DeviceInfoRespVO> getDeviceInfoPage(@Param("page") IPage<DeviceInfoRespVO> page, @Param("reqVO") DeviceInfoPageReqVO reqVO);
 
     int updateStatusBySN(@Param("deviceSn") String deviceSn, @Param("state") Integer state);
 

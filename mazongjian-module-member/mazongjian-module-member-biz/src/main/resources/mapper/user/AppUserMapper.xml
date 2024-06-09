@@ -43,14 +43,16 @@
         order by create_time desc limit 1 ) orderTime,m.create_time createTime
         from member_user m
         where m.deleted=0
-        <if test="null!=name and name!=''">
-            and ( locate(#{name},m.nickname)>0 OR locate(#{name},m.mobile)>0 )
-        </if>
-        <if test="null!=cloumnName and null!=sortRule">
-            order by ${cloumnName} ${sortRule}
-        </if>
-        <if test="null==cloumnName or null==sortRule">
-            order by m.create_time desc
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.name and reqVO.name!=''">
+                and ( locate(#{reqVO.name},m.nickname)>0 OR locate(#{reqVO.name},m.mobile)>0 )
+            </if>
+            <if test="null!=reqVO.cloumnName and null!=reqVO.sortRule">
+                order by ${reqVO.cloumnName} ${reqVO.sortRule}
+            </if>
+            <if test="null==reqVO.cloumnName or null==reqVO.sortRule">
+                order by m.create_time desc
+            </if>
         </if>
     </select>
     <select id="getNameById" resultType="java.lang.String">

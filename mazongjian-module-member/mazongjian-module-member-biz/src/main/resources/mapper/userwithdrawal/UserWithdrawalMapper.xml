@@ -14,9 +14,9 @@
         select *
         from member_user_withdrawal
         where deleted = 0
-        and user_id = #{userId}
-        <if test="null!=startTime and null!=endTime">
-            and create_time>=#{startTime} and create_time&lt;=#{endTime}
+        and user_id = #{reqVO.userId}
+        <if test="null!=reqVO.startTime and null!=reqVO.endTime">
+            and create_time>=#{reqVO.startTime} and create_time&lt;=#{reqVO.endTime}
         </if>
         order by create_time desc
     </select>

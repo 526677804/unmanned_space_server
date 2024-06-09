@@ -1,5 +1,6 @@
 package com.yanzu.module.member.dal.mysql.groupPay;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
@@ -50,7 +51,7 @@ public interface GroupPayInfoMapper extends BaseMapperX<GroupPayInfoDO> {
 
     GroupPayInfoDO getByOrderId(Long orderId);
 
-    List<GroupPayInfoRespVO> getPage(GroupPayInfoPageReqVO pageReqVO);
+    List<GroupPayInfoRespVO> getPage(@Param("page") IPage page, @Param("reqVO") GroupPayInfoPageReqVO pageReqVO);
 
     BigDecimal getMtTotalMoney(@Param("storeIds") List<String> storeIds, @Param("storeId") Long storeId);
 

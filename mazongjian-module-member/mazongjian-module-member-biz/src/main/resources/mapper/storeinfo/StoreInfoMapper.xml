@@ -44,28 +44,28 @@
         <if test=" null!=lat and null!=lon">
             (
             6371 * ACOS(
-            COS(RADIANS(#{lat})) *
+            COS(RADIANS(#{reqVO.lat})) *
             COS(RADIANS(lat)) *
-            COS(RADIANS(lon) - RADIANS(#{lon})) +
+            COS(RADIANS(lon) - RADIANS(#{reqVO.lon})) +
             SIN(RADIANS(#{lat})) * SIN(RADIANS(lat))
             )
             ) AS distance
         </if>
-        <if test=" null==lat or null==lon">
+        <if test=" null==reqVO.lat or null==reqVO.lon">
            9999 AS distance
         </if>
         from member_store_info s
         <where>
             s.deleted=0 and s.status=0
-            <if test=" null!=cityName and cityName!=''">
-                and s.city_name=#{cityName}
+            <if test="null!=reqVO.cityName and reqVO.cityName!=''">
+                and s.city_name=#{reqVO.cityName}
             </if>
-            <if test=" null!=name and name!=''">
-                and locate(#{name},s.store_name)>0
+            <if test=" null!=reqVO.name and reqVO.name!=''">
+                and locate(#{reqVO.name},s.store_name)>0
             </if>
 
         </where>
-        <if test=" null!=lat and null!=lon">
+        <if test=" null!=reqVO.lat and null!=reqVO.lon">
             order by distance asc
         </if>
     </select>
@@ -127,13 +127,16 @@
         left join member_store_user su on su.store_id=s.store_id and su.deleted=0
         WHERE
         s.deleted = 0
-        and su.user_id=#{userId} and su.type in (12,13)
-        <if test="null!=name and name!=''">
-            and locate(#{name},s.store_name)>0
-        </if>
-        <if test="null!=cityName and cityName!=''">
-            and s.city_name=#{cityName}
-        </if>
+        and su.user_id=#{reqVO.userId} and su.type in (12,13)
+          <if test="null!=reqVO">
+              <if test="null!=reqVO.name and reqVO.name!=''">
+                  and locate(#{reqVO.name},s.store_name)>0
+              </if>
+              <if test="null!=reqVO.cityName and reqVO.cityName!=''">
+                  and s.city_name=#{reqVO.cityName}
+              </if>
+          </if>
+
     </select>
     <select id="getStoreListByMember" resultType="com.yanzu.framework.common.core.KeyValue">
         select s.store_name `key`,s.store_id `value`

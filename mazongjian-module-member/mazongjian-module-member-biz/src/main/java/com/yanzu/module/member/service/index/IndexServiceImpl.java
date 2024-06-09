@@ -1,7 +1,7 @@
 package com.yanzu.module.member.service.index;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.app.index.vo.*;
@@ -66,18 +66,16 @@ public class IndexServiceImpl implements IndexService {
                 reqVO.setCityName("");
             }
         }
-
-        PageHelper.startPage(reqVO);
-        List<AppStorePageRespVO> list = storeInfoMapper.getStorePageList(reqVO);
-        PageInfo<AppStorePageRespVO> page = new PageInfo<>(list);
-        if (!CollectionUtils.isEmpty(page.getList())) {
-            page.getList().forEach(x -> {
+        IPage<AppStorePageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        storeInfoMapper.getStorePageList(page,reqVO);
+        if (!CollectionUtils.isEmpty(page.getRecords())) {
+            page.getRecords().forEach(x -> {
                 if (!ObjectUtils.isEmpty(x.getDistance())) {
                     x.setDistance(x.getDistance().setScale(2, BigDecimal.ROUND_CEILING));
                 }
             });
         }
-        return new PageResult<>(page.getList(), page.getTotal());
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override

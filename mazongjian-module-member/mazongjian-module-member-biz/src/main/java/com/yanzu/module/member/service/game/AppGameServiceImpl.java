@@ -1,7 +1,7 @@
 package com.yanzu.module.member.service.game;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.controller.app.game.vo.AppGameInfoReqVO;
@@ -106,18 +106,17 @@ public class AppGameServiceImpl implements AppGameService {
     @Override
     public PageResult<AppGameInfoRespVO> getOrderPage(AppGamePageReqVO reqVO) {
         reqVO.setCurrentUserId(getLoginUserId());
-        PageHelper.startPage(reqVO);
-        List<AppGameInfoRespVO> list = gameInfoMapper.getOrderPage(reqVO);
-        PageInfo<AppGameInfoRespVO> page = new PageInfo(list);
-        if (!CollectionUtils.isEmpty(page.getList())) {
+        IPage<AppGameInfoRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        gameInfoMapper.getOrderPage(page,reqVO);
+        if (!CollectionUtils.isEmpty(page.getRecords())) {
             //取出所有玩家
-            String playUserIds = page.getList().stream().map(x -> x.getPlayUserIds()).collect(Collectors.joining(","));
+            String playUserIds = page.getRecords().stream().map(x -> x.getPlayUserIds()).collect(Collectors.joining(","));
             //查询出这些人的信息
             List<AppGameUserListRespVO> userListRespVOList = appUserMapper.getInfoByUserIds(playUserIds);
             //转map
             Map<String, AppGameUserListRespVO> userMap = userListRespVOList.stream().collect(Collectors.toMap(x -> String.valueOf(x.getUserId()), Function.identity()));
             //填充数据
-            for (AppGameInfoRespVO appGameInfoRespVO : list) {
+            for (AppGameInfoRespVO appGameInfoRespVO : page.getRecords()) {
                 List<AppGameUserListRespVO> playUserList = new ArrayList<>(4);
                 String[] split = appGameInfoRespVO.getPlayUserIds().split(",");
                 for (String s : split) {
@@ -126,9 +125,7 @@ public class AppGameServiceImpl implements AppGameService {
                 appGameInfoRespVO.setPlayUserList(playUserList);
             }
         }
-
-
-        return new PageResult<>(page.getList(), page.getTotal());
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override

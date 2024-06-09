@@ -1,5 +1,6 @@
 package com.yanzu.module.member.dal.mysql.discountrules;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.module.member.controller.app.order.vo.AppDiscountRulesRespVO;
 import com.yanzu.module.member.controller.app.store.vo.AppDiscountRulesPageReqVO;
@@ -20,7 +21,7 @@ import java.util.List;
 public interface DiscountRulesMapper extends BaseMapperX<DiscountRulesDO> {
 
 
-    List<AppDiscountRulesPageRespVO> getDiscountRulesPage(AppDiscountRulesPageReqVO reqVO);
+    List<AppDiscountRulesPageRespVO> getDiscountRulesPage(@Param("page") IPage<AppDiscountRulesPageRespVO> page, @Param("reqVO") AppDiscountRulesPageReqVO reqVO);
 
     int changeDiscountRulesStatus(@Param("id") Long id, @Param("status") Integer status);
 

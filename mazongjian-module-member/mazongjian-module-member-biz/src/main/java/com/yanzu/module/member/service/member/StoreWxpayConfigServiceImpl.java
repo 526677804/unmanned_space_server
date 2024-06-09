@@ -1,11 +1,11 @@
 package com.yanzu.module.member.service.member;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.profitsharing.ProfitSharingReceiverRequest;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.wxpay.vo.*;
 import com.yanzu.module.member.convert.member.StoreWxpayConfigConvert;
@@ -94,11 +94,10 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
     }
 
     @Override
-    public PageResult<StoreWxpayConfigPageRespVO> getStoreWxpayConfigPage(StoreWxpayConfigPageReqVO pageReqVO) {
-        PageHelper.startPage(pageReqVO);
-        List<StoreWxpayConfigPageRespVO> list = storeWxpayConfigMapper.getStoreWxpayConfigPage(pageReqVO);
-        PageInfo<StoreWxpayConfigPageRespVO> pageInfo = new PageInfo<>(list);
-        return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
+    public PageResult<StoreWxpayConfigPageRespVO> getStoreWxpayConfigPage(StoreWxpayConfigPageReqVO reqVO) {
+        IPage<StoreWxpayConfigPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        storeWxpayConfigMapper.getStoreWxpayConfigPage(page,reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -131,7 +130,7 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
                 throw exception(ADMIN_WEIXIN_PAY_SPLIT_ERROR);
 //                throw new RuntimeException(e);
             }
-        }else{
+        } else {
             throw exception(ADMIN_WEIXIN_PAY_SPLIT_ERROR);
         }
     }

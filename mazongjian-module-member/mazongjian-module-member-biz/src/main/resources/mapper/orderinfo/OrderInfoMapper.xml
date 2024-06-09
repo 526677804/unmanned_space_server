@@ -61,25 +61,25 @@
         left join member_order_info o ON c.order_id = o.order_id
         left join member_room_info r ON r.room_id = o.room_id
         where c.deleted = 0 and o.status !=3 and c.store_id in (select store_id from member_store_user where
-        user_id=#{userId} and type=14 and deleted=0)
-        <if test="null!=storeId and storeId!=''">
-            and o.store_id=#{storeId}
+        user_id=#{reqVO.userId} and type=14 and deleted=0)
+        <if test="null!=reqVO.storeId and reqVO.storeId!=''">
+            and o.store_id=#{reqVO.storeId}
         </if>
-        <if test="null!=startTime and null!=endTime">
-            and to_days(o.create_time) >= to_days(#{startTime})
-            and to_days(o.create_time) &lt;= to_days(#{endTime})
+        <if test="null!=reqVO.startTime and null!=reqVO.endTime">
+            and to_days(o.create_time) >= to_days(#{reqVO.startTime})
+            and to_days(o.create_time) &lt;= to_days(#{reqVO.endTime})
         </if>
-        <if test="null!=status">
-            and c.status=#{status}
-            <if test="status==0">
-                and ( c.user_id=#{userId} or c.user_id is null)
+        <if test="null!=reqVO.status">
+            and c.status=#{reqVO.status}
+            <if test="reqVO.status==0">
+                and ( c.user_id=#{reqVO.userId} or c.user_id is null)
             </if>
-            <if test="status!=0">
-                and c.user_id=#{userId}
+            <if test="reqVO.status!=0">
+                and c.user_id=#{reqVO.userId}
             </if>
         </if>
-        <if test="null==status">
-            and ( c.user_id=#{userId} or c.user_id is null)
+        <if test="null==reqVO.status">
+            and ( c.user_id=#{reqVO.userId} or c.user_id is null)
         </if>
         order by c.create_time desc
     </select>
@@ -123,26 +123,26 @@
         left join member_user m ON m.id = o.user_id
         left join member_coupon_info coupon ON coupon.coupon_id=o.coupon_id
         where o.deleted = 0
-        <if test="null==storeIds or storeIds==''">
-            and o.user_id=#{userId}
-        </if>
-        <if test="null!=storeIds and storeIds!=''">
-            and o.store_id in (${storeIds})
-        </if>
-        <if test="null!=storeId and storeId!=''">
-            and o.store_id=#{storeId}
-        </if>
-        <if test="null!=status">
-            and o.status=#{status}
-        </if>
-        <if test="null!=orderColumn and orderColumn!=''">
-            order by ${orderColumn} desc
-        </if>
-        <if test="null==orderColumn or orderColumn==''">
-            order by o.order_id desc
-        </if>
-
-
+          <if test="null!=reqVO">
+              <if test="null==reqVO.userId or reqVO.userId==''">
+                  and o.user_id=#{reqVO.userId}
+              </if>
+              <if test="null!=reqVO.storeIds and reqVO.storeIds!=''">
+                  and o.store_id in (${reqVO.storeIds})
+              </if>
+              <if test="null!=reqVO.storeId and reqVO.storeId!=''">
+                  and o.store_id=#{reqVO.storeId}
+              </if>
+              <if test="null!=reqVO.status">
+                  and o.status=#{reqVO.status}
+              </if>
+              <if test="null!=reqVO.orderColumn and reqVO.orderColumn!=''">
+                  order by ${reqVO.orderColumn} desc
+              </if>
+              <if test="null==reqVO.orderColumn or reqVO.orderColumn==''">
+                  order by o.order_id desc
+              </if>
+          </if>
     </select>
     <select id="getOrderInfo" resultType="com.yanzu.module.member.controller.app.order.vo.OrderInfoAppRespVO">
         select o.order_id

@@ -15,12 +15,12 @@
         from member_user_money_bill umb
         left join member_store_info s ON s.store_id=umb.store_id
         where
-            umb.deleted =0 and umb.user_id=#{userId}
-        <if test="null != startTime">
-            and DATE_FORMAT(umb.create_time, '%Y%m%d')>=DATE_FORMAT(#{startTime}, '%Y%m%d')
+            umb.deleted =0 and umb.user_id=#{reqVO.userId}
+        <if test="null != reqVO.startTime">
+            and DATE_FORMAT(umb.create_time, '%Y%m%d')>=DATE_FORMAT(#{reqVO.startTime}, '%Y%m%d')
         </if>
-        <if test="null != endTime">
-            and DATE_FORMAT(umb.create_time, '%Y%m%d')&lt;=DATE_FORMAT(#{endTime}, '%Y%m%d')
+        <if test="null != reqVO.endTime">
+            and DATE_FORMAT(umb.create_time, '%Y%m%d')&lt;=DATE_FORMAT(#{reqVO.endTime}, '%Y%m%d')
         </if>
         order by umb.create_time desc
     </select>

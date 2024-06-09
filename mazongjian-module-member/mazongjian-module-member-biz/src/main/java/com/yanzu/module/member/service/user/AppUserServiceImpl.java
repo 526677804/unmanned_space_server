@@ -2,12 +2,12 @@ package com.yanzu.module.member.service.user;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.IdUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.google.common.annotations.VisibleForTesting;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
 import com.yanzu.framework.common.pojo.PageResult;
@@ -267,10 +267,9 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public PageResult<AppUserMoneyBillRespVO> getBalancePage(AppUserMoneyBillPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        PageHelper.startPage(reqVO);
-        List<AppUserMoneyBillRespVO> list = userMoneyBillMapper.getBalancePage(reqVO);
-        PageInfo<AppUserMoneyBillRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        IPage<AppUserMoneyBillRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageNo());
+        userMoneyBillMapper.getBalancePage(page,reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -370,12 +369,11 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public PageResult<AppCouponPageRespVO> getCouponPage(AppCouponPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
+        IPage<AppCouponPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
         if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //个人中心分页查询
-            PageHelper.startPage(reqVO);
-            List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
-            PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
-            return new PageResult<>(page.getList(), page.getTotal());
+            couponInfoMapper.getCouponPage(page,reqVO);
+            return new PageResult<>(page.getRecords(), page.getTotal());
         } else {
             //提交订单页查询
             //下单的时候  要返回可用状态
@@ -401,7 +399,7 @@ public class AppUserServiceImpl implements AppUserService {
                     roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null,null);
             //再计算出时长 精确到小数点后两位
             BigDecimal hours = new BigDecimal(String.valueOf((reqVO.getEndTime().getTime() - reqVO.getStartTime().getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
-            List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(reqVO);
+            List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(page,reqVO);
             //校验每张优惠券是否可用
             if (!CollectionUtils.isEmpty(list)) {
                 list.stream().forEach(x -> {

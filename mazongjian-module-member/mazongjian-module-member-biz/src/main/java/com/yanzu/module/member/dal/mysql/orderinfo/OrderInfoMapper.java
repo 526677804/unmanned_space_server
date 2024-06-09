@@ -1,5 +1,6 @@
 package com.yanzu.module.member.dal.mysql.orderinfo;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
@@ -30,12 +31,12 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     OrderInfoDO getByUserAndStatus(@Param("userId") Long userId, @Param("status") Integer status);
 
-    List<AppClearPageRespVO> getClearPage(AppClearPageReqVO reqVO);
+    List<AppClearPageRespVO> getClearPage(@Param("page") IPage<AppClearPageRespVO> page, @Param("reqVO") AppClearPageReqVO reqVO);
 
     List<OrderInfoDO> getByRoomId(@Param("roomId") Long roomId, @Param("ignoreOrderId") Long ignoreOrderId);
     int countByRoomId(@Param("roomId") Long roomId, @Param("ignoreOrderId") Long ignoreOrderId);
 
-    List<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO);
+    List<OrderListRespVO> getOrderPage(@Param("page") IPage page, @Param("reqVO") OrderPageReqVO reqVO);
 
     OrderInfoAppRespVO getOrderInfo(@Param("orderId") Long orderId,@Param("orderKey") String orderKey, @Param("userId") Long userId);
 

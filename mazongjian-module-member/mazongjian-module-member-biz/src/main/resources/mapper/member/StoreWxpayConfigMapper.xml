@@ -15,12 +15,15 @@
         from member_store_wxpay_config sw
         left join member_store_info s ON sw.store_id = s.store_id
         where sw.deleted=0 and s.deleted=0
-        <if test="null!=storeId and storeId!=''">
-            and sw.store_id=#{storeId}
-        </if>
-        <if test="null!=mchId and mchId!=''">
-            and locate(#{mchId},sw.mch_id)>0
-        </if>
+          <if test="null!=reqVO">
+              <if test="null!=reqVO.storeId and reqVO.storeId!=''">
+                  and sw.store_id=#{reqVO.storeId}
+              </if>
+              <if test="null!=reqVO.mchId and reqVO.mchId!=''">
+                  and locate(#{reqVO.mchId},sw.mch_id)>0
+              </if>
+          </if>
+
     </select>
     <select id="getConfigByStoreId"
             resultType="com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO">

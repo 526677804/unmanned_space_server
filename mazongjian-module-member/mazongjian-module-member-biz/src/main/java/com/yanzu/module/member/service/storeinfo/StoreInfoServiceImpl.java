@@ -4,8 +4,8 @@ import cn.binarywang.wx.miniapp.api.WxMaQrcodeService;
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.hutool.core.io.IoUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.web.core.util.WebFrameworkUtils;
@@ -113,16 +113,15 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public PageResult<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        PageHelper.startPage(reqVO);
-        List<AppStoreAdminRespVO> list = storeInfoMapper.getPageList(reqVO);
-        PageInfo<AppStoreAdminRespVO> page = new PageInfo(list);
-        if (!CollectionUtils.isEmpty(page.getList())) {
-            page.getList().forEach(x -> {
+        IPage<AppStoreAdminRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        storeInfoMapper.getPageList(page,reqVO);
+        if (!CollectionUtils.isEmpty(page.getRecords())) {
+            page.getRecords().forEach(x -> {
                 String url = "https://e.dianping.com/dz-open/merchant/auth?app_key=" + meituanAppKey + "&redirect_url=" + meituanRedirectUrl + "&state=storeId-" + x.getStoreId();
                 x.setMeituanScope(url);
             });
         }
-        return new PageResult(page.getList(), page.getTotal());
+        return new PageResult(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -292,10 +291,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public PageResult<AppDiscountRulesPageRespVO> getDiscountRulesPage(AppDiscountRulesPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        PageHelper.startPage(reqVO);
-        List<AppDiscountRulesPageRespVO> list = discountRulesMapper.getDiscountRulesPage(reqVO);
-        PageInfo page = new PageInfo(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        IPage<AppDiscountRulesPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        discountRulesMapper.getDiscountRulesPage(page,reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override

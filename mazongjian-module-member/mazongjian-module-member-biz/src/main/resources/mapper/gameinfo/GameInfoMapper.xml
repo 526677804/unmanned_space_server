@@ -24,23 +24,23 @@
         left join member_room_info r ON g.room_id = r.room_id
         where g.deleted = 0
         and to_days(g.start_time) >= to_days(now())
-        and g.store_id=#{storeId}
-        <if test="null!=status">
+        and g.store_id=#{reqVO.storeId}
+        <if test="null!=reqVO.status">
             <choose>
-                <when test="status==0">
+                <when test="reqVO.status==0">
                     and g.status=0
                 </when>
-                <when test="status==1">
-                    and g.status=1 and #{currentUserId} in (g.play_user_ids)
+                <when test="reqVO.status==1">
+                    and g.status=1 and #{reqVO.currentUserId} in (g.play_user_ids)
                 </when>
-                <when test="status==2">
-                    and g.status=2 and #{currentUserId} in (g.play_user_ids)
+                <when test="reqVO.status==2">
+                    and g.status=2 and #{reqVO.currentUserId} in (g.play_user_ids)
                 </when>
-                <when test="status==3">
-                    and g.status=3 and #{currentUserId} in (g.play_user_ids)
+                <when test="reqVO.status==3">
+                    and g.status=3 and #{reqVO.currentUserId} in (g.play_user_ids)
                 </when>
-                <when test="status==4">
-                    and g.status=4 and #{currentUserId} in (g.play_user_ids)
+                <when test="reqVO.status==4">
+                    and g.status=4 and #{reqVO.currentUserId} in (g.play_user_ids)
                 </when>
             </choose>
         </if>

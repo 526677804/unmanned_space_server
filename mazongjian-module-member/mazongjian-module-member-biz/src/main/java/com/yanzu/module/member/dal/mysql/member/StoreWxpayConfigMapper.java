@@ -1,5 +1,6 @@
 package com.yanzu.module.member.dal.mysql.member;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
@@ -9,6 +10,7 @@ import com.yanzu.module.member.controller.admin.wxpay.vo.StoreWxpayConfigPageRes
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.service.wx.MiniappConfigVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -38,7 +40,7 @@ public interface StoreWxpayConfigMapper extends BaseMapperX<StoreWxpayConfigDO> 
                 .orderByDesc(StoreWxpayConfigDO::getId));
     }
 
-    List<StoreWxpayConfigPageRespVO> getStoreWxpayConfigPage(StoreWxpayConfigPageReqVO reqVO);
+    List<StoreWxpayConfigPageRespVO> getStoreWxpayConfigPage(@Param("page") IPage<StoreWxpayConfigPageRespVO> page, @Param("reqVO") StoreWxpayConfigPageReqVO reqVO);
 
     StoreWxpayConfigDO getConfigByStoreId(Long storeId);
 

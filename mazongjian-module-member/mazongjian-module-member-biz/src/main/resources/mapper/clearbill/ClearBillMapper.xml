@@ -21,7 +21,7 @@
         select id, user_id, money, order_num, order_ids, create_time
         from member_clear_bill
         where deleted = 0
-          and user_id = #{userId}
+          and user_id = #{reqVO.userId}
         order by create_time desc
 
     </select>

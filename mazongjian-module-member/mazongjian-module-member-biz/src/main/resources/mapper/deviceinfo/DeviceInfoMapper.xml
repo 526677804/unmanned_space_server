@@ -36,27 +36,32 @@
         left join member_store_info s ON s.store_id = d.store_id
         left join member_room_info r ON r.room_id = d.room_id
         where d.deleted = 0
-        <if test="null!=deviceSn and deviceSn!=''">
-            and locate(#{deviceSn},d.device_sn)>0
-        </if>
-        <if test="null!=type and type!=''">
-            and d.type=#{type}
-        </if>
-        <if test="null!=status">
-            and d.status=#{status}
-        </if>
-        <if test="null!=roomId and roomId!=''">
-            and d.room_id=#{roomId}
-        </if>
-        <if test="null!=storeId and storeId!=''">
-            and d.store_id=#{storeId}
-        </if>
-        <if test="null!=createTime and createTime!=''">
-            and d.create_time between
-            <foreach collection="createTime" item="dateTime" separator="and">
-                #{dateTime}
-            </foreach>
-        </if>
+          <if test="null!=reqVO">
+              <if test="null!=reqVO.deviceSn and reqVO.deviceSn!=''">
+                  and locate(#{reqVO.deviceSn},d.device_sn)>0
+              </if>
+              <if test="null!=reqVO.type and reqVO.type!=''">
+                  and d.type=#{reqVO.type}
+              </if>
+              <if test="null!=reqVO.status">
+                  and d.status=#{reqVO.status}
+              </if>
+              <if test="null!=reqVO.roomId and reqVO.roomId!=''">
+                  and d.room_id=#{reqVO.roomId}
+              </if>
+              <if test="null!=reqVO.storeId and reqVO.storeId!=''">
+                  and d.store_id=#{reqVO.storeId}
+              </if>
+              <if test="null!=reqVO.createTime and reqVO.createTime!=''">
+                  and d.create_time between
+                  <foreach collection="createTime" item="dateTime" separator="and">
+                      #{reqVO.dateTime}
+                  </foreach>
+              </if>
+
+
+          </if>
+
         order by d.store_id,d.room_id
     </select>
     <select id="countGateway" resultType="java.lang.Integer">

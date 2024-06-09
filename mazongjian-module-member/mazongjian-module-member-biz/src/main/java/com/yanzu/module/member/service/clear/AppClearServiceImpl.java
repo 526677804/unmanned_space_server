@@ -1,7 +1,7 @@
 package com.yanzu.module.member.service.clear;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.controller.app.clear.vo.*;
@@ -65,10 +65,9 @@ public class AppClearServiceImpl implements AppClearService {
     @Override
     public PageResult<AppClearPageRespVO> getClearPage(AppClearPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        PageHelper.startPage(reqVO);
-        List<AppClearPageRespVO> list = orderInfoMapper.getClearPage(reqVO);
-        PageInfo<AppClearPageRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        IPage<AppClearPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        orderInfoMapper.getClearPage(page,reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -173,10 +172,9 @@ public class AppClearServiceImpl implements AppClearService {
     @Override
     public PageResult<AppClearBillRespVO> getClearBillPage(AppClearBillReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        PageHelper.startPage(reqVO);
-        List<AppClearBillRespVO> list = clearBillMapper.getClearBillPage(reqVO);
-        PageInfo<AppClearBillRespVO> pageInfo = new PageInfo<>(list);
-        return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
+        IPage<AppClearBillRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        clearBillMapper.getClearBillPage(page,reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override

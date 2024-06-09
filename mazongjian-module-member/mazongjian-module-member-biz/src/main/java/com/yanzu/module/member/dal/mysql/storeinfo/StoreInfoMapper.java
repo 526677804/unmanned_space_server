@@ -1,5 +1,6 @@
 package com.yanzu.module.member.dal.mysql.storeinfo;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
@@ -49,7 +50,7 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
     List<String> getCityList();
 
 
-    List<AppStorePageRespVO> getStorePageList(AppStorePageReqVO reqVO);
+    List<AppStorePageRespVO> getStorePageList(@Param("page") IPage<AppStorePageRespVO> page, @Param("reqVO") AppStorePageReqVO reqVO);
 
     AppIndexStoreInfoRespVO getStoreInfo(@Param("storeId") Long storeId, @Param("lat") String lat, @Param("lon") String lon);
 
@@ -59,7 +60,7 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
 
     AppRoomInfoListRespVO getRoomInfo(Long roomId);
 
-    List<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO);
+    List<AppStoreAdminRespVO> getPageList(@Param("page") IPage<AppStoreAdminRespVO> page, @Param("reqVO") AppStoreAdminReqVO reqVO);
 
     List<KeyValue<String, Long>> getStoreListByMember(@Param("name") String name, @Param("cityName") String cityName);
 

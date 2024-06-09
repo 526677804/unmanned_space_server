@@ -28,9 +28,9 @@
         from member_discount_rules dr
         left join member_store_info s ON s.store_id = dr.store_id
         left join member_store_user su ON s.store_id = su.store_id and su.deleted=0
-        where dr.deleted = 0 and s.deleted=0 and su.user_id=#{userId} and su.type in (12,13)
-        <if test="null!=storeId and storeId!=''">
-            and dr.store_id=#{storeId}
+        where dr.deleted = 0 and s.deleted=0 and su.user_id=#{reqVO.userId} and su.type in (12,13)
+        <if test="null!=reqVO.storeId and reqVO.storeId!=''">
+            and dr.store_id=#{reqVO.storeId}
         </if>
         order by pay_money
 

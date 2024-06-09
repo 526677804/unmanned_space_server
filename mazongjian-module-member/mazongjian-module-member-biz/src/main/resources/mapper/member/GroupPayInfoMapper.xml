@@ -46,18 +46,21 @@
         from member_group_pay_info g
         left join member_store_info s ON g.store_id = s.store_id
         where g.deleted = 0
-        <if test="null!=groupName and groupName!=''">
-            and locate(#{groupName},g.group_name)>0
-        </if>
-        <if test="null!=groupNo and groupNo!=''">
-            and locate(#{groupNo},g.group_no)>0
-        </if>
-        <if test="null!=groupPayType and groupPayType!=''">
-            and g.group_pay_type=#{groupPayType}
-        </if>
-        <if test="null!=storeId and storeId!=''">
-            and g.store_id=#{storeId}
-        </if>
+          <if test="null!=reqVO">
+              <if test="null!=reqVO.groupName and reqVO.groupName!=''">
+                  and locate(#{reqVO.groupName},g.group_name)>0
+              </if>
+              <if test="null!=reqVO.groupNo and reqVO.groupNo!=''">
+                  and locate(#{reqVO.groupNo},g.group_no)>0
+              </if>
+              <if test="null!=reqVO.groupPayType and reqVO.groupPayType!=''">
+                  and g.group_pay_type=#{reqVO.groupPayType}
+              </if>
+              <if test="null!=reqVO.storeId and reqVO.storeId!=''">
+                  and g.store_id=#{reqVO.storeId}
+              </if>
+          </if>
+
     </select>
     <select id="getMtTotalMoney" resultType="java.math.BigDecimal">
         select ifnull(sum(group_pay_price),0)

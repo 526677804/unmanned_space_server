@@ -31,9 +31,9 @@
         left join member_store_info s ON s.store_id=c.store_id
         left join member_order_info o ON o.coupon_id=c.coupon_id  and o.status!=3
         WHERE
-        c.deleted =0 and c.user_id=#{userId}
-        <if test="null != status">
-            and c.status=#{status}
+        c.deleted =0 and c.user_id=#{reqVO.userId}
+        <if test="null != reqVO.status">
+            and c.status=#{reqVO.status}
         </if>
         ORDER BY c.exprice_time ASC
     </select>

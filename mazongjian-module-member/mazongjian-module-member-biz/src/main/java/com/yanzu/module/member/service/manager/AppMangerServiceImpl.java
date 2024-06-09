@@ -1,11 +1,11 @@
 package com.yanzu.module.member.service.manager;
 
 import cn.hutool.core.util.HexUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.api.user.MemberUserApi;
@@ -153,12 +153,12 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         String storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId()).stream().collect(Collectors.joining(","));
         reqVO.setStoreIds(storeIds);
-        PageHelper.startPage(reqVO);
-        List<OrderListRespVO> list = orderInfoMapper.getOrderPage(reqVO);
-        if (!CollectionUtils.isEmpty(list)) {
+        IPage<OrderListRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        orderInfoMapper.getOrderPage(page,reqVO);
+        if (!CollectionUtils.isEmpty(page.getRecords())) {
             //如果状态是已取消以外的状态  并且订单结束时间不超过5分钟，那么允许续费
             LocalDateTime now = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            list.forEach(x -> {
+            page.getRecords().forEach(x -> {
                 if (!ObjectUtils.isEmpty(x.getRoomImg())) {
                     x.setRoomImg(x.getRoomImg().split(",")[0]);
                 }
@@ -169,8 +169,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                 }
             });
         }
-        PageInfo<OrderListRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -198,10 +197,9 @@ public class AppMangerServiceImpl implements AppMangerService {
                 throw exception(MEMBER_PAGE_PARAM_ERROR);
             }
         }
-        PageHelper.startPage(reqVO);
-        List<AppMemberPageRespVO> list = appUserMapper.getMemberPage(reqVO);
-        PageInfo<AppMemberPageRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        IPage<AppMemberPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        appUserMapper.getMemberPage(page,reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -219,10 +217,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (StringUtils.isEmpty(storeIds)) {
             return PageResult.empty();
         }
-        PageHelper.startPage(reqVO.getPageNo(), reqVO.getPageSize());
-        List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPageByAdmin(reqVO, storeIds);
-        PageInfo<AppCouponPageRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        IPage<AppCouponPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        couponInfoMapper.getCouponPageByAdmin(page,reqVO, storeIds);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -280,10 +277,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         } else {
             ids = String.valueOf(reqVO.getStoreId());
         }
-        PageHelper.startPage(reqVO);
-        List<AppClearUserPageRespVO> list = storeUserMapper.getClearUserPage(ids);
-        PageInfo<AppClearUserPageRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        IPage<AppClearUserPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        storeUserMapper.getClearUserPage(page,reqVO.getStoreId(),ids);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -431,10 +427,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         //仅创建者使用
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
         reqVO.setUserId(getLoginUserId());
-        PageHelper.startPage(reqVO);
-        List<AppWithdrawalPageRespVO> list = withdrawalMapper.getWithdrawalPage(reqVO);
-        PageInfo<AppWithdrawalPageRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        IPage<AppWithdrawalPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        withdrawalMapper.getWithdrawalPage(page,reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -577,10 +572,9 @@ public class AppMangerServiceImpl implements AppMangerService {
             storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
             ids = String.valueOf(reqVO.getStoreId());
         }
-        PageHelper.startPage(reqVO);
-        List<AppAdminUserPageRespVO> list = storeUserMapper.getAdminUserPage(ids);
-        PageInfo<AppAdminUserPageRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        IPage<AppAdminUserPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        storeUserMapper.getAdminUserPage(page,reqVO.getStoreId(),ids);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -687,10 +681,9 @@ public class AppMangerServiceImpl implements AppMangerService {
             return PageResult.empty();
         }
         reqVO.setStoreIds(storeIds.stream().collect(Collectors.joining(",")));
-        PageHelper.startPage(reqVO);
-        List<AppClearPageRespVO> list = clearInfoMapper.getClearManagerPage(reqVO);
-        PageInfo<AppClearPageRespVO> page = new PageInfo<>(list);
-        return new PageResult<>(page.getList(), page.getTotal());
+        IPage<AppClearPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        clearInfoMapper.getClearManagerPage(page,reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override

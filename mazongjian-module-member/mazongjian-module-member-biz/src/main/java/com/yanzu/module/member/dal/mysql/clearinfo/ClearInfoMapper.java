@@ -1,5 +1,6 @@
 package com.yanzu.module.member.dal.mysql.clearinfo;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearInfoRespVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
@@ -31,7 +32,7 @@ public interface ClearInfoMapper extends BaseMapperX<ClearInfoDO> {
 
     int cancelByRoomId(Long roomId);
 
-    List<AppClearPageRespVO> getClearManagerPage(AppClearPageReqVO reqVO);
+    List<AppClearPageRespVO> getClearManagerPage(@Param("page") IPage<AppClearPageRespVO> page, @Param("reqVO") AppClearPageReqVO reqVO);
 
     int cancelByRoomIds(String roomIds);
 
