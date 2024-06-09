@@ -31,12 +31,12 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     OrderInfoDO getByUserAndStatus(@Param("userId") Long userId, @Param("status") Integer status);
 
-    List<AppClearPageRespVO> getClearPage(@Param("page") IPage<AppClearPageRespVO> page, @Param("reqVO") AppClearPageReqVO reqVO);
+    IPage<AppClearPageRespVO> getClearPage(@Param("page") IPage<AppClearPageRespVO> page, @Param("reqVO") AppClearPageReqVO reqVO);
 
     List<OrderInfoDO> getByRoomId(@Param("roomId") Long roomId, @Param("ignoreOrderId") Long ignoreOrderId);
     int countByRoomId(@Param("roomId") Long roomId, @Param("ignoreOrderId") Long ignoreOrderId);
 
-    List<OrderListRespVO> getOrderPage(@Param("page") IPage page, @Param("reqVO") OrderPageReqVO reqVO);
+    IPage<OrderListRespVO> getOrderPage(@Param("page") IPage page, @Param("reqVO") OrderPageReqVO reqVO);
 
     OrderInfoAppRespVO getOrderInfo(@Param("orderId") Long orderId,@Param("orderKey") String orderKey, @Param("userId") Long userId);
 

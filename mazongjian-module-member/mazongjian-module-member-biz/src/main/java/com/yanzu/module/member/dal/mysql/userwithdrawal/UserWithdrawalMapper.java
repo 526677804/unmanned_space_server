@@ -17,6 +17,6 @@ import java.util.List;
  */
 @Mapper
 public interface UserWithdrawalMapper extends BaseMapperX<UserWithdrawalDO> {
-    List<AppWithdrawalPageRespVO> getWithdrawalPage(@Param("page") IPage<AppWithdrawalPageRespVO> page, @Param("reqVO") AppWithdrawalPageReqVO reqVO);
+    IPage<AppWithdrawalPageRespVO> getWithdrawalPage(@Param("page") IPage<AppWithdrawalPageRespVO> page, @Param("reqVO") AppWithdrawalPageReqVO reqVO);
 
 }

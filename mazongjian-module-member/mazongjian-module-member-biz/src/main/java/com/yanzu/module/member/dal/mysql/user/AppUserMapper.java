@@ -53,7 +53,7 @@ public interface AppUserMapper extends BaseMapperX<AppUserDO> {
 
     List<AppGameUserListRespVO> getInfoByUserIds(String playUserIds);
 
-    List<AppMemberPageRespVO> getMemberPage(@Param("page") IPage<AppMemberPageRespVO> page, @Param("reqVO") AppMemberPageReqVO reqVO);
+    IPage<AppMemberPageRespVO> getMemberPage(@Param("page") IPage<AppMemberPageRespVO> page, @Param("reqVO") AppMemberPageReqVO reqVO);
 
     String getNameById(Long userId);
 }

@@ -23,11 +23,11 @@ public interface CouponInfoMapper extends BaseMapperX<CouponInfoDO> {
 
     Integer countByUserId(Long userId);
 
-    List<AppCouponPageRespVO> getCouponPage(@Param("page") IPage<AppCouponPageRespVO> page, @Param("reqVO") AppCouponPageReqVO reqVO);
+    IPage<AppCouponPageRespVO> getCouponPage(@Param("page") IPage<AppCouponPageRespVO> page, @Param("reqVO") AppCouponPageReqVO reqVO);
 
     CouponInfoDO getByUserIdAndCouponId(@Param("userId") Long userId, @Param("couponId") Long couponId);
 
-    List<AppCouponPageRespVO> getCouponPageByAdmin(@Param("page") IPage<AppCouponPageRespVO> page, @Param("reqVO") AppManagerCouponPageReqVO reqVO, @Param("storeIds") String storeIds);
+    IPage<AppCouponPageRespVO> getCouponPageByAdmin(@Param("page") IPage<AppCouponPageRespVO> page, @Param("reqVO") AppManagerCouponPageReqVO reqVO, @Param("storeIds") String storeIds);
 
     AppCouponDetailRespVO getCouponDetail(Long couponId);
 

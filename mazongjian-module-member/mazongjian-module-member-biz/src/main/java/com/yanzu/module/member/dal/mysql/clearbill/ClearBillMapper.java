@@ -21,5 +21,5 @@ public interface ClearBillMapper extends BaseMapperX<ClearBillDO> {
 
     BigDecimal sumMoneyByUserId(Long userId);
 
-    List<AppClearBillRespVO> getClearBillPage(@Param("page") IPage<AppClearBillRespVO> page, @Param("reqVO") AppClearBillReqVO reqVO);
+    IPage<AppClearBillRespVO> getClearBillPage(@Param("page") IPage<AppClearBillRespVO> page, @Param("reqVO") AppClearBillReqVO reqVO);
 }

@@ -19,7 +19,7 @@ import java.util.List;
 public interface UserMoneyBillMapper extends BaseMapperX<UserMoneyBillDO> {
 
 
-    List<AppUserMoneyBillRespVO> getBalancePage(@Param("page") IPage<AppUserMoneyBillRespVO> page, @Param("reqVO") AppUserMoneyBillPageReqVO reqVO);
+    IPage<AppUserMoneyBillRespVO> getBalancePage(@Param("page") IPage<AppUserMoneyBillRespVO> page, @Param("reqVO") AppUserMoneyBillPageReqVO reqVO);
 
     List<UserMoneyBillDO> getPayByOrderNo(@Param("orderNo") String orderNo, @Param("userId") Long userId);
 

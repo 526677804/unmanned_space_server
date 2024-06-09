@@ -41,9 +41,9 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
 
     int deleteClearUserAndStoreId(@Param("userId") Long userId, @Param("storeId") Long storeId);
 
-    List<AppClearUserPageRespVO> getClearUserPage(@Param("page") IPage<AppClearUserPageRespVO> page, @Param("storeId") Long storeId, @Param("storeIds") String storeIds);
+    IPage<AppClearUserPageRespVO> getClearUserPage(@Param("page") IPage<AppClearUserPageRespVO> page, @Param("storeId") Long storeId, @Param("storeIds") String storeIds);
 
-    List<AppAdminUserPageRespVO> getAdminUserPage(@Param("page") IPage<AppAdminUserPageRespVO> page, @Param("storeId") Long storeId,@Param("storeIds") String storeIds);
+    IPage<AppAdminUserPageRespVO> getAdminUserPage(@Param("page") IPage<AppAdminUserPageRespVO> page, @Param("storeId") Long storeId,@Param("storeIds") String storeIds);
 
     int deleteAdminUser(@Param("storeId") Long storeId, @Param("userId") Long userId);
 

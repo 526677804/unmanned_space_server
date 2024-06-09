@@ -21,7 +21,7 @@ import java.util.List;
 public interface DiscountRulesMapper extends BaseMapperX<DiscountRulesDO> {
 
 
-    List<AppDiscountRulesPageRespVO> getDiscountRulesPage(@Param("page") IPage<AppDiscountRulesPageRespVO> page, @Param("reqVO") AppDiscountRulesPageReqVO reqVO);
+    IPage<AppDiscountRulesPageRespVO> getDiscountRulesPage(@Param("page") IPage<AppDiscountRulesPageRespVO> page, @Param("reqVO") AppDiscountRulesPageReqVO reqVO);
 
     int changeDiscountRulesStatus(@Param("id") Long id, @Param("status") Integer status);
 

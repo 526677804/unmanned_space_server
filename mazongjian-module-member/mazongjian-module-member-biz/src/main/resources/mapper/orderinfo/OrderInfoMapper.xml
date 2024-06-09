@@ -124,7 +124,7 @@
         left join member_coupon_info coupon ON coupon.coupon_id=o.coupon_id
         where o.deleted = 0
           <if test="null!=reqVO">
-              <if test="null==reqVO.userId or reqVO.userId==''">
+              <if test="null==reqVO.storeIds or reqVO.storeIds==''">
                   and o.user_id=#{reqVO.userId}
               </if>
               <if test="null!=reqVO.storeIds and reqVO.storeIds!=''">

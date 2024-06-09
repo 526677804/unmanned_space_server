@@ -89,26 +89,26 @@
              , (select ifnull(SUM(money), 0)
                 from member_clear_bill
                 where user_id = su.user_id
-                  and store_id = #{reqVO.storeId}) as money
+                  and store_id = #{storeId}) as money
              , (select count(1)
                 from member_clear_info
                 where status = 3
                   and user_id = su.user_id
-                  and store_id = #{reqVO.storeId}) as finishCount
+                  and store_id = #{storeId}) as finishCount
              , (select count(1)
                 from member_clear_info
                 where status = 6
                   and user_id = su.user_id
-                  and store_id = #{reqVO.storeId}) as settlementCount
+                  and store_id = #{storeId}) as settlementCount
         from member_store_user su
                  left join member_user m
                            ON su.user_id = m.id
                  left join member_store_info s ON s.store_id = su.store_id
-        where su.store_id in (${reqVO.storeIds})
+        where su.store_id in (${storeIds})
           and su.deleted = 0
           and su.type = 14
-            <if test="null!=reqVO.storeId and reqVO.storeId!=''">
-                AND su.store_id=#{reqVO.storeId}
+            <if test="null!=storeId and storeId!=''">
+                AND su.store_id=#{storeId}
             </if>
 
 
@@ -141,9 +141,9 @@
           and mu.deleted = 0
           and s.deleted = 0
           and msu.type = 13
-          and su.store_id in (${reqVO.storeIds})
-          <if test="null!=reqVO.storeId">
-              and msu.store_id = #{reqVO.storeId}
+          and msu.store_id in (${storeIds})
+          <if test="null!=storeId">
+              and msu.store_id = #{storeId}
           </if>
         order by msu.id
 

@@ -22,5 +22,5 @@ public interface GameInfoMapper extends BaseMapperX<GameInfoDO> {
 
     int countDayByUserId(Long userId);
 
-    List<AppGameInfoRespVO> getOrderPage(@Param("page") IPage<AppGameInfoRespVO> page, @Param("reqVO") AppGamePageReqVO reqVO);
+    IPage<AppGameInfoRespVO> getOrderPage(@Param("page") IPage<AppGameInfoRespVO> page, @Param("reqVO") AppGamePageReqVO reqVO);
 }

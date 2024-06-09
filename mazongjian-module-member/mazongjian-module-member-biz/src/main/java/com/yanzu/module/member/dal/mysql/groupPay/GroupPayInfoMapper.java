@@ -51,7 +51,7 @@ public interface GroupPayInfoMapper extends BaseMapperX<GroupPayInfoDO> {
 
     GroupPayInfoDO getByOrderId(Long orderId);
 
-    List<GroupPayInfoRespVO> getPage(@Param("page") IPage page, @Param("reqVO") GroupPayInfoPageReqVO pageReqVO);
+    IPage<GroupPayInfoRespVO> getPage(@Param("page") IPage page, @Param("reqVO") GroupPayInfoPageReqVO pageReqVO);
 
     BigDecimal getMtTotalMoney(@Param("storeIds") List<String> storeIds, @Param("storeId") Long storeId);
 

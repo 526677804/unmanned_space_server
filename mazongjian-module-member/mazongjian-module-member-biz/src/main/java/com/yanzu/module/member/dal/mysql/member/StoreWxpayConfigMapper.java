@@ -40,7 +40,7 @@ public interface StoreWxpayConfigMapper extends BaseMapperX<StoreWxpayConfigDO> 
                 .orderByDesc(StoreWxpayConfigDO::getId));
     }
 
-    List<StoreWxpayConfigPageRespVO> getStoreWxpayConfigPage(@Param("page") IPage<StoreWxpayConfigPageRespVO> page, @Param("reqVO") StoreWxpayConfigPageReqVO reqVO);
+    IPage<StoreWxpayConfigPageRespVO> getStoreWxpayConfigPage(@Param("page") IPage<StoreWxpayConfigPageRespVO> page, @Param("reqVO") StoreWxpayConfigPageReqVO reqVO);
 
     StoreWxpayConfigDO getConfigByStoreId(Long storeId);
 

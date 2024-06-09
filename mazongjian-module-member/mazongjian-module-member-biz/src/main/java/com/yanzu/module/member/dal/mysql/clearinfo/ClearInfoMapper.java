@@ -32,7 +32,7 @@ public interface ClearInfoMapper extends BaseMapperX<ClearInfoDO> {
 
     int cancelByRoomId(Long roomId);
 
-    List<AppClearPageRespVO> getClearManagerPage(@Param("page") IPage<AppClearPageRespVO> page, @Param("reqVO") AppClearPageReqVO reqVO);
+    IPage<AppClearPageRespVO> getClearManagerPage(@Param("page") IPage<AppClearPageRespVO> page, @Param("reqVO") AppClearPageReqVO reqVO);
 
     int cancelByRoomIds(String roomIds);
 

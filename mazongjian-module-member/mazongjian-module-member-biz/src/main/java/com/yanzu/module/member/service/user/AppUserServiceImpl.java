@@ -399,10 +399,10 @@ public class AppUserServiceImpl implements AppUserService {
                     roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null,null);
             //再计算出时长 精确到小数点后两位
             BigDecimal hours = new BigDecimal(String.valueOf((reqVO.getEndTime().getTime() - reqVO.getStartTime().getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
-            List<AppCouponPageRespVO> list = couponInfoMapper.getCouponPage(page,reqVO);
+            couponInfoMapper.getCouponPage(page,reqVO);
             //校验每张优惠券是否可用
-            if (!CollectionUtils.isEmpty(list)) {
-                list.stream().forEach(x -> {
+            if (!CollectionUtils.isEmpty(page.getRecords())) {
+                page.getRecords().stream().forEach(x -> {
                     boolean f1 = false;
                     if (x.getType().compareTo(AppEnum.coupon_type.DIKOU.getValue()) == 0 || x.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
                         //抵扣或加时
@@ -418,7 +418,8 @@ public class AppUserServiceImpl implements AppUserService {
                     x.setEnable(f1 && f2 && f3);
                 });
             }
-            return new PageResult<>(list.stream().sorted((x1, x2) -> String.valueOf(x2.isEnable()).compareTo(String.valueOf(x1.isEnable()))).collect(Collectors.toList()), Long.valueOf(list.size()));
+            return new PageResult<>(page.getRecords().stream().sorted((x1, x2) -> String.valueOf(x2.isEnable())
+                    .compareTo(String.valueOf(x1.isEnable()))).collect(Collectors.toList()), Long.valueOf(page.getRecords().size()));
         }
 
     }
