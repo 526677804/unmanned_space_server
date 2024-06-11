@@ -58,10 +58,7 @@
                       #{reqVO.dateTime}
                   </foreach>
               </if>
-
-
           </if>
-
         order by d.store_id,d.room_id
     </select>
     <select id="countGateway" resultType="java.lang.Integer">
