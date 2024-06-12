@@ -656,7 +656,25 @@ public class AppOrderServiceImpl implements AppOrderService {
             checkWorkDay(startTime);
         }
         //判断包间限制情况  标题包含：不限包间
-        if (title.indexOf("不限包间") != -1 || title.indexOf("任意包间") != -1 || title.indexOf("不分包间") != -1 || title.indexOf("所有包间") != -1 || title.indexOf("全部包间") != -1 || title.indexOf("包间任选") != -1 || title.indexOf("不限房间") != -1 || title.indexOf("任意房间") != -1 || title.indexOf("不分房间") != -1 || title.indexOf("所有房间") != -1 || title.indexOf("全部房间") != -1 || title.indexOf("房间任选") != -1 || title.indexOf("不限球桌") != -1 || title.indexOf("任意球桌") != -1 || title.indexOf("不分球桌") != -1 || title.indexOf("所有球桌") != -1 || title.indexOf("全部球桌") != -1 || title.indexOf("球桌任选") != -1) {
+        if (title.indexOf("不限包间") != -1
+                || title.indexOf("包间通用") != -1
+                || title.indexOf("任意包间") != -1
+                || title.indexOf("不分包间") != -1
+                || title.indexOf("所有包间") != -1
+                || title.indexOf("全部包间") != -1
+                || title.indexOf("包间任选") != -1
+                || title.indexOf("不限房间") != -1
+                || title.indexOf("任意房间") != -1
+                || title.indexOf("不分房间") != -1
+                || title.indexOf("所有房间") != -1
+                || title.indexOf("全部房间") != -1
+                || title.indexOf("房间任选") != -1
+                || title.indexOf("不限球桌") != -1
+                || title.indexOf("任意球桌") != -1
+                || title.indexOf("不分球桌") != -1
+                || title.indexOf("所有球桌") != -1
+                || title.indexOf("全部球桌") != -1
+                || title.indexOf("球桌任选") != -1) {
             //不校验
         } else {
             Integer checkRoomType = 0;

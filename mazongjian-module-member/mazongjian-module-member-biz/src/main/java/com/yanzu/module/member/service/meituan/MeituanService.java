@@ -149,6 +149,8 @@ public class MeituanService {
             throw exception(GROUP_NO_CHECK_REFLASH_ERROR);
         } else if (prepare.getInt("code") == 1012) {
             throw exception(GROUP_NO_CHECK_STORE_ERROR);
+        } else if (prepare.getInt("code") != 645) {
+            throw exception(GROUP_MEITUAN_SCOPE_ERROR);
         } else if (prepare.getInt("code") != 200) {
             throw exception(GROUP_NO_CHECK_ERROR);
         }

@@ -90,7 +90,7 @@ public interface ErrorCodeConstants {
     ErrorCode STORE_DY_TUANGOU_PAY_ERROR = new ErrorCode(1004004088, "当前店铺暂不支持抖音团购券支付！请选择其他支付方式！");
     ErrorCode GROUP_PAY_WORK_CHECK_ERROR = new ErrorCode(1004004089, "您输入的团购券仅周一至周四可用！请修改预定时间或更换团购券");
     ErrorCode GROUP_PAY_WORK_DAY_CHECK_ERROR = new ErrorCode(1004004090, "您输入的团购券仅工作日可用！请修改预定时间或更换团购券");
-    ErrorCode GROUP_PAY_ROOM_TYPE_CHECK_ERROR = new ErrorCode(1004004091, "您输入的团购券仅【小包】可用！请修改预订的包间！");
+    ErrorCode GROUP_MEITUAN_SCOPE_ERROR = new ErrorCode(1004004091, "该门店未授权给团购平台，需要管理员授权！");
     ErrorCode ORDER_START_TIQIAN_ERROR = new ErrorCode(1004004092, "提前消费，不允许超过门店设定的最大提前时间！");
     ErrorCode CHECK_TONGXIAO_TIME_ERROR = new ErrorCode(1004004093, "通宵场开始时间不符合规则！请修改预定时间后重试！");
     ErrorCode CHECK_GROUP_NO_TIME_ERROR = new ErrorCode(1004004094, "团购券未设置抵扣时长，请联系商家！");
