@@ -67,7 +67,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
@@ -162,6 +165,9 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Resource
     private StoreMeituanInfoMapper storeMeituanInfoMapper;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
@@ -1080,9 +1086,9 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
-        IPage<OrderListRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        orderInfoMapper.getOrderPage(page,reqVO);
-        if(!org.springframework.util.CollectionUtils.isEmpty(page.getRecords())){
+        IPage<OrderListRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        orderInfoMapper.getOrderPage(page, reqVO);
+        if (!org.springframework.util.CollectionUtils.isEmpty(page.getRecords())) {
             //如果状态是已取消以外的状态  并且订单结束时间不超过5分钟，那么允许续费
             LocalDateTime now = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             page.getRecords().forEach(x -> {
@@ -1357,7 +1363,6 @@ public class AppOrderServiceImpl implements AppOrderService {
      * 订单处理的定时任务，每分钟执行一次， 用于到时间开始订单 或者 结束订单
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     @Synchronized
     public void executeOrderJob() {
         log.info("==========     开始执行订单定时检查任务     ==========");
@@ -1380,101 +1385,108 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //先查询出门店信息 以读取配置
                 StoreInfoDO storeInfoDO = storeInfoMapper.selectById(v.getKey());
                 v.getValue().forEach(x -> {
-                    switch (x.getStatus()) {
-                        case 0:
-                            //未开始 达到预订时间后，就开始订单
-                            if (x.getStartTime().before(now)) {
-                                startRoomIds.add(x.getRoomId());
-                                startOrderIds.add(x.getOrderId());
-                            }
-                            break;
-                        case 1:
-                            //进行中 主要是完成订单，和关电
-                            try {
-                                if (x.getEndTime().before(now)) {
-                                    //关电
-                                    deviceService.closeRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
-                                    //如果该门店，没有设置延时关灯，那么还需要关灯
-                                    if (!storeInfoDO.getDelayLight()) {
-                                        deviceService.closeLightByRoomId(null, x.getStoreId(), x.getRoomId(), 4);
-                                    }
-                                    endRoomIds.add(x.getRoomId());
-                                    endOrderIds.add(x.getOrderId());
-                                    //添加保洁记录
-                                    ClearInfoDO clearInfoDO = new ClearInfoDO();
-                                    clearInfoDO.setOrderId(x.getOrderId()).setStoreId(x.getStoreId()).setOrderNo(x.getOrderNo()).setRoomId(x.getRoomId());
-                                    clearInfoDOList.add(clearInfoDO);
-                                } else {
-                                    //检查距离结束的时间，发送语音提醒
-                                    long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
-                                    long minutesStart = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getStartTime().toInstant()));
-                                    if (minutesStart == 3) {
-                                        //开始3分钟时 播放欢迎语
-                                        deviceService.runSound(x.getRoomId(), 1);
-                                    } else if (minutes == 30) {
-                                        deviceService.runSound(x.getRoomId(), 2);
-                                    }
-                                    //暂时取消15分钟时的提醒
-                                    //                                else if (minutes == 15) {
-                                    //                                    deviceService.runSound(x.getRoomId(), 3);
-                                    //                                }
-                                    else if (minutes == 5) {
-                                        deviceService.runSound(x.getRoomId(), 4);
-                                    }
-                                    //如果当前是 0-7点  整点 提醒夜间控制噪音  每笔订单只在第一个整点进行提醒
-                                    if (night) {
-                                        //开始时间是0点以后的  从1点开始提醒
-                                        if (x.getStartTime().getHours() + 1 == now.getHours()) {
-                                            deviceService.runSound(x.getRoomId(), 5);
-                                        } else if (now.getHours() == 0) {
-                                            //开始时间是其他 0时提醒 前日23时开始的订单
-                                            deviceService.runSound(x.getRoomId(), 5);
-                                        }
+                    if (x.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
+                        //未开始 达到预订时间后，就开始订单
+                        if (x.getStartTime().before(now)) {
+                            startRoomIds.add(x.getRoomId());
+                            startOrderIds.add(x.getOrderId());
+                        }
+                    } else if (x.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                        //进行中 主要是完成订单，和关电
+                        try {
+                            if (x.getEndTime().before(now)) {
+                                //关电
+                                deviceService.closeRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
+                                //如果该门店，没有设置延时关灯，那么还需要关灯
+                                if (!storeInfoDO.getDelayLight()) {
+                                    deviceService.closeLightByRoomId(null, x.getStoreId(), x.getRoomId(), 4);
+                                }
+                                endRoomIds.add(x.getRoomId());
+                                endOrderIds.add(x.getOrderId());
+                                //添加保洁记录
+                                ClearInfoDO clearInfoDO = new ClearInfoDO();
+                                clearInfoDO.setOrderId(x.getOrderId()).setStoreId(x.getStoreId()).setOrderNo(x.getOrderNo()).setRoomId(x.getRoomId());
+                                clearInfoDOList.add(clearInfoDO);
+                            } else {
+                                //检查距离结束的时间，发送语音提醒
+                                long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
+                                long minutesStart = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getStartTime().toInstant()));
+                                if (minutesStart == 3) {
+                                    //开始3分钟时 播放欢迎语
+                                    deviceService.runSound(x.getRoomId(), 1);
+                                } else if (minutes == 30) {
+                                    deviceService.runSound(x.getRoomId(), 2);
+                                }
+                                //暂时取消15分钟时的提醒
+                                //                                else if (minutes == 15) {
+                                //                                    deviceService.runSound(x.getRoomId(), 3);
+                                //                                }
+                                else if (minutes == 5) {
+                                    deviceService.runSound(x.getRoomId(), 4);
+                                }
+                                //如果当前是 0-7点  整点 提醒夜间控制噪音  每笔订单只在第一个整点进行提醒
+                                if (night) {
+                                    //开始时间是0点以后的  从1点开始提醒
+                                    if (x.getStartTime().getHours() + 1 == now.getHours()) {
+                                        deviceService.runSound(x.getRoomId(), 5);
+                                    } else if (now.getHours() == 0) {
+                                        //开始时间是其他 0时提醒 前日23时开始的订单
+                                        deviceService.runSound(x.getRoomId(), 5);
                                     }
                                 }
-                            } catch (Exception e) {
-                                //异常时不影响其他订单关闭
+                            }
+                        } catch (Exception e) {
+                            //异常时不影响其他订单关闭
+                            log.error(e.getMessage());
 //                                e.printStackTrace();
 //                                throw new RuntimeException(e);
-                            }
-                            break;
-                        case 2:
-                            //已完成  主要是处理延时关电的
-                            //如果店铺不需要延时关电，就不处理了
-                            try {
-                                if (storeInfoDO.getDelayLight()) {
-                                    long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
-                                    //本来是5分钟 这里提前一分钟 避免与设置的订单结束后5分钟才能预订起冲突
-                                    if (minutes == 4) {
-                                        deviceService.closeLightByRoomId(null, x.getStoreId(), x.getRoomId(), 4);
-                                    }
+                        }
+                    } else if (x.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
+                        //已完成  主要是处理延时关电的
+                        //如果店铺不需要延时关电，就不处理了
+                        try {
+                            if (storeInfoDO.getDelayLight()) {
+                                long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
+                                //本来是5分钟 这里提前一分钟 避免与设置的订单结束后5分钟才能预订起冲突
+                                if (minutes == 4) {
+                                    deviceService.closeLightByRoomId(null, x.getStoreId(), x.getRoomId(), 4);
                                 }
-                            } catch (Exception e) {
-                                //异常时不影响其他订单关闭
-//                                throw new RuntimeException(e);
                             }
-                            break;
+                        } catch (Exception e) {
+                            //异常时不影响其他订单关闭
+                            log.error(e.getMessage());
+//                                throw new RuntimeException(e);
+                        }
                     }
                 });
             });
             //开始处理
-            if (!CollectionUtils.isAnyEmpty(startRoomIds)) {
-                //批量修改房间状态为进行中
-                roomInfoMapper.updateStatusByIds(AppEnum.room_status.USED.getValue(), startRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-                //批量修改订单状态为进行中
-                orderInfoMapper.updateStatusByIds(AppEnum.order_status.START.getValue(), startOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-            }
-            if (!CollectionUtils.isAnyEmpty(endRoomIds)) {
-                //批量修改房间状态为待清洁
-                roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), endRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-                //批量修改订单状态为已完成
-                orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), endOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-                //取消掉这些房间存在的历史保洁订单
-                clearInfoMapper.cancelByRoomIds(endRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-                //然后再新增本次的保洁订单
-                clearInfoMapper.insertBatch(clearInfoDOList);
-                //发送需要保洁的微信通知
-                sendClearMsg(endRoomIds);
+            // 手动提交事务
+            TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+            try {
+                if (!CollectionUtils.isAnyEmpty(startRoomIds)) {
+                    //批量修改房间状态为进行中
+                    roomInfoMapper.updateStatusByIds(AppEnum.room_status.USED.getValue(), startRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    //批量修改订单状态为进行中
+                    orderInfoMapper.updateStatusByIds(AppEnum.order_status.START.getValue(), startOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                }
+                if (!CollectionUtils.isAnyEmpty(endRoomIds)) {
+                    //批量修改房间状态为待清洁
+                    roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), endRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    //批量修改订单状态为已完成
+                    orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), endOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    //取消掉这些房间存在的历史保洁订单
+                    clearInfoMapper.cancelByRoomIds(endRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    //然后再新增本次的保洁订单
+                    clearInfoMapper.insertBatch(clearInfoDOList);
+                    //发送需要保洁的微信通知
+                    sendClearMsg(endRoomIds);
+                }
+                transactionManager.commit(transaction);
+            } catch (Exception e) {
+                // 发生异常时回滚事务
+                transactionManager.rollback(transaction);
+//                throw new RuntimeException(e);
             }
         }
         log.info("==========     订单定时检查任务执行完成     ==========");
