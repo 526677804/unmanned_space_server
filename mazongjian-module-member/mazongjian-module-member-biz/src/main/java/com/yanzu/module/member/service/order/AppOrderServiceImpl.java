@@ -218,7 +218,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //检查套餐是否允许使用
         checkPkgUse(pkgInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime, orderMinutes);
         //计算订单价格
-        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(),
+        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getDeposit(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(),
                 roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO, pkgInfoDO);
         if (ObjectUtils.isEmpty(ignoreOrderId)) {
             //下单
@@ -516,101 +516,86 @@ public class AppOrderServiceImpl implements AppOrderService {
 
 
     @Override
-    public BigDecimal mathPrice(BigDecimal price, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour,
+    public BigDecimal mathPrice(BigDecimal price, BigDecimal deposit, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour,
                                 Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO) {
+        BigDecimal totalPrice = BigDecimal.ZERO;
         if (!ObjectUtils.isEmpty(pkgInfoDO)) {
             //选了套餐  直接返回套餐的售价
-            return pkgInfoDO.getPrice();
-        }
-        if (enableWorkPrice) {
-            //以订单开始时间算，如果开始时间在周一至周四，那么就按工作日价格计算
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(startTime);
-            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-            if (dayOfWeek >= Calendar.MONDAY && dayOfWeek <= Calendar.THURSDAY) {
-                //工作日
-                price = workPrice;
-            }
-        }
-        // 计算两个日期的小时差 精确到小数点后两位
-        BigDecimal hours = new BigDecimal(String.valueOf((endTime.getTime() - startTime.getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
-        //计算价格 单价*时长
-        BigDecimal totalPrice = BigDecimal.ZERO;
-        //如果是通宵场 要考虑通宵场的价格
-        if (nightLong) {
-            //如果小于等于设置的通宵场时间   就按通宵场价格
-            if (hours.compareTo(new BigDecimal(txHour)) <= 0) {
-                totalPrice = tongxiaoPrice;
-            } else {
-                //大于 要用多于的时间*单价 再加上通宵场的价格
-                BigDecimal addPrice = hours.subtract(new BigDecimal(txHour)).multiply(price);
-                totalPrice = tongxiaoPrice.add(addPrice);
-            }
+            totalPrice = pkgInfoDO.getPrice();
         } else {
-            //否则就是单价*时长
-            totalPrice = price.multiply(hours);
-        }
-        //判断使用优惠券的情况
-        if (!ObjectUtils.isEmpty(couponInfoDO)) {
-            //判断类型
-            switch (couponInfoDO.getType()) {
-                case 1://1抵扣券
-                    //判断门槛
-                    if (couponInfoDO.getMinUsePrice().compareTo(hours) > 0) {
-                        throw exception(COUPON_MIN_USER_PRICE_ERROR);
-                    }
-                    //抵扣 并重新算价格
-                    if (couponInfoDO.getPrice().compareTo(hours) >= 0) {
-                        //直接抵扣完，价格设置为0
-                        totalPrice = BigDecimal.ZERO;
-                    } else {
-                        hours = hours.subtract(couponInfoDO.getPrice());
-                        totalPrice = price.multiply(hours);
-                    }
-                    break;
-                case 2://2满减券
-                    //判断门槛
-                    if (couponInfoDO.getMinUsePrice().compareTo(totalPrice) > 0) {
-                        throw exception(COUPON_MIN_USER_PRICE_ERROR);
-                    }
-                    //抵扣 并重新算价格
-                    if (couponInfoDO.getPrice().compareTo(totalPrice) >= 0) {
-                        //直接抵扣完，价格设置为0
-                        totalPrice = BigDecimal.ZERO;
-                    } else {
-                        totalPrice = totalPrice.subtract(couponInfoDO.getPrice());
-                    }
-                    break;
-                case 3: //3加时券
-                    //判断门槛
-                    if (couponInfoDO.getMinUsePrice().compareTo(hours) > 0) {
-                        throw exception(COUPON_MIN_USER_PRICE_ERROR);
-                    }
-                    break;
+            if (enableWorkPrice) {
+                //以订单开始时间算，如果开始时间在周一至周四，那么就按工作日价格计算
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(startTime);
+                int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+                if (dayOfWeek >= Calendar.MONDAY && dayOfWeek <= Calendar.THURSDAY) {
+                    //工作日
+                    price = workPrice;
+                }
+            }
+            // 计算两个日期的小时差 精确到小数点后两位
+            BigDecimal hours = new BigDecimal(String.valueOf((endTime.getTime() - startTime.getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
+            //计算价格 单价*时长
+            //如果是通宵场 要考虑通宵场的价格
+            if (nightLong) {
+                //如果小于等于设置的通宵场时间   就按通宵场价格
+                if (hours.compareTo(new BigDecimal(txHour)) <= 0) {
+                    totalPrice = tongxiaoPrice;
+                } else {
+                    //大于 要用多于的时间*单价 再加上通宵场的价格
+                    BigDecimal addPrice = hours.subtract(new BigDecimal(txHour)).multiply(price);
+                    totalPrice = tongxiaoPrice.add(addPrice);
+                }
+            } else {
+                //否则就是单价*时长
+                totalPrice = price.multiply(hours);
+            }
+            //判断使用优惠券的情况
+            if (!ObjectUtils.isEmpty(couponInfoDO)) {
+                //判断类型
+                switch (couponInfoDO.getType()) {
+                    case 1://1抵扣券
+                        //判断门槛
+                        if (couponInfoDO.getMinUsePrice().compareTo(hours) > 0) {
+                            throw exception(COUPON_MIN_USER_PRICE_ERROR);
+                        }
+                        //抵扣 并重新算价格
+                        if (couponInfoDO.getPrice().compareTo(hours) >= 0) {
+                            //直接抵扣完，价格设置为0
+                            totalPrice = BigDecimal.ZERO;
+                        } else {
+                            hours = hours.subtract(couponInfoDO.getPrice());
+                            totalPrice = price.multiply(hours);
+                        }
+                        break;
+                    case 2://2满减券
+                        //判断门槛
+                        if (couponInfoDO.getMinUsePrice().compareTo(totalPrice) > 0) {
+                            throw exception(COUPON_MIN_USER_PRICE_ERROR);
+                        }
+                        //抵扣 并重新算价格
+                        if (couponInfoDO.getPrice().compareTo(totalPrice) >= 0) {
+                            //直接抵扣完，价格设置为0
+                            totalPrice = BigDecimal.ZERO;
+                        } else {
+                            totalPrice = totalPrice.subtract(couponInfoDO.getPrice());
+                        }
+                        break;
+                    case 3: //3加时券
+                        //判断门槛
+                        if (couponInfoDO.getMinUsePrice().compareTo(hours) > 0) {
+                            throw exception(COUPON_MIN_USER_PRICE_ERROR);
+                        }
+                        break;
+                }
             }
         }
-
+        if (deposit.compareTo(BigDecimal.ZERO) != 0) {
+            //有押金  要加上押金的钱
+            totalPrice = totalPrice.add(deposit);
+        }
         //结果保留2位小数
         return totalPrice.setScale(2, BigDecimal.ROUND_HALF_UP);
-    }
-
-    private String getRoomNameByType(Integer roomType) {
-        if (roomType.compareTo(AppEnum.room_type.SW.getValue()) == 0) {
-            return "商务包";
-        }
-        if (roomType.compareTo(AppEnum.room_type.HAO.getValue()) == 0) {
-            return "豪包";
-        }
-        if (roomType.compareTo(AppEnum.room_type.DA.getValue()) == 0) {
-            return "大包";
-        }
-        if (roomType.compareTo(AppEnum.room_type.ZHONG.getValue()) == 0) {
-            return "中包";
-        }
-        if (roomType.compareTo(AppEnum.room_type.XIAO.getValue()) == 0) {
-            return "小包";
-        }
-        return "";
     }
 
     private void addPayRecord(Long storeId, BigDecimal price, Integer type, Integer moneyType, BigDecimal totalMoney, BigDecimal totalGiftMoney, String remark, Long userId) {
@@ -626,9 +611,6 @@ public class AppOrderServiceImpl implements AppOrderService {
         userMoneyBillMapper.insert(userMoneyBillDO);
     }
 
-    private boolean checkTongxiao(Date startTime, Date endTime) {
-        return (endTime.getHours() == 8 && endTime.getMinutes() == 0 && endTime.getTime() - startTime.getTime() <= 9 * 60 * 60 * 1000);
-    }
 
     /**
      * 团购券合法性检查

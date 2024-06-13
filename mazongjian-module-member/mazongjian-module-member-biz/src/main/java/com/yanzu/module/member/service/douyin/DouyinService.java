@@ -120,8 +120,8 @@ public class DouyinService {
             throw exception(GROUP_NO_CHECK_ERROR);
         } else {
             log.info("抖音团购券:{}",data);
-            //用户实际支付价格  单位 分
-            Integer pay_amount = data.getJSONArray("certificates").getJSONObject(0).getJSONObject("amount").getInteger("pay_amount");
+            //券实付金额。券实付金额 = 用户实付金额 + 支付优惠金额，单位分
+            Integer pay_amount = data.getJSONArray("certificates").getJSONObject(0).getJSONObject("amount").getInteger("coupon_pay_amount");
             //团购名称
             String title = data.getJSONArray("certificates").getJSONObject(0).getJSONObject("sku").getString("title");
             //一次验券的标识,在验券接口传入

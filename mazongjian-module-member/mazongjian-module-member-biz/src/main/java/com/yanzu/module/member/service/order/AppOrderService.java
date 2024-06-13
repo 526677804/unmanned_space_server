@@ -13,7 +13,7 @@ public interface AppOrderService {
 
     WxPayOrderRespVO preOrder(Long userId, Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO, Long ignoreOrderId, boolean tongxiao, boolean wxpay);
 
-    BigDecimal mathPrice(BigDecimal price,BigDecimal workPrice,Boolean enableWorkPrice, BigDecimal tongxiaoPrice,Integer txHour,Date startTime, Date endTime,Boolean nightLong, CouponInfoDO couponInfoDO,PkgInfoDO pkgInfoDO);
+    BigDecimal mathPrice(BigDecimal price,BigDecimal deposit,BigDecimal workPrice,Boolean enableWorkPrice, BigDecimal tongxiaoPrice,Integer txHour,Date startTime, Date endTime,Boolean nightLong, CouponInfoDO couponInfoDO,PkgInfoDO pkgInfoDO);
 
     Long save(OrderSaveReqVO reqVO);
 

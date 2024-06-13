@@ -44,6 +44,9 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
     private BigDecimal price;
 
+    @Schema(description = "押金", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
+    private BigDecimal deposit;
+
     @Schema(description = "单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
     private BigDecimal workPrice;
 

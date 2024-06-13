@@ -65,6 +65,11 @@ public class OrderInfoDO extends BaseDO {
      * 订单价格
      */
     private BigDecimal price;
+
+    /**
+     * 押金
+     */
+    private BigDecimal deposit;
     /**
      * 工作日折扣
      */

@@ -35,6 +35,9 @@ public class AppRoomDetailReqVO {
     @NotNull(message = "单价不能为空")
     private BigDecimal price;
 
+    @Schema(description = "押金", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
+    private BigDecimal deposit;
+
     @Schema(description = "工作日单价", requiredMode = Schema.RequiredMode.REQUIRED, example = "12")
 //    @NotNull(message = "工作日单价不能为空")
     private BigDecimal workPrice;
