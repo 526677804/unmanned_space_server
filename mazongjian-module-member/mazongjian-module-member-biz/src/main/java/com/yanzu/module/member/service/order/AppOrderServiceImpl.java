@@ -724,6 +724,8 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Override
     @Transactional
     public Long save(OrderSaveReqVO reqVO) {
+        //说明一下  只有不存在微信付款时，才直接调用此接口
+        //如果是微信付款的  那么是由支付回调来调用的此接口
         if (ObjectUtils.isEmpty(reqVO.getUserId())) {
             reqVO.setUserId(getLoginUserId());
         }
@@ -782,8 +784,12 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             //团购消费的  支付价格设置为0
             totalPrice = BigDecimal.ZERO;
+            if (roomInfoDO.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
+                //需要押金 检查支付结果
+                payOrderService.checkWxOrder(reqVO.getOrderNo(), orderInfoDO.getStoreId(), wxPayOrderRespVO.getPrice());
+            }
         } else {
-            //非团购支付 判断支付方式
+            //非团购支付
             //判断使用优惠券的情况
             if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
                 //use
@@ -793,26 +799,14 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (totalPrice.compareTo(BigDecimal.ZERO) > 0) {
                 switch (reqVO.getPayType()) {
                     case 1:
-                        //微信
-                        // 从redis查询 存在的情况才处理，防止重复验证
-                        String redisKey = String.format(WX_PAY_ORDER, reqVO.getOrderNo());
-                        if (redisTemplate.hasKey(redisKey)) {
-                            //如果已经验证了 就移除这个订单号
-                            redisTemplate.delete(redisKey);
-                            //有支付单号，再验证支付是否成功
-                            PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
-                            if (ObjectUtils.isEmpty(payOrderDO)) {
-                                throw exception(ORDER_WEIXIN_PAY_ERROR);
-                            } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), payOrderDO.getStoreId(), wxPayOrderRespVO.getPrice())) {
-                                throw exception(ORDER_WEIXIN_PAY_ERROR);
-                            } else if (!payOrderDO.getPayStatus()) {
-                                throw exception(ORDER_WEIXIN_PAY_ERROR);
-                            }
-                        } else {
-                            throw exception(ORDER_WEIXIN_PAY_ERROR);
-                        }
+                        //微信  直接检查支付状态    费用里面已经包含了押金
+                        payOrderService.checkWxOrder(reqVO.getOrderNo(), orderInfoDO.getStoreId(), wxPayOrderRespVO.getPrice());
                         break;
                     case 2://余额
+                        if (roomInfoDO.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
+                            //需要押金 检查支付结果
+                            payOrderService.checkWxOrder(reqVO.getOrderNo(), orderInfoDO.getStoreId(), wxPayOrderRespVO.getPrice());
+                        }
                         if (!ObjectUtils.isEmpty(reqVO.getPkgId())) {
                             //检查套餐是否支持余额支付
                             if (!pkgInfoDO.getBalanceBuy()) {
@@ -875,6 +869,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         orderInfoDO.setEndTime(reqVO.getEndTime());
         orderInfoDO.setNightLong(reqVO.getNightLong());
         orderInfoDO.setPrice(oldPrice);
+        orderInfoDO.setDeposit(roomInfoDO.getDeposit());
         orderInfoDO.setPayPrice(totalPrice);
         orderInfoDO.setRefundPrice(BigDecimal.ZERO);
         orderInfoDO.setPayType(reqVO.getPayType());
@@ -1005,25 +1000,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPrice() / 100.0));
         switch (reqVO.getPayType()) {
             case 1://微信
-                // 从redis查询 存在的情况才处理，防止重复验证充值
-                String redisKey = String.format(WX_PAY_ORDER, reqVO.getOrderNo());
-                if (redisTemplate.hasKey(redisKey)) {
-                    //如果已经验证成功了 就移除这个订单的信息  避免重复处理
-                    redisTemplate.delete(redisKey);
-                    //有支付单号，再验证支付是否成功
-                    PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
-                    if (ObjectUtils.isEmpty(payOrderDO)) {
-                        throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), payOrderDO.getStoreId(), wxPayOrderRespVO.getPrice())) {
-                        throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    } else if (!payOrderDO.getPayStatus()) {
-                        throw exception(ORDER_WEIXIN_PAY_ERROR);
-                    }
-                    //是微信支付的  增加已支付的金额
-                    orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
-                } else {
-                    throw exception(ORDER_WEIXIN_PAY_ERROR);
-                }
+                payOrderService.checkWxOrder(reqVO.getOrderNo(), orderInfoDO.getStoreId(), wxPayOrderRespVO.getPrice());
+                //是微信支付的  增加已支付的金额
+                orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
                 break;
             case 2://余额
                 StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, roomInfoDO.getStoreId());
@@ -1214,6 +1193,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
                 //删除团购券记录
                 groupPayInfoMapper.deleteById(groupPayInfoDO.getId());
+                
+
             } else {
                 //实际支付金额为0  就不退款了
                 if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {

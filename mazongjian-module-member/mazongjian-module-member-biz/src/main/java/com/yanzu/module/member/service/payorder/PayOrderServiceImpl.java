@@ -26,6 +26,7 @@ import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.pkg.PkgService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -46,6 +47,7 @@ import java.util.stream.Collectors;
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.ADMIN_WEIXIN_PAY_REFOUND_ERROR;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.ORDER_WEIXIN_PAY_ERROR;
 
 /**
  * 支付订单 Service 实现类
@@ -232,11 +234,20 @@ public class PayOrderServiceImpl implements PayOrderService {
         return payOrderMapper.getByOrderNo(orderNo);
     }
 
-    public boolean checkWxOrder(String orderNo, Long storeId, Integer price) {
+    @SneakyThrows
+    public void checkWxOrder(String orderNo, Long storeId, Integer price) {
         log.info("检查订单：{}，微信支付状态！", orderNo);
-        //创建微信支付实例
-        WxPayService wxPayService = myWxService.initWxPay(storeId);
-        try {
+        String redisKey = String.format(WX_PAY_ORDER, orderNo);
+        if (redisTemplate.hasKey(redisKey)) {
+            //如果已经验证了 就移除这个订单号
+            redisTemplate.delete(redisKey);
+            //再验证支付是否成功
+            PayOrderDO payOrderDO = getByOrderNo(orderNo);
+            if (ObjectUtils.isEmpty(payOrderDO)) {
+                throw exception(ORDER_WEIXIN_PAY_ERROR);
+            }
+            //创建微信支付实例
+            WxPayService wxPayService = myWxService.initWxPay(storeId);
             WxPayOrderQueryResult wxPayOrderQueryResult = wxPayService.queryOrder(null, orderNo);
             String tradeNo = wxPayOrderQueryResult.getTransactionId();
             String tradeState = wxPayOrderQueryResult.getTradeState();
@@ -251,9 +262,8 @@ public class PayOrderServiceImpl implements PayOrderService {
             log.info("订单：{}，微信支付状态为：{},price:{},cashFee:{}", orderNo, flag, price, cashFee);
             if (flag && checkPrice) {
                 String transactionId = wxPayOrderQueryResult.getTransactionId();//微信支付订单号
-                String outTradeNo = wxPayOrderQueryResult.getOutTradeNo();//商家订单号
-                //查询出该订单
-                PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(outTradeNo);
+//                    String outTradeNo = wxPayOrderQueryResult.getOutTradeNo();//商家订单号
+                //更新支付订单状态
                 if (!payOrderDO.getPayStatus()) {
                     //更新状态、支付订单号 和支付金额
                     payOrderDO.setPrice(cashFee);
@@ -263,13 +273,13 @@ public class PayOrderServiceImpl implements PayOrderService {
                     payOrderDO.setPayTime(LocalDateTime.now());
                     payOrderMapper.updateById(payOrderDO);
                 }
-                return true;
+            } else {
+                throw exception(ORDER_WEIXIN_PAY_ERROR);
             }
-            return false;
-        } catch (WxPayException e) {
-//            throw new RuntimeException(e);
-            return false;
+        } else {
+            throw exception(ORDER_WEIXIN_PAY_ERROR);
         }
+
     }
 
     @Override

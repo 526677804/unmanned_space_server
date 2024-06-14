@@ -14,7 +14,6 @@ import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.pkg.vo.*;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
-import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkguserinfo.PkgUserInfoDO;
 import com.yanzu.module.member.dal.mysql.pkginfo.PkgInfoMapper;
@@ -28,7 +27,6 @@ import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.omg.CORBA.NO_IMPLEMENT;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -272,40 +270,23 @@ public class PkgServiceImpl implements PkgService {
                 throw exception(PKG_BUY_MAX_NUM_ERROR);
             }
         }
-        // 从redis查询 存在的情况才处理，防止重复验证充值
-        String redisKey = String.format(WX_PAY_ORDER, reqVO.getOrderNo());
-        if (redisTemplate.hasKey(redisKey)) {
-            //如果已经验证成功了 就移除这个订单的信息  避免重复处理
-            redisTemplate.delete(redisKey);
-            //有支付单号，再验证支付是否成功
-            PayOrderDO payOrderDO = payOrderService.getByOrderNo(reqVO.getOrderNo());
-            if (ObjectUtils.isEmpty(payOrderDO)) {
-                throw exception(ORDER_WEIXIN_PAY_ERROR);
-            } else if (!payOrderService.checkWxOrder(payOrderDO.getOrderNo(), payOrderDO.getStoreId(), reqVO.getPrice())) {
-                throw exception(ORDER_WEIXIN_PAY_ERROR);
-            } else if (!payOrderDO.getPayStatus()) {
-                throw exception(ORDER_WEIXIN_PAY_ERROR);
-            }
-            //添加套餐给用户
-            PkgUserInfoDO pkgUserInfoDO = new PkgUserInfoDO();
-            pkgUserInfoDO.setUserId(reqVO.getUserId());
-            pkgUserInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
-            pkgUserInfoDO.setStoreId(pkgUserInfoDO.getStoreId());
-            pkgUserInfoDO.setPkgId(pkgInfoDO.getPkgId());
-            //计算过期时间
-            if (pkgInfoDO.getExpireDay().compareTo(0) == 0) {
-                //不过期
-                pkgUserInfoDO.setExpireDate(LocalDate.of(2099, 12, 31));
-            } else {
-                LocalDate now = LocalDate.now();
-                now = now.plusDays(pkgInfoDO.getExpireDay());
-                pkgUserInfoDO.setExpireDate(now);
-            }
-            pkgUserInfoMapper.insert(pkgUserInfoDO);
+        payOrderService.checkWxOrder(reqVO.getOrderNo(), pkgInfoDO.getStoreId(), reqVO.getPrice());
+        //添加套餐给用户
+        PkgUserInfoDO pkgUserInfoDO = new PkgUserInfoDO();
+        pkgUserInfoDO.setUserId(reqVO.getUserId());
+        pkgUserInfoDO.setStatus(AppEnum.coupon_status.AVAILABLE.getValue());
+        pkgUserInfoDO.setStoreId(pkgUserInfoDO.getStoreId());
+        pkgUserInfoDO.setPkgId(pkgInfoDO.getPkgId());
+        //计算过期时间
+        if (pkgInfoDO.getExpireDay().compareTo(0) == 0) {
+            //不过期
+            pkgUserInfoDO.setExpireDate(LocalDate.of(2099, 12, 31));
         } else {
-            throw exception(ORDER_WEIXIN_PAY_ERROR);
+            LocalDate now = LocalDate.now();
+            now = now.plusDays(pkgInfoDO.getExpireDay());
+            pkgUserInfoDO.setExpireDate(now);
         }
-
+        pkgUserInfoMapper.insert(pkgUserInfoDO);
     }
 
     @Override
