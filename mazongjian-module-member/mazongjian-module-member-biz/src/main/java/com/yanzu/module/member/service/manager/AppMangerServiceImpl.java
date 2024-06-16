@@ -52,9 +52,9 @@ import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.order.AppOrderService;
+import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import com.yanzu.module.member.service.user.AppUserService;
-import com.yanzu.module.member.service.user.MemberUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import org.springframework.beans.BeanUtils;
@@ -142,6 +142,9 @@ public class AppMangerServiceImpl implements AppMangerService {
     private PkgUserInfoMapper pkgUserInfoMapper;
 
     @Resource
+    private PayOrderService payOrderService;
+
+    @Resource
     private MemberUserApi memberUserApi;
 
     @Resource
@@ -153,8 +156,8 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         String storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId()).stream().collect(Collectors.joining(","));
         reqVO.setStoreIds(storeIds);
-        IPage<OrderListRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        orderInfoMapper.getOrderPage(page,reqVO);
+        IPage<OrderListRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        orderInfoMapper.getOrderPage(page, reqVO);
         if (!CollectionUtils.isEmpty(page.getRecords())) {
             //如果状态是已取消以外的状态  并且订单结束时间不超过5分钟，那么允许续费
             LocalDateTime now = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
@@ -197,8 +200,8 @@ public class AppMangerServiceImpl implements AppMangerService {
                 throw exception(MEMBER_PAGE_PARAM_ERROR);
             }
         }
-        IPage<AppMemberPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        appUserMapper.getMemberPage(page,reqVO);
+        IPage<AppMemberPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        appUserMapper.getMemberPage(page, reqVO);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -217,8 +220,8 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (StringUtils.isEmpty(storeIds)) {
             return PageResult.empty();
         }
-        IPage<AppCouponPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        couponInfoMapper.getCouponPageByAdmin(page,reqVO, storeIds);
+        IPage<AppCouponPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        couponInfoMapper.getCouponPageByAdmin(page, reqVO, storeIds);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -277,8 +280,8 @@ public class AppMangerServiceImpl implements AppMangerService {
         } else {
             ids = String.valueOf(reqVO.getStoreId());
         }
-        IPage<AppClearUserPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        storeUserMapper.getClearUserPage(page,reqVO.getStoreId(),ids);
+        IPage<AppClearUserPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        storeUserMapper.getClearUserPage(page, reqVO.getStoreId(), ids);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -427,8 +430,8 @@ public class AppMangerServiceImpl implements AppMangerService {
         //仅创建者使用
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
         reqVO.setUserId(getLoginUserId());
-        IPage<AppWithdrawalPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        withdrawalMapper.getWithdrawalPage(page,reqVO);
+        IPage<AppWithdrawalPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        withdrawalMapper.getWithdrawalPage(page, reqVO);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -572,8 +575,8 @@ public class AppMangerServiceImpl implements AppMangerService {
             storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
             ids = String.valueOf(reqVO.getStoreId());
         }
-        IPage<AppAdminUserPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        storeUserMapper.getAdminUserPage(page,reqVO.getStoreId(),ids);
+        IPage<AppAdminUserPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        storeUserMapper.getAdminUserPage(page, reqVO.getStoreId(), ids);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -655,7 +658,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (orderInfoDO.getEndTime().before(reqVO.getEndTime())) {
             //增加时间
             //管理员续费  不需要算钱了，但是要校验时间冲突
-            appOrderService.preOrder(userId, orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null,null, reqVO.getOrderId(), false, false);
+            appOrderService.preOrder(userId, null,orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), false, false);
             //如果状态是已完成  则状态改成进行中 并触发一次通电 还要清除保洁订单信息
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0 && reqVO.getEndTime().after(new Date())) {
                 orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
@@ -681,8 +684,8 @@ public class AppMangerServiceImpl implements AppMangerService {
             return PageResult.empty();
         }
         reqVO.setStoreIds(storeIds.stream().collect(Collectors.joining(",")));
-        IPage<AppClearPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        clearInfoMapper.getClearManagerPage(page,reqVO);
+        IPage<AppClearPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        clearInfoMapper.getClearManagerPage(page, reqVO);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -702,7 +705,12 @@ public class AppMangerServiceImpl implements AppMangerService {
             if (refund) {
                 //判断支付方式 进行退款
                 if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
-                    //团购支付的  管理员取消 不退团购券
+                    //团购支付的  管理员取消 不退团购券   但是要退押金
+                    if (orderInfoDO.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
+                        //有押金 对押金进行退款
+                        payOrderService.refundDeposit(orderInfoDO.getOrderNo(), orderInfoDO.getDeposit().multiply(BigDecimal.valueOf(100D)).intValue());
+                    }
+
                 } else {
                     //实际支付金额为0  就不退款了
                     if (orderInfoDO.getPayPrice().compareTo(BigDecimal.ZERO) > 0) {
@@ -766,6 +774,11 @@ public class AppMangerServiceImpl implements AppMangerService {
                                     }
                                     userMoneyBillMapper.insert(newUserMoneyBillDO);
                                 }
+                            }
+                            //退押金
+                            if (orderInfoDO.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
+                                //有押金 对押金进行退款
+                                payOrderService.refundDeposit(orderInfoDO.getOrderNo(), orderInfoDO.getDeposit().multiply(BigDecimal.valueOf(100D)).intValue());
                             }
                         }
                     }
@@ -880,7 +893,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (flag) {
             //检查时间
-            appOrderService.preOrder(getLoginUserId(), orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null,reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
+            appOrderService.preOrder(getLoginUserId(), null,orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
             //开始修改
             //改时间
             orderInfoDO.setStartTime(reqVO.getStartTime());
@@ -957,7 +970,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         //定义一些参数 备用
         OrderInfoDO orderInfoDO = new OrderInfoDO();
         //下单检查一遍可用时间
-        WxPayOrderRespVO wxPayOrderRespVO = appOrderService.preOrder(user.getId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, null,false, false);
+        WxPayOrderRespVO wxPayOrderRespVO = appOrderService.preOrder(user.getId(),null, reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, null, false, false);
         //生成订单，并修改房间状态
         orderInfoDO.setOrderNo(getOrderNo());
         orderInfoDO.setOrderKey(HexUtil.encodeHexStr(orderInfoDO.getOrderNo() + UUID.randomUUID().toString()));

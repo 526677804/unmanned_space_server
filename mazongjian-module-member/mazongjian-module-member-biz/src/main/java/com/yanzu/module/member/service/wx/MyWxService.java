@@ -11,6 +11,7 @@ import com.yanzu.framework.common.util.io.FileUtils;
 import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.mysql.member.StoreWxpayConfigMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,7 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.STORE_WX_PAY_CONF
  * @DATE: 2023/11/22 14:17
  */
 @Component
+@Slf4j
 public class MyWxService {
 
 
@@ -45,6 +47,7 @@ public class MyWxService {
     private String returnUrl;
 
     public WxPayService initWxPay(Long storeId) {
+        log.info("初始化门店：{}，微信支付", storeId);
         if (ObjectUtils.isEmpty(storeId)) {
             throw exception(STORE_WX_PAY_CONFIG_NOT_FOUND);
         }
@@ -60,10 +63,8 @@ public class MyWxService {
             payConfig.setMchId(mchId);//服务商的商户号
             payConfig.setMchKey(mchKey);//服务商的v2秘钥
             payConfig.setKeyPath(keyPath);//服务商的证书文件
-            if (config.getSplit()) {
-                //分账
-                payConfig.setSubMchId(config.getMchId());//服务商模式下的子商户号
-            }
+            //服务商模式下的子商户号
+            payConfig.setSubMchId(config.getMchId());
         } else {
             //非服务商模式
             payConfig.setAppId(miniappConfigVO.getMiniappId());
@@ -83,7 +84,7 @@ public class MyWxService {
 
     public WxMaService initWxMa() {
         MiniappConfigVO miniAppConfig = getMiniAppConfig();
-        WxMaService service =  new WxMaServiceHttpClientImpl();
+        WxMaService service = new WxMaServiceHttpClientImpl();
         WxMaDefaultConfigImpl config = new WxMaDefaultConfigImpl();
         config.setAppid(miniAppConfig.getMiniappId());
         config.setSecret(miniAppConfig.getMiniappSecret());

@@ -31,6 +31,9 @@ public class OrderPreReqVO implements Serializable {
     @Schema(description = "不需要传", example = "1", hidden = true)
     private Long userId;
 
+    @Schema(description = "支付类型")
+    private Integer payType;
+
     @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     @NotNull(message = "房间id不能为空")
     private Long roomId;

@@ -11,9 +11,9 @@ import java.util.List;
 
 public interface AppOrderService {
 
-    WxPayOrderRespVO preOrder(Long userId, Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO, Long ignoreOrderId, boolean tongxiao, boolean wxpay);
+    WxPayOrderRespVO preOrder(Long userId, Integer payType, Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO, Long ignoreOrderId, boolean tongxiao, boolean wxpay);
 
-    BigDecimal mathPrice(BigDecimal price,BigDecimal deposit,BigDecimal workPrice,Boolean enableWorkPrice, BigDecimal tongxiaoPrice,Integer txHour,Date startTime, Date endTime,Boolean nightLong, CouponInfoDO couponInfoDO,PkgInfoDO pkgInfoDO);
+    BigDecimal mathPrice(BigDecimal price, BigDecimal deposit, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO);
 
     Long save(OrderSaveReqVO reqVO);
 
@@ -21,7 +21,7 @@ public interface AppOrderService {
 
     PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO);
 
-    OrderInfoAppRespVO getOrderInfo(Long orderId,String orderKey);
+    OrderInfoAppRespVO getOrderInfo(Long orderId, String orderKey);
 
     String getRoomImgs(Long roomId);
 
@@ -57,4 +57,5 @@ public interface AppOrderService {
 
     OrderInfoAppRespVO getOrderByRoomId(Long roomId);
 
+    void closeOrder(Long orderId);
 }

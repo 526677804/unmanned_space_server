@@ -63,7 +63,7 @@ public class OrderController {
         if (!ObjectUtils.isEmpty(reqVO.getPkgId())) {
             pkgInfoDO = pkgInfoMapper.selectById(reqVO.getPkgId());
         }
-        return success(appOrderService.preOrder(getLoginUserId(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(),
+        return success(appOrderService.preOrder(getLoginUserId(), reqVO.getPayType(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(),
                 couponInfoDO, pkgInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), true));
     }
 
@@ -100,7 +100,7 @@ public class OrderController {
     @PermitAll
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     @Parameter(name = "roomId")
-    public CommonResult<OrderInfoAppRespVO> getOrderByRoomId(@PathVariable("roomId")Long roomId) {
+    public CommonResult<OrderInfoAppRespVO> getOrderByRoomId(@PathVariable("roomId") Long roomId) {
         return success(appOrderService.getOrderByRoomId(roomId));
     }
 
@@ -159,15 +159,15 @@ public class OrderController {
         return success(true);
     }
 
-//    @PostMapping("/closeOrder/{orderId}")
-//    @Operation(summary = "提前结束订单 ", description = "我的订单使用")
-//    @PreAuthenticated
-//    @Parameter(name = "orderId")
-//    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
-//    public CommonResult<Boolean> closeOrder(@PathVariable("orderId") Long orderId) {
-//        appOrderService.closeOrder(orderId);
-//        return success(true);
-//    }
+    @PostMapping("/closeOrder/{orderId}")
+    @Operation(summary = "提前结束订单 ", description = "我的订单使用")
+    @PreAuthenticated
+    @Parameter(name = "orderId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> closeOrder(@PathVariable("orderId") Long orderId) {
+        appOrderService.closeOrder(orderId);
+        return success(true);
+    }
 
     @PostMapping("/openStoreDoor")
     @Operation(summary = "(开关)门店的大门", description = "我的订单使用")

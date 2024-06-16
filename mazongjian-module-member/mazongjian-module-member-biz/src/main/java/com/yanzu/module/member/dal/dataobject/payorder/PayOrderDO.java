@@ -38,6 +38,11 @@ public class PayOrderDO extends BaseDO {
      * 订单编号
      */
     private String orderNo;
+
+    /**
+     * 支付类型
+     */
+    private Integer payType;
     /**
      * 订单内容
      */

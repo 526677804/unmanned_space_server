@@ -139,7 +139,7 @@ public class PayOrderServiceImpl implements PayOrderService {
                             //下单
                             OrderSaveReqVO reqVO = new OrderSaveReqVO();
                             reqVO.setOrderNo(orderNo);
-                            reqVO.setPayType(AppEnum.order_pay_type.WEIXIN.getValue());
+                            reqVO.setPayType(payOrderDO.getPayType());
                             reqVO.setCouponId(wxPayOrderInfo.getCouponId());
                             reqVO.setNightLong(wxPayOrderInfo.getNightLong());
                             reqVO.setRoomId(wxPayOrderInfo.getRoomId());
@@ -180,6 +180,7 @@ public class PayOrderServiceImpl implements PayOrderService {
             }
             return WxPayNotifyResponse.success("接收成功!");
         } catch (ServiceException e) {
+            e.printStackTrace();
             //模拟租户 处理支付订单
             TenantUtils.execute(tenantId, () -> {
                 //业务异常 退款
@@ -219,11 +220,12 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     @Transactional
-    public void create(Long userId, String orderNo, Long storeId, String orderDesc, Integer price) {
+    public void create(Long userId, String orderNo, Long storeId, Integer payType, String orderDesc, Integer price) {
         PayOrderDO payOrderDO = new PayOrderDO();
         payOrderDO.setUserId(userId);
         payOrderDO.setOrderNo(orderNo);
         payOrderDO.setStoreId(storeId);
+        payOrderDO.setPayType(payType);
         payOrderDO.setOrderDesc(orderDesc);
         payOrderDO.setPrice(price);
         payOrderMapper.insert(payOrderDO);
@@ -236,7 +238,7 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @SneakyThrows
     public void checkWxOrder(String orderNo, Long storeId, Integer price) {
-        log.info("检查订单：{}，微信支付状态！", orderNo);
+        log.info("检查门店:{}，订单：{}，微信支付状态！", storeId, orderNo);
         String redisKey = String.format(WX_PAY_ORDER, orderNo);
         if (redisTemplate.hasKey(redisKey)) {
             //如果已经验证了 就移除这个订单号
@@ -295,6 +297,37 @@ public class PayOrderServiceImpl implements PayOrderService {
                 refundRequest.setTotalFee(payOrderDO.getPrice());
                 refundRequest.setRefundFee(payOrderDO.getPrice());
                 refundRequest.setRefundDesc("管理员退款");
+                WxPayService wxPayService = myWxService.initWxPay(payOrderDO.getStoreId());
+                try {
+                    wxPayService.refundV2(refundRequest);
+                } catch (WxPayException ex) {
+//                throw new RuntimeException(ex);
+//                    log.error("微信支付订单:{}，退款失败！", orderNo);
+                }
+            } else {
+                throw exception(ADMIN_WEIXIN_PAY_REFOUND_ERROR);
+            }
+        }
+
+    }
+
+    /**
+     * @param orderNo 订单号
+     * @param price   金额 单位分
+     */
+    @Override
+    @Transactional
+    public void refundDeposit(String orderNo, int price) {
+        //查询出订单
+        PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderNo);
+        if (!ObjectUtils.isEmpty(payOrderDO)) {
+            if (payOrderDO.getPayStatus() && payOrderDO.getRefundPrice() == 0) {
+                WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+                refundRequest.setOutTradeNo(payOrderDO.getOrderNo());
+                refundRequest.setOutRefundNo("TK" + payOrderDO.getOrderNo());
+                refundRequest.setTotalFee(payOrderDO.getPrice());
+                refundRequest.setRefundFee(price);
+                refundRequest.setRefundDesc("押金退款");
                 WxPayService wxPayService = myWxService.initWxPay(payOrderDO.getStoreId());
                 try {
                     wxPayService.refundV2(refundRequest);

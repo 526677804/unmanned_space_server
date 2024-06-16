@@ -82,6 +82,9 @@ public class OrderListRespVO {
     @Schema(description = "实际支付价格", example = "6888")
     private BigDecimal payPrice;
 
+    @Schema(description = "押金", requiredMode = Schema.RequiredMode.REQUIRED, example = "18.8")
+    private BigDecimal deposit;
+
     @Schema(description = "退款价格", example = "8062")
     private BigDecimal refundPrice;
 

@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
 
-import java.util.Date;
-
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order.vo
  * @DESCRIPTION:
@@ -33,5 +31,7 @@ public class WxPayOrderRespVO {
     private String paySign;
     @Schema(description = "计算出来实际需要支付的价格 单位/分")
     private Integer price;
+    @Schema(description = "实际需支付金额 单位/分")
+    private Integer payPrice;
 
 }

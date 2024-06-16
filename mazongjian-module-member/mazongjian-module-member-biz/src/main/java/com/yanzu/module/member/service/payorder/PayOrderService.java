@@ -56,11 +56,13 @@ public interface PayOrderService {
 
     String updateOrderRefunded(Map<String, String> params, String body);
 
-    void create(Long userId, String orderNo, Long storeId, String orderDesc, Integer price);
+    void create(Long userId, String orderNo, Long storeId, Integer payType, String orderDesc, Integer price);
 
     PayOrderDO getByOrderNo(String orderNo);
 
     void checkWxOrder(String orderNo,Long storeId, Integer price);
 
     void refundOrder(Long id);
+
+    void refundDeposit(String orderNo, int price);
 }

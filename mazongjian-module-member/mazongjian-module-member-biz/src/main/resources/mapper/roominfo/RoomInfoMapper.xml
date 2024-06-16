@@ -118,4 +118,12 @@
         order by r.store_id asc,r.sort_id asc
 
     </select>
+    <select id="getInfoById" resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomListVO">
+        select r.room_id, r.room_name, r.store_id, s.store_name,s.order_webhook
+        from member_room_info r
+                 left join member_store_info s ON s.store_id = r.store_id
+        where r.deleted = 0
+          and r.room_id =#{roomId}
+
+    </select>
 </mapper>

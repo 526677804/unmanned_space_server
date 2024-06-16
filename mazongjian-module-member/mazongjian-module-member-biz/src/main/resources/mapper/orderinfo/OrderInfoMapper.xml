@@ -112,6 +112,7 @@
         , o.end_time
         , ROUND(TIMESTAMPDIFF(SECOND, o.start_time,o.end_time) / 3600, 1) AS orderHour
         , o.pay_price
+        , o.deposit
         , o.pay_type
         , coupon.coupon_name
         , o.refund_price
@@ -165,6 +166,7 @@
         , o.end_time
         , ROUND(TIMESTAMPDIFF(SECOND, o.start_time,o.end_time) / 3600, 1) AS orderHour
         , o.price
+        , o.deposit
         , o.pay_price
         , o.refund_price
         , o.pay_type
@@ -424,6 +426,7 @@
     <select id="getListByJob" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
         select order_id,
                order_no,
+               deposit,
                store_id,
                room_id,
                user_id,

@@ -266,8 +266,8 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public PageResult<AppUserMoneyBillRespVO> getBalancePage(AppUserMoneyBillPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        IPage<AppUserMoneyBillRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageNo());
-        userMoneyBillMapper.getBalancePage(page,reqVO);
+        IPage<AppUserMoneyBillRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageNo());
+        userMoneyBillMapper.getBalancePage(page, reqVO);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -352,10 +352,10 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public PageResult<AppCouponPageRespVO> getCouponPage(AppCouponPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        IPage<AppCouponPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        IPage<AppCouponPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
         if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //个人中心分页查询
-            couponInfoMapper.getCouponPage(page,reqVO);
+            couponInfoMapper.getCouponPage(page, reqVO);
             return new PageResult<>(page.getRecords(), page.getTotal());
         } else {
             //提交订单页查询
@@ -378,11 +378,11 @@ public class AppUserServiceImpl implements AppUserService {
                 couponInfoMapper.insert(couponInfoDO);
             }
             //先计算出订单价格
-            BigDecimal mathPrice = appOrderService.mathPrice(roomInfoDO.getPrice(), roomInfoDO.getDeposit(),roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(),
-                    roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null,null);
+            BigDecimal mathPrice = appOrderService.mathPrice(roomInfoDO.getPrice(), roomInfoDO.getDeposit(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(),
+                    roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null, null);
             //再计算出时长 精确到小数点后两位
             BigDecimal hours = new BigDecimal(String.valueOf((reqVO.getEndTime().getTime() - reqVO.getStartTime().getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
-            couponInfoMapper.getCouponPage(page,reqVO);
+            couponInfoMapper.getCouponPage(page, reqVO);
             //校验每张优惠券是否可用
             if (!CollectionUtils.isEmpty(page.getRecords())) {
                 page.getRecords().stream().forEach(x -> {
@@ -457,7 +457,7 @@ public class AppUserServiceImpl implements AppUserService {
 //                throw new RuntimeException(e);
                 throw exception(USER_WEIXIN_PAY_ERROR);
             }
-            payOrderService.create(reqVO.getUserId(), orderNo, reqVO.getStoreId(), "余额充值订单", reqVO.getPrice());
+            payOrderService.create(reqVO.getUserId(), orderNo, reqVO.getStoreId(), AppEnum.order_pay_type.WEIXIN.getValue(), "余额充值订单", reqVO.getPrice());
             //把订单号存到redis 如果已经充值了 就移除这个订单号
             String redisKey = String.format(WX_PAY_ORDER, orderNo);
             Long tenantId = TenantContextHolder.getTenantId();
@@ -466,7 +466,7 @@ public class AppUserServiceImpl implements AppUserService {
                 LoginUser user = SecurityFrameworkUtils.getLoginUser();
                 tenantId = user.getTenantId();
             }
-            redisTemplate.opsForValue().set(redisKey, new WxPayOrderInfo(AppWxPayTypeEnum.RECHARGE,orderNo, reqVO.getUserId(), tenantId
+            redisTemplate.opsForValue().set(redisKey, new WxPayOrderInfo(AppWxPayTypeEnum.RECHARGE, orderNo, reqVO.getUserId(), tenantId
                     , reqVO.getStoreId(), reqVO.getPrice()), 1, TimeUnit.DAYS);
         }
         return respVO;
