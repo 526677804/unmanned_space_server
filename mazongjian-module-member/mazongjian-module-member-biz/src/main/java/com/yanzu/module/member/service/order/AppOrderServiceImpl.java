@@ -1,6 +1,7 @@
 package com.yanzu.module.member.service.order;
 
 import cn.hutool.core.util.HexUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
@@ -1717,6 +1718,23 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
 
 
+    }
+
+    @Override
+    public String preGroupNo(PreGroupNoReqVO reqVO) {
+        //处理掉中间有空格的情况
+        reqVO.setCode(reqVO.getCode().replaceAll(" ", ""));
+        //判断是抖音券还是美团券
+        if (reqVO.getCode().length() <= 13) {
+            //美团券
+            //查询券信息
+            MeituanPrepareRespVO prepare = meituanService.prepare(reqVO.getStoreId(), reqVO.getCode());
+            return prepare.getTitle();
+        } else {
+            //抖音券
+            DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getCode());
+            return prepare.getTitle();
+        }
     }
 
 }

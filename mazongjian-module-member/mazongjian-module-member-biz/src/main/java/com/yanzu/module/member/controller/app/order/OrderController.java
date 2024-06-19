@@ -76,6 +76,14 @@ public class OrderController {
         return success(true);
     }
 
+    @PostMapping("/preGroupNo")
+    @Operation(summary = "查询团购券信息（支持美团和抖音）", description = "下单使用")
+    @PreAuthenticated
+    public CommonResult<String> preGroupNo(@RequestBody @Valid PreGroupNoReqVO reqVO) {
+        return success( appOrderService.preGroupNo(reqVO));
+    }
+
+
 
     @PostMapping("/save")
     @Operation(summary = "提交订单", description = "下单使用")

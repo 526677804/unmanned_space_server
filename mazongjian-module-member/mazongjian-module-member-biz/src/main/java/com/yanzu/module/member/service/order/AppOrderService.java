@@ -58,4 +58,7 @@ public interface AppOrderService {
     OrderInfoAppRespVO getOrderByRoomId(Long roomId);
 
     void closeOrder(Long orderId);
+
+    String preGroupNo(PreGroupNoReqVO reqVO);
+
 }
