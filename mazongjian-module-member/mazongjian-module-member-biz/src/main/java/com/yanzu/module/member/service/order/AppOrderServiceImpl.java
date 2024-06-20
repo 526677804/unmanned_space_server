@@ -422,6 +422,10 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (!CollectionUtils.isAnyEmpty(pkgInfoDO.getEnableWeek()) || pkgInfoDO.getEnableWeek().size() != 7) {
                 //取开始时间到结束时间所有的week
                 Set<String> weeksBetween = getWeeksBetween(startTime, endTime);
+//                if (!CollectionUtils.isAnyEmpty(weeksBetween) && weeksBetween.contains("7")) {
+//                    weeksBetween.remove("7");
+//                    weeksBetween.add("0");
+//                }
                 if (getElementsNotInSet(pkgInfoDO.getEnableWeek(), weeksBetween)) {
                     throw exception(PKG_USE_CHECK_WEEK_ERROR);
                 }
@@ -479,11 +483,20 @@ public class AppOrderServiceImpl implements AppOrderService {
         endCal.set(Calendar.MINUTE, 0);
         endCal.set(Calendar.SECOND, 0);
         endCal.set(Calendar.MILLISECOND, 0);
+
         Set<String> weekSet = new HashSet<>();
 
         while (startCal.before(endCal) && weekSet.size() < 24) {
+            // 获取今天是星期几，其中星期天的值是1，星期六的值是7
+            int dayOfWeek = startCal.get(Calendar.DAY_OF_WEEK);
             //加到结果
-            weekSet.add(String.valueOf(startCal.get(Calendar.DAY_OF_WEEK)));
+            // 将星期天的值1转换为7，其余依次减1
+            if (dayOfWeek == Calendar.SUNDAY) {
+                dayOfWeek = 7;
+            } else {
+                dayOfWeek--;
+            }
+            weekSet.add(String.valueOf(dayOfWeek));
             //增加一天
             startCal.add(Calendar.DAY_OF_MONTH, 1);
         }
@@ -1448,23 +1461,26 @@ public class AppOrderServiceImpl implements AppOrderService {
                         }
                     } else if (x.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
                         //已完成  主要是处理延时关电的  以及进行押金退款
-                        if (x.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
-                            payOrderService.refundDeposit(x.getOrderNo(), x.getDeposit().multiply(BigDecimal.valueOf(100D)).intValue());
-                        }
-                        //如果店铺不需要延时关电，就不处理了
-                        try {
-                            if (storeInfoDO.getDelayLight()) {
-                                long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
-                                //避免与设置的订单结束后5分钟才能预订起冲突
-                                if (minutes == 5) {
+                        long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
+                        //完成后第5分钟再处理  避免与设置的订单结束后5分钟才能预订起冲突
+                        if (minutes == 5) {
+                            //押金退款
+                            if (x.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
+                                payOrderService.refundDeposit(x.getOrderNo(), x.getDeposit().multiply(BigDecimal.valueOf(100D)).intValue());
+                            }
+                            //处理延时关灯 如果店铺不需要延时关电，就不处理了
+                            try {
+                                if (storeInfoDO.getDelayLight()) {
                                     deviceService.closeLightByRoomId(null, x.getStoreId(), x.getRoomId(), 4);
                                 }
-                            }
-                        } catch (Exception e) {
-                            //异常时不影响其他订单关闭
-                            log.error(e.getMessage());
+                            } catch (Exception e) {
+                                //异常时不影响其他订单关闭
+                                log.error(e.getMessage());
 //                                throw new RuntimeException(e);
+                            }
                         }
+
+
                     }
                 });
             });
