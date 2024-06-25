@@ -128,6 +128,9 @@
               <if test="null==reqVO.storeIds or reqVO.storeIds==''">
                   and o.user_id=#{reqVO.userId}
               </if>
+              <if test="null!=reqVO.userId">
+                  and o.user_id=#{reqVO.userId}
+              </if>
               <if test="null!=reqVO.storeIds and reqVO.storeIds!=''">
                   and o.store_id in (${reqVO.storeIds})
               </if>
