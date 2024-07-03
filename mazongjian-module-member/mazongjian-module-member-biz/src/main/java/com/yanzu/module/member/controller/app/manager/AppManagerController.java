@@ -4,6 +4,7 @@ import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
+import com.yanzu.module.member.controller.admin.user.vo.AppUserRechargeReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.*;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -251,7 +253,14 @@ public class AppManagerController {
         return success(appMangerService.submitOrder(reqVO));
     }
 
-
+    @PostMapping("/recharge")
+    @Operation(summary = "用户余额充值")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> recharge(@Valid @RequestBody AppUserRechargeReqVO reqVO) {
+        appMangerService.recharge(reqVO);
+        return success(true);
+    }
 //    @PostMapping("/changeOrderTime")
 //    @Operation(summary = "管理员修改订单时间")
 //    @PreAuthenticated

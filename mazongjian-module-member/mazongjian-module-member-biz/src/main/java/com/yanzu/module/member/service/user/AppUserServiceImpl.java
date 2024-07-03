@@ -147,8 +147,6 @@ public class AppUserServiceImpl implements AppUserService {
     @Resource
     private AppOrderService appOrderService;
 
-    @Resource
-    private StoreInfoService storeInfoService;
 
     @Override
     public MemberUserDO getUserByMobile(String mobile) {
@@ -189,6 +187,11 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public void updateUserLogin(Long id, String loginIp) {
         memberUserMapper.updateById(new MemberUserDO().setId(id).setLoginIp(loginIp).setLoginDate(LocalDateTime.now()));
+    }
+
+    @Override
+    public void updateUserType(Long id, Integer userType) {
+        memberUserMapper.updateById(new MemberUserDO().setId(id).setUserType(userType));
     }
 
     @Override
@@ -266,7 +269,7 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public PageResult<AppUserMoneyBillRespVO> getBalancePage(AppUserMoneyBillPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        IPage<AppUserMoneyBillRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageNo());
+        IPage<AppUserMoneyBillRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
         userMoneyBillMapper.getBalancePage(page, reqVO);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
@@ -457,7 +460,7 @@ public class AppUserServiceImpl implements AppUserService {
 //                throw new RuntimeException(e);
                 throw exception(USER_WEIXIN_PAY_ERROR);
             }
-            payOrderService.create(reqVO.getUserId(), orderNo, reqVO.getStoreId(), AppEnum.order_pay_type.WEIXIN.getValue(), "余额充值订单", reqVO.getPrice());
+            payOrderService.create(reqVO.getUserId(), orderNo, null, reqVO.getStoreId(), AppEnum.order_pay_type.WEIXIN.getValue(), "余额充值订单", reqVO.getPrice());
             //把订单号存到redis 如果已经充值了 就移除这个订单号
             String redisKey = String.format(WX_PAY_ORDER, orderNo);
             Long tenantId = TenantContextHolder.getTenantId();

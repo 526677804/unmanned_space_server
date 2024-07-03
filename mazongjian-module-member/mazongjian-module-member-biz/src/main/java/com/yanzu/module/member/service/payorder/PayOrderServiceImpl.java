@@ -18,8 +18,12 @@ import com.yanzu.module.member.controller.app.pkg.vo.AppBuyPkgReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppRechargeBalanceReqVO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
+import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
+import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
+import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.enums.AppWxPayTypeEnum;
 import com.yanzu.module.member.service.order.AppOrderService;
@@ -28,6 +32,7 @@ import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -38,6 +43,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -46,8 +52,7 @@ import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.ADMIN_WEIXIN_PAY_REFOUND_ERROR;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.ORDER_WEIXIN_PAY_ERROR;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
  * 支付订单 Service 实现类
@@ -195,7 +200,7 @@ public class PayOrderServiceImpl implements PayOrderService {
                     wxPayService.refundV2(refundRequest);
                 } catch (WxPayException ex) {
 //                throw new RuntimeException(ex);
-                    log.error("微信支付订单:{}，退款失败！", orderNo);
+                    log.error("微信支付订单退款失败:{}", orderNo);
                 }
                 payOrderDO.setPayStatus(true);
                 payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
@@ -220,10 +225,11 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     @Transactional
-    public void create(Long userId, String orderNo, Long storeId, Integer payType, String orderDesc, Integer price) {
+    public void create(Long userId, String orderNo, Long orderId, Long storeId, Integer payType, String orderDesc, Integer price) {
         PayOrderDO payOrderDO = new PayOrderDO();
         payOrderDO.setUserId(userId);
         payOrderDO.setOrderNo(orderNo);
+        payOrderDO.setOrderId(orderId);
         payOrderDO.setStoreId(storeId);
         payOrderDO.setPayType(payType);
         payOrderDO.setOrderDesc(orderDesc);
@@ -339,6 +345,82 @@ public class PayOrderServiceImpl implements PayOrderService {
                 throw exception(ADMIN_WEIXIN_PAY_REFOUND_ERROR);
             }
         }
+
+    }
+
+    @Resource
+    private StoreUserMapper storeUserMapper;
+
+    @Resource
+    private UserMoneyBillMapper userMoneyBillMapper;
+
+    /**
+     * 余额退款
+     *
+     * @param orderNo
+     * @param userId
+     */
+    @Override
+    public void refundBalance(Long storeId, String orderNo, Long userId) {
+        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, storeId);
+        //余额退款  把支付记录找出来
+        List<UserMoneyBillDO> userMoneyBillDOList = userMoneyBillMapper.getPayByOrderNo(orderNo, userId);
+        if (!CollectionUtils.isEmpty(userMoneyBillDOList)) {
+            for (UserMoneyBillDO billDO : userMoneyBillDOList) {
+                UserMoneyBillDO newUserMoneyBillDO = new UserMoneyBillDO();
+                BeanUtils.copyProperties(billDO, newUserMoneyBillDO);
+                newUserMoneyBillDO.setId(null);
+                newUserMoneyBillDO.setCreateTime(null);
+                newUserMoneyBillDO.setCreator(null);
+                newUserMoneyBillDO.setUpdateTime(null);
+                newUserMoneyBillDO.setUpdater(null);
+                newUserMoneyBillDO.setType(AppEnum.user_money_bill_type.REFUND.getValue());//改成退款状态
+                newUserMoneyBillDO.setRemark(newUserMoneyBillDO.getRemark().replace("支付", "退款"));
+                if (billDO.getMoneyType().intValue() == 1) {
+                    //账户余额  加回去
+                    storeUserDO.setBalance(storeUserDO.getBalance().add(billDO.getMoney()));
+                    synchronized (this) {
+                        storeUserMapper.updateById(storeUserDO);
+                    }
+                    newUserMoneyBillDO.setTotalMoney(storeUserDO.getBalance());
+                } else if (billDO.getMoneyType().intValue() == 2) {
+                    //赠送余额  加回去
+                    storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().add(billDO.getMoney()));
+                    synchronized (this) {
+                        storeUserMapper.updateById(storeUserDO);
+                    }
+                    newUserMoneyBillDO.setTotalGiftMoney(storeUserDO.getGiftBalance());
+                } else {
+                    throw exception(OPRATION_ERROR);
+                }
+                userMoneyBillMapper.insert(newUserMoneyBillDO);
+            }
+        }
+
+    }
+
+    @Override
+    public void refundByOrder(Long orderId, String orderNo, Long storeId) {
+        List<PayOrderDO> payOrderList = payOrderMapper.getByOrder(orderId,orderNo);
+        if (!CollectionUtils.isEmpty(payOrderList)) {
+            WxPayService wxPayService = myWxService.initWxPay(storeId);
+            //退款
+            for (PayOrderDO payOrderDO : payOrderList) {
+                WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+                refundRequest.setOutTradeNo(payOrderDO.getOrderNo());
+                refundRequest.setOutRefundNo("TK" + payOrderDO.getOrderNo());
+                refundRequest.setTotalFee(payOrderDO.getPrice());
+                refundRequest.setRefundFee(payOrderDO.getPrice());
+                refundRequest.setRefundDesc("退款");
+                try {
+                    wxPayService.refundV2(refundRequest);
+                } catch (WxPayException ex) {
+//                throw new RuntimeException(ex);
+                    log.error("微信支付订单:{}，退款失败！原因：{}", payOrderDO.getOrderNo(), ex.getMessage());
+                }
+            }
+        }
+
 
     }
 

@@ -99,6 +99,9 @@ public class OrderInfoAppRespVO {
     @Schema(description = "WIFI信息")
     private String wifiInfo;
 
+    @Schema(description = "WIFI密码")
+    private String wifiPwd;
+
     @Schema(description = "客服电话")
     private String kefuPhone;
 

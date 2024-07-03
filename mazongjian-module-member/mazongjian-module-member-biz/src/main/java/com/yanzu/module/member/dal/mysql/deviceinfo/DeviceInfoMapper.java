@@ -35,7 +35,8 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
 
     List<DeviceInfoDO> getByRoomId(@Param("roomId") Long roomId);
 
-    IPage<DeviceInfoRespVO> getDeviceInfoPage(@Param("page") IPage<DeviceInfoRespVO> page, @Param("reqVO") DeviceInfoPageReqVO reqVO);
+    IPage<DeviceInfoRespVO> getDeviceInfoPage(@Param("page") IPage<DeviceInfoRespVO> page, @Param("reqVO") DeviceInfoPageReqVO reqVO
+            , @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin);
 
     int updateStatusBySN(@Param("deviceSn") String deviceSn, @Param("state") Integer state);
 
@@ -43,4 +44,5 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
 
     int countBySN(String deviceSn);
 
+    int updateBindInfo(@Param("deviceId") Long deviceId, @Param("storeId") Long storeId, @Param("roomId") Long roomId);
 }

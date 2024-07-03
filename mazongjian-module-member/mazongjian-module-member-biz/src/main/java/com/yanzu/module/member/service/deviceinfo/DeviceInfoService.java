@@ -53,7 +53,7 @@ public interface DeviceInfoService {
      * @param pageReqVO 分页查询
      * @return 设备管理分页
      */
-    PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO);
+    PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO pageReqVO,boolean isAdmin);
 
     /**
      * 获得设备管理列表, 用于 Excel 导出
@@ -71,5 +71,7 @@ public interface DeviceInfoService {
     void configWifi(DeviceInfoConfigWifiReqVO reqVO);
 
     void setLockAutoLock(DeviceInfoSetAutoLockReqVO reqVO);
+
+    void control(DeviceControlReqVO reqVO);
 
 }

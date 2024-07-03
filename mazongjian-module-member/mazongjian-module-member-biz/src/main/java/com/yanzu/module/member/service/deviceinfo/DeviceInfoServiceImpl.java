@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.deviceinfo;
 
+import com.alipay.api.domain.IotDevice;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.pojo.PageResult;
@@ -11,6 +12,7 @@ import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceBaseVO;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceConfigWifiReqVO;
+import com.yanzu.module.member.service.iot.iotBean.IotDeviceContrlReqVO;
 import com.yanzu.module.member.service.iot.iotBean.IotDeviceSetAutoLockReqVO;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -95,11 +98,11 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     }
 
     @Override
-    public PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO reqVO) {
+    public PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO reqVO,boolean isAdmin) {
         //检查权限
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         IPage<DeviceInfoRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        deviceInfoMapper.getDeviceInfoPage(page,reqVO);
+        deviceInfoMapper.getDeviceInfoPage(page,reqVO,getLoginUserId(),isAdmin);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -116,9 +119,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         if (ObjectUtils.isEmpty(deviceInfoDO)) {
             throw exception(DATA_NOT_EXISTS);
         }
-        deviceInfoDO.setStoreId(reqVO.getStoreId());
-        deviceInfoDO.setRoomId(reqVO.getRoomId());
-        deviceInfoMapper.updateById(deviceInfoDO);
+        deviceInfoMapper.updateBindInfo(deviceInfoDO.getDeviceId(),reqVO.getStoreId(),reqVO.getRoomId());
     }
 
     @Override
@@ -150,5 +151,23 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             iotService.setLockAutoLock(vo);
         }
 
+    }
+
+    @Override
+    public void control(DeviceControlReqVO reqVO) {
+        DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(reqVO.getDeviceId());
+        //只能操作自己的设备
+        if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
+            IotDeviceBaseVO<IotDeviceContrlReqVO> vo = new IotDeviceBaseVO();
+            List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+            iotDeviceContrlReqVO.setOutlet(0).setCmd(reqVO.getCmd());
+            param.add(iotDeviceContrlReqVO);
+            vo.setDeviceSn(deviceInfoDO.getDeviceSn()).setParams(param);
+            boolean flag = iotService.control(vo);
+            if (!flag) {
+                throw exception(DEVICE_OPRATION_ERROR);
+            }
+        }
     }
 }

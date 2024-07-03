@@ -21,6 +21,7 @@ import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
+import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
@@ -31,6 +32,7 @@ import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.order.AppOrderService;
+import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -50,6 +52,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.framework.common.util.servlet.ServletUtils.getClientIP;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
@@ -82,6 +85,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     private DeviceService deviceService;
 
     @Resource
+    private AppUserService appUserService;
+    @Resource
     private ClearInfoMapper clearInfoMapper;
 
     @Resource
@@ -113,8 +118,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public PageResult<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        IPage<AppStoreAdminRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        storeInfoMapper.getPageList(page,reqVO);
+        IPage<AppStoreAdminRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        storeInfoMapper.getPageList(page, reqVO);
         if (!CollectionUtils.isEmpty(page.getRecords())) {
             page.getRecords().forEach(x -> {
                 String url = "https://e.dianping.com/dz-open/merchant/auth?app_key=" + meituanAppKey + "&redirect_url=" + meituanRedirectUrl + "&state=storeId-" + x.getStoreId();
@@ -291,8 +296,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public PageResult<AppDiscountRulesPageRespVO> getDiscountRulesPage(AppDiscountRulesPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        IPage<AppDiscountRulesPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        discountRulesMapper.getDiscountRulesPage(page,reqVO);
+        IPage<AppDiscountRulesPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        discountRulesMapper.getDiscountRulesPage(page, reqVO);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -361,9 +366,41 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Override
     public Long createStoreInfo(StoreInfoCreateReqVO createReqVO) {
+        createReqVO.setMobile(createReqVO.getMobile().trim());
+        //根据手机号 查询出用户
+        MemberUserDO user = appUserService.getUserByMobile(createReqVO.getMobile());
+        if (ObjectUtils.isEmpty(user)) {
+//            throw exception(USER_NOT_EXISTS);
+            //用户不存在则自动创建
+            user = appUserService.createUserIfAbsent(createReqVO.getMobile(), getClientIP());
+        }
+        if (user.getUserType().compareTo(AppEnum.member_user_type.BOSS.getValue()) != 0) {
+            appUserService.updateUserType(user.getId(), AppEnum.member_user_type.BOSS.getValue());
+        }
         // 插入
         StoreInfoDO storeInfo = StoreInfoConvert.INSTANCE.convert(createReqVO);
+        //后台添加的门店 默认都是简洁模式
+        storeInfo.setSimpleModel(true);
         storeInfoMapper.insert(storeInfo);
+        //建立用户关系
+        StoreUserDO storeUserDO=new StoreUserDO();
+        storeUserDO.setStoreId(storeInfo.getStoreId());
+        storeUserDO.setUserId(user.getId());
+        storeUserDO.setType(AppEnum.member_user_type.BOSS.getValue());
+        storeUserDO.setGiftBalance(new BigDecimal(999999));
+        storeUserMapper.insert(storeUserDO);
+        //生成默认房间
+        List<RoomInfoDO> roomInfoDOList = new ArrayList<>(createReqVO.getRoomNum());
+        for (int i = 1; i <= createReqVO.getRoomNum(); i++) {
+            RoomInfoDO roomInfoDO = new RoomInfoDO();
+            roomInfoDO.setRoomName("房间" + i);
+            roomInfoDO.setStoreId(storeInfo.getStoreId());
+            roomInfoDO.setType(AppEnum.room_type.DA.getValue());
+            roomInfoDO.setPrice(BigDecimal.ONE);
+            roomInfoDO.setTongxiaoPrice(BigDecimal.TEN);
+            roomInfoDOList.add(roomInfoDO);
+        }
+        roomInfoMapper.insertBatch(roomInfoDOList);
         // 返回
         return storeInfo.getStoreId();
     }

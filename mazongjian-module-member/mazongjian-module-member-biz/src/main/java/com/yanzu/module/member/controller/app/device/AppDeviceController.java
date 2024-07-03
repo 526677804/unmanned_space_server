@@ -41,7 +41,7 @@ public class AppDeviceController {
     @Operation(summary = "获取设备分页", description = "")
     @PreAuthenticated
     public CommonResult<PageResult<DeviceInfoRespVO>> getDevicePage(@RequestBody @Valid DeviceInfoPageReqVO reqVO) {
-        return success(deviceInfoService.getDeviceInfoPage(reqVO));
+        return success(deviceInfoService.getDeviceInfoPage(reqVO,false));
     }
 
 

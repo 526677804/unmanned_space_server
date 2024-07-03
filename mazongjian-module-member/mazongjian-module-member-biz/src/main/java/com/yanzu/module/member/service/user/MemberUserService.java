@@ -1,10 +1,7 @@
 package com.yanzu.module.member.service.user;
 
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.module.member.controller.admin.user.vo.AppUserCreateReqVO;
-import com.yanzu.module.member.controller.admin.user.vo.AppUserExportReqVO;
-import com.yanzu.module.member.controller.admin.user.vo.AppUserPageReqVO;
-import com.yanzu.module.member.controller.admin.user.vo.AppUserUpdateReqVO;
+import com.yanzu.module.member.controller.admin.user.vo.*;
 import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
 
 import javax.validation.Valid;
@@ -67,5 +64,7 @@ public interface MemberUserService {
     List<AppUserDO> getAppUserList(AppUserExportReqVO exportReqVO);
 
     Long createAppUser(AppUserCreateReqVO createReqVO);
+
+    void recharge(AppUserRechargeReqVO reqVO);
 
 }

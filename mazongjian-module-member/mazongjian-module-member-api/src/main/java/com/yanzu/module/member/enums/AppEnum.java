@@ -84,11 +84,13 @@ public class AppEnum {
         //订单支付	3
         //订单退款	4
         //管理员赠送	5
+        //管理员清空	6
         RECHARGE(1),
         GIFT(2),
         PAY(3),
         REFUND(4),
-        ADMIN_GIFT(5);
+        ADMIN_GIFT(5),
+        ADMIN_CLEAN(6);
 
 
         private final Integer value;

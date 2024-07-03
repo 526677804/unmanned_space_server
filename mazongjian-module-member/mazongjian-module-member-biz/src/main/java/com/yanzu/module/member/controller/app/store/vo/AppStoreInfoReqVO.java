@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Schema(description = "miniapp - 门店信息保存 Response VO")
 @Data
@@ -40,9 +42,11 @@ public class AppStoreInfoReqVO {
 
     @Schema(description = "纬度")
     @NotNull(message = "纬度不能为空")
+    @Max(value = 999,message = "纬度最大999")
     private Double lat;
 
     @Schema(description = "经度")
+    @Max(value = 999,message = "经度最大999")
     @NotNull(message = "经度不能为空")
     private Double lon;
 
@@ -51,8 +55,17 @@ public class AppStoreInfoReqVO {
     private String address;
 
     @Schema(description = "wifi信息")
-    @NotNull(message = "wifi信息不能为空")
+    @NotNull(message = "wifi名称不能为空")
     private String wifiInfo;
+
+    @Schema(description = "wifi密码")
+    @NotNull(message = "wifi密码不能为空")
+    @Size(min = 8,message = "wifi密码最少8位")
+    private String wifiPwd;
+
+    @Schema(description = "简洁模式")
+    private Boolean simpleModel;
+
 
     @Schema(description = "客服电话")
     @NotNull(message = "客服电话不能为空")

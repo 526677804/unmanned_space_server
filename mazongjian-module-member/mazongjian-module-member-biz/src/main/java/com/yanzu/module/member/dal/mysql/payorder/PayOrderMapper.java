@@ -9,6 +9,7 @@ import com.yanzu.module.member.controller.app.callback.vo.PayOrderNotifyReqDTO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -55,4 +56,6 @@ public interface PayOrderMapper extends BaseMapperX<PayOrderDO> {
     List<PayOrderDO> getPreSplit();
 
     int finishSplit(List<Long> ids);
+
+    List<PayOrderDO> getByOrder(@Param("orderId") Long orderId,@Param("orderNo")  String orderNo);
 }

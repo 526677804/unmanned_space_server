@@ -2,6 +2,7 @@ package com.yanzu.module.member.service.manager;
 
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.member.controller.admin.user.vo.AppUserRechargeReqVO;
 import com.yanzu.module.member.controller.app.chart.vo.*;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
@@ -82,4 +83,7 @@ public interface AppMangerService {
     List<AppRechargeStatisticsRespVO> getRechargeStatistics(AppChartDataReqVO reqVO);
 
     Long submitOrder(OrderSubmitReqVO reqVO);
+
+    void recharge(AppUserRechargeReqVO reqVO);
+
 }

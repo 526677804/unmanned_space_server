@@ -9,7 +9,7 @@
       <div class="field">
         <!-- [移动端]标题 -->
         <h2 class="mobile-title">
-          <h3 class="title">芋道后台管理系统</h3>
+          <h3 class="title">无人自助后台管理系统</h3>
         </h2>
 
         <!-- 表单 -->
@@ -53,7 +53,7 @@
 
     <!-- footer -->
     <div class="footer">
-      Copyright © 2023 四川彦祖科技有限公司 All Rights Reserved.
+      Copyright © 2024 四川彦祖科技有限公司 All Rights Reserved.
     </div>
   </div>
 </template>

@@ -4,7 +4,7 @@
     <!-- 搜索工作栏 -->
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
        <el-form-item label="门店" prop="storeId">
-        <el-select v-model="queryParams.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList">
+        <el-select v-model="queryParams.storeId" placeholder="请选择门店" clearable size="small" >
           <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
         </el-select>
       </el-form-item>
@@ -37,7 +37,7 @@
       <el-table-column label="商户号" align="center" prop="mchId" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleProfitsharing(scope.row)"
+          <el-button v-show="scope.row.serviceModel" size="mini" type="text" icon="el-icon-edit" @click="handleProfitsharing(scope.row)"
                      v-hasPermi="['member:store-wxpay-config:update']">分账授权</el-button>
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
                      v-hasPermi="['member:store-wxpay-config:update']">修改</el-button>
@@ -52,34 +52,35 @@
 
     <!-- 对话框(添加 / 修改) -->
     <el-dialog :title="title" :visible.sync="open" width="500px" v-dialogDrag append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="门店" prop="storeId">
-        <el-select v-model="form.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList">
+        <el-select v-model="form.storeId" placeholder="请选择门店" clearable size="small" >
           <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
         </el-select>
       </el-form-item>
         <el-form-item label="商户号" prop="mchId">
           <el-input v-model="form.mchId" placeholder="请输入商户号" />
         </el-form-item>
-        <el-form-item label="支付密钥" prop="mchKey">
+        <el-form-item label="支付密钥" prop="mchKey" v-show="!form.serviceModel">
           <el-input v-model="form.mchKey" placeholder="请输入支付密钥(服务商模式不填)" />
         </el-form-item>
-        <el-form-item label="p12证书" prop="p12">
-          <el-input v-model="form.p12" placeholder="请输入p12证书(服务商模式不填)" />
-        </el-form-item>
+        <el-form-item label="p12证书文件" prop="p12" v-show="!form.serviceModel">
+            <input id="fileInput" type="file" accept=".p12"  @change="handleFileChange" />
+            <el-input v-model="form.p12"   placeholder="p12证书(服务商模式不填)" readonly/>
+          </el-form-item>
         <el-form-item label="支付服务商模式" prop="type">
           <el-radio-group v-model="form.serviceModel">
             <el-radio :key="true" :label="true">是</el-radio>
             <el-radio :key="false" :label="false">否</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="是否分账" prop="type">
+        <el-form-item label="是否分账" prop="type" v-show="form.serviceModel">
           <el-radio-group v-model="form.split">
-            <el-radio :key="true" :label="true">是</el-radio>
+            <el-radio :key="true"  :label="true">是</el-radio>
             <el-radio :key="false" :label="false">否</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="分账比例" prop="splitProp">
+        <el-form-item label="分账比例" prop="splitProp" v-show="form.serviceModel">
           <el-input v-model="form.splitProp" placeholder="请输入1-30的数字，最大允许30%" />
         </el-form-item>
       </el-form>
@@ -123,7 +124,9 @@ export default {
         mchId: null,
       },
       // 表单参数
-      form: {},
+      form: {
+        serviceModel: false
+      },
       // 表单校验
       rules: {
         storeId: [{ required: true, message: "门店不能为空", trigger: "change" }],
@@ -155,13 +158,14 @@ export default {
     },
     /** 表单重置 */
     reset() {
+      // fileInput.value = '';  // 清空文件输入的值
       this.form = {
         id: undefined,
         storeId: undefined,
         mchId: undefined,
         mchKey: undefined,
         p12: undefined,
-        serviceModel: undefined,
+        serviceModel: false,
         split: undefined,
         splitProp: undefined,
 
@@ -193,6 +197,20 @@ export default {
         this.open = true;
         this.title = "修改门店微信支付配置";
       });
+    },
+    handleFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          // 获取完整的 Base64 编码结果
+          const base64WithHeader = e.target.result;
+          // 去掉文件头
+          const base64 = base64WithHeader.split(',')[1];
+          this.form.p12 = base64;
+        };
+        reader.readAsDataURL(file);
+      }
     },
     handleProfitsharing(row) {
       const id = row.id;

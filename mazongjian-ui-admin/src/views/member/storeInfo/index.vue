@@ -30,10 +30,10 @@
 
     <!-- 操作工具栏 -->
     <el-row :gutter="10" class="mb8">
-<!--      <el-col :span="1.5">-->
-<!--        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"-->
-<!--                   v-hasPermi="['member:store-info:create']">新增</el-button>-->
-<!--      </el-col>-->
+     <el-col :span="1.5">
+       <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
+                  v-hasPermi="['member:store-info:create']">新增</el-button>
+     </el-col>
 <!--      <el-col :span="1.5">-->
 <!--        <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport" :loading="exportLoading"-->
 <!--                   v-hasPermi="['member:store-info:export']">导出</el-button>-->
@@ -81,9 +81,15 @@
 
     <!-- 对话框(添加 / 修改) -->
     <el-dialog :title="title" :visible.sync="open" width="800px" v-dialogDrag append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
         <el-form-item label="门店名称" prop="storeName">
           <el-input v-model="form.storeName" placeholder="请输入门店名称" />
+        </el-form-item>
+        <el-form-item label="房间数量" prop="roomNum" v-show="!form.storeId">
+          <el-input v-model="form.roomNum" placeholder="请输入房间数量"  />
+        </el-form-item>
+        <el-form-item label="超管手机号" prop="mobile" v-show="!form.storeId">
+          <el-input v-model="form.mobile" placeholder="请输入超管用户手机号"  />
         </el-form-item>
         <el-form-item label="城市名称" prop="cityName">
           <el-input v-model="form.cityName" placeholder="请输入城市名称" />
@@ -94,12 +100,16 @@
         <el-form-item label="门店公告" prop="notice">
           <editor v-model="form.notice" :min-height="192"/>
         </el-form-item>
+        <el-form-item>
+          经纬度在这个网页地址去查询：https://lbs.qq.com/tool/getpoint/get-point.html
+        </el-form-item>
         <el-form-item label="纬度" prop="lat">
           <el-input v-model="form.lat" placeholder="请输入纬度" />
         </el-form-item>
         <el-form-item label="经度" prop="lon">
           <el-input v-model="form.lon" placeholder="请输入经度" />
         </el-form-item>
+       
         <el-form-item label="详细地址" prop="address">
           <el-input v-model="form.address" placeholder="请输入详细地址" />
         </el-form-item>
@@ -184,7 +194,9 @@ export default {
         createTime: [],
       },
       // 表单参数
-      form: {},
+      form: {
+        roomNum: 1
+      },
       // 表单校验
       rules: {
         storeName: [{ required: true, message: "门店名称不能为空", trigger: "blur" }],
@@ -226,6 +238,8 @@ export default {
     reset() {
       this.form = {
         storeId: undefined,
+        roomNum: undefined,
+        mobile: undefined,
         storeName: undefined,
         cityName: undefined,
         content: undefined,

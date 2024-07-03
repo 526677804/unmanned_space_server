@@ -53,6 +53,8 @@ public interface AppUserService {
      */
     void updateUserLogin(Long id, String loginIp);
 
+    void updateUserType(Long id, Integer userType);
+
     /**
      * 通过用户 ID 查询用户
      *

@@ -71,14 +71,22 @@
           <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="控制" align="center" class-name="small-padding fixed-width">
+        <template v-slot="scope">
+          <el-button size="mini" type="text" v-if="scope.row.type!=3"  @click="handleOpen(scope.row)"
+          v-hasPermi="['member:device-info:update']">打开</el-button>
+          <el-button size="mini" type="text" v-if="scope.row.type==3"  @click="handleSound(scope.row)"
+          v-hasPermi="['member:device-info:update']">测试播报</el-button>
+          <el-button size="mini" type="text" v-if="scope.row.type!=3"  @click="handleClose(scope.row)"
+            v-hasPermi="['member:device-info:update']">关闭</el-button>
+          <el-button size="mini" type="text"  @click="handleAutoLock(scope.row)"
+            v-hasPermi="['member:device-info:update']" v-if="scope.row.type==5">设置关锁时间</el-button>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleBindStore(scope.row)"
             v-hasPermi="['member:device-info:update']">绑定</el-button>
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleConfig(scope.row)"
-            v-hasPermi="['member:device-info:update']">重置wifi</el-button>
-            <el-button size="mini" type="text" icon="el-icon-edit" @click="handleAutoLock(scope.row)"
-            v-hasPermi="['member:device-info:update']" v-if="scope.row.type==5">设置关锁时间</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
             v-hasPermi="['member:device-info:delete']">删除</el-button>
         </template>
@@ -170,7 +178,7 @@
         </el-form-item>
         <el-form-item label="关锁时间" prop="ssid">
           <el-input-number v-model="LockForm.secend"  :step="5" :min="0" required="true"/>（秒）
-          <p>0表示常开，5表示开锁后5秒自动关锁</p>
+          <p>0表示开锁后一直打开，5表示开锁后5秒自动关锁</p>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -182,7 +190,7 @@
 </template>
 
 <script>
-import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, getStoreList, getRoomList,bind,configWifi,setAutoLock } from "@/api/member/deviceInfo";
+import { createDeviceInfo, updateDeviceInfo, deleteDeviceInfo, getDeviceInfo, getDeviceInfoPage, exportDeviceInfoExcel, getStoreList, getRoomList,bind,configWifi,setAutoLock,control } from "@/api/member/deviceInfo";
 import { DICT_TYPE, getDictDatas} from "@/utils/dict";
 export default {
   name: "DeviceInfo",
@@ -244,7 +252,7 @@ export default {
         type: [{ required: true, message: "设备类型不能为空", trigger: "change" }],
       },
       bindrules: {
-        storeId: [{ required: true, message: "门店不能为空", trigger: "blur" }],
+        // storeId: [{ required: true, message: "门店不能为空", trigger: "blur" }],
       },
       configrules: {
         deviceId: [{ required: true, message: "设备不能为空", trigger: "blur" }],
@@ -345,6 +353,36 @@ export default {
     handleQuery() {
       this.queryParams.pageNo = 1;
       this.getList();
+    },
+    handleOpen(row){
+      const data={
+        deviceId: row.deviceId,
+        cmd: 'on'
+      };
+      control(data).then(response => {
+        console.log(response);
+        this.$modal.msgSuccess("指令发送成功");
+      });
+    },
+    handleSound(row){
+      const data={
+        deviceId: row.deviceId,
+        cmd: '1'
+      };
+      control(data).then(response => {
+        console.log(response);
+        this.$modal.msgSuccess("指令发送成功");
+      });
+    },
+    handleClose(row){
+      const data={
+        deviceId: row.deviceId,
+        cmd: 'off'
+      };
+      control(data).then(response => {
+        console.log(response);
+        this.$modal.msgSuccess("指令发送成功");
+      });
     },
     /** 重置按钮操作 */
     resetQuery() {

@@ -3,6 +3,7 @@ package com.yanzu.module.member.controller.admin.user;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.excel.core.util.ExcelUtils;
+import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
 import com.yanzu.module.member.controller.admin.user.vo.*;
 import com.yanzu.module.member.convert.user.AppUserConvert;
@@ -21,6 +22,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
 import static com.yanzu.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
@@ -37,15 +39,26 @@ public class MemberUserController {
     @PostMapping("/create")
     @Operation(summary = "添加用户管理")
     @PreAuthorize("@ss.hasPermission('member:app-user:create')")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Long> createAppUser(@Valid @RequestBody AppUserCreateReqVO createReqVO) {
         createReqVO.setMobile(createReqVO.getMobile().trim());
         return success(memberUserService.createAppUser(createReqVO));
+    }
+
+    @PostMapping("/recharge")
+    @Operation(summary = "用户余额充值")
+    @PreAuthorize("@ss.hasPermission('member:app-user:update')")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> recharge(@Valid @RequestBody AppUserRechargeReqVO reqVO) {
+        memberUserService.recharge(reqVO);
+        return success(true);
     }
 
 
     @PutMapping("/update")
     @Operation(summary = "更新用户管理")
     @PreAuthorize("@ss.hasPermission('member:app-user:update')")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> updateAppUser(@Valid @RequestBody AppUserUpdateReqVO updateReqVO) {
         memberUserService.updateAppUser(updateReqVO);
         return success(true);
@@ -91,7 +104,7 @@ public class MemberUserController {
     @PreAuthorize("@ss.hasPermission('member:app-user:export')")
     @OperateLog(type = EXPORT)
     public void exportAppUserExcel(@Valid AppUserExportReqVO exportReqVO,
-              HttpServletResponse response) throws IOException {
+                                   HttpServletResponse response) throws IOException {
         List<AppUserDO> list = memberUserService.getAppUserList(exportReqVO);
         // 导出 Excel
         List<AppUserExcelVO> datas = AppUserConvert.INSTANCE.convertList02(list);

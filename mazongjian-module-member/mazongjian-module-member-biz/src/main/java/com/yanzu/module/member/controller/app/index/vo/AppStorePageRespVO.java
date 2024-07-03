@@ -50,6 +50,9 @@ public class AppStorePageRespVO {
     @Schema(description = "门店状态")
     private Integer status;
 
+    @Schema(description = "简洁模式")
+    private Boolean simpleModel;
+
     @Schema(description = "充值优惠信息")
     private List<String> discountRules;
 }

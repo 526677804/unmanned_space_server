@@ -85,7 +85,7 @@ public class DeviceInfoController {
     @Operation(summary = "获得设备管理分页")
     @PreAuthorize("@ss.hasPermission('member:device-info:query')")
     public CommonResult<PageResult<DeviceInfoRespVO>> getDeviceInfoPage(@Valid DeviceInfoPageReqVO pageVO) {
-        return success(deviceInfoService.getDeviceInfoPage(pageVO));
+        return success(deviceInfoService.getDeviceInfoPage(pageVO,true));
     }
 
     @GetMapping("/export-excel")
@@ -108,14 +108,15 @@ public class DeviceInfoController {
         return success(true);
     }
 
-    @PostMapping("/configWifi")
-    @Operation(summary = "重置设备wifi")
-    @PreAuthorize("@ss.hasPermission('member:device-info:update')")
-    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
-    public CommonResult<Boolean> configWifi(@RequestBody @Valid DeviceInfoConfigWifiReqVO reqVO) {
-        deviceInfoService.configWifi(reqVO);
-        return success(true);
-    }
+//    @PostMapping("/configWifi")
+//    @Operation(summary = "重置设备wifi")
+//    @PreAuthorize("@ss.hasPermission('member:device-info:update')")
+//    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+//    public CommonResult<Boolean> configWifi(@RequestBody @Valid DeviceInfoConfigWifiReqVO reqVO) {
+//        deviceInfoService.configWifi(reqVO);
+//        return success(true);
+//    }
+
 
     @PostMapping("/setAutoLock")
     @Operation(summary = "设置门锁自动关锁时间")
@@ -123,6 +124,16 @@ public class DeviceInfoController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> setAutoLock(@RequestBody @Valid DeviceInfoSetAutoLockReqVO reqVO) {
         deviceInfoService.setLockAutoLock(reqVO);
+        return success(true);
+    }
+
+
+    @PostMapping("/control")
+    @Operation(summary = "设备控制")
+    @PreAuthorize("@ss.hasPermission('member:device-info:update')")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> control(@RequestBody @Valid DeviceControlReqVO reqVO) {
+        deviceInfoService.control(reqVO);
         return success(true);
     }
 }

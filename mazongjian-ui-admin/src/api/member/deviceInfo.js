@@ -101,3 +101,11 @@ export function setAutoLock(data){
     data: data
   })
 }
+
+export function control(data){
+  return request({
+    url: '/member/device-info/control',
+    method: 'post',
+    data: data
+  })
+}

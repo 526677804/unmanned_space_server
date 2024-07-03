@@ -63,4 +63,13 @@
           and to_days(pay_time) &lt; to_days(now())
 --         order by create_time desc limit 1
     </select>
+    <select id="getByOrder" resultType="com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO">
+        select *
+        from member_pay_order
+        where deleted = 0
+          and pay_status = 1
+          and refund_price = 0
+          and (order_id = #{orderId}
+            or order_no = #{orderNo})
+    </select>
 </mapper>

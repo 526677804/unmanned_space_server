@@ -39,6 +39,8 @@ public class PayOrderDO extends BaseDO {
      */
     private String orderNo;
 
+    private Long orderId;
+
     /**
      * 支付类型
      */

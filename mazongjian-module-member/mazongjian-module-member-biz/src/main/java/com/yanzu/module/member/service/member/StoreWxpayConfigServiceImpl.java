@@ -16,15 +16,17 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.ADMIN_WEIXIN_PAY_SPLIT_ERROR;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.DATA_NOT_EXISTS;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
  * 门店微信支付配置 Service 实现类
@@ -53,6 +55,15 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
     public Long createStoreWxpayConfig(StoreWxpayConfigCreateReqVO createReqVO) {
         // 插入
         StoreWxpayConfigDO storeWxpayConfig = StoreWxpayConfigConvert.INSTANCE.convert(createReqVO);
+        //参数判断
+        if (createReqVO.getServiceModel()) {
+            //服务商模式
+        } else {
+            //商户模式  支付密钥和证书必须上传
+            if (ObjectUtils.isEmpty(createReqVO.getMchKey()) || ObjectUtils.isEmpty(createReqVO.getP12())) {
+                throw exception(WXPAY_CONFIG_PARAM_ERROR);
+            }
+        }
         storeWxpayConfigMapper.insert(storeWxpayConfig);
         // 返回
         return storeWxpayConfig.getId();
@@ -65,6 +76,15 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
         validateStoreWxpayConfigExists(updateReqVO.getId());
         // 更新
         StoreWxpayConfigDO updateObj = StoreWxpayConfigConvert.INSTANCE.convert(updateReqVO);
+        //参数判断
+        if (updateReqVO.getServiceModel()) {
+            //服务商模式
+        } else {
+            //商户模式  支付密钥和证书必须上传
+            if (ObjectUtils.isEmpty(updateReqVO.getMchKey()) || ObjectUtils.isEmpty(updateReqVO.getP12())) {
+                throw exception(WXPAY_CONFIG_PARAM_ERROR);
+            }
+        }
         storeWxpayConfigMapper.updateById(updateObj);
     }
 
@@ -96,7 +116,7 @@ public class StoreWxpayConfigServiceImpl implements StoreWxpayConfigService {
     @Override
     public PageResult<StoreWxpayConfigPageRespVO> getStoreWxpayConfigPage(StoreWxpayConfigPageReqVO reqVO) {
         IPage<StoreWxpayConfigPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
-        storeWxpayConfigMapper.getStoreWxpayConfigPage(page,reqVO);
+        storeWxpayConfigMapper.getStoreWxpayConfigPage(page, reqVO);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 

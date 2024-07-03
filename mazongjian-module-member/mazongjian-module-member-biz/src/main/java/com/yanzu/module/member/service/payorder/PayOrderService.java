@@ -56,7 +56,7 @@ public interface PayOrderService {
 
     String updateOrderRefunded(Map<String, String> params, String body);
 
-    void create(Long userId, String orderNo, Long storeId, Integer payType, String orderDesc, Integer price);
+    void create(Long userId, String orderNo,Long orderId, Long storeId, Integer payType, String orderDesc, Integer price);
 
     PayOrderDO getByOrderNo(String orderNo);
 
@@ -65,4 +65,8 @@ public interface PayOrderService {
     void refundOrder(Long id);
 
     void refundDeposit(String orderNo, int price);
+
+    void refundBalance(Long storeId,String orderNo,Long userId);
+
+    void refundByOrder(Long orderId, String orderNo,Long storeId);
 }

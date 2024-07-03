@@ -75,6 +75,16 @@ public class StoreInfoDO extends BaseDO {
      * wifi信息
      */
     private String wifiInfo;
+
+    /**
+     * wifi密码
+     */
+    private String wifiPwd;
+
+    /**
+     * 简洁模式
+     */
+    private Boolean simpleModel;
     /**
      * 房间标签
      */

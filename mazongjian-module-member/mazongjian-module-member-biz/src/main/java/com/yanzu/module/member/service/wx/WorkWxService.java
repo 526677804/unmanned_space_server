@@ -2,14 +2,18 @@ package com.yanzu.module.member.service.wx;
 
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
+import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 public interface WorkWxService {
-    void sendOrderMsg(Long storeId, Long userId, String roomName, BigDecimal price, CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType, String orderNo, Date startTime, Date endTime);
+    void sendOrderMsg(Long storeId, Long userId, String roomName, BigDecimal price, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO, Integer payType, Integer groupPayType, String orderNo, Date startTime, Date endTime);
 
     void sendOrderCancelMsg(Long storeId, Long userId, Long roomId, BigDecimal price, CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType, String orderNo, boolean isadmin);
+
+
+    void sendCloseOrderMsg(Long storeId, Long userId, Long roomId, Integer payType, Integer groupPayType, String orderNo);
 
     void sendGameMsg(Long storeId, String content);
 

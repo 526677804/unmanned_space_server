@@ -93,10 +93,10 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
+          <el-button size="mini" type="text" icon="el-icon-plus" @click="handleRecharge(scope.row)"
+                     v-hasPermi="['member:app-user:update']">余额充值</el-button>
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
                      v-hasPermi="['member:app-user:update']">修改</el-button>
-          <!-- <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-                     v-hasPermi="['member:app-user:delete']">删除</el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -128,11 +128,34 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+    
+    <!-- 对话框(余额充值) -->
+    <el-dialog :title="title" :visible.sync="rechargeUserShow" width="500px" v-dialogDrag append-to-body>
+      <el-form ref="rechargeForm" :model="rechargeForm" :rules="rechargerules" label-width="100px">
+        <el-form-item label="用户手机号" prop="mobile">
+          <el-input v-model="rechargeForm.mobile" readonly />
+        </el-form-item>
+        <el-form-item label="充值门店" prop="storeId">
+          <el-select v-model="rechargeForm.storeId" placeholder="请选择门店" clearable size="small"
+            required="true">
+            <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="充值金额" prop="money">
+          <el-input v-model="rechargeForm.money" placeholder="输入0代表清空用户在门店的余额" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitRechargeForm">确 定</el-button>
+        <el-button @click="cancelRecharge">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { createAppUser, updateAppUser, deleteAppUser, getAppUser, getAppUserPage, exportAppUserExcel } from "@/api/member/appUser";
+import { createAppUser, updateAppUser, deleteAppUser, getAppUser, getAppUserPage, exportAppUserExcel,getStoreList,rechargedata } from "@/api/member/appUser";
 
 export default {
   name: "AppUser",
@@ -154,6 +177,7 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      rechargeUserShow: false,
       // 查询参数
       queryParams: {
         pageNo: 1,
@@ -170,16 +194,25 @@ export default {
       },
       // 表单参数
       form: {},
+      rechargeForm: {},
       // 表单校验
       rules: {
         status: [{ required: true, message: "状态不能为空", trigger: "change" }],
         mobile: [{ required: true, message: "手机号不能为空", trigger: "blur" }],
         userType: [{ required: true, message: "用户类型不能为空", trigger: "change" }],
+      },
+      rechargerules: {
+        storeId: [{ required: true, message: "门店不能为空", trigger: "change" }],
+        money: [{ required: true, message: "金额不能为空", trigger: "blur" }],
       }
     };
   },
   created() {
     this.getList();
+    // 执行查询
+    getStoreList().then(response => {
+      this.storeList = response.data;
+    });
   },
   methods: {
     /** 查询列表 */
@@ -197,6 +230,10 @@ export default {
       this.open = false;
       this.reset();
     },
+    cancelRecharge(){
+      this.rechargeUserShow = false;
+      this.resetRechargeForm();
+    },
     /** 表单重置 */
     reset() {
       this.form = {
@@ -204,6 +241,15 @@ export default {
         status: undefined,
         mobile: undefined,
         userType: undefined,
+      };
+      this.resetForm("form");
+    },
+    resetRechargeForm() {
+      this.rechargeForm = {
+        storeId: undefined,
+        mobile: undefined,
+        money: undefined,
+        userId: undefined,
       };
       this.resetForm("form");
     },
@@ -222,6 +268,16 @@ export default {
       this.reset();
       this.open = true;
       this.title = "添加用户管理";
+    },
+    handleRecharge(row){
+      this.resetRechargeForm();
+      this.rechargeForm={
+          userId: row.id,
+          mobile: row.mobile
+      };
+      console.log(this.rechargeForm);
+      this.rechargeUserShow=true;
+      this.title = "用户余额充值";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -256,6 +312,19 @@ export default {
         });
       });
     },
+    submitRechargeForm(){
+      console.log(this.rechargeForm);
+      this.$refs["rechargeForm"].validate(valid => {
+        if (!valid) {
+          return;
+        }
+        rechargedata(this.rechargeForm).then(response => {
+          this.$modal.msgSuccess("操作成功");
+          this.rechargeUserShow = false;
+        });
+        
+      });
+    },
     /** 删除按钮操作 */
     handleDelete(row) {
       const id = row.id;
@@ -279,7 +348,8 @@ export default {
           this.$download.excel(response, '用户管理.xls');
           this.exportLoading = false;
         }).catch(() => {});
-    }
+    },
+    
   }
 };
 </script>

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
+import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
@@ -43,7 +44,7 @@ public class WorkWxServiceImpl implements WorkWxService {
 
     @Override
     @Async
-    public void sendOrderMsg(Long storeId, Long userId, String roomName, BigDecimal price, CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType, String orderNo, Date startTime, Date endTime) {
+    public void sendOrderMsg(Long storeId, Long userId, String roomName, BigDecimal price, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO, Integer payType, Integer groupPayType, String orderNo, Date startTime, Date endTime) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
         if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
@@ -60,6 +61,9 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
 //        sb.append(">订单金额:<font color=\"warning\">").append(price).append("</font>\n");
         sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(payType)).append("</font>\n");
+        if (!ObjectUtils.isEmpty(pkgInfoDO)) {
+            sb.append(">套餐名称:<font color=\"warning\">").append(pkgInfoDO.getPkgName()).append("</font>\n");
+        }
         if (!ObjectUtils.isEmpty(couponInfoDO)) {
             sb.append(">使用卡券:<font color=\"warning\">").append(couponInfoDO.getCouponName()).append("</font>\n");
         }
@@ -111,6 +115,38 @@ public class WorkWxServiceImpl implements WorkWxService {
         if (!ObjectUtils.isEmpty(couponInfoDO)) {
             sb.append(">使用卡券:<font color=\"warning\">").append(couponInfoDO.getCouponName()).append("</font>\n");
         }
+        if (!ObjectUtils.isEmpty(groupPayType)) {
+            sb.append(">团购平台:<font color=\"warning\">").append(getGroupPayTypeStr(groupPayType)).append("</font>\n");
+        }
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+    }
+
+
+    @Override
+    @Async
+    public void sendCloseOrderMsg(Long storeId, Long userId, Long roomId, Integer payType, Integer groupPayType, String orderNo) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
+        String roomName = roomInfoMapper.getNameById(roomId);
+        log.info("发送订单消息到配置的企业微信");
+        StringBuffer sb = new StringBuffer();
+        sb.append("用户提前结束订单通知\n");
+        sb.append(">用户昵称:<font color=\"warning\">").append(memberUserDO.getNickname()).append("</font>\n");
+        sb.append(">手机号码:<font color=\"warning\">").append(memberUserDO.getMobile()).append("</font>\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomName).append("</font>\n");
+        sb.append(">订单编号:<font color=\"warning\">").append(orderNo).append("</font>\n");
+        sb.append(">支付方式:<font color=\"warning\">").append(getPayTypeStr(payType)).append("</font>\n");
         if (!ObjectUtils.isEmpty(groupPayType)) {
             sb.append(">团购平台:<font color=\"warning\">").append(getGroupPayTypeStr(groupPayType)).append("</font>\n");
         }

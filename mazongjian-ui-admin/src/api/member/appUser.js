@@ -52,3 +52,19 @@ export function exportAppUserExcel(query) {
     responseType: 'blob'
   })
 }
+
+// 获得门店下拉列表
+export function getStoreList() {
+  return request({
+    url: '/index/getStoreList',
+    method: 'get'
+  })
+}
+// 用户余额充值
+export function rechargedata(data) {
+  return request({
+    url: '/member/app-user/recharge',
+    method: 'post',
+    data: data
+  })
+}
