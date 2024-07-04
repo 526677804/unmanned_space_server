@@ -398,6 +398,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             roomInfoDO.setStoreId(storeInfo.getStoreId());
             roomInfoDO.setType(AppEnum.room_type.DA.getValue());
             roomInfoDO.setPrice(BigDecimal.ONE);
+            roomInfoDO.setWorkPrice(BigDecimal.ONE);
             roomInfoDO.setTongxiaoPrice(BigDecimal.TEN);
             roomInfoDOList.add(roomInfoDO);
         }
