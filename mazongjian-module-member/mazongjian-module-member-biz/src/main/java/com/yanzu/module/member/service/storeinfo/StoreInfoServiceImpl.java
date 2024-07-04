@@ -263,9 +263,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //校验门店权限
             checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
             RoomInfoDO roomInfoDO = RoomInfoConvert.INSTANCE.convert3(reqVO);
+            WxMaService wxMaService = myWxService.initWxMa();
             if (ObjectUtils.isEmpty(roomInfoDO.getRenewCode())) {
                 //生成续费码
-                WxMaService wxMaService = myWxService.initWxMa();
                 try {
                     WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
                     String path = "pages/roomRenew/roomRenew?storeId=" + roomInfoDO.getStoreId() + "&roomId=" + roomInfoDO.getRoomId();
@@ -276,18 +276,19 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 //                throw new RuntimeException(e);
                 }
             }
-//            //生成小程序码
-//
-//            // 获取小程序二维码生成实例
-//            try {
-//                WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
-//                String path = "pages/orderSubmit/orderSubmit?storeId=" + reqVO.getStoreId() + "&roomId=" + roomInfoDO.getRoomId() + "&timeselectindex=0";
-//                byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
-//                String file = fileApi.createFile(bytes);
-//                roomInfoDO.setQrCode(file);
-//            } catch (WxErrorException e) {
-////                throw new RuntimeException(e);
-//            }
+            //生成小程序码
+            if (ObjectUtils.isEmpty(roomInfoDO.getQrCode())) {
+                // 获取小程序二维码生成实例
+                try {
+                    WxMaQrcodeService wxMaQrcodeService = wxMaService.getQrcodeService();
+                    String path = "pages/orderSubmit/orderSubmit?storeId=" + reqVO.getStoreId() + "&roomId=" + roomInfoDO.getRoomId() + "&timeselectindex=0";
+                    byte[] bytes = wxMaQrcodeService.createQrcodeBytes(path, 430);
+                    String file = fileApi.createFile(bytes);
+                    roomInfoDO.setQrCode(file);
+                } catch (WxErrorException e) {
+//                throw new RuntimeException(e);
+                }
+            }
             roomInfoMapper.updateById(roomInfoDO);
         }
     }
