@@ -220,6 +220,8 @@ public class PayOrderServiceImpl implements PayOrderService {
     public String updateOrderRefunded(Map<String, String> params, String body) {
         log.info("收到微信支付退款回调body：{}", body);
         log.info("收到微信支付退款回调params：{}", params);
+
+
         return WxPayNotifyResponse.success("接收成功!");
     }
 
@@ -306,10 +308,15 @@ public class PayOrderServiceImpl implements PayOrderService {
                 WxPayService wxPayService = myWxService.initWxPay(payOrderDO.getStoreId());
                 try {
                     wxPayService.refundV2(refundRequest);
+                    payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
+                    payOrderDO.setRefundPrice(payOrderDO.getPrice());
+                    payOrderDO.setRefundTime(LocalDateTime.now());
+                    payOrderMapper.updateById(payOrderDO);
                 } catch (WxPayException ex) {
 //                throw new RuntimeException(ex);
 //                    log.error("微信支付订单:{}，退款失败！", orderNo);
                 }
+
             } else {
                 throw exception(ADMIN_WEIXIN_PAY_REFOUND_ERROR);
             }
@@ -337,6 +344,10 @@ public class PayOrderServiceImpl implements PayOrderService {
                 WxPayService wxPayService = myWxService.initWxPay(payOrderDO.getStoreId());
                 try {
                     wxPayService.refundV2(refundRequest);
+                    payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
+                    payOrderDO.setRefundPrice(payOrderDO.getPrice());
+                    payOrderDO.setRefundTime(LocalDateTime.now());
+                    payOrderMapper.updateById(payOrderDO);
                 } catch (WxPayException ex) {
 //                throw new RuntimeException(ex);
 //                    log.error("微信支付订单:{}，退款失败！", orderNo);
@@ -414,6 +425,10 @@ public class PayOrderServiceImpl implements PayOrderService {
                 refundRequest.setRefundDesc("退款");
                 try {
                     wxPayService.refundV2(refundRequest);
+                    payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
+                    payOrderDO.setRefundPrice(payOrderDO.getPrice());
+                    payOrderDO.setRefundTime(LocalDateTime.now());
+                    payOrderMapper.updateById(payOrderDO);
                 } catch (WxPayException ex) {
 //                throw new RuntimeException(ex);
                     log.error("微信支付订单:{}，退款失败！原因：{}", payOrderDO.getOrderNo(), ex.getMessage());
