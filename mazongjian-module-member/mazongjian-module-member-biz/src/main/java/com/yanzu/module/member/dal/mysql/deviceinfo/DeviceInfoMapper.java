@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.yanzu.framework.tenant.core.aop.TenantIgnore;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoPageReqVO;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoRespVO;
@@ -42,6 +43,7 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
 
     int countGateway(Long storeId);
 
+    @TenantIgnore
     int countBySN(String deviceSn);
 
     int updateBindInfo(@Param("deviceId") Long deviceId, @Param("storeId") Long storeId, @Param("roomId") Long roomId);
