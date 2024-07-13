@@ -162,11 +162,6 @@ public class DouyinService {
         }else if(data.getInteger("error_code") == 1228){
             throw exception(GROUP_NO_CHECK_STORE_ERROR);
         } else {
-            try {
-                cancel(new DouyinCancelReqVO(verify_id, certificate_id));
-            } catch (Exception e) {
-//                throw new RuntimeException(e);
-            }
             throw exception(GROUP_NO_CHECK_ERROR);
         }
     }

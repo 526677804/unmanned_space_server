@@ -50,6 +50,10 @@ import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
+import com.yanzu.module.member.service.iot.IotGroupPayService;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayConsumeReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.order.AppOrderService;
@@ -60,6 +64,7 @@ import com.yanzu.module.member.service.user.MemberUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -153,6 +158,12 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Resource
     private AppUserService appUserService;
+
+    @Resource
+    private IotGroupPayService iotGroupPayService;
+
+    @Value("${iot.groupPay}")
+    private boolean iotGroupPay;
 
     @Override
     public PageResult<OrderListRespVO> getOrderPage(OrderPageReqVO reqVO) {
@@ -726,7 +737,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                     pkgUserInfoMapper.updateById(new PkgUserInfoDO().setId(pkgUserInfoDO.getId()).setStatus(AppEnum.coupon_status.EXPIRE.getValue()));
                 }
                 //进行微信退款 （微信支付押金或微信续费的金额）
-                payOrderService.refundByOrder(orderInfoDO.getOrderId(),orderInfoDO.getOrderNo(), orderInfoDO.getStoreId());
+                payOrderService.refundByOrder(orderInfoDO.getOrderId(), orderInfoDO.getOrderNo(), orderInfoDO.getStoreId());
                 //进行余额退款 （下单或续费的金额）
                 payOrderService.refundBalance(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
             }
@@ -759,22 +770,57 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (reqVO.getGroupPayNo().length() <= 12) {
             //美团券
             groupPayInfoDO.setGroupPayType(AppEnum.member_group_no_type.MEITUAN.getValue());
-            MeituanPrepareRespVO prepare = meituanService.prepare(reqVO.getStoreId(), reqVO.getGroupPayNo());
-            groupPayInfoDO.setGroupName(prepare.getTitle());
-            groupPayInfoDO.setGroupPayPrice(prepare.getPayAmount());
-            groupPayInfoDO.setGroupShopId(prepare.getDealId());
-            //使用
-            meituanService.consume(reqVO.getStoreId(), getLoginUserId(), reqVO.getGroupPayNo(), prepare.getDealId());
+            if (iotGroupPay) {
+                IotGroupPayPrepareRespVO prepare = iotGroupPayService.prepare(new IotGroupPayPrepareReqVO()
+                        .setStoreId(reqVO.getStoreId())
+                        .setGroupPayType(1)
+                        .setTicketNo(reqVO.getGroupPayNo())
+                );
+                groupPayInfoDO.setGroupName(prepare.getTicketName());
+                groupPayInfoDO.setTicketInfo(prepare.getTicketInfo());
+                groupPayInfoDO.setGroupNo(reqVO.getGroupPayNo());
+                groupPayInfoDO.setGroupPayPrice(new BigDecimal(String.valueOf(prepare.getPayAmount())));
+                //检验通过  把团购券给使用了
+                iotGroupPayService.consume(new IotGroupPayConsumeReqVO().setGroupPayType(1)
+                        .setTicketInfo(prepare.getTicketInfo())
+                        .setTicketNo(reqVO.getGroupPayNo())
+                        .setStoreId(reqVO.getStoreId()));
+
+            }else{
+                MeituanPrepareRespVO prepare = meituanService.prepare(reqVO.getStoreId(), reqVO.getGroupPayNo());
+                groupPayInfoDO.setGroupName(prepare.getTitle());
+                groupPayInfoDO.setGroupPayPrice(prepare.getPayAmount());
+                groupPayInfoDO.setGroupShopId(prepare.getDealId());
+                //使用
+                meituanService.consume(reqVO.getStoreId(), getLoginUserId(), reqVO.getGroupPayNo(), prepare.getDealId());
+            }
         } else {
             //抖音券
             groupPayInfoDO.setGroupPayType(AppEnum.member_group_no_type.DOUYIN.getValue());
-            DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
-            groupPayInfoDO.setGroupName(prepare.getTitle());
-            groupPayInfoDO.setGroupPayPrice(new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0)));
-            //检验通过  把团购券给使用了
-            String verify = douyinService.verify(reqVO.getStoreId(), getLoginUserId(), prepare);
-            //记录下来
-            groupPayInfoDO.setGroupNo(verify);
+            if (iotGroupPay) {
+                IotGroupPayPrepareRespVO prepare = iotGroupPayService.prepare(new IotGroupPayPrepareReqVO()
+                        .setStoreId(reqVO.getStoreId())
+                        .setGroupPayType(2)
+                        .setTicketNo(reqVO.getGroupPayNo())
+                );
+                groupPayInfoDO.setGroupName(prepare.getTicketName());
+                groupPayInfoDO.setTicketInfo(prepare.getTicketInfo());
+                groupPayInfoDO.setGroupNo(reqVO.getGroupPayNo());
+                groupPayInfoDO.setGroupPayPrice(new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0)));
+                //检验通过  把团购券给使用了
+                iotGroupPayService.consume(new IotGroupPayConsumeReqVO().setGroupPayType(2)
+                        .setTicketInfo(prepare.getTicketInfo())
+                        .setTicketNo(reqVO.getGroupPayNo())
+                        .setStoreId(reqVO.getStoreId()));
+            } else {
+                DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
+                groupPayInfoDO.setGroupName(prepare.getTitle());
+                groupPayInfoDO.setGroupPayPrice(new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0)));
+                //检验通过  把团购券给使用了
+                String verify = douyinService.verify(reqVO.getStoreId(), getLoginUserId(), prepare);
+                //记录下来
+                groupPayInfoDO.setGroupNo(verify);
+            }
         }
         groupPayInfoMapper.insert(groupPayInfoDO);
         //设置回去  主要是避免发送微信通知的时候编码识别不了

@@ -122,5 +122,6 @@ public interface ErrorCodeConstants {
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");
     ErrorCode DATA_EXISTS_ERROR = new ErrorCode(1004005001, "数据已存在，请不要重复保存！");
     ErrorCode OPRATION_ERROR = new ErrorCode(1004005002, "非法操作");
+    ErrorCode IOT_ERROR = new ErrorCode(1004005003, "操作失败！{}");
 
 }

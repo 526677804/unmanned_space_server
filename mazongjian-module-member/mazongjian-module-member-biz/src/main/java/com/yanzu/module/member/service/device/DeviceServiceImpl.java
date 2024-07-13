@@ -10,10 +10,9 @@ import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
-import com.yanzu.module.member.enums.AppEnum;
-import com.yanzu.module.member.service.iot.IotService;
-import com.yanzu.module.member.service.iot.iotBean.IotDeviceBaseVO;
-import com.yanzu.module.member.service.iot.iotBean.IotDeviceContrlReqVO;
+import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.device.IotDeviceBaseVO;
+import com.yanzu.module.member.service.iot.device.IotDeviceContrlReqVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -60,7 +58,7 @@ public class DeviceServiceImpl implements DeviceService {
 
 
     @Resource
-    private IotService iotService;
+    private IotDeviceService iotDeviceService;
 
     @Override
     @Transactional
@@ -114,7 +112,7 @@ public class DeviceServiceImpl implements DeviceService {
                 iotDeviceContrlReqVO.setOutlet(0).setCmd("pulse");
                 param.add(iotDeviceContrlReqVO);
                 reqVO.setDeviceSn(sn).setParams(param);
-                boolean flag = iotService.control(reqVO);
+                boolean flag = iotDeviceService.control(reqVO);
                 if (!flag) {
                     throw exception(DEVICE_OPRATION_ERROR);
                 }
@@ -126,7 +124,7 @@ public class DeviceServiceImpl implements DeviceService {
             iotDeviceContrlReqVO.setOutlet(0).setCmd("pulse");
             param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
-            boolean flag = iotService.control(reqVO);
+            boolean flag = iotDeviceService.control(reqVO);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }
@@ -148,7 +146,7 @@ public class DeviceServiceImpl implements DeviceService {
             iotDeviceContrlReqVO.setOutlet(0).setCmd(orderDoorOpen ? "on" : "pulse");
             param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
-            boolean flag = iotService.control(reqVO);
+            boolean flag = iotDeviceService.control(reqVO);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }
@@ -168,7 +166,7 @@ public class DeviceServiceImpl implements DeviceService {
             iotDeviceContrlReqVO.setOutlet(0).setCmd("off");
             param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
-            boolean flag = iotService.control(reqVO);
+            boolean flag = iotDeviceService.control(reqVO);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }
@@ -226,7 +224,7 @@ public class DeviceServiceImpl implements DeviceService {
             iotDeviceContrlReqVO.setOutlet(0).setCmd(cmd);
             param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
-            boolean flag = iotService.control(reqVO);
+            boolean flag = iotDeviceService.control(reqVO);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }
@@ -376,7 +374,7 @@ public class DeviceServiceImpl implements DeviceService {
             iotDeviceContrlReqVO.setOutlet(0).setCmd(String.valueOf(type)).setType(roomInfoDO.getYunlabaSound());
             param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
-            boolean flag = iotService.control(reqVO);
+            boolean flag = iotDeviceService.control(reqVO);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }

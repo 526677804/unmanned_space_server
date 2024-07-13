@@ -108,6 +108,14 @@ public class AppStoreController {
         return success(true);
     }
 
+    @PostMapping("/getGroupPayAuthUrl")
+    @Operation(summary = "获取团购平台授权链接")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<String> getGroupPayAuthUrl(@RequestBody @Valid GroupPayAuthUrlReqVO reqVO) {
+        return success(storeInfoService.getGroupPayAuthUrl(reqVO));
+    }
+
     @PostMapping("/testYunlaba/{roomId}")
     @Operation(summary = "测试云喇叭", description = "房间管理使用")
     @PreAuthenticated
@@ -260,4 +268,12 @@ public class AppStoreController {
         storeInfoService.syncPrice(storeId);
         return success(true);
     }
+
+//    @PostMapping("/updateLockData")
+//    @Operation(summary = "更新锁数据")
+//    @PreAuthenticated
+//    public CommonResult<Boolean> updateLockData(@PathVariable("storeId") Long storeId) {
+//        return success(true);
+//    }
+//
 }

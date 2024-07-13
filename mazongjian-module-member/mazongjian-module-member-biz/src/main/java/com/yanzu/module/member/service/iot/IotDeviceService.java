@@ -2,21 +2,15 @@ package com.yanzu.module.member.service.iot;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
-import com.yanzu.module.member.forest.IotClient;
-import com.yanzu.module.member.service.iot.iotBean.*;
+import com.yanzu.module.member.forest.IotDeviceClient;
+import com.yanzu.module.member.service.iot.device.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.Map;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.DEVICE_IOT_AUTH_ERROR;
@@ -24,7 +18,7 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.DEVICE_IOT_OP_ERR
 
 @Slf4j
 @Component
-public class IotService {
+public class IotDeviceService {
 
     @Value("${iot.clientId}")
     private String clientId;
@@ -34,7 +28,7 @@ public class IotService {
     private String redirectUrl;
 
     @Resource
-    private IotClient iotClient;
+    private IotDeviceClient iotDeviceClient;
 
     @Resource
     private RedisTemplate redisTemplate;
@@ -51,7 +45,7 @@ public class IotService {
         reqVO.setClient_id(clientId);
         reqVO.setSecret(secret);
         reqVO.setRedirect_uri(redirectUrl);
-        IotResult authorize = iotClient.authorize(reqVO);
+        IotResult authorize = iotDeviceClient.authorize(reqVO);
         if (authorize.getCode().intValue() != 0) {
             throw exception(DEVICE_IOT_AUTH_ERROR);
         }
@@ -65,7 +59,7 @@ public class IotService {
         IotDeviceBaseVO reqVO = new IotDeviceBaseVO();
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
-        IotResult<String> resp = iotClient.bind(reqVO, clientId, secret);
+        IotResult<String> resp = iotDeviceClient.bind(reqVO, clientId, secret);
         if (resp.getCode().intValue() == 0) {
             return resp.getData();
         } else {
@@ -81,7 +75,7 @@ public class IotService {
         IotDeviceBaseVO reqVO = new IotDeviceBaseVO();
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
-        IotResult<Boolean> resp = iotClient.unbind(reqVO, clientId, secret);
+        IotResult<Boolean> resp = iotDeviceClient.unbind(reqVO, clientId, secret);
         if (resp.getCode().intValue() == 0) {
             return true;
         } else {
@@ -95,7 +89,7 @@ public class IotService {
      */
     public Boolean control(IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO) {
         reqVO.setTs(new Date().getTime());
-        IotResult<Boolean> resp = iotClient.control(reqVO, clientId, secret);
+        IotResult<Boolean> resp = iotDeviceClient.control(reqVO, clientId, secret);
         if (resp.getCode().intValue() == 0) {
             return true;
         } else {
@@ -110,7 +104,7 @@ public class IotService {
      */
     public Boolean configWifi(IotDeviceBaseVO<IotDeviceConfigWifiReqVO> reqVO) {
         reqVO.setTs(new Date().getTime());
-        IotResult<Boolean> resp = iotClient.configWifi(reqVO, clientId, secret);
+        IotResult<Boolean> resp = iotDeviceClient.configWifi(reqVO, clientId, secret);
         if (resp.getCode().intValue() == 0) {
             return true;
         } else {
@@ -122,7 +116,7 @@ public class IotService {
 
     public Boolean setLockAutoLock(IotDeviceSetAutoLockReqVO reqVO) {
         reqVO.setTs(new Date().getTime());
-        IotResult<Boolean> resp = iotClient.setLockAutoLock(reqVO, clientId, secret);
+        IotResult<Boolean> resp = iotDeviceClient.setLockAutoLock(reqVO, clientId, secret);
         if (resp.getCode().intValue() == 0) {
             return true;
         } else {

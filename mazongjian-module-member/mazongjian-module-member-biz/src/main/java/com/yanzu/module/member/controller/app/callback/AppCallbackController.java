@@ -2,7 +2,7 @@ package com.yanzu.module.member.controller.app.callback;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
-import com.yanzu.module.member.service.iot.IotService;
+import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,7 +36,7 @@ public class AppCallbackController {
     private MeituanService meituanService;
 
     @Resource
-    private IotService iotService;
+    private IotDeviceService iotDeviceService;
 
 
     @PostMapping("/wxpay/update")
@@ -72,7 +72,7 @@ public class AppCallbackController {
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public void iotCallback(@RequestBody JSONObject json) {
         log.info("收到物联网平台回调,params:{}", json);
-        iotService.iotCallback(json);
+        iotDeviceService.iotCallback(json);
     }
 
 

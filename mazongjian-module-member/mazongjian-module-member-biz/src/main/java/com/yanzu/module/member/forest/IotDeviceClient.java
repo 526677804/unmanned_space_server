@@ -4,9 +4,9 @@ import com.dtflys.forest.annotation.JSONBody;
 import com.dtflys.forest.annotation.Post;
 import com.dtflys.forest.annotation.Query;
 import com.dtflys.forest.annotation.Var;
-import com.yanzu.module.member.service.iot.iotBean.*;
+import com.yanzu.module.member.service.iot.device.*;
 
-public interface IotClient {
+public interface IotDeviceClient {
     /**
      * 发起授权
      */
@@ -80,7 +80,6 @@ public interface IotClient {
      * 设置门锁自动关锁
      *
      * @param reqVO
-     * @param token
      * @return
      */
     @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/setLockAutoLock",
@@ -89,4 +88,18 @@ public interface IotClient {
                     "secret:${secret}",
             })
     IotResult<Boolean> setLockAutoLock(@JSONBody IotDeviceSetAutoLockReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
+
+    /**
+     * 更新锁数据
+     *
+     * @param reqVO
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/lockUpdate",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<Boolean> lockUpdate(@JSONBody IotDeviceLockUpdateReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
+
 }

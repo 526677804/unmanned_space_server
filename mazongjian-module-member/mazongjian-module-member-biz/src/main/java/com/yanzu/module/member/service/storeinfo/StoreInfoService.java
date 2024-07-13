@@ -117,4 +117,7 @@ public interface StoreInfoService {
     void deleteRoomInfo(Long roomId);
 
     List<AppRoomInfoListRespVO> getRoomInfoList2(Long storeId);
+
+    String getGroupPayAuthUrl(GroupPayAuthUrlReqVO reqVO);
+
 }

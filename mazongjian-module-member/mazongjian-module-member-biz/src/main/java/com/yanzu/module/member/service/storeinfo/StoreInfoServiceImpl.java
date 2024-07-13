@@ -31,6 +31,7 @@ import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
@@ -112,6 +113,12 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Value("${meituan.redirectUrl}")
     private String meituanRedirectUrl;
 
+
+    @Resource
+    private IotGroupPayService iotGroupPayService;
+
+    @Value("${iot.groupPay}")
+    private boolean iotGroupPay;
 
     private static final String MINIAPP_IMG_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='%s'&secret='%s'";
 
@@ -384,7 +391,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         storeInfo.setSimpleModel(true);
         storeInfoMapper.insert(storeInfo);
         //建立用户关系
-        StoreUserDO storeUserDO=new StoreUserDO();
+        StoreUserDO storeUserDO = new StoreUserDO();
         storeUserDO.setStoreId(storeInfo.getStoreId());
         storeUserDO.setUserId(user.getId());
         storeUserDO.setType(AppEnum.member_user_type.BOSS.getValue());
@@ -645,6 +652,19 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         }
         return list;
 
+    }
+
+    @Override
+    public String getGroupPayAuthUrl(GroupPayAuthUrlReqVO reqVO) {
+        if (iotGroupPay) {
+            return iotGroupPayService.getScopeUrl(reqVO.getStoreId(), reqVO.getGroupPayType());
+        } else {
+            if (reqVO.getGroupPayType().intValue() == 1) {
+                return "https://e.dianping.com/dz-open/merchant/auth?app_key=" + meituanAppKey + "&redirect_url=" + meituanRedirectUrl + "&state=storeId-" + reqVO.getStoreId();
+            } else {
+                return "暂不支持此平台授权";
+            }
+        }
     }
 
 }

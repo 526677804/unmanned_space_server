@@ -167,13 +167,13 @@ public class MeituanService {
         BigDecimal coupinPrice = BigDecimal.ZERO;
         for (Object obj : paymentDetail) {
             // amount_type = 10，23，25，26时(表示用户支付)，amount = 实际支付金额
-            //amount_type = 8，17，18，22，24或其他时（表示商家优惠，其余为平台优惠），amount = 优惠的金额
+            //amount_type = 8，17，18，22，24（表示商家优惠，其余为平台优惠），amount = 优惠的金额
             JSONObject jsonObj = (JSONObject) obj;
             Integer type = jsonObj.getInt("amount_type");
-            if (type == 10 || type == 23 || type == 25 || type == 26) {
-                payPrice = payPrice.add(jsonObj.getBigDecimal("amount"));
-            } else {
+            if (type == 8 || type == 17 || type == 18 || type == 22 || type == 24) {
                 coupinPrice = coupinPrice.add(jsonObj.getBigDecimal("amount"));
+            } else {
+                payPrice = payPrice.add(jsonObj.getBigDecimal("amount"));
             }
         }
         //总价
@@ -208,12 +208,7 @@ public class MeituanService {
         JSONObject consume = meituanClient.consume(reqVO);
         log.info("美团验券:{}", consume);
         if (consume.getInt("code") != 200) {
-            //异常了 需要撤销
-            try {
-                reverseconsume(storeId, userId, receiptCode, dealId);
-            } catch (Exception e) {
-//                throw new RuntimeException(e);
-            }
+            //异常了
             throw exception(GROUP_NO_CHECK_ERROR);
         }
         return (JSONObject) consume.getJSONArray("data").get(0);

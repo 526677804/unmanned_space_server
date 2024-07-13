@@ -41,6 +41,10 @@ public class GroupPayInfoDO extends BaseDO {
      */
     private String groupShopId;
     /**
+     * 团购券信息
+     */
+    private String ticketInfo;
+    /**
      * 价格
      */
     private BigDecimal groupPayPrice;

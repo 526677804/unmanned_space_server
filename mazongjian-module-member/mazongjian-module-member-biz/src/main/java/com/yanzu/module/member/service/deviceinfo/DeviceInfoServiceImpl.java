@@ -1,6 +1,5 @@
 package com.yanzu.module.member.service.deviceinfo;
 
-import com.alipay.api.domain.IotDevice;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.pojo.PageResult;
@@ -9,11 +8,11 @@ import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
-import com.yanzu.module.member.service.iot.IotService;
-import com.yanzu.module.member.service.iot.iotBean.IotDeviceBaseVO;
-import com.yanzu.module.member.service.iot.iotBean.IotDeviceConfigWifiReqVO;
-import com.yanzu.module.member.service.iot.iotBean.IotDeviceContrlReqVO;
-import com.yanzu.module.member.service.iot.iotBean.IotDeviceSetAutoLockReqVO;
+import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.device.IotDeviceBaseVO;
+import com.yanzu.module.member.service.iot.device.IotDeviceConfigWifiReqVO;
+import com.yanzu.module.member.service.iot.device.IotDeviceContrlReqVO;
+import com.yanzu.module.member.service.iot.device.IotDeviceSetAutoLockReqVO;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +42,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     private DeviceInfoMapper deviceInfoMapper;
 
     @Resource
-    private IotService iotService;
+    private IotDeviceService iotDeviceService;
 
     @Resource
     private StoreInfoService storeInfoService;
@@ -58,7 +57,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             throw exception(DEVICE_DATA_EXISTS_ERROR);
         }
         //先在iot平台绑定设备
-        String data = iotService.bind(createReqVO.getDeviceSn());
+        String data = iotDeviceService.bind(createReqVO.getDeviceSn());
         // 插入
         DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
         deviceInfo.setDeviceData(data);
@@ -74,7 +73,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         //只能操作自己的设备
         if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
             // 先解绑
-            iotService.unbind(deviceInfoDO.getDeviceSn());
+            iotDeviceService.unbind(deviceInfoDO.getDeviceSn());
             // 删除
             deviceInfoMapper.deleteById(id);
 
@@ -124,7 +123,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
 
     @Override
     public void iotScope() {
-        iotService.authorize();
+        iotDeviceService.authorize();
     }
 
     @Override
@@ -136,7 +135,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             vo.setDeviceSn(deviceInfoDO.getDeviceSn());
             vo.setSsid(reqVO.getSsid());
             vo.setPasswd(reqVO.getPasswd());
-            iotService.configWifi(vo);
+            iotDeviceService.configWifi(vo);
         }
     }
 
@@ -148,7 +147,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             IotDeviceSetAutoLockReqVO vo = new IotDeviceSetAutoLockReqVO();
             vo.setDeviceSn(deviceInfoDO.getDeviceSn());
             vo.setSecend(reqVO.getSecend());
-            iotService.setLockAutoLock(vo);
+            iotDeviceService.setLockAutoLock(vo);
         }
 
     }
@@ -164,7 +163,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             iotDeviceContrlReqVO.setOutlet(0).setCmd(reqVO.getCmd());
             param.add(iotDeviceContrlReqVO);
             vo.setDeviceSn(deviceInfoDO.getDeviceSn()).setParams(param);
-            boolean flag = iotService.control(vo);
+            boolean flag = iotDeviceService.control(vo);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }

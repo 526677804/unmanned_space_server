@@ -1,11 +1,9 @@
 package com.yanzu.module.member.service.order;
 
 import cn.hutool.core.util.HexUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
-import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
@@ -23,7 +21,6 @@ import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
-import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkguserinfo.PkgUserInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
@@ -52,7 +49,11 @@ import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.douyin.vo.DouyinCancelReqVO;
 import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
-import com.yanzu.module.member.service.iot.IotService;
+import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.IotGroupPayService;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayConsumeReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.payorder.PayOrderService;
@@ -62,7 +63,6 @@ import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -158,8 +158,10 @@ public class AppOrderServiceImpl implements AppOrderService {
     private WorkWxService workWxService;
 
     @Resource
-    private IotService iotService;
+    private IotDeviceService iotDeviceService;
 
+    @Resource
+    private IotGroupPayService iotGroupPayService;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -172,6 +174,9 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
+
+    @Value("${iot.groupPay}")
+    private boolean iotGroupPay;
 
     /**
      * @param roomId        房间id
@@ -780,6 +785,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         String groupName = "";
         String groupShopId = "";
         String groupNo = "";
+        String ticketInfo = "";
         Integer groupType = null;
         BigDecimal groupPrice = BigDecimal.ZERO;
         if (!ObjectUtils.isEmpty(reqVO.getGroupPayNo())) {
@@ -793,24 +799,58 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //美团券
                 groupType = AppEnum.member_group_no_type.MEITUAN.getValue();
                 //查询券信息
-                MeituanPrepareRespVO prepare = meituanService.prepare(roomInfoDO.getStoreId(), reqVO.getGroupPayNo());
-                groupName = prepare.getTitle();
-                groupNo = reqVO.getGroupPayNo();
-                groupPrice = prepare.getPayAmount();
-                groupShopId = prepare.getDealId();
-                checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
-                //检验通过  把团购券给使用了
-                meituanService.consume(roomInfoDO.getStoreId(), reqVO.getUserId(), reqVO.getGroupPayNo(), groupShopId);
+                if (iotGroupPay) {
+                    IotGroupPayPrepareRespVO prepare = iotGroupPayService.prepare(new IotGroupPayPrepareReqVO()
+                            .setStoreId(roomInfoDO.getStoreId())
+                            .setGroupPayType(1)
+                            .setTicketNo(reqVO.getGroupPayNo())
+                    );
+                    groupName = prepare.getTicketName();
+                    groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount()));
+                    ticketInfo = prepare.getTicketInfo();
+                    checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
+                    //检验通过  把团购券给使用了
+                    iotGroupPayService.consume(new IotGroupPayConsumeReqVO().setGroupPayType(1)
+                            .setTicketInfo(prepare.getTicketInfo())
+                            .setTicketNo(reqVO.getGroupPayNo())
+                            .setStoreId(roomInfoDO.getStoreId()));
+                } else {
+                    MeituanPrepareRespVO prepare = meituanService.prepare(roomInfoDO.getStoreId(), reqVO.getGroupPayNo());
+                    groupName = prepare.getTitle();
+                    groupNo = reqVO.getGroupPayNo();
+                    groupPrice = prepare.getPayAmount();
+                    groupShopId = prepare.getDealId();
+                    checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
+                    //检验通过  把团购券给使用了
+                    meituanService.consume(roomInfoDO.getStoreId(), reqVO.getUserId(), reqVO.getGroupPayNo(), groupShopId);
+                }
             } else {
                 //抖音券
                 groupType = AppEnum.member_group_no_type.DOUYIN.getValue();
-                DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
-                groupName = prepare.getTitle();
-                groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
-                checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
-                //检验通过  把团购券给使用了
-                String verify = douyinService.verify(roomInfoDO.getStoreId(), reqVO.getUserId(), prepare);
-                groupNo = verify;
+                if (iotGroupPay) {
+                    IotGroupPayPrepareRespVO prepare = iotGroupPayService.prepare(new IotGroupPayPrepareReqVO()
+                            .setStoreId(roomInfoDO.getStoreId())
+                            .setGroupPayType(2)
+                            .setTicketNo(reqVO.getGroupPayNo())
+                    );
+                    groupName = prepare.getTicketName();
+                    groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
+                    ticketInfo = prepare.getTicketInfo();
+                    checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
+                    //检验通过  把团购券给使用了
+                    iotGroupPayService.consume(new IotGroupPayConsumeReqVO().setGroupPayType(2)
+                            .setTicketInfo(prepare.getTicketInfo())
+                            .setTicketNo(reqVO.getGroupPayNo())
+                            .setStoreId(roomInfoDO.getStoreId()));
+                } else {
+                    DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
+                    groupName = prepare.getTitle();
+                    groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
+                    checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
+                    //检验通过  把团购券给使用了
+                    String verify = douyinService.verify(roomInfoDO.getStoreId(), reqVO.getUserId(), prepare);
+                    groupNo = verify;
+                }
             }
             //团购消费的  支付价格设置为0
             totalPrice = BigDecimal.ZERO;
@@ -934,6 +974,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             GroupPayInfoDO groupPayInfoDO = new GroupPayInfoDO();
             groupPayInfoDO.setGroupName(groupName);
             groupPayInfoDO.setGroupNo(groupNo);
+            groupPayInfoDO.setTicketInfo(ticketInfo);
             groupPayInfoDO.setGroupShopId(groupShopId);
             groupPayInfoDO.setGroupPayPrice(groupPrice);
             groupPayInfoDO.setStoreId(orderInfoDO.getStoreId());
@@ -941,10 +982,10 @@ public class AppOrderServiceImpl implements AppOrderService {
             groupPayInfoDO.setGroupPayType(groupType);
             groupPayInfoMapper.insert(groupPayInfoDO);
             //异步发送微信通知
-            workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), groupPrice, null,null, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
+            workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), groupPrice, null, null, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         } else {
             //异步发送微信通知
-            workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), totalPrice, couponInfoDO, pkgInfoDO,reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
+            workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), totalPrice, couponInfoDO, pkgInfoDO, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         }
         checkRepeatOrder(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), roomInfoDO.getRoomName(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getUserId());
         return orderInfoDO.getOrderId();
@@ -1218,14 +1259,30 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
                 GroupPayInfoDO groupPayInfoDO = groupPayInfoMapper.getByOrderId(orderId);
                 if (orderInfoDO.getGroupPayType().compareTo(AppEnum.member_group_no_type.MEITUAN.getValue()) == 0) {
-                    meituanService.reverseconsume(orderInfoDO.getStoreId(), orderInfoDO.getUserId(), groupPayInfoDO.getGroupNo(), groupPayInfoDO.getGroupShopId());
+                    if(iotGroupPay){
+                        iotGroupPayService.revoke(new IotGroupPayConsumeReqVO()
+                                .setStoreId(groupPayInfoDO.getStoreId())
+                                .setTicketNo(groupPayInfoDO.getGroupNo())
+                                .setTicketInfo(groupPayInfoDO.getTicketInfo())
+                                .setGroupPayType(1));
+                    }else{
+                        meituanService.reverseconsume(orderInfoDO.getStoreId(), orderInfoDO.getUserId(), groupPayInfoDO.getGroupNo(), groupPayInfoDO.getGroupShopId());
+                    }
                 } else if (orderInfoDO.getGroupPayType().compareTo(AppEnum.member_group_no_type.DOUYIN.getValue()) == 0) {
-                    //verify_id 在前   certificate_id在后
-                    String[] split = groupPayInfoDO.getGroupNo().split("-");
-                    DouyinCancelReqVO reqVO = new DouyinCancelReqVO();
-                    reqVO.setVerify_id(split[0]);
-                    reqVO.setCertificate_id(split[1]);
-                    douyinService.cancel(reqVO);
+                    if(iotGroupPay){
+                        iotGroupPayService.revoke(new IotGroupPayConsumeReqVO()
+                                .setStoreId(groupPayInfoDO.getStoreId())
+                                .setTicketNo(groupPayInfoDO.getGroupNo())
+                                .setTicketInfo(groupPayInfoDO.getTicketInfo())
+                                .setGroupPayType(2));
+                    }else{
+                        //verify_id 在前   certificate_id在后
+                        String[] split = groupPayInfoDO.getGroupNo().split("-");
+                        DouyinCancelReqVO reqVO = new DouyinCancelReqVO();
+                        reqVO.setVerify_id(split[0]);
+                        reqVO.setCertificate_id(split[1]);
+                        douyinService.cancel(reqVO);
+                    }
                 }
                 //删除团购券记录
                 groupPayInfoMapper.deleteById(groupPayInfoDO.getId());
@@ -1681,13 +1738,29 @@ public class AppOrderServiceImpl implements AppOrderService {
         //判断是抖音券还是美团券
         if (reqVO.getCode().length() <= 13) {
             //美团券
-            //查询券信息
-            MeituanPrepareRespVO prepare = meituanService.prepare(reqVO.getStoreId(), reqVO.getCode());
-            return prepare.getTitle();
+            if (iotGroupPay) {
+                IotGroupPayPrepareRespVO prepare = iotGroupPayService.prepare(new IotGroupPayPrepareReqVO()
+                        .setTicketNo(reqVO.getCode())
+                        .setStoreId(reqVO.getStoreId())
+                        .setGroupPayType(1));
+                return prepare.getTicketName();
+            } else {
+                MeituanPrepareRespVO prepare = meituanService.prepare(reqVO.getStoreId(), reqVO.getCode());
+                return prepare.getTitle();
+            }
         } else {
             //抖音券
-            DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getCode());
-            return prepare.getTitle();
+            if (iotGroupPay) {
+                IotGroupPayPrepareRespVO prepare = iotGroupPayService.prepare(new IotGroupPayPrepareReqVO()
+                        .setTicketNo(reqVO.getCode())
+                        .setStoreId(reqVO.getStoreId())
+                        .setGroupPayType(2));
+                return prepare.getTicketName();
+            } else {
+                DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getCode());
+                return prepare.getTitle();
+            }
+
         }
     }
 

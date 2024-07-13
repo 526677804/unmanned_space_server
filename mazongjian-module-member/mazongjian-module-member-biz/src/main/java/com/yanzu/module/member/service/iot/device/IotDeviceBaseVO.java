@@ -1,4 +1,4 @@
-package com.yanzu.module.member.service.iot.iotBean;
+package com.yanzu.module.member.service.iot.device;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
