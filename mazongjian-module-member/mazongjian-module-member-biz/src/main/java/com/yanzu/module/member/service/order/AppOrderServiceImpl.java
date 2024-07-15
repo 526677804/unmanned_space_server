@@ -806,7 +806,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                             .setTicketNo(reqVO.getGroupPayNo())
                     );
                     groupName = prepare.getTicketName();
-                    groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount()));
+                    groupNo = reqVO.getGroupPayNo();
+                    groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
                     ticketInfo = prepare.getTicketInfo();
                     checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
                     //检验通过  把团购券给使用了
@@ -834,6 +835,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                             .setTicketNo(reqVO.getGroupPayNo())
                     );
                     groupName = prepare.getTicketName();
+                    groupNo = reqVO.getGroupPayNo();
                     groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
                     ticketInfo = prepare.getTicketInfo();
                     checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
@@ -842,6 +844,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                             .setTicketInfo(prepare.getTicketInfo())
                             .setTicketNo(reqVO.getGroupPayNo())
                             .setStoreId(roomInfoDO.getStoreId()));
+
                 } else {
                     DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
                     groupName = prepare.getTitle();

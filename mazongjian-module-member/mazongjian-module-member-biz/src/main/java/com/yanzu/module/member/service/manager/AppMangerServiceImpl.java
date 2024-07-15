@@ -779,7 +779,7 @@ public class AppMangerServiceImpl implements AppMangerService {
                 groupPayInfoDO.setGroupName(prepare.getTicketName());
                 groupPayInfoDO.setTicketInfo(prepare.getTicketInfo());
                 groupPayInfoDO.setGroupNo(reqVO.getGroupPayNo());
-                groupPayInfoDO.setGroupPayPrice(new BigDecimal(String.valueOf(prepare.getPayAmount())));
+                groupPayInfoDO.setGroupPayPrice(new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0)));
                 //检验通过  把团购券给使用了
                 iotGroupPayService.consume(new IotGroupPayConsumeReqVO().setGroupPayType(1)
                         .setTicketInfo(prepare.getTicketInfo())
