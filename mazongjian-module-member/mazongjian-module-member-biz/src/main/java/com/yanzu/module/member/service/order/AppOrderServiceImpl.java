@@ -175,7 +175,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
 
-    @Value("${iot.groupPay}")
+    @Value("${iot.groupPay:false}")
     private boolean iotGroupPay;
 
     /**

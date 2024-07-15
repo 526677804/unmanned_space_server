@@ -117,7 +117,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Resource
     private IotGroupPayService iotGroupPayService;
 
-    @Value("${iot.groupPay}")
+    @Value("${iot.groupPay:false}")
     private boolean iotGroupPay;
 
     private static final String MINIAPP_IMG_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='%s'&secret='%s'";

@@ -162,7 +162,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Resource
     private IotGroupPayService iotGroupPayService;
 
-    @Value("${iot.groupPay}")
+    @Value("${iot.groupPay:false}")
     private boolean iotGroupPay;
 
     @Override
