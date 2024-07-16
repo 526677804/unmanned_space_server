@@ -36,6 +36,8 @@ public class MyWxService {
 
 
     //支付服务商模式的配置
+    @Value("${wx.miniapp.appid}")
+    private String appId;
     @Value("${wx.pay.mchId}")
     private String mchId;
     @Value("${wx.pay.mchKey}")
@@ -59,7 +61,7 @@ public class MyWxService {
         WxPayConfig payConfig = new WxPayConfig();
         if (config.getServiceModel()) {
             //支付服务商模式
-            payConfig.setAppId(miniappConfigVO.getMiniappId());
+            payConfig.setAppId(appId);
             payConfig.setSubAppId(config.getAppId());
             payConfig.setMchId(mchId);//服务商的商户号
             payConfig.setMchKey(mchKey);//服务商的v2秘钥
