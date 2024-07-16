@@ -17,6 +17,10 @@ public class StoreWxpayConfigBaseVO {
     @NotNull(message = "门店ID不能为空")
     private Long storeId;
 
+    @Schema(description = "APPID", requiredMode = Schema.RequiredMode.REQUIRED, example = "7352")
+    @NotNull(message = "APPID不能为空")
+    private String appId;
+
     @Schema(description = "微信支付商户号", requiredMode = Schema.RequiredMode.REQUIRED, example = "23018")
     @NotNull(message = "微信支付商户号不能为空")
     private String mchId;

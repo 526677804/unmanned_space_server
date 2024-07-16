@@ -60,6 +60,7 @@ public class MyWxService {
         if (config.getServiceModel()) {
             //支付服务商模式
             payConfig.setAppId(miniappConfigVO.getMiniappId());
+            payConfig.setSubAppId(config.getAppId());
             payConfig.setMchId(mchId);//服务商的商户号
             payConfig.setMchKey(mchKey);//服务商的v2秘钥
             payConfig.setKeyPath(keyPath);//服务商的证书文件
@@ -68,6 +69,7 @@ public class MyWxService {
         } else {
             //非服务商模式
             payConfig.setAppId(miniappConfigVO.getMiniappId());
+            payConfig.setSubAppId(config.getAppId());
             payConfig.setMchId(config.getMchId());//商户号
             payConfig.setMchKey(config.getMchKey());//v2秘钥
             // weixin-pay-java 无法设置内容，只允许读取文件，所以这里要创建临时文件来解决

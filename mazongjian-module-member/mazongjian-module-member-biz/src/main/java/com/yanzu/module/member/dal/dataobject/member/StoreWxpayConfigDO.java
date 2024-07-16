@@ -26,6 +26,12 @@ public class StoreWxpayConfigDO extends BaseDO {
      */
     @TableId
     private Long id;
+
+    /**
+     * 商户的appId
+     */
+    private String appId;
+
     /**
      * 门店ID
      */
