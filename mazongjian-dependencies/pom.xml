@@ -98,11 +98,6 @@
             </dependency>
             <dependency>
                 <groupId>com.yanzu</groupId>
-                <artifactId>mazongjian-spring-boot-starter-biz-trade</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.yanzu</groupId>
                 <artifactId>mazongjian-spring-boot-starter-biz-dict</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -496,12 +491,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.google.inject</groupId>
-                <artifactId>guice</artifactId>
-                <version>${guice.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>transmittable-thread-local</artifactId> <!-- 解决 ThreadLocal 父子线程的传值问题 -->
                 <version>${transmittable-thread-local.version}</version>
@@ -605,18 +594,6 @@
                 <version>${wx-java-mp.version}</version>
             </dependency>
 
-            <!-- 积木报表-->
-            <dependency>
-                <groupId>org.jeecgframework.jimureport</groupId>
-                <artifactId>jimureport-spring-boot-starter</artifactId>
-                <version>${jimureport.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.alibaba</groupId>
-                        <artifactId>druid</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
             <dependency>
                 <groupId>xerces</groupId>
                 <artifactId>xercesImpl</artifactId>
