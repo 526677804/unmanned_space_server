@@ -4,6 +4,8 @@ import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.api.impl.WxMaServiceHttpClientImpl;
 import cn.binarywang.wx.miniapp.config.impl.WxMaDefaultConfigImpl;
 import cn.hutool.core.codec.Base64;
+import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
+import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.config.WxPayConfig;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.binarywang.wxpay.service.impl.WxPayServiceImpl;
@@ -11,6 +13,7 @@ import com.yanzu.framework.common.util.io.FileUtils;
 import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.mysql.member.StoreWxpayConfigMapper;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,16 +65,16 @@ public class MyWxService {
         if (config.getServiceModel()) {
             //支付服务商模式
             payConfig.setAppId(appId);
-            payConfig.setSubAppId(config.getAppId());
             payConfig.setMchId(mchId);//服务商的商户号
+            //服务商模式下的子商户号
+            payConfig.setSubAppId(miniappConfigVO.getMiniappId());
+            payConfig.setSubMchId(config.getMchId());
             payConfig.setMchKey(mchKey);//服务商的v2秘钥
             payConfig.setKeyPath(keyPath);//服务商的证书文件
-            //服务商模式下的子商户号
-            payConfig.setSubMchId(config.getMchId());
         } else {
             //非服务商模式
             payConfig.setAppId(miniappConfigVO.getMiniappId());
-            payConfig.setSubAppId(config.getAppId());
+            payConfig.setSubAppId(miniappConfigVO.getMiniappId());
             payConfig.setMchId(config.getMchId());//商户号
             payConfig.setMchKey(config.getMchKey());//v2秘钥
             // weixin-pay-java 无法设置内容，只允许读取文件，所以这里要创建临时文件来解决
@@ -85,6 +88,27 @@ public class MyWxService {
         wxPayService.setConfig(payConfig);
         return wxPayService;
     }
+
+
+    @SneakyThrows
+    public WxPayMpOrderResult createOrder(WxPayService wxPayService, Long storeId, String orderNo, Integer payPrice, String openId) {
+        StoreWxpayConfigDO config = getWxPayConfig(storeId);
+        WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
+        wxPayUnifiedOrderRequest.setBody("微信支付订单");
+        wxPayUnifiedOrderRequest.setOutTradeNo(orderNo);
+        wxPayUnifiedOrderRequest.setTotalFee(payPrice);
+        wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
+        wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
+        wxPayUnifiedOrderRequest.setTradeType("JSAPI");
+        wxPayUnifiedOrderRequest.setProfitSharing(config.getServiceModel() && config.getSplit() ? "Y" : "N");
+        if (config.getServiceModel()) {
+            wxPayUnifiedOrderRequest.setSubOpenid(openId);
+        } else {
+            wxPayUnifiedOrderRequest.setOpenid(openId);
+        }
+        return wxPayService.createOrder(wxPayUnifiedOrderRequest);
+    }
+
 
     public WxMaService initWxMa() {
         MiniappConfigVO miniAppConfig = getMiniAppConfig();

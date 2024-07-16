@@ -4,8 +4,6 @@ import cn.hutool.core.util.HexUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
-import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
-import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
@@ -337,27 +335,15 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //获取分账配置
                 StoreWxpayConfigDO wxPayConfig = myWxService.getWxPayConfig(roomInfoDO.getStoreId());
                 //生成微信支付的订单
-                WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
-                wxPayUnifiedOrderRequest.setBody("微信支付订单");
-                wxPayUnifiedOrderRequest.setOutTradeNo(orderNo);
-                wxPayUnifiedOrderRequest.setTotalFee(payPrice);
-                wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
-                wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
-                wxPayUnifiedOrderRequest.setTradeType("JSAPI");
-                wxPayUnifiedOrderRequest.setProfitSharing(wxPayConfig.getServiceModel() && wxPayConfig.getSplit() ? "Y" : "N");
-                wxPayUnifiedOrderRequest.setOpenid(openId);
-//            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
-//            wxPayUnifiedOrderRequest.setTimeExpire()
                 try {
-//                WxPayUnifiedOrderResult wxPayUnifiedOrderResult = wxService.unifiedOrder(wxPayUnifiedOrderRequest);
-                    WxPayMpOrderResult wxPayMpOrderResult = wxPayService.createOrder(wxPayUnifiedOrderRequest);
+                    WxPayMpOrderResult wxPayMpOrderResult = myWxService.createOrder(wxPayService, roomInfoDO.getStoreId(), orderNo, payPrice, openId);
                     respVO.setPkg(wxPayMpOrderResult.getPackageValue());
                     respVO.setAppId(wxPayMpOrderResult.getAppId());
                     respVO.setNonceStr(wxPayMpOrderResult.getNonceStr());
                     respVO.setPaySign(wxPayMpOrderResult.getPaySign());
                     respVO.setSignType("MD5");
                     respVO.setTimeStamp(wxPayMpOrderResult.getTimeStamp());
-                } catch (WxPayException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
 //                throw new RuntimeException(e);
                     throw exception(USER_WEIXIN_PAY_ERROR);
@@ -1262,23 +1248,23 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
                 GroupPayInfoDO groupPayInfoDO = groupPayInfoMapper.getByOrderId(orderId);
                 if (orderInfoDO.getGroupPayType().compareTo(AppEnum.member_group_no_type.MEITUAN.getValue()) == 0) {
-                    if(iotGroupPay){
+                    if (iotGroupPay) {
                         iotGroupPayService.revoke(new IotGroupPayConsumeReqVO()
                                 .setStoreId(groupPayInfoDO.getStoreId())
                                 .setTicketNo(groupPayInfoDO.getGroupNo())
                                 .setTicketInfo(groupPayInfoDO.getTicketInfo())
                                 .setGroupPayType(1));
-                    }else{
+                    } else {
                         meituanService.reverseconsume(orderInfoDO.getStoreId(), orderInfoDO.getUserId(), groupPayInfoDO.getGroupNo(), groupPayInfoDO.getGroupShopId());
                     }
                 } else if (orderInfoDO.getGroupPayType().compareTo(AppEnum.member_group_no_type.DOUYIN.getValue()) == 0) {
-                    if(iotGroupPay){
+                    if (iotGroupPay) {
                         iotGroupPayService.revoke(new IotGroupPayConsumeReqVO()
                                 .setStoreId(groupPayInfoDO.getStoreId())
                                 .setTicketNo(groupPayInfoDO.getGroupNo())
                                 .setTicketInfo(groupPayInfoDO.getTicketInfo())
                                 .setGroupPayType(2));
-                    }else{
+                    } else {
                         //verify_id 在前   certificate_id在后
                         String[] split = groupPayInfoDO.getGroupNo().split("-");
                         DouyinCancelReqVO reqVO = new DouyinCancelReqVO();

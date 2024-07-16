@@ -3,8 +3,6 @@ package com.yanzu.module.member.service.pkg;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
-import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
-import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.security.core.LoginUser;
@@ -13,7 +11,6 @@ import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.pkg.vo.*;
-import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkguserinfo.PkgUserInfoDO;
 import com.yanzu.module.member.dal.mysql.pkginfo.PkgInfoMapper;
@@ -200,30 +197,18 @@ public class PkgServiceImpl implements PkgService {
         }
         //创建微信支付实例
         WxPayService wxPayService = myWxService.initWxPay(pkgInfoDO.getStoreId());
-        StoreWxpayConfigDO wxPayConfig = myWxService.getWxPayConfig(pkgInfoDO.getStoreId());
-        //生成微信支付的订单
-        WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
-        wxPayUnifiedOrderRequest.setBody("微信支付订单");
-        wxPayUnifiedOrderRequest.setOutTradeNo(orderNo);
-        //微信支付的价格单位是分
-        wxPayUnifiedOrderRequest.setTotalFee(respVO.getPrice());
-        wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
-        wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
-        wxPayUnifiedOrderRequest.setTradeType("JSAPI");
-        wxPayUnifiedOrderRequest.setProfitSharing(wxPayConfig.getServiceModel() && wxPayConfig.getSplit() ? "Y" : "N");
-        wxPayUnifiedOrderRequest.setOpenid(openId);
+        try {
+            //生成微信支付的订单
+            WxPayMpOrderResult wxPayMpOrderResult = myWxService.createOrder(wxPayService, pkgInfoDO.getStoreId(), orderNo, respVO.getPayPrice(), openId);
 //            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
 //            wxPayUnifiedOrderRequest.setTimeExpire()
-        try {
-//                WxPayUnifiedOrderResult wxPayUnifiedOrderResult = wxService.unifiedOrder(wxPayUnifiedOrderRequest);
-            WxPayMpOrderResult wxPayMpOrderResult = wxPayService.createOrder(wxPayUnifiedOrderRequest);
             respVO.setPkg(wxPayMpOrderResult.getPackageValue());
             respVO.setAppId(wxPayMpOrderResult.getAppId());
             respVO.setNonceStr(wxPayMpOrderResult.getNonceStr());
             respVO.setPaySign(wxPayMpOrderResult.getPaySign());
             respVO.setSignType("MD5");
             respVO.setTimeStamp(wxPayMpOrderResult.getTimeStamp());
-        } catch (WxPayException e) {
+        } catch (Exception e) {
             e.printStackTrace();
 //                throw new RuntimeException(e);
             throw exception(USER_WEIXIN_PAY_ERROR);

@@ -5,8 +5,6 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
-import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
-import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.google.common.annotations.VisibleForTesting;
 import com.yanzu.framework.common.enums.CommonStatusEnum;
@@ -22,7 +20,6 @@ import com.yanzu.module.member.convert.franchiseinfo.FranchiseInfoConvert;
 import com.yanzu.module.member.convert.user.UserConvert;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.franchiseinfo.FranchiseInfoDO;
-import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
@@ -40,7 +37,6 @@ import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.enums.AppWxPayTypeEnum;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
-import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import com.yanzu.module.system.api.sms.SmsCodeApi;
@@ -433,29 +429,16 @@ public class AppUserServiceImpl implements AppUserService {
             }
             //创建微信支付实例
             WxPayService wxPayService = myWxService.initWxPay(reqVO.getStoreId());
-            StoreWxpayConfigDO wxPayConfig = myWxService.getWxPayConfig(reqVO.getStoreId());
-            //生成微信支付的订单
-            WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
-            wxPayUnifiedOrderRequest.setBody("微信支付订单");
-            wxPayUnifiedOrderRequest.setOutTradeNo(orderNo);
-            wxPayUnifiedOrderRequest.setTotalFee(reqVO.getPrice());
-            wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
-            wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
-            wxPayUnifiedOrderRequest.setTradeType("JSAPI");
-            wxPayUnifiedOrderRequest.setProfitSharing(wxPayConfig.getServiceModel() && wxPayConfig.getSplit() ? "Y" : "N");
-            wxPayUnifiedOrderRequest.setOpenid(openId);
-//            wxPayUnifiedOrderRequest.setSignType("HMAC-SHA256");
-//            wxPayUnifiedOrderRequest.setTimeExpire()
             try {
-//                WxPayUnifiedOrderResult wxPayUnifiedOrderResult = wxService.unifiedOrder(wxPayUnifiedOrderRequest);
-                WxPayMpOrderResult wxPayMpOrderResult = wxPayService.createOrder(wxPayUnifiedOrderRequest);
+                //创建订单
+                WxPayMpOrderResult wxPayMpOrderResult = myWxService.createOrder(wxPayService, reqVO.getStoreId(), orderNo, reqVO.getPrice(), openId);
                 respVO.setPkg(wxPayMpOrderResult.getPackageValue());
                 respVO.setAppId(wxPayMpOrderResult.getAppId());
                 respVO.setNonceStr(wxPayMpOrderResult.getNonceStr());
                 respVO.setPaySign(wxPayMpOrderResult.getPaySign());
                 respVO.setSignType("MD5");
                 respVO.setTimeStamp(wxPayMpOrderResult.getTimeStamp());
-            } catch (WxPayException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
 //                throw new RuntimeException(e);
                 throw exception(USER_WEIXIN_PAY_ERROR);
