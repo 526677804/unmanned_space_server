@@ -24,7 +24,6 @@
         <module>mazongjian-spring-boot-starter-mq</module>
 
         <module>mazongjian-spring-boot-starter-excel</module>
-        <module>mazongjian-spring-boot-starter-test</module>
 
         <module>mazongjian-spring-boot-starter-biz-operatelog</module>
         <module>mazongjian-spring-boot-starter-biz-dict</module>

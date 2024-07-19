@@ -28,11 +28,6 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- Test 测试相关 -->
-        <dependency>
-            <groupId>com.yanzu</groupId>
-            <artifactId>mazongjian-spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+
     </dependencies>
 </project>
