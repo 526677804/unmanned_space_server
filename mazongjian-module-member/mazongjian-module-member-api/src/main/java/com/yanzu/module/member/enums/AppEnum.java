@@ -181,8 +181,7 @@ public class AppEnum {
         WEIXIN(1),
         WALLET(2),
         TUANGOU(3),
-        PKG(4)
-        ;
+        PKG(4);
 //        DAZONG(4),
 //        DOUYIN(5);
 
@@ -331,7 +330,9 @@ public class AppEnum {
     @AllArgsConstructor
     public enum member_group_no_type {
         MEITUAN(1),
-        DOUYIN(2);
+        DOUYIN(2),
+        KUAISHOU(3),
+        ;
 
         private final Integer value;
     }

@@ -86,10 +86,10 @@
         </if>
 
     </select>
-    <select id="getMtBusinessStatistics" resultType="java.math.BigDecimal">
+    <select id="getGroupBusinessStatistics" resultType="java.math.BigDecimal">
         select ifnull(sum(group_pay_price), 0) tgMoney
         from member_group_pay_info
-        where deleted = 0 and group_pay_type IN (1,3)
+        where deleted = 0 and group_pay_type =#{groupPayType}
         <if test="null!=startTime and null!=endTime">
             and to_days(create_time) >= to_days(#{startTime})
             and to_days(create_time) &lt;= to_days(#{endTime})
@@ -103,21 +103,5 @@
 
 
     </select>
-    <select id="getDyBusinessStatistics" resultType="java.math.BigDecimal">
 
-        select ifnull(sum(group_pay_price), 0) tgMoney
-        from member_group_pay_info
-        where deleted = 0 and group_pay_type=2
-        <if test="null!=startTime and null!=endTime">
-            and to_days(create_time) >= to_days(#{startTime})
-            and to_days(create_time) &lt;= to_days(#{endTime})
-        </if>
-        <if test="null!=storeId and storeId!=''">
-            and store_id=#{storeId}
-        </if>
-        <if test="null==storeId or storeId==''">
-            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
-        </if>
-
-    </select>
 </mapper>

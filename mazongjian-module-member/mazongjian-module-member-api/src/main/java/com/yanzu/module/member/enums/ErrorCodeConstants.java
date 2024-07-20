@@ -62,9 +62,9 @@ public interface ErrorCodeConstants {
     ErrorCode GAME_MAX_USER_ERROR = new ErrorCode(1004004033, "对局人数已满！");
     ErrorCode GAME_DELETE_ME_ERROR = new ErrorCode(1004004034, "不能踢出自己！");
     ErrorCode GAME_START_TIME_ERROR = new ErrorCode(1004004035, "开始时间不能小于当前时间！");
-    ErrorCode ORDER_CHANGE_ROOM_ERROR = new ErrorCode(1004004036, "只能更换到与当前房间级别相等的房间！");
+    ErrorCode ORDER_CHANGE_ROOM_ERROR = new ErrorCode(1004004036, "只能更换到当前房间级别同等及以下的房间！");
     ErrorCode ORDER_NOT_FOUND_ERROR = new ErrorCode(1004004037, "当前不存在订单，请先下单！");
-
+    ErrorCode ORDER_CHANGE_ROOM_DEPOSIT_ERROR = new ErrorCode(1004004038, "新旧房间的押金设置不一致，无法更换！");
     ErrorCode CLEAR_ORDER_NOT_JIEDAN = new ErrorCode(1004004040, "订单已经被其他人抢走！");
     ErrorCode CLEAR_ORDER_STATUS_ERROR = new ErrorCode(1004004041, "订单当前状态不允许进行此操作！");
     ErrorCode USER_TYPE_CHECK_ERROR = new ErrorCode(1004004042, "用户类型检查异常！用户不能同时成为管理员和保洁员！");

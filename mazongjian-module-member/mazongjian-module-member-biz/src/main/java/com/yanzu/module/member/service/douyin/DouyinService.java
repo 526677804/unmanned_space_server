@@ -6,6 +6,7 @@ import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.forest.DouyinClient;
 import com.yanzu.module.member.service.douyin.vo.*;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,7 +94,7 @@ public class DouyinService {
     }
 
 
-    public DouyinPrepareRespVO prepare(String code) {
+    public IotGroupPayPrepareRespVO prepare(String code) {
         String url = "";
         if (code.indexOf("http") != -1) {
             String pattern = "/coupon/(.*?)/";
@@ -119,7 +120,7 @@ public class DouyinService {
             log.error("查询抖音团购券信息失败:{}", prepare.getString("description"));
             throw exception(GROUP_NO_CHECK_ERROR);
         } else {
-            log.info("抖音团购券:{}",data);
+            log.info("抖音团购券:{}", data);
             //券实付金额。券实付金额 = 用户实付金额 + 支付优惠金额，单位分
             Integer pay_amount = data.getJSONArray("certificates").getJSONObject(0).getJSONObject("amount").getInteger("coupon_pay_amount");
             //团购名称
@@ -127,25 +128,26 @@ public class DouyinService {
             //一次验券的标识,在验券接口传入
             String verify_token = data.getString("verify_token");
             String encrypted_code = data.getJSONArray("certificates").getJSONObject(0).getString("encrypted_code");
-            DouyinPrepareRespVO respVO = new DouyinPrepareRespVO();
-            respVO.setPayAmount(pay_amount);
-            respVO.setVerifyToken(verify_token);
-            respVO.setTitle(title);
-            respVO.setEncryptedCode(encrypted_code);
+            IotGroupPayPrepareRespVO respVO = new IotGroupPayPrepareRespVO();
+            respVO.setPayAmount(pay_amount)
+                    .setTicketName(title)
+                    .setTicketInfo(verify_token + "-" + encrypted_code)
+                    .setGroupPayType(AppEnum.member_group_no_type.DOUYIN.getValue());
             return respVO;
         }
 
     }
 
-    public String verify(Long storeId, Long userId, DouyinPrepareRespVO prepare) {
+    public String verify(Long storeId, String ticketInfo) {
         //查询出门店对应的抖音poiId
         String poiId = storeInfoMapper.getDouyinPoiId(storeId);
         if (ObjectUtils.isEmpty(poiId)) {
             throw exception(STORE_DY_TUANGOU_PAY_ERROR);
         }
+        String[] split = ticketInfo.split("-");
         DouyinVerifyReqVO reqVO = new DouyinVerifyReqVO();
-        reqVO.setEncrypted_codes(new String[]{prepare.getEncryptedCode()});
-        reqVO.setVerify_token(prepare.getVerifyToken());
+        reqVO.setVerify_token(split[0]);
+        reqVO.setEncrypted_codes(new String[]{split[1]});
         reqVO.setPoi_id(poiId);
         String clientToken = getClientToken();
         JSONObject jsonObject = douyinClient.verify(reqVO, clientToken);
@@ -159,7 +161,7 @@ public class DouyinService {
             certificate_id = verify_results.getString("certificate_id");
             return verify_id + "-" + certificate_id;
 
-        }else if(data.getInteger("error_code") == 1228){
+        } else if (data.getInteger("error_code") == 1228) {
             throw exception(GROUP_NO_CHECK_STORE_ERROR);
         } else {
             throw exception(GROUP_NO_CHECK_ERROR);

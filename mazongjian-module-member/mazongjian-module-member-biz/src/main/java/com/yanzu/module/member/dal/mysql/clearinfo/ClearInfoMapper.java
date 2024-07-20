@@ -43,4 +43,7 @@ public interface ClearInfoMapper extends BaseMapperX<ClearInfoDO> {
     int settlementByIds(List<Long> ids);
 
     ClearInfoDO getCurrent(@Param("userId") Long userId, @Param("roomId") Long roomId);
+
+    int cancelById(Long clearId);
+
 }

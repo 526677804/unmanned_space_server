@@ -593,8 +593,8 @@ public class WorkWxServiceImpl implements WorkWxService {
                 return "美团";
             case 2:
                 return "抖音";
-//            case 3:
-//                return "团购";
+            case 3:
+                return "快手";
         }
         return "";
     }

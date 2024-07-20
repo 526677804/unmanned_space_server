@@ -58,6 +58,9 @@ public class AppStoreAdminRespVO {
     @Schema(description = "启用工作日价格")
     private Boolean workPrice;
 
+    @Schema(description = "密码锁数据")
+    private String lockData;
+
 
 
 }

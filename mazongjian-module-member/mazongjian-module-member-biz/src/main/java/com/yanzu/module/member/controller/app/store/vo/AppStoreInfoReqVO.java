@@ -111,5 +111,6 @@ public class AppStoreInfoReqVO {
     private Boolean workPrice;
     @Schema(description = "订单门禁常开")
     private Boolean orderDoorOpen;
-
+    @Schema(description = "保洁任意开门")
+    private Boolean clearOpenDoor;
 }

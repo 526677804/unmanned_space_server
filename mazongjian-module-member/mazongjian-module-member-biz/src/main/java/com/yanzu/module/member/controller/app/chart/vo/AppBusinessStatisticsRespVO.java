@@ -35,6 +35,9 @@ public class AppBusinessStatisticsRespVO {
     @Schema(description = "抖音总收入")
     private BigDecimal dyMoney;
 
+    @Schema(description = "快手总收入")
+    private BigDecimal ksMoney;
+
     @Schema(description = "累积订单数")
     private Integer orderCount;
 

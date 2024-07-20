@@ -5,6 +5,7 @@ import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
@@ -26,6 +27,9 @@ public class AppChartDataReqVO {
 
     @Schema(hidden = true)
     private Long userId;
+
+    @Schema(hidden = true)
+    private Integer groupPayType;
 
     @Schema(description = "门店id")
     private Long storeId;

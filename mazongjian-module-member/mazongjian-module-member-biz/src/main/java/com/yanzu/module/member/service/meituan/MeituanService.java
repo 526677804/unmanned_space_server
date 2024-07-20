@@ -4,7 +4,9 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
+import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.forest.MeituanClient;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
 import com.yanzu.module.member.service.meituan.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,7 +131,7 @@ public class MeituanService {
     }
 
     //查询美团券信息
-    public MeituanPrepareRespVO prepare(Long storeId, String receiptCode) {
+    public IotGroupPayPrepareRespVO prepare(Long storeId, String receiptCode) {
         //查询出店铺id
         StoreMeituanInfoDO meituan = storeMeituanInfoMapper.getByStoreId(storeId);
         if (ObjectUtils.isEmpty(meituan) || ObjectUtils.isEmpty(meituan.getOpenShopUuid())) {
@@ -155,9 +157,9 @@ public class MeituanService {
             throw exception(GROUP_NO_CHECK_ERROR);
         }
         JSONObject data = prepare.getJSONObject("data");
-        MeituanPrepareRespVO respVO = new MeituanPrepareRespVO();
-        respVO.setTitle(data.getStr("deal_title"));
-        respVO.setDealId(data.getStr("deal_id"));
+        IotGroupPayPrepareRespVO respVO = new IotGroupPayPrepareRespVO();
+        respVO.setTicketName(data.getStr("deal_title"));
+        respVO.setTicketInfo(data.getStr("deal_id"));
         //商品的售价
         BigDecimal dealPrice = data.getBigDecimal("deal_price");
         JSONArray paymentDetail = data.getJSONArray("payment_detail");
@@ -180,16 +182,15 @@ public class MeituanService {
         BigDecimal totalPrice = payPrice.add(coupinPrice);
         //数量
         BigDecimal saleCount = totalPrice.divide(dealPrice);
-        //计算客户这张券的实际单价
-        BigDecimal price = payPrice.divide(saleCount);
+        //计算客户这张券的实际单价  这里先把单位统一成 分
+        int price = payPrice.divide(saleCount).multiply(new BigDecimal(100)).intValue();
         respVO.setPayAmount(price);
-//        JSONObject amount = (JSONObject) paymentDetail.get(0);
-//        respVO.setPayAmount(amount.getBigDecimal("amount"));
+        respVO.setGroupPayType(AppEnum.member_group_no_type.MEITUAN.getValue());
         return respVO;
     }
 
 
-    public JSONObject consume(Long storeId, Long userId, String receiptCode, String dealId) {
+    public JSONObject consume(Long storeId, String receiptCode, String dealId) {
         //查询出店铺id
         StoreMeituanInfoDO meituan = storeMeituanInfoMapper.getByStoreId(storeId);
         if (ObjectUtils.isEmpty(meituan) || ObjectUtils.isEmpty(meituan.getOpenShopUuid())) {
@@ -200,8 +201,8 @@ public class MeituanService {
         reqVO.setSession(meituan.getAccessToken());
         reqVO.setOpen_shop_uuid(meituan.getOpenShopUuid());
         reqVO.setReceipt_code(receiptCode);
-        reqVO.setApp_shop_accountname(String.valueOf(userId));
-        reqVO.setApp_shop_account(String.valueOf(userId));
+        reqVO.setApp_shop_accountname("system");
+        reqVO.setApp_shop_account("system");
         Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
         String sign = MeituanSignUtils.generateSign(paramMap, secret, MeituanConstants.SIGN_METHOD_MD5);
         reqVO.setSign(sign);
@@ -214,7 +215,7 @@ public class MeituanService {
         return (JSONObject) consume.getJSONArray("data").get(0);
     }
 
-    public JSONObject reverseconsume(Long storeId, Long userId, String receiptCode, String dealId) {
+    public JSONObject reverseconsume(Long storeId, String receiptCode, String dealId) {
         //查询出店铺id
         StoreMeituanInfoDO meituan = storeMeituanInfoMapper.getByStoreId(storeId);
         if (ObjectUtils.isEmpty(meituan) || ObjectUtils.isEmpty(meituan.getOpenShopUuid())) {
@@ -226,8 +227,8 @@ public class MeituanService {
         reqVO.setSession(meituan.getAccessToken());
         reqVO.setOpen_shop_uuid(meituan.getOpenShopUuid());
         reqVO.setApp_key(appKey);
-        reqVO.setApp_shop_accountname(String.valueOf(userId));
-        reqVO.setApp_shop_account(String.valueOf(userId));
+        reqVO.setApp_shop_accountname("system");
+        reqVO.setApp_shop_account("system");
         Map<String, String> paramMap = MeituanSignUtils.convertBeanToMap(reqVO);
         String sign = MeituanSignUtils.generateSign(paramMap, secret, MeituanConstants.SIGN_METHOD_MD5);
         reqVO.setSign(sign);

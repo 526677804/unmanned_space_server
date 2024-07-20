@@ -21,4 +21,7 @@ public class IotGroupPayPrepareRespVO {
     @Schema(description = "原始团购券数据")
     private String ticketData;
 
+    @Schema(description = "团购平台类型")
+    private Integer groupPayType;
+
 }

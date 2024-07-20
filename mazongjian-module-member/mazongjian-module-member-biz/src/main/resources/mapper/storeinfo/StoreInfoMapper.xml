@@ -117,7 +117,7 @@
     </select>
     <select id="getPageList" resultType="com.yanzu.module.member.controller.app.store.vo.AppStoreAdminRespVO">
         SELECT
-        s.*,
+        s.*,device.device_data lockData,
         ( SELECT count( 1 ) FROM member_room_info WHERE deleted = 0 AND store_id = s.store_id ) roomNum,
         ( SELECT count( 1 ) FROM member_device_info WHERE deleted = 0 AND store_id = s.store_id ) deviceNum,
         ( SELECT count( 1 ) FROM member_device_info WHERE deleted = 0 AND STATUS = 1 AND store_id = s.store_id )
@@ -125,17 +125,19 @@
         FROM
         member_store_info s
         left join member_store_user su on su.store_id=s.store_id and su.deleted=0
+        left join member_device_info device
+        ON device.store_id = s.store_id and device.room_id is null and device.type = 5 and device.deleted = 0
         WHERE
         s.deleted = 0
         and su.user_id=#{reqVO.userId} and su.type in (12,13)
-          <if test="null!=reqVO">
-              <if test="null!=reqVO.name and reqVO.name!=''">
-                  and locate(#{reqVO.name},s.store_name)>0
-              </if>
-              <if test="null!=reqVO.cityName and reqVO.cityName!=''">
-                  and s.city_name=#{reqVO.cityName}
-              </if>
-          </if>
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.name and reqVO.name!=''">
+                and locate(#{reqVO.name},s.store_name)>0
+            </if>
+            <if test="null!=reqVO.cityName and reqVO.cityName!=''">
+                and s.city_name=#{reqVO.cityName}
+            </if>
+        </if>
 
     </select>
     <select id="getStoreListByMember" resultType="com.yanzu.framework.common.core.KeyValue">

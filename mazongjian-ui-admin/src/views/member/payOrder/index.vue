@@ -51,7 +51,7 @@
       <el-table-column label="用户编号" align="center" prop="userId" />
       <el-table-column label="订单编号" align="center" prop="orderNo" />
       <el-table-column label="订单内容" align="center" prop="orderDesc" />
-      <el-table-column label="价格" align="center" prop="price" />
+      <el-table-column label="价格" align="center" prop="price" :formatter="priceFormat"/>
       <el-table-column label="是否已支付" align="center" prop="payStatus">
         <template v-slot="scope">
           <dict-tag :type="DICT_TYPE.INFRA_BOOLEAN_STRING" :value="scope.row.payStatus" />
@@ -64,7 +64,7 @@
         </template>
       </el-table-column>
       <el-table-column label="退款订单编号" align="center" prop="payRefundNo" />
-      <el-table-column label="退款金额" align="center" prop="refundPrice" />
+      <el-table-column label="退款金额" align="center" prop="refundPrice" :formatter="priceFormat"/>
       <el-table-column label="退款时间" align="center" prop="refundTime" width="180">
         <template v-slot="scope">
           <span>{{ parseTime(scope.row.refundTime) }}</span>
@@ -249,7 +249,11 @@ export default {
           this.$download.excel(response, '支付订单.xls');
           this.exportLoading = false;
         }).catch(() => {});
-    }
+    },
+    priceFormat(row, column,v) {
+      console.log(v);
+      return v/100.0 +'元';
+    },
   }
 };
 </script>

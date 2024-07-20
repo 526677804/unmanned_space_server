@@ -47,6 +47,7 @@ import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.douyin.vo.DouyinCancelReqVO;
 import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
+import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
 import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayConsumeReqVO;
@@ -164,6 +165,10 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Autowired
     private RedisTemplate redisTemplate;
 
+
+    @Resource
+    private GroupPayInfoService groupPayInfoService;
+
     @Resource
     private StoreMeituanInfoMapper storeMeituanInfoMapper;
 
@@ -173,8 +178,6 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
 
-    @Value("${iot.groupPay:false}")
-    private boolean iotGroupPay;
 
     /**
      * @param roomId        房间id
@@ -767,11 +770,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 couponInfoDO, pkgInfoDO, null, reqVO.getNightLong(), false);
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPayPrice() / 100.0));
         BigDecimal oldPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPayPrice() / 100.0));
-        //判断是否有填团购券  先预声明一些团购要的字段
-        String groupName = "";
-        String groupShopId = "";
-        String groupNo = "";
-        String ticketInfo = "";
+        //判断是否有填团购券
         Integer groupType = null;
         BigDecimal groupPrice = BigDecimal.ZERO;
         if (!ObjectUtils.isEmpty(reqVO.getGroupPayNo())) {
@@ -780,72 +779,23 @@ public class AppOrderServiceImpl implements AppOrderService {
             reqVO.setPayType(AppEnum.order_pay_type.TUANGOU.getValue());
             //处理掉中间有空格的情况
             reqVO.setGroupPayNo(reqVO.getGroupPayNo().replaceAll(" ", ""));
-            //判断是抖音券还是美团券
-            if (reqVO.getGroupPayNo().length() <= 13) {
-                //美团券
-                groupType = AppEnum.member_group_no_type.MEITUAN.getValue();
-                //查询券信息
-                if (iotGroupPay) {
-                    IotGroupPayPrepareRespVO prepare = iotGroupPayService.prepare(new IotGroupPayPrepareReqVO()
-                            .setStoreId(roomInfoDO.getStoreId())
-                            .setGroupPayType(1)
-                            .setTicketNo(reqVO.getGroupPayNo())
-                    );
-                    groupName = prepare.getTicketName();
-                    groupNo = reqVO.getGroupPayNo();
-                    groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
-                    ticketInfo = prepare.getTicketInfo();
-                    checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
-                    //检验通过  把团购券给使用了
-                    iotGroupPayService.consume(new IotGroupPayConsumeReqVO().setGroupPayType(1)
-                            .setTicketInfo(prepare.getTicketInfo())
-                            .setTicketNo(reqVO.getGroupPayNo())
-                            .setStoreId(roomInfoDO.getStoreId()));
-                } else {
-                    MeituanPrepareRespVO prepare = meituanService.prepare(roomInfoDO.getStoreId(), reqVO.getGroupPayNo());
-                    groupName = prepare.getTitle();
-                    groupNo = reqVO.getGroupPayNo();
-                    groupPrice = prepare.getPayAmount();
-                    groupShopId = prepare.getDealId();
-                    checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
-                    //检验通过  把团购券给使用了
-                    meituanService.consume(roomInfoDO.getStoreId(), reqVO.getUserId(), reqVO.getGroupPayNo(), groupShopId);
-                }
-            } else {
-                //抖音券
-                groupType = AppEnum.member_group_no_type.DOUYIN.getValue();
-                if (iotGroupPay) {
-                    IotGroupPayPrepareRespVO prepare = iotGroupPayService.prepare(new IotGroupPayPrepareReqVO()
-                            .setStoreId(roomInfoDO.getStoreId())
-                            .setGroupPayType(2)
-                            .setTicketNo(reqVO.getGroupPayNo())
-                    );
-                    groupName = prepare.getTicketName();
-                    groupNo = reqVO.getGroupPayNo();
-                    groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
-                    ticketInfo = prepare.getTicketInfo();
-                    checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
-                    //检验通过  把团购券给使用了
-                    iotGroupPayService.consume(new IotGroupPayConsumeReqVO().setGroupPayType(2)
-                            .setTicketInfo(prepare.getTicketInfo())
-                            .setTicketNo(reqVO.getGroupPayNo())
-                            .setStoreId(roomInfoDO.getStoreId()));
-
-                } else {
-                    DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getGroupPayNo());
-                    groupName = prepare.getTitle();
-                    groupPrice = new BigDecimal(String.valueOf(prepare.getPayAmount() / 100.0));
-                    checkGroupNo(prepare.getTitle(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
-                    //检验通过  把团购券给使用了
-                    String verify = douyinService.verify(roomInfoDO.getStoreId(), reqVO.getUserId(), prepare);
-                    groupNo = verify;
-                }
-            }
+            //查询券信息
+            IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(roomInfoDO.getStoreId(), reqVO.getGroupPayNo());
+            //校验券合法性
+            checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
+            //把券使用了
+            GroupPayInfoDO consume = groupPayInfoService.consume(roomInfoDO.getStoreId(), reqVO.getGroupPayNo(), prepare);
             //团购消费的  支付价格设置为0
             totalPrice = BigDecimal.ZERO;
             if (roomInfoDO.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
                 //需要押金 检查支付结果
-                payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), wxPayOrderRespVO.getPayPrice());
+                try {
+                    payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), wxPayOrderRespVO.getPayPrice());
+                } catch (Exception e) {
+                    //如果押金没有支付  撤销团购验券
+                    groupPayInfoService.revoke(roomInfoDO.getStoreId(), prepare.getGroupPayType(), reqVO.getGroupPayNo(), consume.getTicketInfo());
+                    throw e;
+                }
             }
         } else {
             //非团购支付
@@ -958,18 +908,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             pkgUserInfoDO.setStatus(AppEnum.coupon_status.USED.getValue());
             pkgUserInfoMapper.insert(pkgUserInfoDO);
         }
-        //如果使用了团购券 就增加团购验券记录
         if (!ObjectUtils.isEmpty(reqVO.getGroupPayNo())) {
-            GroupPayInfoDO groupPayInfoDO = new GroupPayInfoDO();
-            groupPayInfoDO.setGroupName(groupName);
-            groupPayInfoDO.setGroupNo(groupNo);
-            groupPayInfoDO.setTicketInfo(ticketInfo);
-            groupPayInfoDO.setGroupShopId(groupShopId);
-            groupPayInfoDO.setGroupPayPrice(groupPrice);
-            groupPayInfoDO.setStoreId(orderInfoDO.getStoreId());
-            groupPayInfoDO.setOrderId(orderInfoDO.getOrderId());
-            groupPayInfoDO.setGroupPayType(groupType);
-            groupPayInfoMapper.insert(groupPayInfoDO);
             //异步发送微信通知
             workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), groupPrice, null, null, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         } else {
@@ -1200,12 +1139,16 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //只有未开始的订单才能更换房间
         if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
-            //只能更换到等于当前房间级别的
+            //只能更换到小于等于当前房间级别的房间
             RoomInfoDO newRoomInfo = roomInfoMapper.selectById(roomId);
             RoomInfoDO oldRoomInfo = roomInfoMapper.selectById(orderInfoDO.getRoomId());
-            if (newRoomInfo.getType().compareTo(oldRoomInfo.getType()) != 0) {
+            if (newRoomInfo.getType().compareTo(oldRoomInfo.getType()) <= 0) {
                 throw exception(ORDER_CHANGE_ROOM_ERROR);
             } else {
+                //两个房间押金必须一样 不然会出现退错押金的问题
+                if(newRoomInfo.getDeposit().compareTo(oldRoomInfo.getDeposit())!=0){
+                    throw exception(ORDER_CHANGE_ROOM_ERROR);
+                }
                 //检查是否可用
                 preOrder(loginUserId, null, roomId, orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), null, null, null, false, false);
                 //开始更换
@@ -1247,32 +1190,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //判断支付方式
             if (!ObjectUtils.isEmpty(orderInfoDO.getGroupPayNo())) {
                 GroupPayInfoDO groupPayInfoDO = groupPayInfoMapper.getByOrderId(orderId);
-                if (orderInfoDO.getGroupPayType().compareTo(AppEnum.member_group_no_type.MEITUAN.getValue()) == 0) {
-                    if (iotGroupPay) {
-                        iotGroupPayService.revoke(new IotGroupPayConsumeReqVO()
-                                .setStoreId(groupPayInfoDO.getStoreId())
-                                .setTicketNo(groupPayInfoDO.getGroupNo())
-                                .setTicketInfo(groupPayInfoDO.getTicketInfo())
-                                .setGroupPayType(1));
-                    } else {
-                        meituanService.reverseconsume(orderInfoDO.getStoreId(), orderInfoDO.getUserId(), groupPayInfoDO.getGroupNo(), groupPayInfoDO.getGroupShopId());
-                    }
-                } else if (orderInfoDO.getGroupPayType().compareTo(AppEnum.member_group_no_type.DOUYIN.getValue()) == 0) {
-                    if (iotGroupPay) {
-                        iotGroupPayService.revoke(new IotGroupPayConsumeReqVO()
-                                .setStoreId(groupPayInfoDO.getStoreId())
-                                .setTicketNo(groupPayInfoDO.getGroupNo())
-                                .setTicketInfo(groupPayInfoDO.getTicketInfo())
-                                .setGroupPayType(2));
-                    } else {
-                        //verify_id 在前   certificate_id在后
-                        String[] split = groupPayInfoDO.getGroupNo().split("-");
-                        DouyinCancelReqVO reqVO = new DouyinCancelReqVO();
-                        reqVO.setVerify_id(split[0]);
-                        reqVO.setCertificate_id(split[1]);
-                        douyinService.cancel(reqVO);
-                    }
-                }
+                groupPayInfoService.revoke(groupPayInfoDO.getStoreId(), groupPayInfoDO.getGroupPayType(), groupPayInfoDO.getGroupNo(), groupPayInfoDO.getTicketInfo());
                 //删除团购券记录
                 groupPayInfoMapper.deleteById(groupPayInfoDO.getId());
             } else {
@@ -1724,33 +1642,8 @@ public class AppOrderServiceImpl implements AppOrderService {
     public String preGroupNo(PreGroupNoReqVO reqVO) {
         //处理掉中间有空格的情况
         reqVO.setCode(reqVO.getCode().replaceAll(" ", ""));
-        //判断是抖音券还是美团券
-        if (reqVO.getCode().length() <= 13) {
-            //美团券
-            if (iotGroupPay) {
-                IotGroupPayPrepareRespVO prepare = iotGroupPayService.prepare(new IotGroupPayPrepareReqVO()
-                        .setTicketNo(reqVO.getCode())
-                        .setStoreId(reqVO.getStoreId())
-                        .setGroupPayType(1));
-                return prepare.getTicketName();
-            } else {
-                MeituanPrepareRespVO prepare = meituanService.prepare(reqVO.getStoreId(), reqVO.getCode());
-                return prepare.getTitle();
-            }
-        } else {
-            //抖音券
-            if (iotGroupPay) {
-                IotGroupPayPrepareRespVO prepare = iotGroupPayService.prepare(new IotGroupPayPrepareReqVO()
-                        .setTicketNo(reqVO.getCode())
-                        .setStoreId(reqVO.getStoreId())
-                        .setGroupPayType(2));
-                return prepare.getTicketName();
-            } else {
-                DouyinPrepareRespVO prepare = douyinService.prepare(reqVO.getCode());
-                return prepare.getTitle();
-            }
-
-        }
+        IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(reqVO.getStoreId(), reqVO.getCode());
+        return prepare.getTicketName();
     }
 
 }

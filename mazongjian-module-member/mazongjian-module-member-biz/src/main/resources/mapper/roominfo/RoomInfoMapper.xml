@@ -96,6 +96,7 @@
             resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomInfoListRespVO">
         select s.store_id,
         s.store_name,
+        s.clear_open_door,
         r.room_id,
         r.room_name,
         r.type,
@@ -107,7 +108,7 @@
         left join member_device_info l ON l.room_id = r.room_id and l.type = 5 and l.deleted = 0
         left join member_device_info gateway
         ON gateway.room_id = r.room_id and gateway.type = 6 and gateway.deleted = 0
-        where r.deleted = 0
+        where r.deleted = 0 and s.deleted=0
         and r.store_id IN
         <foreach collection="storeIds" item="item" index="index" open="(" separator="," close=")">
             #{item}

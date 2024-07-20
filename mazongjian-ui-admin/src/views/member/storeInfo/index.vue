@@ -51,7 +51,6 @@
       <el-table-column label="经度" align="center" prop="lon" />
       <el-table-column label="详细地址" align="center" prop="address" />
       <el-table-column label="门店状态" align="center" :formatter="statusFomat" />
-      <el-table-column label="wifi信息" align="center" prop="wifiInfo" />
       <el-table-column label="客服电话" align="center" prop="kefuPhone" />
       <!-- <el-table-column label="美团店铺uuid" align="center" prop="meituanOpenShopUuid" />
       <el-table-column label="美团key" align="center" prop="meituanKey" />
@@ -124,8 +123,11 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="wifi信息" prop="wifiInfo">
-          <el-input v-model="form.wifiInfo" placeholder="请输入wifi信息" />
+        <el-form-item label="wifi名称" prop="wifiInfo">
+          <el-input v-model="form.wifiInfo" placeholder="请输入wifi名称" />
+        </el-form-item>
+        <el-form-item label="wifi密码" prop="wifiPwd">
+          <el-input v-model="form.wifiPwd" placeholder="请输入wifi密码" />
         </el-form-item>
         <el-form-item label="客服电话" prop="kefuPhone">
           <el-input v-model="form.kefuPhone" placeholder="请输入客服电话" />
@@ -249,6 +251,7 @@ export default {
         address: undefined,
         status: undefined,
         wifiInfo: undefined,
+        wifiPwd: undefined,
         kefuPhone: undefined,
         wxWebhook: undefined,
         meituanOpenShopUuid: undefined,

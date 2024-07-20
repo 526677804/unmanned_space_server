@@ -46,4 +46,7 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "最近的订单/预约结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date endTime;
+
+    @Schema(description = "保洁任意开门")
+    private Boolean clearOpenDoor;
 }

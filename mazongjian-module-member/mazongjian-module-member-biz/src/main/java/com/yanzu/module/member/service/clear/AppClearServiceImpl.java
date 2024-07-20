@@ -100,6 +100,7 @@ public class AppClearServiceImpl implements AppClearService {
                             }
                             clearInfoDO.setStatus(AppEnum.clear_info_status.START.getValue());
                             clearInfoDO.setStartTime(LocalDateTime.now());
+                            clearInfoMapper.updateById(clearInfoDO);
                             //异步发送微信通知
                             workWxService.sendClearFinishMsg(clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), getLoginUserId(), "开始清洁任务");
                             break;
@@ -108,11 +109,9 @@ public class AppClearServiceImpl implements AppClearService {
                             if (clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.JIEDAN.getValue()) != 0) {
                                 throw exception(CLEAR_ORDER_STATUS_ERROR);
                             }
-                            clearInfoDO.setUserId(null);
-                            clearInfoDO.setStatus(AppEnum.clear_info_status.DEFAULT.getValue());
+                            clearInfoMapper.cancelById(clearInfoDO.getClearId());
                             break;
                     }
-                    clearInfoMapper.updateById(clearInfoDO);
                 } else {
                     throw exception(OPRATION_ERROR);
                 }

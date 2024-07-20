@@ -45,6 +45,9 @@ public class StoreInfoCreateReqVO {
     @Schema(description = "wifi信息")
     private String wifiInfo;
 
+    @Schema(description = "wifi密码")
+    private String wifiPwd;
+
     @Schema(description = "客服电话")
     private String kefuPhone;
 
