@@ -817,8 +817,8 @@ public class AppMangerServiceImpl implements AppMangerService {
         boolean flag = true;//默认允许修改订单
         flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (flag) {
-            //检查时间
-            appOrderService.preOrder(getLoginUserId(), null, orderInfoDO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
+            //检查目标房间的时间是否占用
+            appOrderService.preOrder(orderInfoDO.getUserId(), null, reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
             //开始修改
             //改时间
             orderInfoDO.setStartTime(reqVO.getStartTime());
