@@ -769,7 +769,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         reqVO.setGroupPayNo(reqVO.getGroupPayNo().replaceAll(" ", ""));
         IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(reqVO.getStoreId(), reqVO.getGroupPayNo());
         //把券使用了
-        groupPayInfoService.consume(reqVO.getStoreId(), reqVO.getGroupPayNo(), prepare);
+        GroupPayInfoDO groupPayInfoDO = groupPayInfoService.consume(reqVO.getStoreId(), reqVO.getGroupPayNo(), prepare);
+        //异步发送微信通知
+        workWxService.sendUseGroupNoMsg(groupPayInfoDO, getLoginUserId());
     }
 
     @Override

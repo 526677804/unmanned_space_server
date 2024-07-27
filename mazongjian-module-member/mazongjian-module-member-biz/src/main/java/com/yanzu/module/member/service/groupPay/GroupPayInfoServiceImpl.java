@@ -188,8 +188,6 @@ public class GroupPayInfoServiceImpl implements GroupPayInfoService {
         //把单位从分 转化成元
         groupPayInfoDO.setGroupPayPrice(new BigDecimal(vo.getPayAmount() / 100));
         groupPayInfoMapper.insert(groupPayInfoDO);
-        //异步发送微信通知
-        workWxService.sendUseGroupNoMsg(groupPayInfoDO, getLoginUserId());
         return groupPayInfoDO;
     }
 
