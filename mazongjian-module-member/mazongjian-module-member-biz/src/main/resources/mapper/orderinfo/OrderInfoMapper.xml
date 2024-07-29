@@ -518,7 +518,7 @@
         case group_pay_type
         when 1 then '美团'
         when 2 then '抖音'
-        when 3 then '大众'
+        when 3 then '快手'
         end as payType,
         g.create_time
         FROM

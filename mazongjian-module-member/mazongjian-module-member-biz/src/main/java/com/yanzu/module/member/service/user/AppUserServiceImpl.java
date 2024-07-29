@@ -18,7 +18,6 @@ import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.convert.franchiseinfo.FranchiseInfoConvert;
 import com.yanzu.module.member.convert.user.UserConvert;
-import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.franchiseinfo.FranchiseInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
@@ -61,10 +60,8 @@ import javax.validation.Valid;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -363,19 +360,19 @@ public class AppUserServiceImpl implements AppUserService {
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
             //如果该用户，在本店铺是新用户，就送他一张新人加时券,一个月有效
 //            int cCount = appOrderService.countNewUserByStoreId(reqVO.getUserId(), storeInfoDO.getStoreId());
-            if (couponInfoMapper.countNewUserByStoreId(reqVO.getUserId(), storeInfoDO.getStoreId()) == 0) {
-                CouponInfoDO couponInfoDO = new CouponInfoDO();
-                couponInfoDO.setCouponName("新用户1小时加时券")
-                        .setStatus(0)
-                        .setPrice(BigDecimal.valueOf(1))
-                        .setMinUsePrice(BigDecimal.valueOf(1))
-                        .setUserId(reqVO.getUserId())
-                        .setCreateUserId(1L)
-                        .setStoreId(storeInfoDO.getStoreId())
-                        .setType(AppEnum.coupon_type.JIASHI.getValue())
-                        .setExpriceTime(Date.from(LocalDateTime.now().plusMonths(1).atZone(ZoneId.systemDefault()).toInstant()));
-                couponInfoMapper.insert(couponInfoDO);
-            }
+//            if (couponInfoMapper.countNewUserByStoreId(reqVO.getUserId(), storeInfoDO.getStoreId()) == 0) {
+//                CouponInfoDO couponInfoDO = new CouponInfoDO();
+//                couponInfoDO.setCouponName("新用户1小时加时券")
+//                        .setStatus(0)
+//                        .setPrice(BigDecimal.valueOf(1))
+//                        .setMinUsePrice(BigDecimal.valueOf(1))
+//                        .setUserId(reqVO.getUserId())
+//                        .setCreateUserId(1L)
+//                        .setStoreId(storeInfoDO.getStoreId())
+//                        .setType(AppEnum.coupon_type.JIASHI.getValue())
+//                        .setExpriceTime(Date.from(LocalDateTime.now().plusMonths(1).atZone(ZoneId.systemDefault()).toInstant()));
+//                couponInfoMapper.insert(couponInfoDO);
+//            }
             //先计算出订单价格
             BigDecimal mathPrice = appOrderService.mathPrice(roomInfoDO.getPrice(), roomInfoDO.getDeposit(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(),
                     roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getNightLong(), null, null);

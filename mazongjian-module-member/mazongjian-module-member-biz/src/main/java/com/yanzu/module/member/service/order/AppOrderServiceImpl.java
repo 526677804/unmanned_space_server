@@ -45,16 +45,11 @@ import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.enums.AppWxPayTypeEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.douyin.DouyinService;
-import com.yanzu.module.member.service.douyin.vo.DouyinCancelReqVO;
-import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
 import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
 import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayConsumeReqVO;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareReqVO;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
-import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
@@ -773,6 +768,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //判断是否有填团购券
         Integer groupType = null;
         BigDecimal groupPrice = BigDecimal.ZERO;
+        GroupPayInfoDO groupPayInfoDO = null;
         if (!ObjectUtils.isEmpty(reqVO.getGroupPayNo())) {
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
             //设置订单的支付类型为团购
@@ -784,7 +780,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //校验券合法性
             checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
             //把券使用了
-            GroupPayInfoDO consume = groupPayInfoService.consume(roomInfoDO.getStoreId(), reqVO.getGroupPayNo(), prepare);
+            groupPayInfoDO = groupPayInfoService.consume(roomInfoDO.getStoreId(), reqVO.getGroupPayNo(), prepare);
             //团购消费的  支付价格设置为0
             totalPrice = BigDecimal.ZERO;
             if (roomInfoDO.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
@@ -793,7 +789,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), wxPayOrderRespVO.getPayPrice());
                 } catch (Exception e) {
                     //如果押金没有支付  撤销团购验券
-                    groupPayInfoService.revoke(roomInfoDO.getStoreId(), prepare.getGroupPayType(), reqVO.getGroupPayNo(), consume.getTicketInfo());
+                    groupPayInfoService.revoke(roomInfoDO.getStoreId(), prepare.getGroupPayType(), reqVO.getGroupPayNo(), groupPayInfoDO.getTicketInfo());
                     throw e;
                 }
             }
@@ -909,6 +905,8 @@ public class AppOrderServiceImpl implements AppOrderService {
             pkgUserInfoMapper.insert(pkgUserInfoDO);
         }
         if (!ObjectUtils.isEmpty(reqVO.getGroupPayNo())) {
+            //把订单id更新到团购券
+            groupPayInfoMapper.updateById(new GroupPayInfoDO().setId(groupPayInfoDO.getId()).setOrderId(orderInfoDO.getOrderId()));
             //异步发送微信通知
             workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), groupPrice, null, null, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         } else {
@@ -1146,7 +1144,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(ORDER_CHANGE_ROOM_ERROR);
             } else {
                 //两个房间押金必须一样 不然会出现退错押金的问题
-                if(newRoomInfo.getDeposit().compareTo(oldRoomInfo.getDeposit())!=0){
+                if (newRoomInfo.getDeposit().compareTo(oldRoomInfo.getDeposit()) != 0) {
                     throw exception(ORDER_CHANGE_ROOM_ERROR);
                 }
                 //检查是否可用
@@ -1511,8 +1509,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //只能提前X小时开门
                 RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
                 Date now = new Date();
-                long l1 = (orderInfoDO.getStartTime().getTime() - now.getTime()) / 1000 / 60 / 60;
-                if (l1 > roomInfoDO.getLeadHour()) {
+                long l1 = (orderInfoDO.getStartTime().getTime() - now.getTime()) / 1000 / 60;
+                if (l1 > roomInfoDO.getLeadHour() * 60) {
                     throw exception(ORDER_START_TIQIAN_ERROR);
                 }
                 deviceService.openStoreDoor(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), 1);
