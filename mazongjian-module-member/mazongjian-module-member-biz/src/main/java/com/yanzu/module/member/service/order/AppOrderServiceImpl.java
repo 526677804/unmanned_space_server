@@ -391,7 +391,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             //判断适用门店
             if (pkgInfoDO.getStoreId().compareTo(storeId) != 0) {
-                exception(PKG_USE_STORE_ERROR);
+                throw exception(PKG_USE_STORE_ERROR);
             }
             //有限制的房间类型的  就判断房间类型
             if (!ObjectUtils.isEmpty(pkgInfoDO.getRoomType()) && pkgInfoDO.getRoomType().compareTo(0) != 0) {
@@ -507,11 +507,11 @@ public class AppOrderServiceImpl implements AppOrderService {
         //有使用优惠券再判断
         if (!ObjectUtils.isEmpty(couponInfoDO)) {
             if (couponInfoDO.getStatus().intValue() != 0 || couponInfoDO.getExpriceTime().after(new Date())) {
-                exception(COUPON_USED_ERROR);
+                throw exception(COUPON_USED_ERROR);
             }
             //判断适用门店
             if (couponInfoDO.getStoreId().compareTo(storeId) != 0) {
-                exception(COUPON_USE_CHECK_STORE_ERROR);
+                throw exception(COUPON_USE_CHECK_STORE_ERROR);
             }
             //优惠券有限制的房间类型的  就判断房间类型
             if (!ObjectUtils.isEmpty(couponInfoDO) && !ObjectUtils.isEmpty(couponInfoDO.getRoomType())) {
