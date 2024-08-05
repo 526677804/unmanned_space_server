@@ -506,7 +506,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     private void checkCouponUse(CouponInfoDO couponInfoDO, boolean nightLong, Integer roomType, Long storeId, Date startTime, Date endTime) {
         //有使用优惠券再判断
         if (!ObjectUtils.isEmpty(couponInfoDO)) {
-            if (couponInfoDO.getStatus().intValue() != 0 || couponInfoDO.getExpriceTime().after(new Date())) {
+            if (couponInfoDO.getStatus().intValue() != 0 || couponInfoDO.getExpriceTime().before(new Date())) {
                 throw exception(COUPON_USED_ERROR);
             }
             //判断适用门店

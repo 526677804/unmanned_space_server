@@ -131,7 +131,7 @@ public class DouyinService {
             IotGroupPayPrepareRespVO respVO = new IotGroupPayPrepareRespVO();
             respVO.setPayAmount(pay_amount)
                     .setTicketName(title)
-                    .setTicketInfo(verify_token + "-" + encrypted_code)
+                    .setTicketInfo(verify_token + "&" + encrypted_code)
                     .setGroupPayType(AppEnum.member_group_no_type.DOUYIN.getValue());
             return respVO;
         }
@@ -144,7 +144,7 @@ public class DouyinService {
         if (ObjectUtils.isEmpty(poiId)) {
             throw exception(STORE_DY_TUANGOU_PAY_ERROR);
         }
-        String[] split = ticketInfo.split("-");
+        String[] split = ticketInfo.split("&");
         DouyinVerifyReqVO reqVO = new DouyinVerifyReqVO();
         reqVO.setVerify_token(split[0]);
         reqVO.setEncrypted_codes(new String[]{split[1]});
@@ -159,7 +159,7 @@ public class DouyinService {
             JSONObject verify_results = (JSONObject) data.getJSONArray("verify_results").get(0);
             verify_id = verify_results.getString("verify_id");
             certificate_id = verify_results.getString("certificate_id");
-            return verify_id + "-" + certificate_id;
+            return verify_id + "&" + certificate_id;
 
         } else if (data.getInteger("error_code") == 1228) {
             throw exception(GROUP_NO_CHECK_STORE_ERROR);

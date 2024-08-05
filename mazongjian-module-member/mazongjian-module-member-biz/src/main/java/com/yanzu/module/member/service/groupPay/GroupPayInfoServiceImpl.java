@@ -206,7 +206,7 @@ public class GroupPayInfoServiceImpl implements GroupPayInfoService {
                     meituanService.reverseconsume(storeId, ticketNo, ticketInfo);
                     break;
                 case 2:
-                    String[] split = ticketInfo.split("-");
+                    String[] split = ticketInfo.split("&");
                     douyinService.cancel(new DouyinCancelReqVO().setVerify_id(split[0]).setCertificate_id(split[1]));
                     break;
                 default:
