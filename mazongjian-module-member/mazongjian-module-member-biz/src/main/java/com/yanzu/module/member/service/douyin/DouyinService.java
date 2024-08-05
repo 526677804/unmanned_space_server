@@ -131,7 +131,7 @@ public class DouyinService {
             IotGroupPayPrepareRespVO respVO = new IotGroupPayPrepareRespVO();
             respVO.setPayAmount(pay_amount)
                     .setTicketName(title)
-                    .setTicketInfo(verify_token + "-" + encrypted_code)
+                    .setTicketInfo(verify_token + "&" + encrypted_code)
                     .setGroupPayType(AppEnum.member_group_no_type.DOUYIN.getValue());
             return respVO;
         }
@@ -144,7 +144,7 @@ public class DouyinService {
         if (ObjectUtils.isEmpty(poiId)) {
             throw exception(STORE_DY_TUANGOU_PAY_ERROR);
         }
-        String[] split = ticketInfo.split("-");
+        String[] split = ticketInfo.split("&");
         DouyinVerifyReqVO reqVO = new DouyinVerifyReqVO();
         reqVO.setVerify_token(split[0]);
         reqVO.setEncrypted_codes(new String[]{split[1]});
