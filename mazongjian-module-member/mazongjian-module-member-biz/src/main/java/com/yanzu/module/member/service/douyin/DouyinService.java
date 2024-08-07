@@ -160,7 +160,6 @@ public class DouyinService {
             verify_id = verify_results.getString("verify_id");
             certificate_id = verify_results.getString("certificate_id");
             return verify_id + "&" + certificate_id;
-
         } else if (data.getInteger("error_code") == 1228) {
             throw exception(GROUP_NO_CHECK_STORE_ERROR);
         } else {
