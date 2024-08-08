@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -183,7 +184,7 @@ public class MeituanService {
         //数量
         BigDecimal saleCount = totalPrice.divide(dealPrice);
         //计算客户这张券的实际单价  这里先把单位统一成 分
-        int price = payPrice.divide(saleCount).multiply(new BigDecimal(100)).intValue();
+        int price = payPrice.divide(saleCount, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100)).intValue();
         respVO.setPayAmount(price);
         respVO.setGroupPayType(AppEnum.member_group_no_type.MEITUAN.getValue());
         return respVO;
