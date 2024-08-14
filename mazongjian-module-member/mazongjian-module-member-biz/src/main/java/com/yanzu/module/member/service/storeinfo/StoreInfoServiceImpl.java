@@ -20,6 +20,7 @@ import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
+import com.yanzu.module.member.dal.dataobject.storesound.StoreSoundInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
@@ -28,6 +29,7 @@ import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
+import com.yanzu.module.member.dal.mysql.storesound.StoreSoundInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
@@ -37,6 +39,7 @@ import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import me.chanjar.weixin.common.error.WxErrorException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,6 +95,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Resource
     private StoreMeituanInfoMapper storeMeituanInfoMapper;
+
+    @Resource
+    private StoreSoundInfoMapper storeSoundInfoMapper;
 
     @Resource
     private AppOrderService appOrderService;
@@ -664,6 +670,32 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             } else {
                 return "暂不支持此平台授权";
             }
+        }
+    }
+
+    @Override
+    public AppStoreSoundInfoRespVO getStoreSoundInfo(Long storeId) {
+        AppStoreSoundInfoRespVO storeSoundInfo = storeSoundInfoMapper.getStoreSoundInfo(storeId);
+        if(ObjectUtils.isEmpty(storeSoundInfo)){
+            storeSoundInfo=new AppStoreSoundInfoRespVO();
+        }
+        return storeSoundInfo;
+    }
+
+    @Override
+    @Transactional
+    public void saveStoreSoundInfo(AppStoreSoundInfoReqVO reqVO) {
+        //校验门店权限
+        checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        //如果已经有了，就更新  没有就新增
+        StoreSoundInfoDO soundInfoDO = storeSoundInfoMapper.getByStoreId(reqVO.getStoreId());
+        if(!ObjectUtils.isEmpty(soundInfoDO)){
+            BeanUtils.copyProperties(reqVO,soundInfoDO);
+            storeSoundInfoMapper.updateById(soundInfoDO);
+        }else{
+            soundInfoDO=new StoreSoundInfoDO();
+            BeanUtils.copyProperties(reqVO,soundInfoDO);
+            storeSoundInfoMapper.insert(soundInfoDO);
         }
     }
 

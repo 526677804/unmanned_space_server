@@ -276,4 +276,22 @@ public class AppStoreController {
 //        return success(true);
 //    }
 //
+
+
+    @GetMapping("/getStoreSoundInfo/{storeId}")
+    @Operation(summary = "获取门店语音播报设置")
+    @PreAuthenticated
+    @Parameter(name = "storeId")
+    public CommonResult<AppStoreSoundInfoRespVO> getStoreSoundInfo(@PathVariable("storeId") Long storeId) {
+        return success(storeInfoService.getStoreSoundInfo(storeId));
+    }
+
+    @PostMapping("/saveStoreSoundInfo")
+    @Operation(summary = "保存门店语音播报设置")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> saveStoreSoundInfo(@RequestBody @Valid AppStoreSoundInfoReqVO reqVO) {
+        storeInfoService.saveStoreSoundInfo(reqVO);
+        return success(true);
+    }
 }

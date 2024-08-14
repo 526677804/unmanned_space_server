@@ -120,4 +120,8 @@ public interface StoreInfoService {
 
     String getGroupPayAuthUrl(GroupPayAuthUrlReqVO reqVO);
 
+    AppStoreSoundInfoRespVO getStoreSoundInfo(Long storeId);
+
+    void saveStoreSoundInfo(AppStoreSoundInfoReqVO reqVO);
+
 }

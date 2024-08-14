@@ -5,11 +5,13 @@ import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
+import com.yanzu.module.member.dal.dataobject.storesound.StoreSoundInfoDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceuseinfo.DeviceUseInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.dal.mysql.storesound.StoreSoundInfoMapper;
 import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.iot.device.IotDeviceBaseVO;
 import com.yanzu.module.member.service.iot.device.IotDeviceContrlReqVO;
@@ -59,6 +61,10 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Resource
     private IotDeviceService iotDeviceService;
+
+
+    @Resource
+    private StoreSoundInfoMapper storeSoundInfoMapper;
 
     @Override
     @Transactional
@@ -368,10 +374,37 @@ public class DeviceServiceImpl implements DeviceService {
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
         //获取音量设置
         if (!ObjectUtils.isEmpty(sn)) {
+            String cmd = String.valueOf(type);
+            //获取是否存在自定义播报文字
+            StoreSoundInfoDO soundInfoDO = storeSoundInfoMapper.getByStoreId(roomInfoDO.getStoreId());
+            if (!ObjectUtils.isEmpty(soundInfoDO)) {
+                switch (type) {
+                    case 1:
+                        if (!StringUtils.isEmpty(soundInfoDO.getWelcomeText())) {
+                            cmd = soundInfoDO.getWelcomeText();
+                        }
+                        break;
+                    case 2:
+                        if (!StringUtils.isEmpty(soundInfoDO.getEndText30())) {
+                            cmd = soundInfoDO.getEndText30();
+                        }
+                        break;
+                    case 4:
+                        if (!StringUtils.isEmpty(soundInfoDO.getEndText5())) {
+                            cmd = soundInfoDO.getEndText5();
+                        }
+                        break;
+                    case 5:
+                        if (!StringUtils.isEmpty(soundInfoDO.getNightText())) {
+                            cmd = soundInfoDO.getNightText();
+                        }
+                        break;
+                }
+            }
             IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
             List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
             IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
-            iotDeviceContrlReqVO.setOutlet(0).setCmd(String.valueOf(type)).setType(roomInfoDO.getYunlabaSound());
+            iotDeviceContrlReqVO.setOutlet(0).setCmd(cmd).setType(roomInfoDO.getYunlabaSound());
             param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
             boolean flag = iotDeviceService.control(reqVO);
