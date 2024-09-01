@@ -144,7 +144,7 @@ public class PkgServiceImpl implements PkgService {
     @Override
     public PageResult<AppPkgPageRespVO> getPkgPage(AppPkgPageReqVO reqVO) {
         IPage<AppPkgPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
-        pkgInfoMapper.getPkgPage(page, reqVO, getLoginUserId());
+        pkgInfoMapper.getPkgPage(page, reqVO);
         List<AppPkgPageRespVO> respVOList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(page.getRecords())) {
             if (!ObjectUtils.isEmpty(reqVO.getStartTime()) && !ObjectUtils.isEmpty(reqVO.getEndTime())){

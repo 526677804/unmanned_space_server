@@ -70,7 +70,7 @@ public class PkgController {
 
     @PostMapping("/getPkgPage")
     @Operation(summary = "获取套餐分页(下单页面和购买套餐时调用)")
-    @PreAuthenticated
+//    @PreAuthenticated
     public CommonResult<PageResult<AppPkgPageRespVO>> getPkgPage(@RequestBody @Valid AppPkgPageReqVO reqVO) {
         return success(pkgService.getPkgPage(reqVO));
     }

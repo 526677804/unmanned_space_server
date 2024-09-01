@@ -23,7 +23,7 @@ public interface PkgInfoMapper extends BaseMapperX<PkgInfoDO> {
     IPage<AppAdminPkgPageRespVO> getAdminPkgPage(@Param("page") IPage<AppAdminPkgPageRespVO> page, @Param("reqVO") AppAdminPkgPageReqVO reqVO
             , @Param("storeIds") String storeIds);
 
-    IPage<AppPkgPageRespVO> getPkgPage(@Param("page") IPage<AppPkgPageRespVO> page, @Param("reqVO") AppPkgPageReqVO reqVO, @Param("userId") Long userId);
+    IPage<AppPkgPageRespVO> getPkgPage(@Param("page") IPage<AppPkgPageRespVO> page, @Param("reqVO") AppPkgPageReqVO reqVO);
 
     IPage<AppPkgMyPageRespVO> getMyPkgPage(@Param("page") IPage<AppPkgMyPageRespVO> page, @Param("reqVO") AppMyPkgPageReqVO reqVO, @Param("userId") Long userId);
 }
