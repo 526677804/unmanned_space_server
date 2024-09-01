@@ -212,6 +212,12 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
             throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
         }
+        //如果是通宵场  开始时间必须大于设置的通宵起始时间
+        if (nightLong) {
+            if (startTime.getHours() < storeInfoDO.getTxStartHour() && startTime.getHours() > 4) {
+                throw exception(CHECK_TONGXIAO_TIME_ERROR);
+            }
+        }
         //订单时长 （分钟）
         long orderMinutes = Math.abs(ChronoUnit.MINUTES.between(startTime.toInstant(), endTime.toInstant()));
         // 支付类型
@@ -658,6 +664,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //判断包间限制情况  标题包含：不限包间
         if (title.indexOf("不限包间") != -1
+                || title.indexOf("全场通用") != -1
+                || title.indexOf("全场畅玩") != -1
                 || title.indexOf("包间通用") != -1
                 || title.indexOf("任意包间") != -1
                 || title.indexOf("不分包间") != -1
@@ -912,6 +920,15 @@ public class AppOrderServiceImpl implements AppOrderService {
         } else {
             //异步发送微信通知
             workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), totalPrice, couponInfoDO, pkgInfoDO, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
+        }
+        //如果房间类型是台球，并且开始时间距离现在不超过3分钟，那么直接开电
+        if (roomInfoDO.getRoomClass().compareTo(AppEnum.room_class.TAIQIU.getValue()) == 0
+                && (orderInfoDO.getStartTime().getTime() - new Date().getTime()) < 1000 * 60 * 53) {
+            orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
+            orderInfoMapper.updateById(orderInfoDO);
+            //房间改为进行中
+            roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
+            deviceService.openRoomDoor(null, orderInfoDO.getStoreId(), roomInfoDO.getRoomId(), 0);
         }
         checkRepeatOrder(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), roomInfoDO.getRoomName(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getUserId());
         return orderInfoDO.getOrderId();
