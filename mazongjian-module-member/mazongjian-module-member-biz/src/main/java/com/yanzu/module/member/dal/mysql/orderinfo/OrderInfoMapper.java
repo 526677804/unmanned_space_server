@@ -9,6 +9,7 @@ import com.yanzu.module.member.controller.app.chart.vo.AppRechargeStatisticsResp
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageReqVO;
 import com.yanzu.module.member.controller.app.clear.vo.AppClearPageRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderInfoAppRespVO;
+import com.yanzu.module.member.controller.app.order.vo.OrderListJobVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
@@ -53,7 +54,7 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
     List<KeyValue<String, String>> getRoomUseHourStatistics(AppChartDataReqVO reqVO);
 
     List<OrderInfoDO> getByStatus(Integer status);
-    List<OrderInfoDO> getListByJob();
+    List<OrderListJobVO> getListByJob();
 
     int updateStatusByIds(@Param("status") Integer status, @Param("orderIds") String orderIds);
 

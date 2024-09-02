@@ -427,17 +427,19 @@
             and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} and type IN (12,13))
         </if>
     </select>
-    <select id="getListByJob" resultType="com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO">
-        select order_id,
-               order_no,
-               deposit,
-               store_id,
-               room_id,
-               user_id,
-               start_time,
-               end_time,
-               status
+    <select id="getListByJob" resultType="com.yanzu.module.member.controller.app.order.vo.OrderListJobVO">
+        select o.order_id,
+               o.order_no,
+               o.deposit,
+               o.store_id,
+               o.room_id,
+               o.user_id,
+               o.start_time,
+               o.end_time,
+               o.status,
+               r.room_class
         from member_order_info o
+                 left join member_room_info r ON r.room_id = o.room_id
         where o.deleted = 0
           and o.status in (0, 1, 2)
     </select>

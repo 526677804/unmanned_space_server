@@ -921,15 +921,6 @@ public class AppOrderServiceImpl implements AppOrderService {
             //异步发送微信通知
             workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), totalPrice, couponInfoDO, pkgInfoDO, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         }
-        //如果房间类型是台球，并且开始时间距离现在不超过3分钟，那么直接开电
-        if (roomInfoDO.getRoomClass().compareTo(AppEnum.room_class.TAIQIU.getValue()) == 0
-                && (orderInfoDO.getStartTime().getTime() - new Date().getTime()) < 1000 * 60 * 53) {
-            orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
-            orderInfoMapper.updateById(orderInfoDO);
-            //房间改为进行中
-            roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
-            deviceService.openRoomDoor(null, orderInfoDO.getStoreId(), roomInfoDO.getRoomId(), 0);
-        }
         checkRepeatOrder(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), roomInfoDO.getRoomName(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getUserId());
         return orderInfoDO.getOrderId();
 
@@ -1305,7 +1296,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         boolean night = now.getHours() < 8 && now.getMinutes() == 0;//是否深夜
         log.info("night:{}", night);
         //取出所有需要处理的订单
-        List<OrderInfoDO> orderList = orderInfoMapper.getListByJob();
+        List<OrderListJobVO> orderList = orderInfoMapper.getListByJob();
         if (!CollectionUtils.isAnyEmpty(orderList)) {
             Set<Long> startRoomIds = new HashSet<>();
             Set<Long> endRoomIds = new HashSet<>();
@@ -1313,7 +1304,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             Set<Long> endOrderIds = new HashSet<>();
             List<ClearInfoDO> clearInfoDOList = new ArrayList<>();
             //按照门店分组，因为不同的门店，有不同的规则
-            Map<Long, List<OrderInfoDO>> listByStoreId = orderList.stream().collect(Collectors.groupingBy(x -> x.getStoreId()));
+            Map<Long, List<OrderListJobVO>> listByStoreId = orderList.stream().collect(Collectors.groupingBy(x -> x.getStoreId()));
             listByStoreId.entrySet().forEach(v -> {
                 //先查询出门店信息 以读取配置
                 StoreInfoDO storeInfoDO = storeInfoMapper.selectById(v.getKey());
@@ -1323,6 +1314,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                         if (x.getStartTime().before(now)) {
                             startRoomIds.add(x.getRoomId());
                             startOrderIds.add(x.getOrderId());
+                            //如果房间类型是台球，那么直接开电
+                            if (x.getRoomClass().compareTo(AppEnum.room_class.TAIQIU.getValue()) == 0) {
+                                deviceService.openRoomDoor(null, x.getStoreId(), x.getRoomId(), 0);
+                            }
                         }
                     } else if (x.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                         //进行中 主要是完成订单，和关电
