@@ -241,13 +241,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(ORDER_MIN_HOUR_ERROR);
             }
             //下单需要,检查时间有没有超过提前设置的范围
-            Instant instant1 = startTime.toInstant();
-            Instant instant2 = now.toInstant();
-            ZonedDateTime zonedDateTime1 = instant1.atZone(ZoneId.systemDefault());
-            ZonedDateTime zonedDateTime2 = instant2.atZone(ZoneId.systemDefault());
-            Duration duration = Duration.between(zonedDateTime1, zonedDateTime2);
-            long days = duration.toDays();
-            if (days > roomInfoDO.getLeadDay()) {
+            long diffHour = (startTime.getTime() - now.getTime()) / 1000 / 60 / 60;
+            if (diffHour > roomInfoDO.getLeadDay() * 24) {
                 throw exception(ORDER_START_TIME_MAX_ERROR);
             }
             //判断清洁时是否允许下单
@@ -647,7 +642,7 @@ public class AppOrderServiceImpl implements AppOrderService {
      * @param nightLong
      */
     private void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong, Integer txStartHour, Integer txHour) {
-        if (nightLong) {
+        if (nightLong || title.indexOf("通宵") != -1) {
             //团购的通宵场 要求团购券必须包含 “通宵”两个字
             if (title.indexOf("通宵") == -1) {
                 throw exception(GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR);
