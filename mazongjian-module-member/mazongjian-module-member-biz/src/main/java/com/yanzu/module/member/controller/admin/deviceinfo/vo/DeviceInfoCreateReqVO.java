@@ -28,4 +28,7 @@ public class DeviceInfoCreateReqVO extends DeviceInfoBaseVO {
     @Schema(description = "房间id")
     private Long roomId;
 
+    @Schema(description = "是否多房间共享设备")
+    private Boolean share;
+
 }

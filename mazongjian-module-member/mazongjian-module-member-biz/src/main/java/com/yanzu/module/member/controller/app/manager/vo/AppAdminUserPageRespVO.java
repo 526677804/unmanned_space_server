@@ -44,5 +44,8 @@ public class AppAdminUserPageRespVO {
     @Schema(description = "状态 值见字典", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer status;
 
+    @Schema(description = "账号类型 12=超管 13=店长")
+    private Integer type;
+
 
 }

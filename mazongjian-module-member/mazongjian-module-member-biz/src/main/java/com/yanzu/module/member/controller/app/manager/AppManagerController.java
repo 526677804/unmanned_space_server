@@ -162,7 +162,7 @@ public class AppManagerController {
     }
 
     @PostMapping("/deleteAdminUser/{storeId}/{userId}")
-    @Operation(summary = "管理员删除管理员")
+    @Operation(summary = "删除管理员")
     @PreAuthenticated
     @Parameter(name = "storeId")
     @Parameter(name = "userId")
@@ -172,7 +172,7 @@ public class AppManagerController {
     }
 
     @PostMapping("/saveAdminUser")
-    @Operation(summary = "管理员保存管理信息")
+    @Operation(summary = "保存管理员信息")
     @PreAuthenticated
     public CommonResult<Boolean> saveAdminUser(@RequestBody @Valid AppClearUserDetailReqVO reqVO) {
         appMangerService.saveAdminUser(reqVO);

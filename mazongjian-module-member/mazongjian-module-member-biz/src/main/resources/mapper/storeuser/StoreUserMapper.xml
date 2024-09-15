@@ -131,7 +131,7 @@
                msu.name,
                mu.avatar,
                msu.name,
---                mu.mobile,
+               msu.type,
                REPLACE(mu.mobile, SUBSTRING(mu.mobile, 4, 4), '****') mobile,
                msu.status
         from member_store_user msu
@@ -140,7 +140,7 @@
         where msu.deleted = 0
           and mu.deleted = 0
           and s.deleted = 0
-          and msu.type = 13
+          and msu.type IN (12,13)
           and msu.store_id in (${storeIds})
           <if test="null!=storeId">
               and msu.store_id = #{storeId}

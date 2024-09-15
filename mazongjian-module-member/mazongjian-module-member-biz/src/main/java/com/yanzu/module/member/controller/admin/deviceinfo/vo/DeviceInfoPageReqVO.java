@@ -32,6 +32,9 @@ public class DeviceInfoPageReqVO extends PageParam {
     @Schema(description = "状态", example = "2")
     private Integer status;
 
+    @Schema(description = "是否多房间共享设备")
+    private Boolean share;
+
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;

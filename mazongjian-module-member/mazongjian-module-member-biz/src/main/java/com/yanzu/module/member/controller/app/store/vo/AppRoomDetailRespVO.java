@@ -20,6 +20,9 @@ public class AppRoomDetailRespVO {
     @Schema(description = "房间类别", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer roomClass;
 
+    @Schema(description = "房间简称", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
+    private String roomCallName;
+
     @Schema(description = "房间类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer type;
 
@@ -67,5 +70,8 @@ public class AppRoomDetailRespVO {
 
     @Schema(description = "最小下单时间")
     private Integer minHour;
+
+    @Schema(description = "跳过清洁")
+    private Boolean jumpClear;
 
 }

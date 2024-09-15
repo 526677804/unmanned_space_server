@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.app.order.vo;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -18,6 +19,8 @@ public class OrderListJobVO {
     private BigDecimal deposit;
     private Integer status;
     private Integer roomClass;
+    private Boolean jumpClear;
+
 
 
 }

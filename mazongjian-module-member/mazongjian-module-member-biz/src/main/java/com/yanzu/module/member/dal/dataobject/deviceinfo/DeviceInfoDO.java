@@ -35,6 +35,12 @@ public class DeviceInfoDO extends BaseDO {
      * 设备数据
      */
     private String deviceData;
+
+    /**
+     * 共享设备
+     */
+
+    private Boolean share;
     /**
      * 设备类型
      *

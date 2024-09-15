@@ -45,15 +45,6 @@ public class DeviceInfoController {
         return success(true);
     }
 
-    @GetMapping("/iotScope")
-    @Operation(summary = "硬件平台授权")
-    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
-    @PreAuthorize("@ss.hasPermission('member:device-info:create')")
-    public CommonResult<Boolean> iotScope() {
-//        deviceInfoService.iotScope();
-        return success(true);
-    }
-
     @DeleteMapping("/delete")
     @Operation(summary = "删除设备管理")
     @Parameter(name = "id", description = "编号", required = true)

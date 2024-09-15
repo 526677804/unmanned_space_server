@@ -1,6 +1,7 @@
 package com.yanzu.module.member.service.device;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.yanzu.module.member.controller.app.store.vo.AppAddDeviceReqVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
@@ -464,6 +465,7 @@ public class DeviceServiceImpl implements DeviceService {
     public void delUserFace(Long storeId, String admitGuid) {
         iotDeviceService.delUserFace(storeId,admitGuid);
     }
+
 
     private void closeLight(Long roomId) {
         //获取房间设备的sn 1=门禁 2=空开 4=灯具 5=密码锁 6=网关

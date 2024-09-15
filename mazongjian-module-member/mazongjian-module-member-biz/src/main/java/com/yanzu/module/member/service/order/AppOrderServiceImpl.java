@@ -1295,6 +1295,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (!CollectionUtils.isAnyEmpty(orderList)) {
             Set<Long> startRoomIds = new HashSet<>();
             Set<Long> endRoomIds = new HashSet<>();
+            Set<Long> clearRoomIds = new HashSet<>();
             Set<Long> startOrderIds = new HashSet<>();
             Set<Long> endOrderIds = new HashSet<>();
             List<ClearInfoDO> clearInfoDOList = new ArrayList<>();
@@ -1324,12 +1325,15 @@ public class AppOrderServiceImpl implements AppOrderService {
                                 if (!storeInfoDO.getDelayLight()) {
                                     deviceService.closeLightByRoomId(null, x.getStoreId(), x.getRoomId(), 4);
                                 }
-                                endRoomIds.add(x.getRoomId());
                                 endOrderIds.add(x.getOrderId());
-                                //添加保洁记录
-                                ClearInfoDO clearInfoDO = new ClearInfoDO();
-                                clearInfoDO.setOrderId(x.getOrderId()).setStoreId(x.getStoreId()).setOrderNo(x.getOrderNo()).setRoomId(x.getRoomId());
-                                clearInfoDOList.add(clearInfoDO);
+                                endRoomIds.add(x.getRoomId());
+                                //添加保洁记录  如果房间不需要保洁  那就跳过
+                                if (!x.getJumpClear()) {
+                                    clearRoomIds.add(x.getRoomId());
+                                    ClearInfoDO clearInfoDO = new ClearInfoDO();
+                                    clearInfoDO.setOrderId(x.getOrderId()).setStoreId(x.getStoreId()).setOrderNo(x.getOrderNo()).setRoomId(x.getRoomId());
+                                    clearInfoDOList.add(clearInfoDO);
+                                }
                             } else {
                                 //检查距离结束的时间，发送语音提醒
                                 long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
@@ -1384,8 +1388,6 @@ public class AppOrderServiceImpl implements AppOrderService {
 //                                throw new RuntimeException(e);
                             }
                         }
-
-
                     }
                 });
             });
@@ -1399,16 +1401,16 @@ public class AppOrderServiceImpl implements AppOrderService {
                     //批量修改订单状态为进行中
                     orderInfoMapper.updateStatusByIds(AppEnum.order_status.START.getValue(), startOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                 }
-                if (!CollectionUtils.isAnyEmpty(endRoomIds)) {
+                if (!CollectionUtils.isAnyEmpty(endOrderIds)) {
                     //批量修改房间状态为待清洁
-                    roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), endRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), clearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                     //批量修改订单状态为已完成
                     orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), endOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                     //取消掉这些房间存在的历史保洁订单
-                    clearInfoMapper.cancelByRoomIds(endRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    clearInfoMapper.cancelByRoomIds(clearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                     //然后再新增本次的保洁订单
                     clearInfoMapper.insertBatch(clearInfoDOList);
-                    //发送需要保洁的微信通知
+                    //发送订单结束的微信通知
                     sendClearMsg(endRoomIds);
                 }
                 transactionManager.commit(transaction);
@@ -1431,7 +1433,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //开始发消息
         for (AppRoomListVO vo : roomList) {
             StringBuffer sb = new StringBuffer();
-            sb.append("订单已结束,待清洁通知\n");
+            sb.append("订单已结束通知\n");
             sb.append(">门店名称:").append(vo.getStoreName()).append("\n");
             sb.append(">房间名称:").append(vo.getRoomName()).append("\n");
             sb.append(">时间:").append(dateStr).append("\n");
@@ -1444,7 +1446,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         String dateStr = DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
         AppRoomListVO vo = roomInfoMapper.getInfoById(roomId);
         StringBuffer sb = new StringBuffer();
-        sb.append("订单已结束,待清洁通知\n");
+        sb.append("订单已结束通知\n");
         sb.append(">门店名称:").append(vo.getStoreName()).append("\n");
         sb.append(">房间名称:").append(vo.getRoomName()).append("\n");
         sb.append(">时间:").append(dateStr).append("\n");

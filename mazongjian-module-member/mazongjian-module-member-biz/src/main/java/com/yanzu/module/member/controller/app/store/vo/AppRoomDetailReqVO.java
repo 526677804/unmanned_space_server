@@ -13,8 +13,10 @@ import java.math.BigDecimal;
 @Data
 @ToString(callSuper = true)
 public class AppRoomDetailReqVO {
+
     @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "16599")
     private Long roomId;
+
     @Schema(description = "门店id", requiredMode = Schema.RequiredMode.REQUIRED, example = "16599")
     @NotNull(message = "门店不能为空")
     private Long storeId;
@@ -26,6 +28,10 @@ public class AppRoomDetailReqVO {
     @Schema(description = "房间名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "王五")
     @NotNull(message = "房间名称不能为空")
     private String roomName;
+
+    @Schema(description = "房间简称", requiredMode = Schema.RequiredMode.REQUIRED, example = "王五")
+    @NotNull(message = "房间简称不能为空")
+    private String roomCallName;
 
     @Schema(description = "房间类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     @NotNull(message = "房间类型不能为空")
@@ -79,4 +85,7 @@ public class AppRoomDetailReqVO {
     @Min(value = 1, message = "最小下单时间最小1小时！")
     @Max(value = 4, message = "最小下单时间最大4小时！")
     private Integer minHour;
+
+    @Schema(description = "跳过清洁")
+    private Boolean jumpClear;
 }

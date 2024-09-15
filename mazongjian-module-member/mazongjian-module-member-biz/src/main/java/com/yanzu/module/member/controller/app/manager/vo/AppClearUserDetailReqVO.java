@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.app.manager.vo;
 
+import com.yanzu.framework.common.validation.Mobile;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
@@ -30,7 +31,11 @@ public class AppClearUserDetailReqVO {
 
     @Schema(description = "用户手机号", requiredMode = Schema.RequiredMode.REQUIRED, example = "15601691300")
     @NotNull(message = "手机号不能为空")
+    @Mobile
     private String mobile;
+
+    @Schema(description = "是否超管")
+    private Boolean isAdmin;
 
 
 

@@ -124,4 +124,8 @@ public interface StoreInfoService {
 
     void saveStoreSoundInfo(AppStoreSoundInfoReqVO reqVO);
 
+    void addDevice(AppAddDeviceReqVO reqVO);
+
+    void delDevice(Long deviceId);
+
 }

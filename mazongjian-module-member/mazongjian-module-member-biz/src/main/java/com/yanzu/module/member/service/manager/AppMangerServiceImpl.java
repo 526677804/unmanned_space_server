@@ -604,6 +604,10 @@ public class AppMangerServiceImpl implements AppMangerService {
     public void deleteAdminUser(Long storeId, Long userId) {
         //检查权限
         storeInfoService.checkPermisson(storeId, getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
+        //不能删除自己
+        if (userId.compareTo(getLoginUserId()) == 0) {
+            throw exception(OPRATION_ERROR);
+        }
         storeUserMapper.deleteAdminUser(storeId, userId);
     }
 
@@ -621,27 +625,34 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (memberUserDO.getId().compareTo(getLoginUserId()) == 0) {
             throw exception(OPRATION_ERROR);
         }
-        //保洁员不可以改成管理员
+        //保洁员不可以改成管理员  但是如果用户没有任何绑定关系了 那么是可以的
         if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.CLEAR.getValue()) == 0) {
-            throw exception(USER_TYPE_CHECK_ERROR);
+            List<String> idsByUserIdAndAdmin = storeUserMapper.getIdsByUserIdAndAdmin(memberUserDO.getId());
+            if (!CollectionUtils.isEmpty(idsByUserIdAndAdmin)) {
+                throw exception(USER_TYPE_CHECK_ERROR);
+            }
+        }
+        Integer type = AppEnum.member_user_type.ADMIN.getValue();
+        if (reqVO.getIsAdmin()) {
+            type = AppEnum.member_user_type.BOSS.getValue();
         }
         //不是管理员角色 则改成管理员 如果是加盟商  则身份不变
         if (memberUserDO.getUserType().compareTo(AppEnum.member_user_type.ADMIN.getValue()) != 0
                 && memberUserDO.getUserType().compareTo(AppEnum.member_user_type.BOSS.getValue()) != 0) {
-            memberUserDO.setUserType(AppEnum.member_user_type.ADMIN.getValue());
+            memberUserDO.setUserType(type);
             memberUserMapper.updateById(memberUserDO);
         }
         //如果已经存在门店与用户的关系 就修改关系
         StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(memberUserDO.getId(), reqVO.getStoreId());
         if (!ObjectUtils.isEmpty(storeUserDO)) {
-            storeUserDO.setType(AppEnum.member_user_type.ADMIN.getValue());
+            storeUserDO.setType(type);
             storeUserDO.setName(reqVO.getName());
             storeUserMapper.updateById(storeUserDO);
         } else {
             //不存在就添加
             storeUserDO = new StoreUserDO();
             storeUserDO.setUserId(memberUserDO.getId());
-            storeUserDO.setType(AppEnum.member_user_type.ADMIN.getValue());
+            storeUserDO.setType(type);
             storeUserDO.setName(reqVO.getName());
             storeUserDO.setStoreId(reqVO.getStoreId());
             storeUserMapper.insert(storeUserDO);

@@ -12,9 +12,11 @@ import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
 import com.yanzu.module.member.controller.app.store.vo.*;
+import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
 import com.yanzu.module.member.convert.roominfo.RoomInfoConvert;
 import com.yanzu.module.member.convert.storeinfo.StoreInfoConvert;
+import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.dataobject.discountrules.DiscountRulesDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
@@ -24,6 +26,7 @@ import com.yanzu.module.member.dal.dataobject.storesound.StoreSoundInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
+import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
@@ -33,11 +36,13 @@ import com.yanzu.module.member.dal.mysql.storesound.StoreSoundInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,6 +73,7 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
  */
 @Service
 @Validated
+@Slf4j
 public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Resource
@@ -100,6 +106,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     private StoreSoundInfoMapper storeSoundInfoMapper;
 
     @Resource
+    private DeviceInfoMapper deviceInfoMapper;
+    @Resource
     private AppOrderService appOrderService;
 
     @Resource
@@ -122,6 +130,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Resource
     private IotGroupPayService iotGroupPayService;
+
+    @Resource
+    private IotDeviceService iotDeviceService;
 
     @Value("${iot.groupPay:false}")
     private boolean iotGroupPay;
@@ -676,8 +687,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public AppStoreSoundInfoRespVO getStoreSoundInfo(Long storeId) {
         AppStoreSoundInfoRespVO storeSoundInfo = storeSoundInfoMapper.getStoreSoundInfo(storeId);
-        if(ObjectUtils.isEmpty(storeSoundInfo)){
-            storeSoundInfo=new AppStoreSoundInfoRespVO();
+        if (ObjectUtils.isEmpty(storeSoundInfo)) {
+            storeSoundInfo = new AppStoreSoundInfoRespVO();
         }
         return storeSoundInfo;
     }
@@ -689,13 +700,50 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //如果已经有了，就更新  没有就新增
         StoreSoundInfoDO soundInfoDO = storeSoundInfoMapper.getByStoreId(reqVO.getStoreId());
-        if(!ObjectUtils.isEmpty(soundInfoDO)){
-            BeanUtils.copyProperties(reqVO,soundInfoDO);
+        if (!ObjectUtils.isEmpty(soundInfoDO)) {
+            BeanUtils.copyProperties(reqVO, soundInfoDO);
             storeSoundInfoMapper.updateById(soundInfoDO);
-        }else{
-            soundInfoDO=new StoreSoundInfoDO();
-            BeanUtils.copyProperties(reqVO,soundInfoDO);
+        } else {
+            soundInfoDO = new StoreSoundInfoDO();
+            BeanUtils.copyProperties(reqVO, soundInfoDO);
             storeSoundInfoMapper.insert(soundInfoDO);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void addDevice(AppAddDeviceReqVO reqVO) {
+        //校验门店权限
+        checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        //如果不是共用设备  那新增的设备不能存在
+        if (!reqVO.getShareDevice()) {
+            int i = deviceInfoMapper.countBySN(reqVO.getDeviceSn());
+            if (i > 0) {
+                throw exception(DEVICE_DATA_EXISTS_ERROR);
+            }
+        }
+        //先在iot平台绑定设备
+        String data = iotDeviceService.bind(reqVO.getDeviceSn());
+        // 插入
+        DeviceInfoDO deviceInfo = new DeviceInfoDO()
+                .setDeviceSn(reqVO.getDeviceSn())
+                .setType(reqVO.getDeviceType())
+                .setStoreId(reqVO.getStoreId())
+                .setRoomId(reqVO.getRoomId())
+                .setShare(reqVO.getShareDevice())
+                .setDeviceData(data);
+        deviceInfoMapper.insert(deviceInfo);
+    }
+
+    @Override
+    @Transactional
+    public void delDevice(Long deviceId) {
+        DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(deviceId);
+        if (!ObjectUtils.isEmpty(deviceInfoDO)) {
+            //避免操作失误 仅允许超管删除
+            checkPermisson(deviceInfoDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+            deviceInfoMapper.deleteById(deviceId);
+            log.info("用户:{}，删除设备:{}", getLoginUserId(), deviceId);
         }
     }
 

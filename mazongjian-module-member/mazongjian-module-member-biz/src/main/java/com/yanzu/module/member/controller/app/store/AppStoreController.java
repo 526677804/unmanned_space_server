@@ -126,6 +126,27 @@ public class AppStoreController {
         return success(true);
     }
 
+
+    @PostMapping("/addDevice")
+    @Operation(summary = "添加设备", description = "房间管理使用")
+    @PreAuthenticated
+    @Parameter(name = "roomId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> addDevice(@RequestBody @Validated AppAddDeviceReqVO reqVO) {
+        storeInfoService.addDevice(reqVO);
+        return success(true);
+    }
+    @PostMapping("/delDevice/{deviceId}")
+    @Operation(summary = "删除设备", description = "房间管理使用")
+    @PreAuthenticated
+    @Parameter(name = "roomId")
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> delDevice(@PathVariable("deviceId") Long deviceId) {
+        storeInfoService.delDevice(deviceId);
+        return success(true);
+    }
+
+
     @PostMapping("/deleteRoomInfo/{roomId}")
     @Operation(summary = "删除房间", description = "房间管理使用")
     @PreAuthenticated

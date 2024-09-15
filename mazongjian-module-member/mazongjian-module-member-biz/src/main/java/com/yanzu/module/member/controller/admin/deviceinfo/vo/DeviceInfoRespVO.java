@@ -19,6 +19,9 @@ public class DeviceInfoRespVO extends DeviceInfoBaseVO {
     @Schema(description = "设备类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Integer type;
 
+    @Schema(description = "是否多房间共享设备")
+    private Boolean share;
+
     @Schema(description = "门店id", example = "8462")
     private Long storeId;
 

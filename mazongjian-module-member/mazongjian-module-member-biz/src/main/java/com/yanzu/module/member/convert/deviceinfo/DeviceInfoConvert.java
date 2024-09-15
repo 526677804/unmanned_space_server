@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.yanzu.framework.common.pojo.PageResult;
 
+import com.yanzu.module.member.controller.app.store.vo.AppAddDeviceReqVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.*;
@@ -30,5 +31,7 @@ public interface DeviceInfoConvert {
     PageResult<DeviceInfoRespVO> convertPage(PageResult<DeviceInfoDO> page);
 
     List<DeviceInfoExcelVO> convertList02(List<DeviceInfoDO> list);
+
+    DeviceInfoDO convert2(AppAddDeviceReqVO reqVO);
 
 }

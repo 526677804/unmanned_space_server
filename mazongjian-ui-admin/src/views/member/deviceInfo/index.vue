@@ -28,6 +28,12 @@
           <el-option label="离线" value="0" />
         </el-select>
       </el-form-item>
+      <el-form-item label="共用设备" prop="share">
+        <el-select v-model="queryParams.share" placeholder="请选择" clearable size="small">
+          <el-option label="是" value="1" />
+          <el-option label="否" value="0" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="创建时间" prop="createTime">
         <el-date-picker v-model="queryParams.createTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss"
           type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
@@ -66,6 +72,11 @@
       <el-table-column label="门店名称" align="center" prop="storeName" />
       <el-table-column label="房间名称" align="center" prop="roomName" />
       <el-table-column label="状态" align="center" :formatter="statusFomat" />
+      <el-table-column label="共用设备" align="center" prop="share">
+        <template v-slot="scope">
+          <span>{{ scope.row.share === 1 ? '是' : '否' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template v-slot="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
@@ -86,7 +97,7 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleBindStore(scope.row)"
-            v-hasPermi="['member:device-info:update']">绑定</el-button>
+            v-hasPermi="['member:device-info:update']">绑定房间</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
             v-hasPermi="['member:device-info:delete']">删除</el-button>
         </template>
@@ -107,6 +118,12 @@
             <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_DEVICE_TYPE)" :key="dict.value"
               :label="dict.label" :value="dict.value" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="多房间共用设备" prop="type" label-width="150px">
+          <el-radio-group v-model="form.share">
+            <el-radio :key="0" :label="0">否</el-radio>
+            <el-radio :key="1" :label="1">是</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="门店" prop="storeId">
           <el-select v-model="form.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList"
@@ -224,13 +241,17 @@ export default {
         pageSize: 10,
         deviceSn: null,
         type: null,
+        share: null,
         storeId: null,
         roomId: null,
         status: null,
+        share: null,
         createTime: [],
       },
       // 表单参数
-      form: {},
+      form: {
+        share: 0,
+      },
       bindForm: {
         deviceSn:null,
         storeId:null,
@@ -330,6 +351,7 @@ export default {
         deviceId: undefined,
         deviceSn: undefined,
         type: undefined,
+        share: 0,
       };
       this.resetForm("form");
     },
@@ -394,7 +416,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加设备管理";
+      this.title = "添加设备";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -403,7 +425,7 @@ export default {
       getDeviceInfo(deviceId).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改设备管理";
+        this.title = "修改设备";
       });
     },
     /** 配置wifi按钮操作 */

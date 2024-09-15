@@ -1,5 +1,7 @@
 package com.yanzu.module.member.service.device;
 
+import com.yanzu.module.member.controller.app.store.vo.AppAddDeviceReqVO;
+
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.device
  * @DESCRIPTION:

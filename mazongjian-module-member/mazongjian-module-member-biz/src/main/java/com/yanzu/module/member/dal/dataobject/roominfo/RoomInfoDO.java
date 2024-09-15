@@ -36,6 +36,11 @@ public class RoomInfoDO extends BaseDO {
     private String roomName;
 
     /**
+     * 房间简称、语音呼叫时播报的名称
+     */
+    private String roomCallName;
+
+    /**
      * 房间类别
      */
     private Integer roomClass;
@@ -114,5 +119,11 @@ public class RoomInfoDO extends BaseDO {
 
     @Schema(description = "最小下单时间")
     private Integer minHour;
+
+    @Schema(description = "跳过清洁")
+    private Boolean jumpClear;
+
+
+
 
 }

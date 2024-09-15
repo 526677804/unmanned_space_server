@@ -47,7 +47,7 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
     @TenantIgnore
     int countBySN(String deviceSn);
 
-    int updateBindInfo(@Param("deviceId") Long deviceId, @Param("storeId") Long storeId, @Param("roomId") Long roomId);
+    int updateBindInfo(@Param("deviceId") Long deviceId,@Param("roomId") Long roomId);
 
     IotDeviceRoomInfoVO getDeviceRoomVO(@Param("deviceSn") String deviceSn);
 }

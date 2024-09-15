@@ -51,10 +51,12 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     @Override
     @Transactional
     public void createDeviceInfo(DeviceInfoCreateReqVO createReqVO) {
-        //新增的设备不能存在
-        int i = deviceInfoMapper.countBySN(createReqVO.getDeviceSn());
-        if (i > 0) {
-            throw exception(DEVICE_DATA_EXISTS_ERROR);
+        //如果不是共用设备  那新增的设备不能存在
+        if(!createReqVO.getShare()){
+            int i = deviceInfoMapper.countBySN(createReqVO.getDeviceSn());
+            if (i > 0) {
+                throw exception(DEVICE_DATA_EXISTS_ERROR);
+            }
         }
         //先在iot平台绑定设备
         String data = iotDeviceService.bind(createReqVO.getDeviceSn());
@@ -118,7 +120,8 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         if (ObjectUtils.isEmpty(deviceInfoDO)) {
             throw exception(DATA_NOT_EXISTS);
         }
-        deviceInfoMapper.updateBindInfo(deviceInfoDO.getDeviceId(),reqVO.getStoreId(),reqVO.getRoomId());
+        //如果是共享设备
+        deviceInfoMapper.updateBindInfo(deviceInfoDO.getDeviceId(),reqVO.getRoomId());
     }
 
     @Override

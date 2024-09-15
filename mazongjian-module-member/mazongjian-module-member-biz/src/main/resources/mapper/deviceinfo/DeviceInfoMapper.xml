@@ -8,8 +8,7 @@
     </update>
     <update id="updateBindInfo">
         update member_device_info
-        set store_id=#{storeId},
-            room_id=#{roomId}
+        set room_id=#{roomId}
         where device_id = #{deviceId}
     </update>
 
@@ -54,6 +53,9 @@
             <if test="null!=reqVO.status">
                 and d.status=#{reqVO.status}
             </if>
+            <if test="null!=reqVO.share">
+                and d.share=#{reqVO.share}
+            </if>
             <if test="null!=reqVO.roomId and reqVO.roomId!=''">
                 and d.room_id=#{reqVO.roomId}
             </if>
@@ -71,7 +73,7 @@
                 </foreach>
             </if>
         </if>
-        order by d.store_id,d.room_id
+        order by d.create_time desc
     </select>
     <select id="countGateway" resultType="java.lang.Integer">
         select count(1)

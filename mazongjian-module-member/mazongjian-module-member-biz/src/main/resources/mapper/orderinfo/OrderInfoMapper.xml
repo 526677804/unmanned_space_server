@@ -437,7 +437,8 @@
                o.start_time,
                o.end_time,
                o.status,
-               r.room_class
+               r.room_class,
+               r.jump_clear
         from member_order_info o
                  left join member_room_info r ON r.room_id = o.room_id
         where o.deleted = 0
