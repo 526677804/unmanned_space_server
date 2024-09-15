@@ -29,6 +29,10 @@
             <if test="null!=reqVO.admitGuid and reqVO.admitGuid!=''">
                 and locate(#{reqVO.admitGuid},f.admit_guid)>0
             </if>
+            <if test="null==reqVO.storeId and isAdmin==false">
+                and device.store_id IN (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND
+                type IN (12,13))
+            </if>
             <if test="null!=reqVO.showTime">
                 AND f.show_time>=#{reqVO.showTime[0]}
                 AND f.show_time&lt;=#{reqVO.showTime[1]}

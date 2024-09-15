@@ -45,7 +45,7 @@ public interface FaceRecordService {
      * @param pageReqVO 分页查询
      * @return 人脸识别记录分页
      */
-    PageResult<FaceRecordRespVO> getFaceRecordPage(FaceRecordPageReqVO pageReqVO);
+    PageResult<FaceRecordRespVO> getFaceRecordPage(FaceRecordPageReqVO pageReqVO,boolean isAdmin);
 
     /**
      * 获得人脸识别记录列表, 用于 Excel 导出

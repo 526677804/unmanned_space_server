@@ -52,7 +52,7 @@ public class FaceRecordController {
     @Operation(summary = "获得人脸识别记录分页")
     @PreAuthorize("@ss.hasPermission('member:face-record:query')")
     public CommonResult<PageResult<FaceRecordRespVO>> getFaceRecordPage(@Valid FaceRecordPageReqVO pageVO) {
-        return success(faceRecordService.getFaceRecordPage(pageVO));
+        return success(faceRecordService.getFaceRecordPage(pageVO,true));
     }
 
     @PostMapping("/addBlacklist/{id}")

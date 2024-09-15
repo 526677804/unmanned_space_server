@@ -11,9 +11,6 @@
       <el-form-item label="设备编号" prop="deviceSn">
         <el-input v-model="queryParams.deviceSn" placeholder="请输入设备编号" clearable @keyup.enter.native="handleQuery"/>
       </el-form-item>
-      <el-form-item label="人员guid" prop="admitGuid">
-        <el-input v-model="queryParams.admitGuid" placeholder="请输入人员guid" clearable @keyup.enter.native="handleQuery"/>
-      </el-form-item>
       <el-form-item label="识别时间" prop="showTime">
         <el-date-picker v-model="queryParams.showTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
                         range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']" />
@@ -44,7 +41,11 @@
       <el-table-column label="ID" align="center" prop="id" />
       <el-table-column label="设备编号" align="center" prop="deviceSn" />
       <el-table-column label="门店名称" align="center" prop="storeName" />
-      <el-table-column label="照片" align="center" prop="photoUrl" />
+      <el-table-column label="照片" align="center" prop="photoUrl" max-width="80px">
+        <template v-slot="scope">
+          <img :src="scope.row.photoUrl" class="photoUrl" width="60px" height="90px" />
+        </template>
+      </el-table-column>
       <el-table-column label="识别时间" align="center" prop="showTime" width="180">
         <template v-slot="scope">
           <span>{{ parseTime(scope.row.showTime) }}</span>

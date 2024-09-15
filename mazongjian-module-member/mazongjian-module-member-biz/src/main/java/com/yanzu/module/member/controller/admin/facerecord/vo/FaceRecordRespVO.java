@@ -1,9 +1,14 @@
 package com.yanzu.module.member.controller.admin.facerecord.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
+
+import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
+import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 
 @Schema(description = "管理后台 - 人脸识别记录 Response VO")
 @Data
@@ -32,7 +37,8 @@ public class FaceRecordRespVO {
     private String photoUrl;
 
     @Schema(description = "识别时间")
-    private LocalDateTime showTime;
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
+    private Date showTime;
 
     @Schema(description = "比对结果", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer type;

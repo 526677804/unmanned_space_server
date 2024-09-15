@@ -2,10 +2,13 @@ package com.yanzu.module.member.service.facerecord;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.module.member.controller.admin.faceblacklist.vo.FaceBlacklistAddReqVO;
 import com.yanzu.module.member.dal.dataobject.faceblacklist.FaceBlacklistDO;
 import com.yanzu.module.member.dal.mysql.faceblacklist.FaceBlacklistMapper;
+import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
@@ -23,6 +26,7 @@ import com.yanzu.module.member.dal.mysql.facerecord.FaceRecordMapper;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
@@ -39,6 +43,9 @@ public class FaceRecordServiceImpl implements FaceRecordService {
 
     @Resource
     private DeviceService deviceService;
+
+    @Resource
+    private StoreInfoService storeInfoService;
 
     @Resource
     private FaceBlacklistMapper faceBlacklistMapper;
@@ -68,9 +75,11 @@ public class FaceRecordServiceImpl implements FaceRecordService {
     }
 
     @Override
-    public PageResult<FaceRecordRespVO> getFaceRecordPage(FaceRecordPageReqVO reqVO) {
-        IPage<FaceRecordRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageNo());
-        faceRecordMapper.getFaceRecordPage(page,reqVO);
+    public PageResult<FaceRecordRespVO> getFaceRecordPage(FaceRecordPageReqVO reqVO,boolean isAdmin) {
+        //检查权限
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        IPage<FaceRecordRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        faceRecordMapper.getFaceRecordPage(page,reqVO, getLoginUserId(),isAdmin);
         return new PageResult<>(page.getRecords(),page.getTotal());
     }
 

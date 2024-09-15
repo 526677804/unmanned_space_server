@@ -5,13 +5,17 @@ import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
+import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordPageReqVO;
+import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordRespVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.facerecord.FaceRecordService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +42,9 @@ public class AppStoreController {
 
     @Resource
     private DeviceService deviceService;
+
+    @Resource
+    private FaceRecordService faceRecordService;
 
     @PostMapping("/getPageList")
     @Operation(summary = "获取门店列表")
@@ -136,6 +143,7 @@ public class AppStoreController {
         storeInfoService.addDevice(reqVO);
         return success(true);
     }
+
     @PostMapping("/delDevice/{deviceId}")
     @Operation(summary = "删除设备", description = "房间管理使用")
     @PreAuthenticated
@@ -315,4 +323,12 @@ public class AppStoreController {
         storeInfoService.saveStoreSoundInfo(reqVO);
         return success(true);
     }
+
+    @PostMapping("/getFaceRecordPage")
+    @Operation(summary = "获得人脸识别记录分页")
+    @PreAuthenticated
+    public CommonResult<PageResult<FaceRecordRespVO>> getFaceRecordPage(@RequestBody @Valid FaceRecordPageReqVO pageVO) {
+        return success(faceRecordService.getFaceRecordPage(pageVO, false));
+    }
+
 }

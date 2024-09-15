@@ -38,7 +38,8 @@ public interface FaceRecordMapper extends BaseMapperX<FaceRecordDO> {
                 .orderByDesc(FaceRecordDO::getId));
     }
 
-    IPage<FaceRecordRespVO> getFaceRecordPage(@Param("page") IPage<FaceRecordRespVO> page, @Param("reqVO") FaceRecordPageReqVO reqVO);
+    IPage<FaceRecordRespVO> getFaceRecordPage(@Param("page") IPage<FaceRecordRespVO> page, @Param("reqVO") FaceRecordPageReqVO reqVO
+            , @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin);
 
     FaceRecordRespVO getById(Long id);
 
