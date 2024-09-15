@@ -16,7 +16,7 @@ public class DeviceInfoBindReqVO  {
     private Long deviceId;
 
     @Schema(description = "门店ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
-//    @NotNull(message = "门店不能为空")
+    @NotNull(message = "门店不能为空")
     private Long storeId;
 
     @Schema(description = "房间ID")

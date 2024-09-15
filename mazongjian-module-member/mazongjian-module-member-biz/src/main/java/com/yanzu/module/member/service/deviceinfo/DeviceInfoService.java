@@ -65,9 +65,6 @@ public interface DeviceInfoService {
 
     void bind(DeviceInfoBindReqVO reqVO);
 
-    void iotScope();
-
-
     void configWifi(DeviceInfoConfigWifiReqVO reqVO);
 
     void setLockAutoLock(DeviceInfoSetAutoLockReqVO reqVO);

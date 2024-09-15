@@ -7,33 +7,6 @@ import com.dtflys.forest.annotation.Var;
 import com.yanzu.module.member.service.iot.device.*;
 
 public interface IotDeviceClient {
-    /**
-     * 发起授权
-     */
-
-    @Post(url = "https://iot.scyanzu.com/admin-api/system/oauth2/authorize")
-    IotResult authorize(@Query IotAuthReqVO reqVO);
-
-
-    /**
-     * 获取token
-     *
-     * @param reqVO
-     * @return
-     */
-    @Post(url = "https://iot.scyanzu.com/admin-api/system/oauth2/token")
-    IotResult<IotTokenRespVO> getToken(@Query IotTokenReqVO reqVO);
-
-
-    /**
-     * 刷新token
-     *
-     * @param reqVO
-     * @return
-     */
-    @Post(url = "https://iot.scyanzu.com/admin-api/system/oauth2/refreshToken")
-    IotResult<IotTokenRespVO> getTokenRefush(@Query IotTokenRefushReqVO reqVO);
-
 
     /**
      * 设备绑定
@@ -101,5 +74,30 @@ public interface IotDeviceClient {
                     "secret:${secret}",
             })
     IotResult<Boolean> lockUpdate(@JSONBody IotDeviceLockUpdateReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
+    /**
+     * 添加人脸
+     *
+     * @param reqVO
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/addBlacklist",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<String> addBlacklist(@JSONBody IotDeviceAddBlacklistReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
+
+    /**
+     * 删除人脸
+     *
+     * @param reqVO
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/delBlacklist",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<Boolean> delBlacklist(@JSONBody IotDeviceDelBlacklistReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
 }

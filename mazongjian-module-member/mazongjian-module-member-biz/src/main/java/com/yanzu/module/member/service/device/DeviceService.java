@@ -29,4 +29,9 @@ public interface DeviceService {
     void clearByRoomId(Long roomId);
 
     int countGateway(Long storeId);
+
+    String addUserFace(Long storeId, String photoUrl, String remark);
+
+    void delUserFace(Long storeId, String admitGuid);
+
 }

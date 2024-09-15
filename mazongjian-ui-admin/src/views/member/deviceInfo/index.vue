@@ -110,7 +110,7 @@
         </el-form-item>
         <el-form-item label="门店" prop="storeId">
           <el-select v-model="form.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList"
-            required="true">
+            required="true" :rules="rules">
             <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -134,7 +134,7 @@
         </el-form-item> -->
         <el-form-item label="门店" prop="storeId">
           <el-select v-model="bindForm.storeId" placeholder="请选择门店" clearable size="small" @change="loadRoomList"
-            required="true">
+            required="true" :rules="bindrules">
             <el-option v-for="item in storeList" :key="item.value" :label="item.key" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -250,9 +250,10 @@ export default {
       rules: {
         deviceSn: [{ required: true, message: "设备sn不能为空", trigger: "blur" }],
         type: [{ required: true, message: "设备类型不能为空", trigger: "change" }],
+        storeId: [{ required: true, message: "门店不能为空", trigger: "blur" }],
       },
       bindrules: {
-        // storeId: [{ required: true, message: "门店不能为空", trigger: "blur" }],
+        storeId: [{ required: true, message: "门店不能为空", trigger: "blur" }],
       },
       configrules: {
         deviceId: [{ required: true, message: "设备不能为空", trigger: "blur" }],

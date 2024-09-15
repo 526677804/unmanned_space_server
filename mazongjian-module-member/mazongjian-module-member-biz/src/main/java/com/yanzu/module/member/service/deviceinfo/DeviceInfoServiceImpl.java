@@ -122,11 +122,6 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     }
 
     @Override
-    public void iotScope() {
-        iotDeviceService.authorize();
-    }
-
-    @Override
     public void configWifi(DeviceInfoConfigWifiReqVO reqVO) {
         DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(reqVO.getDeviceId());
         //只能操作自己的设备

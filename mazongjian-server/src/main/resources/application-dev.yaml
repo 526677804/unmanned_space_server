@@ -87,5 +87,5 @@ iot:
   clientId: 5d3cf1ed-d534
   secret: 5942a5b9-292b-4be5-b00e-aceef1e832f5
   redirectUrl: https://wq.scyanzu.com/app-api/callback/iotCallback
-  groupPay: false #是否启用统一团购功能
+  groupPay: true #是否启用统一团购功能
 

@@ -1,10 +1,14 @@
 package com.yanzu.server;
 
 import com.dtflys.forest.springboot.annotation.ForestScan;
+import com.yanzu.module.member.forest.IotClient;
+import com.yanzu.module.member.service.iot.IotDeviceService;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import javax.annotation.Resource;
 import java.util.TimeZone;
 
 /**
@@ -27,4 +31,14 @@ public class MazongjianServerApplication {
     }
 
 
+    @Resource
+    private IotDeviceService iotDeviceService;
+
+    //启动成功后 向iot平台上报一下信息
+    @Bean
+    public CommandLineRunner run() {
+        return args -> {
+            iotDeviceService.online();
+        };
+    }
 }

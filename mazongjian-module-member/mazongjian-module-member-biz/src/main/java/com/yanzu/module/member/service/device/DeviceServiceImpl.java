@@ -13,6 +13,7 @@ import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storesound.StoreSoundInfoMapper;
 import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.device.IotDeviceAddBlacklistReqVO;
 import com.yanzu.module.member.service.iot.device.IotDeviceBaseVO;
 import com.yanzu.module.member.service.iot.device.IotDeviceContrlReqVO;
 import lombok.extern.slf4j.Slf4j;
@@ -452,6 +453,16 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     public int countGateway(Long storeId) {
         return deviceInfoMapper.countGateway(storeId);
+    }
+
+    @Override
+    public String addUserFace(Long storeId, String photoUrl, String remark) {
+        return iotDeviceService.addUserFace(storeId,photoUrl,remark);
+    }
+
+    @Override
+    public void delUserFace(Long storeId, String admitGuid) {
+        iotDeviceService.delUserFace(storeId,admitGuid);
     }
 
     private void closeLight(Long roomId) {

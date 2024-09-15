@@ -56,8 +56,6 @@
       <el-table-column label="美团key" align="center" prop="meituanKey" />
       <el-table-column label="美团Secret" align="center" prop="meituanSecret" /> -->
       <el-table-column label="房间数量" align="center" prop="roomNum" />
-      <!-- <el-table-column label="总收入" align="center" prop="totalMoney" /> -->
-      <!-- <el-table-column label="已提现" align="center" prop="totalWithdrawal" /> -->
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template v-slot="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
@@ -65,8 +63,6 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleMeituan(scope.row)"
-                     v-hasPermi="['member:store-info:update']">美团授权</el-button>
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
                      v-hasPermi="['member:store-info:update']">修改</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"

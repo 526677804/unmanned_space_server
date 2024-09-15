@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yanzu.module.member.dal.mysql.facerecord.FaceRecordMapper">
+
+    <!--
+        一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
+        无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
+     -->
+
+    <select id="getFaceRecordPage"
+            resultType="com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordRespVO">
+        select f.*, store.store_name,store.store_id
+        from member_face_record f
+                 left join member_device_info device ON device.device_sn = f.device_sn and device.deleted = 0
+                 left join member_store_info store ON device.store_id = store.store_id
+        where f.deleted = 0
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.storeId">
+                and device.store_id=#{reqVO.storeId}
+            </if>
+            <if test="null!=reqVO.type">
+                and f.type=#{reqVO.type}
+            </if>
+            <if test="null!=reqVO.deviceSn and reqVO.deviceSn!=''">
+                and locate(#{reqVO.deviceSn},device.device_sn)>0
+            </if>
+            <if test="null!=reqVO.admitGuid and reqVO.admitGuid!=''">
+                and locate(#{reqVO.admitGuid},f.admit_guid)>0
+            </if>
+            <if test="null!=reqVO.showTime">
+                AND f.show_time>=#{reqVO.showTime[0]}
+                AND f.show_time&lt;=#{reqVO.showTime[1]}
+            </if>
+        </if>
+        order by f.create_time desc
+    </select>
+    <select id="getById" resultType="com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordRespVO">
+        select f.*, store.store_name, store.store_id
+        from member_face_record f
+                 left join member_device_info device ON device.device_sn = f.device_sn and device.deleted = 0
+                 left join member_store_info store ON device.store_id = store.store_id
+        where f.deleted = 0
+          and f.id = #{id}
+    </select>
+</mapper>
