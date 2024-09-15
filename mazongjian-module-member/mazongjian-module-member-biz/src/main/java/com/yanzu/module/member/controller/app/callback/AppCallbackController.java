@@ -75,5 +75,15 @@ public class AppCallbackController {
         iotDeviceService.iotCallback(json);
     }
 
+    @PostMapping(value = "/iotPlatform")
+    @Operation(summary = "物联网平台回调")
+    @PermitAll // 无需登录
+    @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
+    public void iotPlatform(@RequestBody JSONObject json) {
+        log.info("收到平台回调,params:{}", json);
+        iotDeviceService.iotPlatform(json);
+    }
+
+
 
 }
