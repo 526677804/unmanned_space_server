@@ -2,7 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper">
     <update id="updateStatusBySN">
-        update member_device_info set status=#{state} where device_sn=#{deviceSn}
+        update member_device_info
+        set status=#{state}
+        where device_sn = #{deviceSn}
     </update>
     <update id="updateBindInfo">
         update member_device_info
@@ -42,32 +44,33 @@
         left join member_store_info s ON s.store_id = d.store_id
         left join member_room_info r ON r.room_id = d.room_id
         where d.deleted = 0
-          <if test="null!=reqVO">
-              <if test="null!=reqVO.deviceSn and reqVO.deviceSn!=''">
-                  and locate(#{reqVO.deviceSn},d.device_sn)>0
-              </if>
-              <if test="null!=reqVO.type and reqVO.type!=''">
-                  and d.type=#{reqVO.type}
-              </if>
-              <if test="null!=reqVO.status">
-                  and d.status=#{reqVO.status}
-              </if>
-              <if test="null!=reqVO.roomId and reqVO.roomId!=''">
-                  and d.room_id=#{reqVO.roomId}
-              </if>
-              <if test="null!=reqVO.storeId and reqVO.storeId!=''">
-                  and d.store_id=#{reqVO.storeId}
-              </if>
-              <if test="null==reqVO.storeId and isAdmin==false">
-                  and d.store_id IN (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
-              </if>
-              <if test="null!=reqVO.createTime and reqVO.createTime!=''">
-                  and d.create_time between
-                  <foreach collection="createTime" item="dateTime" separator="and">
-                      #{reqVO.dateTime}
-                  </foreach>
-              </if>
-          </if>
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.deviceSn and reqVO.deviceSn!=''">
+                and locate(#{reqVO.deviceSn},d.device_sn)>0
+            </if>
+            <if test="null!=reqVO.type and reqVO.type!=''">
+                and d.type=#{reqVO.type}
+            </if>
+            <if test="null!=reqVO.status">
+                and d.status=#{reqVO.status}
+            </if>
+            <if test="null!=reqVO.roomId and reqVO.roomId!=''">
+                and d.room_id=#{reqVO.roomId}
+            </if>
+            <if test="null!=reqVO.storeId and reqVO.storeId!=''">
+                and d.store_id=#{reqVO.storeId}
+            </if>
+            <if test="null==reqVO.storeId and isAdmin==false">
+                and d.store_id IN (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND
+                type IN (12,13))
+            </if>
+            <if test="null!=reqVO.createTime and reqVO.createTime!=''">
+                and d.create_time between
+                <foreach collection="createTime" item="dateTime" separator="and">
+                    #{reqVO.dateTime}
+                </foreach>
+            </if>
+        </if>
         order by d.store_id,d.room_id
     </select>
     <select id="countGateway" resultType="java.lang.Integer">
@@ -86,6 +89,19 @@
     <select id="countBySN" resultType="java.lang.Integer">
         select count(1)
         from member_device_info
-        where deleted = 0 and device_sn=#{deviceSn}
+        where deleted = 0
+          and device_sn = #{deviceSn}
+    </select>
+    <select id="getDeviceRoomVO" resultType="com.yanzu.module.member.service.iot.device.IotDeviceRoomInfoVO">
+        select d.device_id,
+               d.device_sn,
+               d.room_id,
+               r.room_name,
+               d.store_id,
+               d.type
+        from member_device_info d
+                 left join member_room_info r ON r.room_id = d.room_id
+        where d.deleted = 0
+          and d.device_sn = #{deviceSn}
     </select>
 </mapper>

@@ -9,6 +9,7 @@ import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoExportRe
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoPageReqVO;
 import com.yanzu.module.member.controller.admin.deviceinfo.vo.DeviceInfoRespVO;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
+import com.yanzu.module.member.service.iot.device.IotDeviceRoomInfoVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -47,4 +48,6 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
     int countBySN(String deviceSn);
 
     int updateBindInfo(@Param("deviceId") Long deviceId, @Param("storeId") Long storeId, @Param("roomId") Long roomId);
+
+    IotDeviceRoomInfoVO getDeviceRoomVO(@Param("deviceSn") String deviceSn);
 }
