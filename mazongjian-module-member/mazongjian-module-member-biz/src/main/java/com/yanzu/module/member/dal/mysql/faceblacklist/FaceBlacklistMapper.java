@@ -39,6 +39,9 @@ public interface FaceBlacklistMapper extends BaseMapperX<FaceBlacklistDO> {
                 .orderByDesc(FaceBlacklistDO::getBlacklistId));
     }
 
-    IPage<FaceBlacklistRespVO> getFaceBlacklistPage(@Param("page") IPage<FaceBlacklistRespVO> page, @Param("reqVO") FaceBlacklistPageReqVO reqVO);
+    IPage<FaceBlacklistRespVO> getFaceBlacklistPage(@Param("page") IPage<FaceBlacklistRespVO> page, @Param("reqVO") FaceBlacklistPageReqVO reqVO
+            , @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin);
+
+    FaceBlacklistDO getByStoreAndGuid(@Param("storeId") Long storeId, @Param("admitGuid") String admitGuid);
 
 }

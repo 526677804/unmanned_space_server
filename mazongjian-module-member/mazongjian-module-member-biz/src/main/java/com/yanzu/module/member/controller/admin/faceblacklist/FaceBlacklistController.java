@@ -51,7 +51,7 @@ public class FaceBlacklistController {
     @Operation(summary = "获得人脸黑名单分页")
     @PreAuthorize("@ss.hasPermission('member:face-blacklist:query')")
     public CommonResult<PageResult<FaceBlacklistRespVO>> getFaceBlacklistPage(@Valid FaceBlacklistPageReqVO pageVO) {
-        return success(faceBlacklistService.getFaceBlacklistPage(pageVO));
+        return success(faceBlacklistService.getFaceBlacklistPage(pageVO,true));
     }
 
     @GetMapping("/export-excel")

@@ -25,11 +25,19 @@
             <if test="null!=reqVO.remark and reqVO.remark!=''">
                 and locate(#{reqVO.remark},f.remark)>0
             </if>
+            <if test="null==reqVO.storeId and isAdmin==false">
+                and f.store_id IN (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND
+                type IN (12,13))
+            </if>
             <if test="null!=reqVO.createTime">
                 AND f.create_time>=#{reqVO.createTime[0]}
                 AND f.create_time&lt;=#{reqVO.createTime[1]}
             </if>
         </if>
         order by f.create_time desc
+    </select>
+    <select id="getByStoreAndGuid"
+            resultType="com.yanzu.module.member.dal.dataobject.faceblacklist.FaceBlacklistDO">
+        select * from member_face_blacklist where deleted=0 and store_id=#{storeId} and admit_guid=#{admitGuid}
     </select>
 </mapper>

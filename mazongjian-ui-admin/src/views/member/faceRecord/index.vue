@@ -65,8 +65,10 @@
       
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-                     v-hasPermi="['member:face-record:update']">修改</el-button>
+          <el-button size="mini" type="text" v-if="scope.row.type==1"  @click="handleMove(scope.row)"
+          v-hasPermi="['member:device-info:update']">移出黑名单</el-button>
+          <el-button size="mini" type="text" v-if="scope.row.type!=1"  @click="handleAdd(scope.row)"
+          v-hasPermi="['member:device-info:update']">加入黑名单</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
                      v-hasPermi="['member:face-record:delete']">删除</el-button>
         </template>

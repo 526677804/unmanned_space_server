@@ -5,10 +5,13 @@ import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
+import com.yanzu.module.member.controller.admin.faceblacklist.vo.FaceBlacklistPageReqVO;
+import com.yanzu.module.member.controller.admin.faceblacklist.vo.FaceBlacklistRespVO;
 import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordPageReqVO;
 import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordRespVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.service.device.DeviceService;
+import com.yanzu.module.member.service.faceblacklist.FaceBlacklistService;
 import com.yanzu.module.member.service.facerecord.FaceRecordService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,6 +48,9 @@ public class AppStoreController {
 
     @Resource
     private FaceRecordService faceRecordService;
+
+    @Resource
+    private FaceBlacklistService faceBlacklistService;
 
     @PostMapping("/getPageList")
     @Operation(summary = "获取门店列表")
@@ -330,5 +336,31 @@ public class AppStoreController {
     public CommonResult<PageResult<FaceRecordRespVO>> getFaceRecordPage(@RequestBody @Valid FaceRecordPageReqVO pageVO) {
         return success(faceRecordService.getFaceRecordPage(pageVO, false));
     }
+
+    @PostMapping("/getFaceBlacklistPage")
+    @Operation(summary = "获得人脸黑名单分页")
+    @PreAuthenticated
+    public CommonResult<PageResult<FaceBlacklistRespVO>> getFaceBlacklistPage(@RequestBody @Valid FaceBlacklistPageReqVO pageVO) {
+        return success(faceBlacklistService.getFaceBlacklistPage(pageVO, false));
+    }
+
+    @PostMapping("/moveFaceByRecord")
+    @Operation(summary = "根据人脸识别记录修改黑名单")
+    @PreAuthenticated
+    @Idempotent(timeout = 3,message = "你的点击太快了~")
+    public CommonResult<Boolean> moveFaceByRecord(@RequestBody @Valid AppMoveBlacklistReqVO reqVO) {
+        faceRecordService.moveFaceByRecord(reqVO.getId(), reqVO.getRemark());
+        return success(true);
+    }
+
+    @PostMapping("/moveFaceById/{id}")
+    @Operation(summary = "移出人脸识黑名单")
+    @PreAuthenticated
+    @Idempotent(timeout = 3,message = "你的点击太快了~")
+    public CommonResult<Boolean> moveFaceById(@PathVariable("id") Long id) {
+        faceBlacklistService.moveFaceById(id);
+        return success(true);
+    }
+
 
 }

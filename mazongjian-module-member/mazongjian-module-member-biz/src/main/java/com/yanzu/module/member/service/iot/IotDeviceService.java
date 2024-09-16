@@ -11,13 +11,28 @@ import com.yanzu.module.member.forest.IotDeviceClient;
 import com.yanzu.module.member.service.iot.device.*;
 import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
@@ -163,6 +178,7 @@ public class IotDeviceService {
 
     /**
      * 旧版本回调接收  此回调方式即将下线
+     *
      * @param json
      */
     public void iotCallback(JSONObject json) {
@@ -175,8 +191,10 @@ public class IotDeviceService {
 
     /**
      * 新版本回调接收 建议用此方式
+     *
      * @param json
      */
+    @Async
     public void iotPlatform(JSONObject json) {
         if (json.containsKey("type") && json.containsKey("t") && json.containsKey("sign")) {
             String type = json.getString("type");
@@ -193,11 +211,13 @@ public class IotDeviceService {
                         break;
                     case "face_record":
                         //人脸识别记录回调
+                        //把照片url转成base64编码
+                        String base64Image = convertImageToBase64(data.getString("photoUrl"));
                         FaceRecordDO faceRecordDO = new FaceRecordDO()
                                 .setFaceId(data.getString("faceId"))
                                 .setDeviceSn(data.getString("deviceSn"))
                                 .setAdmitGuid(data.getString("admitGuid"))
-                                .setPhotoUrl(data.getString("photoUrl"))
+                                .setPhotoUrl(base64Image)
                                 .setShowTime(new Date(data.getLong("photoUrl")))
                                 .setType(data.getInteger("type"));
                         faceRecordMapper.insert(faceRecordDO);
@@ -205,36 +225,18 @@ public class IotDeviceService {
                     case "call":
                         //客户呼叫
                         String deviceSn = data.getString("deviceSn");
+                        //通过设备编号找出该设备所在门店的喇叭编号
                         IotDeviceRoomInfoVO deviceRoomVO = deviceInfoMapper.getDeviceRoomVO(deviceSn);
+                        String roomName = ObjectUtils.isEmpty(deviceRoomVO.getRoomName()) ? "" : deviceRoomVO.getRoomName();
+                        String callType = data.getString("callType");
                         if (!ObjectUtils.isEmpty(deviceRoomVO)) {
-                            String roomName = ObjectUtils.isEmpty(deviceRoomVO.getRoomName()) ? "" : deviceRoomVO.getRoomName();
-                            String callType = data.getString("callType");
-                            //指定房间的音箱进行语音播放
-                            switch (callType) {
-                                case "CALL1":
-                                    //呼叫服务员
-                                    runSound(deviceSn, roomName + ",顾客,呼叫服务员");
-                                    break;
-                                case "CALL2":
-                                    //需要换零钱
-                                    runSound(deviceSn, roomName + ",顾客,需要换零钱");
-                                    break;
-                                case "CALL3":
-                                    //需要购买商品
-                                    runSound(deviceSn, roomName + ",顾客,需要购买商品");
-                                    break;
-                                case "CALL4":
-                                    //需要加水
-                                    runSound(deviceSn, roomName + ",顾客,需要加水");
-                                    break;
-                                case "CALL5":
-                                    //需要清洁
-                                    runSound(deviceSn, roomName + ",顾客,需要清洁");
-                                    break;
-                                case "BTN_ON":
-                                    //呼叫服务员
-                                    runSound(deviceSn, roomName + ",顾客,呼叫服务员");
-                                    break;
+                            //门店有绑定喇叭才处理
+                            List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(deviceRoomVO.getStoreId());
+                            if (!CollectionUtils.isEmpty(storeVoiceList)) {
+                                String tts = getTTSByCallType(callType, roomName);
+                                storeVoiceList.forEach(x -> {
+                                    runSound(x.getDeviceSn(), tts);
+                                });
                             }
                         }
                         break;
@@ -243,6 +245,56 @@ public class IotDeviceService {
                 log.error("签名不匹配,{}", sign);
             }
         }
+    }
+
+    public String convertImageToBase64(String imageUrl) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            // 创建 GET 请求
+            HttpGet request = new HttpGet(imageUrl);
+            HttpResponse response = httpClient.execute(request);
+            HttpEntity entity = response.getEntity();
+            // 获取图片的字节数据
+            if (entity != null) {
+                byte[] imageBytes = EntityUtils.toByteArray(entity);
+                String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+                return base64Image;
+            }
+            return "Error: Image not found!";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String getTTSByCallType(String callType, String roomName) {
+        String tts = "";
+        switch (callType) {
+            case "CALL1":
+                //呼叫服务员
+                tts = roomName + ",顾客,呼叫服务员";
+                break;
+            case "CALL2":
+                //需要换零钱
+                tts = roomName + ",顾客,需要换零钱";
+                break;
+            case "CALL3":
+                //需要购买商品
+                tts = roomName + ",顾客,需要购买商品";
+                break;
+            case "CALL4":
+                //需要加水
+                tts = roomName + ",顾客,需要加水";
+                break;
+            case "CALL5":
+                //需要清洁
+                tts = roomName + ",顾客,需要清洁";
+                break;
+            case "BTN_ON":
+                //呼叫服务员
+                tts = roomName + ",顾客,呼叫服务员";
+                break;
+        }
+        return tts;
     }
 
     private void runSound(String sn, String cmd) {

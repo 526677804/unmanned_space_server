@@ -37,7 +37,7 @@ public class FaceRecordDO extends BaseDO {
      */
     private String admitGuid;
     /**
-     * 照片
+     * 照片 base64编码
      */
     private String photoUrl;
     /**

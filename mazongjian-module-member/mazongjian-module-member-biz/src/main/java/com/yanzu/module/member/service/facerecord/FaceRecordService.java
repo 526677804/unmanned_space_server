@@ -57,4 +57,6 @@ public interface FaceRecordService {
 
     void addBlacklist(FaceBlacklistAddReqVO reqVO);
 
+    void moveFaceByRecord(Long id,String remark);
+
 }

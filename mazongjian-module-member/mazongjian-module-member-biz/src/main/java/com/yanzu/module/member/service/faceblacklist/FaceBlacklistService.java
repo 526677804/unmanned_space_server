@@ -43,7 +43,7 @@ public interface FaceBlacklistService {
      * @param pageReqVO 分页查询
      * @return 人脸黑名单分页
      */
-    PageResult<FaceBlacklistRespVO> getFaceBlacklistPage(FaceBlacklistPageReqVO pageReqVO);
+    PageResult<FaceBlacklistRespVO> getFaceBlacklistPage(FaceBlacklistPageReqVO pageReqVO,boolean isAdmin);
 
     /**
      * 获得人脸黑名单列表, 用于 Excel 导出
@@ -52,5 +52,7 @@ public interface FaceBlacklistService {
      * @return 人脸黑名单列表
      */
     List<FaceBlacklistDO> getFaceBlacklistList(FaceBlacklistExportReqVO exportReqVO);
+
+    void moveFaceById(Long id);
 
 }

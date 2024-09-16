@@ -236,6 +236,10 @@ public class AppEnum {
         //密码锁 5
         //网关 6
         //插座 7
+        //锁球器控制器（12V） 8
+        //人脸门禁机 9
+        //智能语音喇叭 10
+        //二维码识别器 11
 
         DOOR(1),
         ELECTRIC(2),
@@ -244,6 +248,10 @@ public class AppEnum {
         LOCK(5),
         GATEWAY(6),
         SOCKET(7),
+        TAIQIU_12V(8),
+        FACE(9),
+        SOUND_V2(10),
+        QR(11),
 
         ;
 

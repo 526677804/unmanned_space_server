@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.store.vo.AppFaceRecordRespVO;
 import com.yanzu.module.member.dal.dataobject.facerecord.FaceRecordDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.yanzu.module.member.controller.admin.facerecord.vo.*;

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.module.member.controller.admin.faceblacklist.vo.FaceBlacklistAddReqVO;
+import com.yanzu.module.member.controller.app.store.vo.AppFaceRecordRespVO;
 import com.yanzu.module.member.dal.dataobject.faceblacklist.FaceBlacklistDO;
 import com.yanzu.module.member.dal.mysql.faceblacklist.FaceBlacklistMapper;
 import com.yanzu.module.member.enums.AppEnum;
@@ -105,4 +106,32 @@ public class FaceRecordServiceImpl implements FaceRecordService {
             faceBlacklistMapper.insert(faceBlacklistDO);
         }
     }
+
+    @Override
+    @Transactional
+    public void moveFaceByRecord(Long id,String remark) {
+        FaceRecordRespVO vo = faceRecordMapper.getById(id);
+        if(!ObjectUtils.isEmpty(vo)){
+            //检查权限
+            storeInfoService.checkPermisson(vo.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+            //判断该用户是否已存在黑名单
+            FaceBlacklistDO blacklistDO = faceBlacklistMapper.getByStoreAndGuid(vo.getStoreId(), vo.getAdmitGuid());
+            if(ObjectUtils.isEmpty(blacklistDO)){
+                //添加
+                String guid = deviceService.addUserFace(vo.getStoreId(), vo.getPhotoUrl(), remark);
+                blacklistDO=new FaceBlacklistDO()
+                        .setUserId(getLoginUserId())
+                        .setStoreId(vo.getStoreId())
+                        .setPhotoUrl(vo.getPhotoUrl())
+                        .setAdmitGuid(guid)
+                        .setRemark(remark);
+                faceBlacklistMapper.insert(blacklistDO);
+            }else{
+                //移出
+                deviceService.delUserFace(vo.getStoreId(), vo.getAdmitGuid());
+                faceBlacklistMapper.deleteById(blacklistDO.getBlacklistId());
+            }
+        }
+    }
+
 }

@@ -36,8 +36,12 @@
     <!-- 列表 -->
     <el-table v-loading="loading" :data="list">
       <el-table-column label="ID" align="center" prop="blacklistId" />
-      <el-table-column label="门店" align="center" prop="storeId" />
-      <el-table-column label="照片" align="center" prop="photoUrl" />
+      <el-table-column label="门店" align="center" prop="storeName" />
+      <el-table-column label="照片" align="center" prop="photoUrl" max-width="80px">
+        <template v-slot="scope">
+          <img :src="scope.row.photoUrl" class="photoUrl" width="60px" height="90px" />
+        </template>
+      </el-table-column>
       <el-table-column label="人员guid" align="center" prop="admitGuid" />
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
@@ -47,10 +51,8 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-                     v-hasPermi="['member:face-blacklist:update']">修改</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-                     v-hasPermi="['member:face-blacklist:delete']">删除</el-button>
+                     v-hasPermi="['member:face-blacklist:delete']">移出黑名单</el-button>
         </template>
       </el-table-column>
     </el-table>
