@@ -218,7 +218,7 @@ public class IotDeviceService {
                                 .setDeviceSn(data.getString("deviceSn"))
                                 .setAdmitGuid(data.getString("admitGuid"))
                                 .setPhotoUrl(base64Image)
-                                .setShowTime(new Date(data.getLong("photoUrl")))
+                                .setShowTime(new Date(data.getLong("showTime")))
                                 .setType(data.getInteger("type"));
                         faceRecordMapper.insert(faceRecordDO);
                         break;
@@ -256,7 +256,7 @@ public class IotDeviceService {
             // 获取图片的字节数据
             if (entity != null) {
                 byte[] imageBytes = EntityUtils.toByteArray(entity);
-                String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+                String base64Image = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(imageBytes);
                 return base64Image;
             }
             return "Error: Image not found!";

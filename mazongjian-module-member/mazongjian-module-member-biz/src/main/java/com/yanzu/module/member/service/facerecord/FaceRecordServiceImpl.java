@@ -78,7 +78,7 @@ public class FaceRecordServiceImpl implements FaceRecordService {
     @Override
     public PageResult<FaceRecordRespVO> getFaceRecordPage(FaceRecordPageReqVO reqVO,boolean isAdmin) {
         //检查权限
-        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         IPage<FaceRecordRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
         faceRecordMapper.getFaceRecordPage(page,reqVO, getLoginUserId(),isAdmin);
         return new PageResult<>(page.getRecords(),page.getTotal());
