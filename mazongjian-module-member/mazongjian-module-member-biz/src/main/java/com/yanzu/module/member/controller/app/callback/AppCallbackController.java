@@ -71,7 +71,7 @@ public class AppCallbackController {
     @PermitAll // 无需登录
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
     public void iotCallback(@RequestBody JSONObject json) {
-        log.info("收到平台回调,params:{}", json);
+        log.info("收到物联网平台回调,params:{}", json);
         iotDeviceService.iotPlatform(json);
     }
 
