@@ -17,5 +17,7 @@ public class IotDeviceRoomInfoVO {
 
     private Integer type;
 
+    private Long tenantId;
+
 
 }

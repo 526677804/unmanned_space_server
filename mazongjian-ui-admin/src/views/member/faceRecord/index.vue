@@ -41,9 +41,9 @@
       <el-table-column label="ID" align="center" prop="id" />
       <el-table-column label="设备编号" align="center" prop="deviceSn" />
       <el-table-column label="门店名称" align="center" prop="storeName" />
-      <el-table-column label="照片" align="center" prop="photoUrl" max-width="80px">
+      <el-table-column label="照片" align="center" prop="photoData" max-width="80px">
         <template v-slot="scope">
-          <img :src="scope.row.photoUrl" class="photoUrl" width="60px" height="90px" />
+          <img :src="scope.row.photoData" class="photoData" width="60px" height="90px" />
         </template>
       </el-table-column>
       <el-table-column label="识别时间" align="center" prop="showTime" width="180">
@@ -53,7 +53,7 @@
       </el-table-column>
       <el-table-column label="比对结果" align="center" prop="type">
         <template v-slot="scope">
-          <span>{{ scope.row.type === 1 ? '比对成功' : '陌生人' }}</span>
+          <span>{{ scope.row.type === 1 ? '黑名单' : '陌生人' }}</span>
         </template>
       </el-table-column>
       
@@ -67,7 +67,7 @@
         <template v-slot="scope">
           <el-button size="mini" type="text" v-if="scope.row.type==1"  @click="handleMove(scope.row)"
           v-hasPermi="['member:device-info:update']">移出黑名单</el-button>
-          <el-button size="mini" type="text" v-if="scope.row.type!=1"  @click="handleAdd(scope.row)"
+          <el-button size="mini" type="text" v-if="scope.row.type==2"  @click="handleUpdate(scope.row)"
           v-hasPermi="['member:device-info:update']">加入黑名单</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
                      v-hasPermi="['member:face-record:delete']">删除</el-button>
@@ -81,8 +81,8 @@
     <!-- 对话框(添加 / 修改) -->
     <el-dialog :title="title" :visible.sync="open" width="500px" v-dialogDrag append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="设备编号" prop="deviceSn">
-          <el-input v-model="form.deviceSn" placeholder="请输入设备编号" />
+        <el-form-item label="拉黑备注" prop="remark">
+          <el-input v-model="form.remark" placeholder="请输入备注" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -160,7 +160,8 @@ export default {
     /** 表单重置 */
     reset() {
       this.form = {
-        deviceSn: undefined,
+        id: undefined,
+        remark: undefined,
       };
       this.resetForm("form");
     },
@@ -175,20 +176,30 @@ export default {
       this.handleQuery();
     },
     /** 新增按钮操作 */
-    handleAdd() {
-      this.reset();
-      this.open = true;
-      this.title = "添加人脸识别记录";
+    handleMove(row) {
+      const id = row.id;
+      const form={
+        id: id
+      };
+      this.$modal.confirm('是否移出黑名单?').then(function() {
+        updateFaceRecord(form);
+      }).then(() => {
+        this.$modal.msgSuccess("操作成功");
+        setTimeout(() => {
+          this.getList();
+        }, 1000);
+      }).catch(() => {});
+      
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
       const id = row.id;
-      getFaceRecord(id).then(response => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "修改人脸识别记录";
-      });
+      this.form={
+        id: id
+      };
+      this.open = true;
+      this.title = "添加人脸黑名单";
     },
     /** 提交按钮 */
     submitForm() {
@@ -196,21 +207,16 @@ export default {
         if (!valid) {
           return;
         }
+        console.log(this.form);
         // 修改的提交
         if (this.form.id != null) {
           updateFaceRecord(this.form).then(response => {
-            this.$modal.msgSuccess("修改成功");
+            this.$modal.msgSuccess("操作成功");
             this.open = false;
             this.getList();
           });
           return;
         }
-        // 添加的提交
-        createFaceRecord(this.form).then(response => {
-          this.$modal.msgSuccess("新增成功");
-          this.open = false;
-          this.getList();
-        });
       });
     },
     /** 删除按钮操作 */
@@ -218,10 +224,10 @@ export default {
       const id = row.id;
       this.$modal.confirm('是否确认删除人脸识别记录编号为"' + id + '"的数据项?').then(function() {
           return deleteFaceRecord(id);
-        }).then(() => {
-          this.getList();
-          this.$modal.msgSuccess("删除成功");
-        }).catch(() => {});
+      }).then(() => {
+        this.getList();
+        this.$modal.msgSuccess("删除成功");
+      }).catch(() => {});
     },
     /** 导出按钮操作 */
     handleExport() {

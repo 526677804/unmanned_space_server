@@ -54,16 +54,5 @@ public class FaceBlacklistController {
         return success(faceBlacklistService.getFaceBlacklistPage(pageVO,true));
     }
 
-    @GetMapping("/export-excel")
-    @Operation(summary = "导出人脸黑名单 Excel")
-    @PreAuthorize("@ss.hasPermission('member:face-blacklist:export')")
-    @OperateLog(type = EXPORT)
-    public void exportFaceBlacklistExcel(@Valid FaceBlacklistExportReqVO exportReqVO,
-              HttpServletResponse response) throws IOException {
-        List<FaceBlacklistDO> list = faceBlacklistService.getFaceBlacklistList(exportReqVO);
-        // 导出 Excel
-        List<FaceBlacklistExcelVO> datas = FaceBlacklistConvert.INSTANCE.convertList02(list);
-        ExcelUtils.write(response, "人脸黑名单.xls", "数据", FaceBlacklistExcelVO.class, datas);
-    }
 
 }

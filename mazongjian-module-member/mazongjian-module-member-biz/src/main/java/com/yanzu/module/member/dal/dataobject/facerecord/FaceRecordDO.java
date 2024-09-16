@@ -32,6 +32,11 @@ public class FaceRecordDO extends BaseDO {
      * 识别记录ID
      */
     private String faceId;
+
+    /**
+     * 门店id
+     */
+    private Long storeId;
     /**
      * 人员guid
      */
@@ -40,6 +45,7 @@ public class FaceRecordDO extends BaseDO {
      * 照片 base64编码
      */
     private String photoUrl;
+    private String photoData;
     /**
      * 识别时间
      */

@@ -20,8 +20,11 @@ public class FaceBlacklistRespVO  {
     @Schema(description = "门店名称", example = "10537")
     private String storeName;
 
-    @Schema(description = "照片", requiredMode = Schema.RequiredMode.REQUIRED, example = "")
+    @Schema(description = "照片URL", requiredMode = Schema.RequiredMode.REQUIRED, example = "")
     private String photoUrl;
+
+    @Schema(description = "照片数据", requiredMode = Schema.RequiredMode.REQUIRED, example = "")
+    private String photoData;
 
     @Schema(description = "人员guid", requiredMode = Schema.RequiredMode.REQUIRED, example = "23651")
     private String admitGuid;

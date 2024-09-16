@@ -100,7 +100,8 @@
                d.room_id,
                r.room_name,
                d.store_id,
-               d.type
+               d.type,
+               d.tenant_id
         from member_device_info d
                  left join member_room_info r ON r.room_id = d.room_id
         where d.deleted = 0
@@ -119,5 +120,11 @@
           and d.type IN (3,10)
           and d.room_id is null
           and d.store_id=#{storeId}
+    </select>
+    <select id="getTenantBySN" resultType="java.lang.Long">
+        select tenant_id
+        from member_device_info
+        where deleted = 0
+          and device_sn = #{deviceSn}
     </select>
 </mapper>

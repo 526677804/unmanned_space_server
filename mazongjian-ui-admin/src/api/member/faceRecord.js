@@ -9,11 +9,11 @@ export function createFaceRecord(data) {
   })
 }
 
-// 更新人脸识别记录
+// 添加人脸黑名单
 export function updateFaceRecord(data) {
   return request({
-    url: '/member/face-record/update',
-    method: 'put',
+    url: '/member/face-record/moveFaceByRecord',
+    method: 'post',
     data: data
   })
 }

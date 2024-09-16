@@ -44,4 +44,7 @@ public interface WorkWxService {
     void sendOrderClearMsg(Long storeId, String roomName, Date startTime, Date endTime);
 
     void sendOrderSubmitMsg(Long storeId, Long userId, String mobile, String roomName, String orderNo, Date startTime, Date endTime);
+
+    void sendCallMsg(Long storeId, String tts);
+
 }

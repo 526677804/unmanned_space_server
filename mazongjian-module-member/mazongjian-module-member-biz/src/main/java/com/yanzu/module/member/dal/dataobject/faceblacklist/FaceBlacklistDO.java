@@ -39,6 +39,7 @@ public class FaceBlacklistDO extends BaseDO {
      * 照片 base64编码
      */
     private String photoUrl;
+    private String photoData;
     /**
      * 人员guid
      */

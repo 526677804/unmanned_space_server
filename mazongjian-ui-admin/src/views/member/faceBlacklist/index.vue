@@ -37,9 +37,9 @@
     <el-table v-loading="loading" :data="list">
       <el-table-column label="ID" align="center" prop="blacklistId" />
       <el-table-column label="门店" align="center" prop="storeName" />
-      <el-table-column label="照片" align="center" prop="photoUrl" max-width="80px">
+      <el-table-column label="照片" align="center" prop="photoData" max-width="80px">
         <template v-slot="scope">
-          <img :src="scope.row.photoUrl" class="photoUrl" width="60px" height="90px" />
+          <img :src="scope.row.photoData" class="photoData" width="60px" height="90px" />
         </template>
       </el-table-column>
       <el-table-column label="人员guid" align="center" prop="admitGuid" />
@@ -195,7 +195,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const blacklistId = row.blacklistId;
-      this.$modal.confirm('是否确认删除人脸黑名单编号为"' + blacklistId + '"的数据项?').then(function() {
+      this.$modal.confirm('是否确认删除人脸黑名单?').then(function() {
           return deleteFaceBlacklist(blacklistId);
         }).then(() => {
           this.getList();

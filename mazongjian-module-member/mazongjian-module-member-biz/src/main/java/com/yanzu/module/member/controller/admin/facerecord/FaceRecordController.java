@@ -1,7 +1,10 @@
 package com.yanzu.module.member.controller.admin.facerecord;
 
 import com.dtflys.forest.annotation.Post;
+import com.yanzu.framework.idempotent.core.annotation.Idempotent;
+import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.admin.faceblacklist.vo.FaceBlacklistAddReqVO;
+import com.yanzu.module.member.controller.app.store.vo.AppMoveBlacklistReqVO;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -55,11 +58,11 @@ public class FaceRecordController {
         return success(faceRecordService.getFaceRecordPage(pageVO,true));
     }
 
-    @PostMapping("/addBlacklist/{id}")
-    @Operation(summary = "添加人脸黑名单")
-    @PreAuthorize("@ss.hasPermission('member:face-record:update')")
-    public CommonResult<Boolean> addBlacklist(@RequestBody @Validated FaceBlacklistAddReqVO reqVO) {
-        faceRecordService.addBlacklist(reqVO);
+    @PostMapping("/moveFaceByRecord")
+    @Operation(summary = "根据人脸识别记录修改黑名单")
+    @PreAuthenticated
+    public CommonResult<Boolean> moveFaceByRecord(@RequestBody @Valid AppMoveBlacklistReqVO reqVO) {
+        faceRecordService.moveFaceByRecord(reqVO.getId(), reqVO.getRemark(),true);
         return success(true);
     }
 

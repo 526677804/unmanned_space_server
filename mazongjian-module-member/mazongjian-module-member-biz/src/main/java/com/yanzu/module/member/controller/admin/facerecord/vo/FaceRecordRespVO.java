@@ -36,6 +36,9 @@ public class FaceRecordRespVO {
     @Schema(description = "照片", requiredMode = Schema.RequiredMode.REQUIRED, example = "")
     private String photoUrl;
 
+    @Schema(description = "照片数据", requiredMode = Schema.RequiredMode.REQUIRED, example = "")
+    private String photoData;
+
     @Schema(description = "识别时间")
     @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private Date showTime;

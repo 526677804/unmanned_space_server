@@ -28,16 +28,6 @@ public interface FaceBlacklistMapper extends BaseMapperX<FaceBlacklistDO> {
                 .orderByDesc(FaceBlacklistDO::getBlacklistId));
     }
 
-    default List<FaceBlacklistDO> selectList(FaceBlacklistExportReqVO reqVO) {
-        return selectList(new LambdaQueryWrapperX<FaceBlacklistDO>()
-                .eqIfPresent(FaceBlacklistDO::getUserId, reqVO.getUserId())
-                .eqIfPresent(FaceBlacklistDO::getStoreId, reqVO.getStoreId())
-                .eqIfPresent(FaceBlacklistDO::getPhotoUrl, reqVO.getPhotoUrl())
-                .eqIfPresent(FaceBlacklistDO::getAdmitGuid, reqVO.getAdmitGuid())
-                .eqIfPresent(FaceBlacklistDO::getRemark, reqVO.getRemark())
-                .betweenIfPresent(FaceBlacklistDO::getCreateTime, reqVO.getCreateTime())
-                .orderByDesc(FaceBlacklistDO::getBlacklistId));
-    }
 
     IPage<FaceBlacklistRespVO> getFaceBlacklistPage(@Param("page") IPage<FaceBlacklistRespVO> page, @Param("reqVO") FaceBlacklistPageReqVO reqVO
             , @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin);

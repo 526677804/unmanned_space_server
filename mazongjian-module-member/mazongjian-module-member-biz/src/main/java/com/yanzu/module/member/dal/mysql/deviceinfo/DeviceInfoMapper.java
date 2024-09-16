@@ -52,4 +52,6 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
     IotDeviceRoomInfoVO getDeviceRoomVO(@Param("deviceSn") String deviceSn);
 
     List<IotDeviceRoomInfoVO> getStoreVoice(Long storeId);
+
+    Long getTenantBySN(String deviceSn);
 }

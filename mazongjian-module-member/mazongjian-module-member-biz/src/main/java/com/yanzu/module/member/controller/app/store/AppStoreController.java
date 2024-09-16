@@ -349,7 +349,7 @@ public class AppStoreController {
     @PreAuthenticated
     @Idempotent(timeout = 3,message = "你的点击太快了~")
     public CommonResult<Boolean> moveFaceByRecord(@RequestBody @Valid AppMoveBlacklistReqVO reqVO) {
-        faceRecordService.moveFaceByRecord(reqVO.getId(), reqVO.getRemark());
+        faceRecordService.moveFaceByRecord(reqVO.getId(), reqVO.getRemark(),false);
         return success(true);
     }
 

@@ -3,6 +3,7 @@ package com.yanzu.module.member.service.iot;
 import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.dtflys.forest.annotation.JSONBody;
+import com.yanzu.framework.tenant.core.util.TenantUtils;
 import com.yanzu.module.member.dal.dataobject.facerecord.FaceRecordDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.facerecord.FaceRecordMapper;
@@ -10,6 +11,7 @@ import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.forest.IotDeviceClient;
 import com.yanzu.module.member.service.iot.device.*;
 import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
+import com.yanzu.module.member.service.wx.WorkWxService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -64,6 +66,9 @@ public class IotDeviceService {
 
     @Resource
     private FaceRecordMapper faceRecordMapper;
+
+    @Resource
+    private WorkWxService workWxService;
 
     public void online() {
         if (!ObjectUtils.isEmpty(redirectUrl) && redirectUrl.startsWith("https://")) {
@@ -204,6 +209,7 @@ public class IotDeviceService {
             String newSign = SecureUtil.md5(secret + t);
             if (newSign.equals(sign)) {
                 JSONObject data = json.getJSONObject("data");
+                IotDeviceRoomInfoVO deviceRoomVO = null;
                 switch (type) {
                     case "online":
                         //设备上线/下线
@@ -211,39 +217,63 @@ public class IotDeviceService {
                         break;
                     case "face_record":
                         //人脸识别记录回调
+                        //查找出设备
+                        deviceRoomVO = deviceInfoMapper.getDeviceRoomVO(data.getString("deviceSn"));
                         //把照片url转成base64编码
                         String base64Image = convertImageToBase64(data.getString("photoUrl"));
                         FaceRecordDO faceRecordDO = new FaceRecordDO()
+                                .setStoreId(deviceRoomVO.getStoreId())
                                 .setFaceId(data.getString("faceId"))
                                 .setDeviceSn(data.getString("deviceSn"))
                                 .setAdmitGuid(data.getString("admitGuid"))
-                                .setPhotoUrl(base64Image)
+                                .setPhotoUrl(data.getString("photoUrl"))
+                                .setPhotoData(base64Image)
                                 .setShowTime(new Date(data.getLong("showTime")))
                                 .setType(data.getInteger("type"));
-                        faceRecordMapper.insert(faceRecordDO);
+                        //模拟租户
+                        TenantUtils.execute(deviceRoomVO.getTenantId(), () -> {
+                            faceRecordMapper.insert(faceRecordDO);
+                        });
                         break;
                     case "call":
                         //客户呼叫
-                        String deviceSn = data.getString("deviceSn");
-                        //通过设备编号找出该设备所在门店的喇叭编号
-                        IotDeviceRoomInfoVO deviceRoomVO = deviceInfoMapper.getDeviceRoomVO(deviceSn);
-                        String roomName = ObjectUtils.isEmpty(deviceRoomVO.getRoomName()) ? "" : deviceRoomVO.getRoomName();
-                        String callType = data.getString("callType");
-                        if (!ObjectUtils.isEmpty(deviceRoomVO)) {
-                            //门店有绑定喇叭才处理
-                            List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(deviceRoomVO.getStoreId());
-                            if (!CollectionUtils.isEmpty(storeVoiceList)) {
-                                String tts = getTTSByCallType(callType, roomName);
-                                storeVoiceList.forEach(x -> {
-                                    runSound(x.getDeviceSn(), tts);
-                                });
-                            }
-                        }
+                        callTask(data);
                         break;
                 }
             } else {
                 log.error("签名不匹配,{}", sign);
             }
+        }
+    }
+
+
+
+
+
+    /**
+     * 顾客呼叫处理
+     * @param data
+     */
+    private void callTask(JSONObject data){
+        String deviceSn = data.getString("deviceSn");
+        //通过设备编号找出该设备所在门店的喇叭编号
+        IotDeviceRoomInfoVO deviceRoomVO = deviceInfoMapper.getDeviceRoomVO(deviceSn);
+        String roomName = ObjectUtils.isEmpty(deviceRoomVO.getRoomName()) ? "" : deviceRoomVO.getRoomName();
+        String callType = data.getString("callType");
+        if (!ObjectUtils.isEmpty(deviceRoomVO)) {
+            //门店有绑定喇叭才处理
+            //模拟租户
+            TenantUtils.execute(deviceRoomVO.getTenantId(), () -> {
+                List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(deviceRoomVO.getStoreId());
+                if (!CollectionUtils.isEmpty(storeVoiceList)) {
+                    String tts = getTTSByCallType(callType, roomName);
+                    storeVoiceList.forEach(x -> {
+                        runSound(x.getDeviceSn(), tts);
+                    });
+                    //再异步发送企业微信通知
+                    workWxService.sendCallMsg(deviceRoomVO.getStoreId(), tts);
+                }
+            });
         }
     }
 

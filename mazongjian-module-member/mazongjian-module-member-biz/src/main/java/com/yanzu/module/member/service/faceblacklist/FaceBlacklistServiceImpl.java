@@ -3,6 +3,7 @@ package com.yanzu.module.member.service.faceblacklist;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordRespVO;
+import com.yanzu.module.member.dal.mysql.facerecord.FaceRecordMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
@@ -41,6 +42,9 @@ public class FaceBlacklistServiceImpl implements FaceBlacklistService {
     private FaceBlacklistMapper faceBlacklistMapper;
 
     @Resource
+    private FaceRecordMapper faceRecordMapper;
+
+    @Resource
     private DeviceService deviceService;
 
     @Resource
@@ -56,19 +60,11 @@ public class FaceBlacklistServiceImpl implements FaceBlacklistService {
             deviceService.delUserFace(faceBlacklistDO.getStoreId(), faceBlacklistDO.getAdmitGuid());
             // 删除数据库
             faceBlacklistMapper.deleteById(id);
+            //删除后把此guid的所有记录 改成STRANGERBABY
+            faceRecordMapper.delGuid(faceBlacklistDO.getAdmitGuid());
         }
     }
 
-
-    @Override
-    public FaceBlacklistDO getFaceBlacklist(Long id) {
-        return faceBlacklistMapper.selectById(id);
-    }
-
-    @Override
-    public List<FaceBlacklistDO> getFaceBlacklistList(Collection<Long> ids) {
-        return faceBlacklistMapper.selectBatchIds(ids);
-    }
 
     @Override
     public PageResult<FaceBlacklistRespVO> getFaceBlacklistPage(FaceBlacklistPageReqVO reqVO, boolean isAdmin) {
@@ -79,10 +75,6 @@ public class FaceBlacklistServiceImpl implements FaceBlacklistService {
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
-    @Override
-    public List<FaceBlacklistDO> getFaceBlacklistList(FaceBlacklistExportReqVO exportReqVO) {
-        return faceBlacklistMapper.selectList(exportReqVO);
-    }
 
     @Override
     @Transactional
@@ -93,6 +85,8 @@ public class FaceBlacklistServiceImpl implements FaceBlacklistService {
             storeInfoService.checkPermisson(faceBlacklistDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
             deviceService.delUserFace(faceBlacklistDO.getStoreId(),faceBlacklistDO.getAdmitGuid());
             faceBlacklistMapper.deleteById(id);
+            //删除后把此guid的所有记录 改成STRANGERBABY
+            faceRecordMapper.delGuid(faceBlacklistDO.getAdmitGuid());
         }
     }
 

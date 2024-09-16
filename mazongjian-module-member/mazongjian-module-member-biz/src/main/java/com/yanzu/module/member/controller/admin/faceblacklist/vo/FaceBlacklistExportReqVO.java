@@ -21,6 +21,8 @@ public class FaceBlacklistExportReqVO {
 
     @Schema(description = "照片", example = "https://www.iocoder.cn")
     private String photoUrl;
+    @Schema(description = "照片数据", example = "https://www.iocoder.cn")
+    private String photoData;
 
     @Schema(description = "人员guid", example = "23651")
     private String admitGuid;
