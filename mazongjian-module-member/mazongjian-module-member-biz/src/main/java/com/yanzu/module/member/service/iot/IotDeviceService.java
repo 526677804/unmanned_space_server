@@ -199,7 +199,6 @@ public class IotDeviceService {
      *
      * @param json
      */
-    @Async
     public void iotPlatform(JSONObject json) {
         if (json.containsKey("type") && json.containsKey("t") && json.containsKey("sign")) {
             String type = json.getString("type");
