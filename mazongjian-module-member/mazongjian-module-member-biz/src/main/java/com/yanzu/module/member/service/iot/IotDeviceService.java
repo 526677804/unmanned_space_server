@@ -318,6 +318,10 @@ public class IotDeviceService {
                 //需要清洁
                 tts = roomName + ",顾客,需要清洁";
                 break;
+            case "CALL6":
+                //需要点餐
+                tts = roomName + ",顾客,需要点餐";
+                break;
             case "BTN_ON":
                 //呼叫服务员
                 tts = roomName + ",顾客,呼叫服务员";
