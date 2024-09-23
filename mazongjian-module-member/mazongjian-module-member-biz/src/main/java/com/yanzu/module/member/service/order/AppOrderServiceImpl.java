@@ -1296,6 +1296,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             Set<Long> startRoomIds = new HashSet<>();
             Set<Long> endRoomIds = new HashSet<>();
             Set<Long> clearRoomIds = new HashSet<>();
+            Set<Long> jumpClearRoomIds = new HashSet<>();
             Set<Long> startOrderIds = new HashSet<>();
             Set<Long> endOrderIds = new HashSet<>();
             List<ClearInfoDO> clearInfoDOList = new ArrayList<>();
@@ -1333,6 +1334,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                                     ClearInfoDO clearInfoDO = new ClearInfoDO();
                                     clearInfoDO.setOrderId(x.getOrderId()).setStoreId(x.getStoreId()).setOrderNo(x.getOrderNo()).setRoomId(x.getRoomId());
                                     clearInfoDOList.add(clearInfoDO);
+                                }else{
+                                    jumpClearRoomIds.add(x.getRoomId());
                                 }
                             } else {
                                 //检查距离结束的时间，发送语音提醒
@@ -1400,6 +1403,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                     roomInfoMapper.updateStatusByIds(AppEnum.room_status.USED.getValue(), startRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                     //批量修改订单状态为进行中
                     orderInfoMapper.updateStatusByIds(AppEnum.order_status.START.getValue(), startOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                }
+                if(!CollectionUtils.isAnyEmpty(jumpClearRoomIds)){
+                    //批量修改房间状态为空闲
+                    roomInfoMapper.updateStatusByIds(AppEnum.room_status.ENABLE.getValue(), jumpClearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                 }
                 if (!CollectionUtils.isAnyEmpty(endOrderIds)) {
                     //批量修改房间状态为待清洁
