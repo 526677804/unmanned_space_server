@@ -113,6 +113,9 @@
         <if test="null!=roomClass">
             and r.room_class=#{roomClass}
         </if>
+        <if test="null!=status">
+            and r.status=#{status}
+        </if>
         order by r.sort_id asc
     </select>
     <select id="getPageList" resultType="com.yanzu.module.member.controller.app.store.vo.AppStoreAdminRespVO">

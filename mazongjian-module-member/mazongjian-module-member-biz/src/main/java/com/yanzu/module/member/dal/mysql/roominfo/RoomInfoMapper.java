@@ -65,4 +65,7 @@ public interface RoomInfoMapper extends BaseMapperX<RoomInfoDO> {
    AppRoomListVO getInfoById(@Param("roomId") Long roomId);
 
     List<AppRoomInfoListRespVO> getRoomInfoList2(@Param("storeIds") List<String> storeIds, @Param("storeId") Long storeId);
+
+    List<Integer> getClassList(Long storeId);
+
 }

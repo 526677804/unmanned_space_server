@@ -51,8 +51,10 @@ public class AppIndexStoreInfoRespVO  {
 
     @Schema(description = "wifi信息")
     private String wifiInfo;
+
     @Schema(description = "wifi密码")
     private String wifiPwd;
+
     @Schema(description = "简洁模式")
     private Boolean simpleModel;
 
@@ -91,6 +93,10 @@ public class AppIndexStoreInfoRespVO  {
 
     @Schema(description = "订单清洁时间")
     private Integer clearTime;
+
     @Schema(description = "清洁时开放房间")
     private Boolean clearOpen;
+
+    @Schema(description = "门店房间类别列表")
+    private List<Integer> roomClassList;
 }

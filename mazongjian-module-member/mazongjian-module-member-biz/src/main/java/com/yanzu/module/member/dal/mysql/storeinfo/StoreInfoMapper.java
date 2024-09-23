@@ -7,10 +7,7 @@ import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoPageReqVO;
-import com.yanzu.module.member.controller.app.index.vo.AppIndexStoreInfoRespVO;
-import com.yanzu.module.member.controller.app.index.vo.AppRoomInfoListRespVO;
-import com.yanzu.module.member.controller.app.index.vo.AppStorePageReqVO;
-import com.yanzu.module.member.controller.app.index.vo.AppStorePageRespVO;
+import com.yanzu.module.member.controller.app.index.vo.*;
 import com.yanzu.module.member.controller.app.store.vo.AppStoreAdminReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppStoreAdminRespVO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
@@ -56,7 +53,7 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
 
     List<KeyValue<String, Long>> getStoreList(@Param("name") String name,@Param("cityName") String cityName, @Param("userId") Long userId);
 
-    List<AppRoomInfoListRespVO> getRoomInfoList(@Param("storeId") Long storeId, @Param("roomClass") Integer roomClass);
+    List<AppRoomInfoListRespVO> getRoomInfoList(AppRoomListReqVO reqVO);
 
     AppRoomInfoListRespVO getRoomInfo(Long roomId);
 

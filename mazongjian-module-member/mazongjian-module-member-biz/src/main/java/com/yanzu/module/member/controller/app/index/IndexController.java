@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
+import javax.validation.Valid;
 import java.util.List;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
@@ -62,12 +63,11 @@ public class IndexController {
     }
 
 
-    @PostMapping("/getRoomInfoList/{storeId}")
+    @PostMapping("/getRoomInfoList")
     @Operation(summary = "首页获取房间信息列表")
     @Parameter(name = "storeId")
-    public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList(@PathVariable("storeId") Long storeId
-            , @RequestParam(required = false, name = "roomClass") Integer roomClass) {
-        return success(indexService.getRoomInfoList(storeId, roomClass));
+    public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList(@RequestBody @Valid AppRoomListReqVO reqVO) {
+        return success(indexService.getRoomInfoList(reqVO));
     }
 
     @PostMapping("/getRoomInfo/{roomId}")

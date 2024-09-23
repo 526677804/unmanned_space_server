@@ -127,4 +127,11 @@
           and r.room_id =#{roomId}
 
     </select>
+    <select id="getClassList" resultType="java.lang.Integer">
+        select distinct room_class
+        from member_room_info
+        where deleted = 0
+          and store_id = #{storeId}
+        order by room_class asc
+    </select>
 </mapper>
