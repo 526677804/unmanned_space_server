@@ -248,7 +248,6 @@ public class IotDeviceService {
 
 
 
-
     /**
      * 顾客呼叫处理
      * @param data
