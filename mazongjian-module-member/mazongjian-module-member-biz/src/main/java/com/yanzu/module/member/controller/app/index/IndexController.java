@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,7 +60,7 @@ public class IndexController {
     @Parameter(name = "storeId")
     public CommonResult<AppIndexStoreInfoRespVO> getStoreInfo(@PathVariable("storeId") Long storeId
             , @RequestParam(value = "lat", required = false) String lat, @RequestParam(value = "lon", required = false) String lon) {
-        return success(indexService.getStoreInfo(storeId,lat,lon));
+        return success(indexService.getStoreInfo(storeId, lat, lon));
     }
 
 
@@ -69,6 +70,16 @@ public class IndexController {
     public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList(@RequestBody @Valid AppRoomListReqVO reqVO) {
         return success(indexService.getRoomInfoList(reqVO));
     }
+
+    @PostMapping("/getRoomInfoList/{storeId}")
+    @Operation(summary = "首页获取房间信息列表（旧）")
+    @Parameter(name = "storeId")
+    public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList(@PathVariable(required = false, name = "storeId") Long storeId
+            , @RequestParam(required = false, name = "roomClass") Integer roomClass) {
+        AppRoomListReqVO reqVO = new AppRoomListReqVO().setStoreId(storeId).setRoomClass(roomClass);
+        return success(indexService.getRoomInfoList(reqVO));
+    }
+
 
     @PostMapping("/getRoomInfo/{roomId}")
     @Operation(summary = "首页获取房间信息详情")

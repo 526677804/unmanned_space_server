@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 public class AppRoomListReqVO {
 
     @Schema(description = "门店id")
-    @NotNull(message = "门店不能为空")
+//    @NotNull(message = "门店不能为空")
     private Long storeId;
 
     @Schema(description = "房间类别")
