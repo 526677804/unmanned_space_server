@@ -192,15 +192,17 @@ public class DeviceServiceImpl implements DeviceService {
         //开门 等于是开门+通电 把房间内所有设备操作一遍
         List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomId(roomId);
         if (!CollectionUtils.isEmpty(deviceList)) {
-            //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座
+            //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器
             deviceList.forEach(x -> {
                 switch (x.getType().intValue()) {
                     case 1:
+                    case 9:
                         openDoor(x.getDeviceSn(), storeId);
                         break;
                     case 2:
                     case 4:
                     case 7:
+                    case 8:
                         opSwitch(x.getDeviceSn(), "on");
                         break;
                     case 5:
@@ -213,7 +215,6 @@ public class DeviceServiceImpl implements DeviceService {
                         break;
 
                 }
-
 
             });
         }
@@ -243,14 +244,16 @@ public class DeviceServiceImpl implements DeviceService {
         //关门断电 把房间内所有设备操作一遍   关灯不在这里处理  因为有延时关灯的功能
         List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomId(roomId);
         if (!CollectionUtils.isEmpty(deviceList)) {
-            //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座
+            //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器
             deviceList.forEach(x -> {
                 switch (x.getType().intValue()) {
                     case 1:
+                    case 9:
                         closeDoor(x.getDeviceSn());
                         break;
                     case 2:
                     case 7:
+                    case 8:
                         opSwitch(x.getDeviceSn(), "off");
                         break;
                     case 5:
@@ -458,12 +461,12 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public String addUserFace(Long storeId, String photoUrl, String remark) {
-        return iotDeviceService.addUserFace(storeId,photoUrl,remark);
+        return iotDeviceService.addUserFace(storeId, photoUrl, remark);
     }
 
     @Override
     public void delUserFace(Long storeId, String admitGuid) {
-        iotDeviceService.delUserFace(storeId,admitGuid);
+        iotDeviceService.delUserFace(storeId, admitGuid);
     }
 
 
