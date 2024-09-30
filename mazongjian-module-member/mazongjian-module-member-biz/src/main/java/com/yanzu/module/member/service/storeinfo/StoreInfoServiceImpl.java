@@ -722,6 +722,22 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 throw exception(DEVICE_DATA_EXISTS_ERROR);
             }
         }
+        //有的设备每个房间只能存在一个
+        if (!ObjectUtils.isEmpty(reqVO.getRoomId())) {
+            switch (reqVO.getDeviceType()) {
+                case 1:
+                case 3:
+                case 5:
+                case 9:
+                case 10:
+                case 11:
+                    int c = deviceInfoMapper.countByTypeAndRoomId(reqVO.getDeviceType(), reqVO.getRoomId());
+                    if (c > 0) {
+                        throw exception(Device_ADD_MAX_NUM_ERROR);
+                    }
+                    break;
+            }
+        }
         //先在iot平台绑定设备
         String data = iotDeviceService.bind(reqVO.getDeviceSn());
         // 插入

@@ -87,6 +87,9 @@ public class OrderInfoAppRespVO {
     @Schema(description = "网关id 用于远程开锁")
     private Long gatewayId;
 
+    @Schema(description = "是否存在空调控制器")
+    private Integer kongtiaoCount;
+
     @Schema(description = "实际支付价格", example = "6888")
     private BigDecimal payPrice;
 
@@ -118,5 +121,6 @@ public class OrderInfoAppRespVO {
     @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date createTime;
+
 
 }

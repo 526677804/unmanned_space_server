@@ -1109,6 +1109,10 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (deviceService.countGateway(orderInfo.getStoreId()) > 0) {
                 orderInfo.setGatewayId(1L);
             }
+            //如果有空调控制器，设置一下
+            if (deviceService.countKongtiao(orderInfo.getRoomId()) > 0) {
+                orderInfo.setKongtiaoCount(1);
+            }
             if (!ObjectUtils.isEmpty(orderInfo.getRoomImg())) {
                 orderInfo.setRoomImg(orderInfo.getRoomImg().split(",")[0]);
             }
@@ -1313,7 +1317,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                             startOrderIds.add(x.getOrderId());
                             //如果房间类型是台球，那么直接开电
                             if (x.getRoomClass().compareTo(AppEnum.room_class.TAIQIU.getValue()) == 0) {
-                                deviceService.openRoomDoor(null, x.getStoreId(), x.getRoomId(), 0);
+                                deviceService.openRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
                             }
                         }
                     } else if (x.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
@@ -1334,7 +1338,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                                     ClearInfoDO clearInfoDO = new ClearInfoDO();
                                     clearInfoDO.setOrderId(x.getOrderId()).setStoreId(x.getStoreId()).setOrderNo(x.getOrderNo()).setRoomId(x.getRoomId());
                                     clearInfoDOList.add(clearInfoDO);
-                                }else{
+                                } else {
                                     jumpClearRoomIds.add(x.getRoomId());
                                 }
                             } else {
@@ -1404,17 +1408,19 @@ public class AppOrderServiceImpl implements AppOrderService {
                     //批量修改订单状态为进行中
                     orderInfoMapper.updateStatusByIds(AppEnum.order_status.START.getValue(), startOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                 }
-                if(!CollectionUtils.isAnyEmpty(jumpClearRoomIds)){
+                if (!CollectionUtils.isAnyEmpty(jumpClearRoomIds)) {
                     //批量修改房间状态为空闲
                     roomInfoMapper.updateStatusByIds(AppEnum.room_status.ENABLE.getValue(), jumpClearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                 }
-                if (!CollectionUtils.isAnyEmpty(endOrderIds)) {
+                if (!CollectionUtils.isAnyEmpty(clearRoomIds)) {
                     //批量修改房间状态为待清洁
                     roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), clearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-                    //批量修改订单状态为已完成
-                    orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), endOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                     //取消掉这些房间存在的历史保洁订单
                     clearInfoMapper.cancelByRoomIds(clearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                }
+                if (!CollectionUtils.isAnyEmpty(endOrderIds)) {
+                    //批量修改订单状态为已完成
+                    orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), endOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                     //然后再新增本次的保洁订单
                     clearInfoMapper.insertBatch(clearInfoDOList);
                     //发送订单结束的微信通知
@@ -1630,16 +1636,19 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (!ObjectUtils.isEmpty(orderInfoDO) && orderInfoDO.getUserId().compareTo(getLoginUserId()) == 0) {
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                 orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderId).setEndTime(new Date()).setStatus(AppEnum.order_status.FINISH.getValue()));
-                //取消掉这些房间存在的历史保洁订单
-                clearInfoMapper.cancelByRoomId(orderInfoDO.getRoomId());
-                //然后再新增本次的保洁订单
-                ClearInfoDO clearInfoDO = new ClearInfoDO().setOrderId(orderInfoDO.getOrderId()).setStoreId(orderInfoDO.getStoreId())
-                        .setOrderNo(orderInfoDO.getOrderNo()).setRoomId(orderInfoDO.getRoomId());
-                clearInfoMapper.insert(clearInfoDO);
+                RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
+                if (!roomInfoDO.getJumpClear()) {
+                    //取消掉这些房间存在的历史保洁订单
+                    clearInfoMapper.cancelByRoomId(orderInfoDO.getRoomId());
+                    //然后再新增本次的保洁订单
+                    ClearInfoDO clearInfoDO = new ClearInfoDO().setOrderId(orderInfoDO.getOrderId()).setStoreId(orderInfoDO.getStoreId())
+                            .setOrderNo(orderInfoDO.getOrderNo()).setRoomId(orderInfoDO.getRoomId());
+                    clearInfoMapper.insert(clearInfoDO);
+                    //发送需要保洁的微信通知
+                    sendClearMsg(orderInfoDO.getRoomId());
+                }
                 //发送用户提前结束订单通知
                 workWxService.sendCloseOrderMsg(orderInfoDO.getStoreId(), getLoginUserId(), orderInfoDO.getRoomId(), orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
-                //发送需要保洁的微信通知
-                sendClearMsg(orderInfoDO.getRoomId());
                 deviceService.closeRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
                 flushRoomStatus(orderInfoDO.getRoomId());
             } else {

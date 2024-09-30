@@ -32,6 +32,8 @@ public interface DeviceService {
 
     int countGateway(Long storeId);
 
+    int countKongtiao(Long roomId);
+
     String addUserFace(Long storeId, String photoUrl, String remark);
 
     void delUserFace(Long storeId, String admitGuid);

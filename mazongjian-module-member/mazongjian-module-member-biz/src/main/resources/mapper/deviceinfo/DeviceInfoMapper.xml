@@ -127,4 +127,19 @@
         where deleted = 0
           and device_sn = #{deviceSn}
     </select>
+    <select id="countByTypeAndRoomId" resultType="java.lang.Integer">
+        select count(1)
+        from member_device_info
+        where deleted = 0
+          and type = #{deviceType}
+          and room_id = #{roomId}
+    </select>
+    <select id="countKongtiao" resultType="java.lang.Integer">
+        select count(1)
+        from member_device_info
+        where deleted = 0
+          and type = 10
+          and room_id = #{roomId}
+    </select>
+
 </mapper>

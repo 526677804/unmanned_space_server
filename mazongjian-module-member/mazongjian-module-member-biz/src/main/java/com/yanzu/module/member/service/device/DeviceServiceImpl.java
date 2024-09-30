@@ -460,6 +460,11 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
+    public int countKongtiao(Long roomId) {
+        return deviceInfoMapper.countKongtiao(roomId);
+    }
+
+    @Override
     public String addUserFace(Long storeId, String photoUrl, String remark) {
         return iotDeviceService.addUserFace(storeId, photoUrl, remark);
     }

@@ -207,6 +207,16 @@ public class OrderController {
         return success(true);
     }
 
+    @PostMapping("/controlKT")
+    @Operation(summary = "控制空调", description = "我的订单使用")
+    @PermitAll//因为有分享订单功能 所以取消权限校验
+//    @Parameter(name = "orderKey", required = false)
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> controlKT(@RequestBody @Valid OpenRoomLockReqVO reqVO) {
+        appOrderService.openRoomLock(reqVO.getOrderKey());
+        return success(true);
+    }
+
     @GetMapping("/getRoomImgs/{roomId}")
     @Operation(summary = "获取房间的图片组 逗号分隔", description = "我的订单使用")
     @PreAuthenticated

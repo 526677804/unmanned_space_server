@@ -52,10 +52,26 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     @Transactional
     public void createDeviceInfo(DeviceInfoCreateReqVO createReqVO) {
         //如果不是共用设备  那新增的设备不能存在
-        if(!createReqVO.getShare()){
+        if (!createReqVO.getShare()) {
             int i = deviceInfoMapper.countBySN(createReqVO.getDeviceSn());
             if (i > 0) {
                 throw exception(DEVICE_DATA_EXISTS_ERROR);
+            }
+        }
+        //有的设备每个房间只能存在一个
+        if (!ObjectUtils.isEmpty(createReqVO.getRoomId())) {
+            switch (createReqVO.getType()) {
+                case 1:
+                case 3:
+                case 5:
+                case 9:
+                case 10:
+                case 11:
+                    int c = deviceInfoMapper.countByTypeAndRoomId(createReqVO.getType(), createReqVO.getRoomId());
+                    if (c > 0) {
+                        throw exception(Device_ADD_MAX_NUM_ERROR);
+                    }
+                    break;
             }
         }
         //先在iot平台绑定设备
@@ -99,11 +115,11 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     }
 
     @Override
-    public PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO reqVO,boolean isAdmin) {
+    public PageResult<DeviceInfoRespVO> getDeviceInfoPage(DeviceInfoPageReqVO reqVO, boolean isAdmin) {
         //检查权限
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
-        IPage<DeviceInfoRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        deviceInfoMapper.getDeviceInfoPage(page,reqVO,getLoginUserId(),isAdmin);
+        IPage<DeviceInfoRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        deviceInfoMapper.getDeviceInfoPage(page, reqVO, getLoginUserId(), isAdmin);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -120,8 +136,23 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         if (ObjectUtils.isEmpty(deviceInfoDO)) {
             throw exception(DATA_NOT_EXISTS);
         }
-        //如果是共享设备
-        deviceInfoMapper.updateBindInfo(deviceInfoDO.getDeviceId(),reqVO.getRoomId());
+        //有的设备每个房间只能存在一个
+        if (!ObjectUtils.isEmpty(reqVO.getRoomId()) && reqVO.getRoomId().compareTo(deviceInfoDO.getRoomId()) != 0) {
+            switch (deviceInfoDO.getType()) {
+                case 1:
+                case 3:
+                case 5:
+                case 9:
+                case 10:
+                case 11:
+                    int c = deviceInfoMapper.countByTypeAndRoomId(deviceInfoDO.getType(), reqVO.getRoomId());
+                    if (c > 0) {
+                        throw exception(Device_ADD_MAX_NUM_ERROR);
+                    }
+                    break;
+            }
+        }
+        deviceInfoMapper.updateBindInfo(deviceInfoDO.getDeviceId(), reqVO.getRoomId());
     }
 
     @Override
