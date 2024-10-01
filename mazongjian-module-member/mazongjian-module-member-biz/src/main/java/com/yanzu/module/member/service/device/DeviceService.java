@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.device;
 
+import com.yanzu.module.member.controller.app.order.vo.ControlKTReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppAddDeviceReqVO;
 
 /**
@@ -38,4 +39,5 @@ public interface DeviceService {
 
     void delUserFace(Long storeId, String admitGuid);
 
+    void controlKT(ControlKTReqVO reqVO, Long storeId,Long roomId);
 }

@@ -1,6 +1,7 @@
 package com.yanzu.module.member.service.device;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.yanzu.module.member.controller.app.order.vo.ControlKTReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppAddDeviceReqVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
@@ -14,10 +15,12 @@ import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storesound.StoreSoundInfoMapper;
 import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.device.IotControlKTReqVO;
 import com.yanzu.module.member.service.iot.device.IotDeviceAddBlacklistReqVO;
 import com.yanzu.module.member.service.iot.device.IotDeviceBaseVO;
 import com.yanzu.module.member.service.iot.device.IotDeviceContrlReqVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -472,6 +475,21 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     public void delUserFace(Long storeId, String admitGuid) {
         iotDeviceService.delUserFace(storeId, admitGuid);
+    }
+
+    @Override
+    public void controlKT(ControlKTReqVO reqVO, Long storeId,Long roomId) {
+        //获取房间设备的sn  10=智能语音喇叭（带红外控制）
+        String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 10);
+        if (!StringUtils.isEmpty(sn)) {
+            IotControlKTReqVO req=new IotControlKTReqVO();
+            BeanUtils.copyProperties(reqVO,req);
+            req.setDeviceSn(sn);
+            boolean flag = iotDeviceService.controlKT(req);
+            if (!flag) {
+                throw exception(DEVICE_OPRATION_ERROR);
+            }
+        }
     }
 
 

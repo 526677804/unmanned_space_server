@@ -1546,28 +1546,6 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
-    @Transactional
-    public void openRoomLock(String orderKey) {
-        OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(new LambdaQueryWrapperX<OrderInfoDO>().eq(OrderInfoDO::getOrderKey, orderKey));
-        if (!ObjectUtils.isEmpty(orderInfoDO)) {
-            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
-                //未开始的订单则直接开始
-                startOrder(orderInfoDO.getOrderId());
-                //然后触发开门开电
-                deviceService.openRoomBlueLock(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
-                deviceService.openRoomDoor(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
-            } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.openRoomBlueLock(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
-            } else {
-                throw exception(CLEAR_OPEN_DOOR_ERROR);
-            }
-        } else {
-            throw exception(ORDER_NOT_FOUND_ERROR);
-        }
-
-    }
-
-    @Override
     public int countByUserAndStoreId(Long userId, Long storeId) {
         return orderInfoMapper.countByUserAndStoreId(userId, storeId);
     }
@@ -1667,6 +1645,22 @@ public class AppOrderServiceImpl implements AppOrderService {
         reqVO.setCode(reqVO.getCode().replaceAll(" ", ""));
         IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(reqVO.getStoreId(), reqVO.getCode());
         return prepare.getTicketName();
+    }
+
+    @Override
+    @Transactional
+    public void controlKT(ControlKTReqVO reqVO) {
+        //找出订单
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(new LambdaQueryWrapperX<OrderInfoDO>().eq(OrderInfoDO::getOrderKey, reqVO.getOrderKey()));
+        if (!ObjectUtils.isEmpty(orderInfoDO)) {
+            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                deviceService.controlKT(reqVO,orderInfoDO.getStoreId(), orderInfoDO.getRoomId());
+            } else {
+                throw exception(CLEAR_ORDER_STATUS_ERROR);
+            }
+        } else {
+            throw exception(ORDER_NOT_FOUND_ERROR);
+        }
     }
 
 }

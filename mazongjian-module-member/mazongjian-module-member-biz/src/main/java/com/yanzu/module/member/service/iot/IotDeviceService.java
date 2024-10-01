@@ -338,4 +338,17 @@ public class IotDeviceService {
         reqVO.setDeviceSn(sn).setParams(param);
         control(reqVO);
     }
+
+    /**
+     * 控制空调
+     */
+    public Boolean controlKT(IotControlKTReqVO req) {
+        IotResult<Boolean> resp = iotDeviceClient.controlKT(req, clientId, secret);
+        if (resp.getCode().intValue() == 0) {
+            return true;
+        } else {
+            throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
+        }
+
+    }
 }

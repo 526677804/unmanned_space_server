@@ -44,8 +44,6 @@ public interface AppOrderService {
 
     void openStoreDoor(String orderKey);
 
-    void openRoomLock(String orderKey);
-
     int countByUserAndStoreId(Long userId, Long storeId);
 
     void lockWxOrder(OrderPreReqVO reqVO);
@@ -60,5 +58,8 @@ public interface AppOrderService {
     void closeOrder(Long orderId);
 
     String preGroupNo(PreGroupNoReqVO reqVO);
+
+    void controlKT(ControlKTReqVO reqVO);
+
 
 }

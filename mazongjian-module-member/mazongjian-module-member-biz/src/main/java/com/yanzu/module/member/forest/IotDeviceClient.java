@@ -100,4 +100,17 @@ public interface IotDeviceClient {
             })
     IotResult<Boolean> delBlacklist(@JSONBody IotDeviceDelBlacklistReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
+    /**
+     * 控制空调
+     * @param req
+     * @param clientId
+     * @param secret
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/controlKT",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<Boolean> controlKT(IotControlKTReqVO req, String clientId, String secret);
 }
