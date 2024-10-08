@@ -939,11 +939,26 @@ public class AppMangerServiceImpl implements AppMangerService {
     }
 
     @Override
+    @Transactional
     public void recharge(AppUserRechargeReqVO reqVO) {
         //权限检查
-        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
         //执行
         memberUserService.recharge(reqVO);
 
+    }
+
+    @Override
+    @Transactional
+    public void cancelClear(Long clearId) {
+        ClearInfoDO clearInfoDO = clearInfoMapper.selectById(clearId);
+        if(!ObjectUtils.isEmpty(clearInfoDO)){
+            //权限检查
+            storeInfoService.checkPermisson(clearInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
+            //执行
+            clearInfoDO.setStatus(4);
+            clearInfoDO.setComplaintDesc("管理员取消");
+            clearInfoMapper.updateById(clearInfoDO);
+        }
     }
 }

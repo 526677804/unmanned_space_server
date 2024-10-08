@@ -86,4 +86,6 @@ public interface AppMangerService {
 
     void recharge(AppUserRechargeReqVO reqVO);
 
+    void cancelClear(Long clearId);
+
 }

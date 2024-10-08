@@ -261,6 +261,17 @@ public class AppManagerController {
         appMangerService.recharge(reqVO);
         return success(true);
     }
+
+    @PostMapping("/cancelClear/{clearId}")
+    @Operation(summary = "取消保洁订单")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    @Parameter(name = "clearId",description = "保洁订单id")
+    public CommonResult<Boolean> cancelClear(@PathVariable("clearId")Long clearId) {
+        appMangerService.cancelClear(clearId);
+        return success(true);
+    }
+
 //    @PostMapping("/changeOrderTime")
 //    @Operation(summary = "管理员修改订单时间")
 //    @PreAuthenticated
