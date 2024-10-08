@@ -149,10 +149,11 @@
 
     </select>
     <select id="getTotalBalance" resultType="com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO">
-        select ifnull(sum(balance), 0) balance, ifnull(sum(gift_balance), 0) giftBalance
-        from member_store_user
-        where deleted = 0
-          and user_id = #{userId}
+        select ifnull(sum(msu.balance), 0) balance, ifnull(sum(msu.gift_balance), 0) giftBalance
+        from member_store_user msu
+        left join member_store_info store ON msu.store_id=store.store_id
+        where msu.deleted = 0 and store.deleted=0
+          and msu.user_id = #{userId}
 
     </select>
     <select id="getIdsByUserIdAndAdmin" resultType="java.lang.String">
