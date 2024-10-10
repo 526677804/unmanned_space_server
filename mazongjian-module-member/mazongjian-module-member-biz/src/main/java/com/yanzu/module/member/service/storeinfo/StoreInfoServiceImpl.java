@@ -450,6 +450,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         validateStoreInfoExists(id);
         // 删除
         storeInfoMapper.deleteById(id);
+        //清除该门店绑定的设备
+        deviceInfoMapper.deleteStoreId(id);
     }
 
     private void validateStoreInfoExists(Long id) {

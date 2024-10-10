@@ -441,7 +441,8 @@
                r.jump_clear
         from member_order_info o
                  left join member_room_info r ON r.room_id = o.room_id
-        where o.deleted = 0
+                 left join member_store_info s ON s.store_id = o.store_id
+        where o.deleted = 0 and s.deleted=0
           and o.status in (0, 1, 2)
           and o.start_time >= DATE_SUB(NOW(), INTERVAL 1 WEEK)
         --查询提前7天的数据就行，避免数据太多了，不好处理

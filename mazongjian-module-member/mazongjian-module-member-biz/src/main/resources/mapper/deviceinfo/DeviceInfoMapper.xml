@@ -11,6 +11,12 @@
         set room_id=#{roomId}
         where device_id = #{deviceId}
     </update>
+    <delete id="deleteStoreId">
+        update member_device_info
+        set room_id=null,store_id=null
+        where store_id=#{id}
+
+    </delete>
 
     <!--
         一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。

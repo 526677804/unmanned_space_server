@@ -22,14 +22,16 @@
         m.nickname,
         m.avatar,
         REPLACE(m.mobile, SUBSTRING(m.mobile, 4, 4), '****') mobile,
-        ifnull((select sum(balance)
-        from member_store_user
-        where deleted = 0
-        and user_id = m.id),0) balance,
-        ifnull((select sum(gift_balance)
-        from member_store_user
-        where deleted = 0
-        and user_id = m.id),0) giftBalance,
+        ifnull((select sum(su.balance)
+        from member_store_user su
+        left join member_store_info s ON s.store_id=su.store_id
+        where su.deleted = 0 and s.deleted = 0
+        and su.user_id = m.id),0) balance,
+        ifnull((select sum(su.gift_balance)
+        from member_store_user su
+        left join member_store_info s ON s.store_id=su.store_id
+        where su.deleted = 0 and s.deleted = 0
+        and su.user_id = m.id),0) giftBalance,
         (select count(1)
         from member_order_info
         where deleted = 0
