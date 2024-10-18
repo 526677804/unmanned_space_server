@@ -20,6 +20,10 @@
         <result column="distance" property="distance"/>
         <collection property="discountRules" column="store_id" ofType="String"
                     select="getDiscountRules"/>
+        <collection property="freeRoomNum" column="store_id" ofType="Long"
+                    select="getFreeRoomNum"/>
+        <collection property="subscribeTime" column="store_id" ofType="String"
+                    select="getSubscribeTime"/>
     </resultMap>
     <select id="getDiscountRules" resultType="java.lang.String">
         select concat('充值', pay_money, '元,赠送', gift_money, '元！')
@@ -30,6 +34,22 @@
           and exprice_time > now()
         order by pay_money asc
 
+    </select>
+    <select id="getFreeRoomNum" resultType="Long">
+        select count(1)
+        from member_room_info
+        where deleted = 0
+        and store_id = #{store_id}
+        and status = 1
+    </select>
+    <select id="getSubscribeTime" resultType="java.lang.String">
+        select create_time AS subscribeTime
+        from member_order_info
+        where deleted = 0
+        and store_id = #{store_id}
+        and status != 3
+        ORDER BY create_time DESC
+        LIMIT 1
     </select>
     <select id="getCityList" resultType="java.lang.String">
         select distinct city_name

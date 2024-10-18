@@ -55,4 +55,10 @@ public class AppStorePageRespVO {
 
     @Schema(description = "充值优惠信息")
     private List<String> discountRules;
+
+    @Schema(description = "空闲房间数量")
+    private Long freeRoomNum;
+
+    @Schema(description = "预约时间")
+    private String subscribeTime;
 }
