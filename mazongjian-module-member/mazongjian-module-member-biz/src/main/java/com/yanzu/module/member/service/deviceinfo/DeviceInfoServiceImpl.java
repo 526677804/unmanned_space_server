@@ -186,9 +186,12 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(reqVO.getDeviceId());
         //只能操作自己的设备
         if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
-            IotDeviceBaseVO<IotDeviceContrlReqVO> vo = new IotDeviceBaseVO(deviceInfoDO.getDeviceSn());
-            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO().setOutlet(0).setCmd(reqVO.getCmd());
-            vo.getParams().add(iotDeviceContrlReqVO);
+            IotDeviceBaseVO<IotDeviceContrlReqVO> vo = new IotDeviceBaseVO();
+            List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+            iotDeviceContrlReqVO.setOutlet(0).setCmd(reqVO.getCmd());
+            param.add(iotDeviceContrlReqVO);
+            vo.setDeviceSn(deviceInfoDO.getDeviceSn()).setParams(param);
             boolean flag = iotDeviceService.control(vo);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);

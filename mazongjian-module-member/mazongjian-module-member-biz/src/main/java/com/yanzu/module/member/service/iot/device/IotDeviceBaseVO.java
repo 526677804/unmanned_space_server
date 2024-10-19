@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,9 +29,5 @@ public class IotDeviceBaseVO<T> {
 //    @NotNull(message = "params不能为空")
     private List<T> params;
 
-    public IotDeviceBaseVO(String deviceSn) {
-        this.deviceSn = deviceSn;
-        this.ts = System.currentTimeMillis();
-        this.params = new ArrayList<T>();
-    }
+
 }

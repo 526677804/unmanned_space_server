@@ -117,18 +117,24 @@ public class DeviceServiceImpl implements DeviceService {
             //可能用的密码锁
             sn = deviceInfoMapper.getSnByStoreIdAndType(storeId, 5);
             if (!ObjectUtils.isEmpty(sn)) {
-                IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO(sn);
-                IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO().setOutlet(0).setCmd("pulse");
-                reqVO.getParams().add(iotDeviceContrlReqVO);
+                IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+                List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+                IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+                iotDeviceContrlReqVO.setOutlet(0).setCmd("pulse");
+                param.add(iotDeviceContrlReqVO);
+                reqVO.setDeviceSn(sn).setParams(param);
                 boolean flag = iotDeviceService.control(reqVO);
                 if (!flag) {
                     throw exception(DEVICE_OPRATION_ERROR);
                 }
             }
         } else {
-            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO(sn);
-            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO().setOutlet(0).setCmd("pulse");
-            reqVO.getParams().add(iotDeviceContrlReqVO);
+            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+            List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+            iotDeviceContrlReqVO.setOutlet(0).setCmd("pulse");
+            param.add(iotDeviceContrlReqVO);
+            reqVO.setDeviceSn(sn).setParams(param);
             boolean flag = iotDeviceService.control(reqVO);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
@@ -145,9 +151,12 @@ public class DeviceServiceImpl implements DeviceService {
     private void openDoor(String sn, Long storeId) {
         if (!ObjectUtils.isEmpty(sn)) {
             boolean orderDoorOpen = storeInfoMapper.getOrderDoorOpen(storeId);
-            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO(sn);
-            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO().setOutlet(0).setCmd(orderDoorOpen ? "on" : "pulse");
-            reqVO.getParams().add(iotDeviceContrlReqVO);
+            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+            List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+            iotDeviceContrlReqVO.setOutlet(0).setCmd(orderDoorOpen ? "on" : "pulse");
+            param.add(iotDeviceContrlReqVO);
+            reqVO.setDeviceSn(sn).setParams(param);
             boolean flag = iotDeviceService.control(reqVO);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
@@ -162,9 +171,12 @@ public class DeviceServiceImpl implements DeviceService {
      */
     private void closeDoor(String sn) {
         if (!ObjectUtils.isEmpty(sn)) {
-            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO(sn);
-            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO().setOutlet(0).setCmd("off");
-            reqVO.getParams().add(iotDeviceContrlReqVO);
+            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+            List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+            iotDeviceContrlReqVO.setOutlet(0).setCmd("off");
+            param.add(iotDeviceContrlReqVO);
+            reqVO.setDeviceSn(sn).setParams(param);
             boolean flag = iotDeviceService.control(reqVO);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
@@ -218,9 +230,12 @@ public class DeviceServiceImpl implements DeviceService {
      */
     private void opSwitch(String sn, String cmd) {
         if (!ObjectUtils.isEmpty(sn)) {
-            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO(sn);
-            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO().setOutlet(0).setCmd(cmd);
-            reqVO.getParams().add(iotDeviceContrlReqVO);
+            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+            List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+            iotDeviceContrlReqVO.setOutlet(0).setCmd(cmd);
+            param.add(iotDeviceContrlReqVO);
+            reqVO.setDeviceSn(sn).setParams(param);
             boolean flag = iotDeviceService.control(reqVO);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
@@ -394,9 +409,12 @@ public class DeviceServiceImpl implements DeviceService {
                         break;
                 }
             }
-            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO(sn);
-            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO().setOutlet(0).setCmd(cmd).setType(roomInfoDO.getYunlabaSound());
-            reqVO.getParams().add(iotDeviceContrlReqVO);
+            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+            List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+            iotDeviceContrlReqVO.setOutlet(0).setCmd(cmd).setType(roomInfoDO.getYunlabaSound());
+            param.add(iotDeviceContrlReqVO);
+            reqVO.setDeviceSn(sn).setParams(param);
             boolean flag = iotDeviceService.control(reqVO);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
@@ -460,15 +478,14 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public void controlKT(ControlKTReqVO reqVO, Long storeId, Long roomId) {
+    public void controlKT(ControlKTReqVO reqVO, Long storeId,Long roomId) {
         //获取房间设备的sn  10=智能语音喇叭（带红外控制）
         String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 10);
         if (!StringUtils.isEmpty(sn)) {
-            IotDeviceBaseVO<IotDeviceContrlReqVO> vo = new IotDeviceBaseVO<>(sn);
-            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO().setOutlet(0).setCmd(reqVO.getCmd());
-            vo.getParams().add(iotDeviceContrlReqVO);
-            iotDeviceService.control(vo);
-            boolean flag = iotDeviceService.control(vo);
+            IotControlKTReqVO req=new IotControlKTReqVO();
+            BeanUtils.copyProperties(reqVO,req);
+            req.setDeviceSn(sn);
+            boolean flag = iotDeviceService.controlKT(req);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }

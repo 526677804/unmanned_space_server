@@ -86,7 +86,7 @@ public class IotDeviceService {
      * 绑定设备
      */
     public String bind(String sn) {
-        IotDeviceBaseVO reqVO = new IotDeviceBaseVO(sn);
+        IotDeviceBaseVO reqVO = new IotDeviceBaseVO();
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
         IotResult<String> resp = iotDeviceClient.bind(reqVO, clientId, secret);
@@ -102,7 +102,7 @@ public class IotDeviceService {
      */
 
     public Boolean unbind(String sn) {
-        IotDeviceBaseVO reqVO = new IotDeviceBaseVO(sn);
+        IotDeviceBaseVO reqVO = new IotDeviceBaseVO();
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
         IotResult<Boolean> resp = iotDeviceClient.unbind(reqVO, clientId, secret);
@@ -337,10 +337,25 @@ public class IotDeviceService {
     }
 
     private void runSound(String sn, String cmd) {
-        IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO(sn);
-        IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO().setOutlet(0).setCmd(cmd);
-        reqVO.getParams().add(iotDeviceContrlReqVO);
+        IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+        List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+        IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+        iotDeviceContrlReqVO.setOutlet(0).setCmd(cmd);
+        param.add(iotDeviceContrlReqVO);
+        reqVO.setDeviceSn(sn).setParams(param);
         control(reqVO);
     }
 
+    /**
+     * 控制空调
+     */
+    public Boolean controlKT(IotControlKTReqVO req) {
+        IotResult<Boolean> resp = iotDeviceClient.controlKT(req, clientId, secret);
+        if (resp.getCode().intValue() == 0) {
+            return true;
+        } else {
+            throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
+        }
+
+    }
 }
