@@ -186,7 +186,7 @@ public class GroupPayInfoServiceImpl implements GroupPayInfoService {
         groupPayInfoDO.setGroupName(vo.getTicketName());
         groupPayInfoDO.setGroupShopId(vo.getShopId());
         //把单位从分 转化成元
-        groupPayInfoDO.setGroupPayPrice(new BigDecimal(vo.getPayAmount() / 100));
+        groupPayInfoDO.setGroupPayPrice(new BigDecimal(vo.getPayAmount() / 100.0));
         groupPayInfoMapper.insert(groupPayInfoDO);
         return groupPayInfoDO;
     }

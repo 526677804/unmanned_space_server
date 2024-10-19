@@ -169,22 +169,24 @@ public class MeituanService {
         //所有优惠的价格
         BigDecimal coupinPrice = BigDecimal.ZERO;
         for (Object obj : paymentDetail) {
-            // amount_type = 10，23，25，26时(表示用户支付)，amount = 实际支付金额
-            //amount_type = 8，17，18，22，24（表示商家优惠，其余为平台优惠），amount = 优惠的金额
-            JSONObject jsonObj = (JSONObject) obj;
-            Integer type = jsonObj.getInt("amount_type");
-            if (type == 8 || type == 17 || type == 18 || type == 22 || type == 24) {
-                coupinPrice = coupinPrice.add(jsonObj.getBigDecimal("amount"));
-            } else {
+            //amount_type= 10，23，25，26，29表示用户支付；
+            //amount_type = 8，17，18，22，24或其他时（表示商家优惠，其余为平台优惠），amount = 优惠的金额
+            com.alibaba.fastjson.JSONObject jsonObj = (com.alibaba.fastjson.JSONObject) obj;
+            Integer type = jsonObj.getInteger("amount_type");
+            if (type == 10 || type == 23 || type == 25 || type == 26|| type == 29) {
                 payPrice = payPrice.add(jsonObj.getBigDecimal("amount"));
+            } else {
+                coupinPrice = coupinPrice.add(jsonObj.getBigDecimal("amount"));
             }
         }
         //总价
         BigDecimal totalPrice = payPrice.add(coupinPrice);
         //数量
         BigDecimal saleCount = totalPrice.divide(dealPrice);
-        //计算客户这张券的实际单价  这里先把单位统一成 分
-        int price = payPrice.divide(saleCount, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100)).intValue();
+        payPrice = payPrice.multiply(new BigDecimal(100.0));
+//            log.info("totalPrice:{},saleCount:{}", totalPrice, saleCount);
+        //计算客户这张券的实际单价
+        int price = payPrice.divide(saleCount, 2, RoundingMode.HALF_UP).intValue();
         respVO.setPayAmount(price);
         respVO.setGroupPayType(AppEnum.member_group_no_type.MEITUAN.getValue());
         return respVO;
