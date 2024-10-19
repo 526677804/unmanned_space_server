@@ -14,7 +14,9 @@ public class IotControlKTReqVO {
     @NotNull(message = "设备编号不能为空")
     private String deviceSn;
 
-    @Schema(description = "命令")
+
+    @Schema(description = "控制命令")
+    @NotNull(message = "命令不能为空")
     private String cmd;
 
 

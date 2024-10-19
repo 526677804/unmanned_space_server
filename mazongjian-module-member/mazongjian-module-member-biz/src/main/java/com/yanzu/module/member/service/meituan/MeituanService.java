@@ -164,34 +164,39 @@ public class MeituanService {
         //商品的售价
         BigDecimal dealPrice = data.getBigDecimal("deal_price");
         JSONArray paymentDetail = data.getJSONArray("payment_detail");
-        //用户实际支付的价格
-        BigDecimal payPrice = BigDecimal.ZERO;
-        //所有优惠的价格
-        BigDecimal coupinPrice = BigDecimal.ZERO;
-        for (Object obj : paymentDetail) {
-            //amount_type= 10，23，25，26，29表示用户支付；
-            //amount_type = 8，17，18，22，24或其他时（表示商家优惠，其余为平台优惠），amount = 优惠的金额
-            com.alibaba.fastjson.JSONObject jsonObj = (com.alibaba.fastjson.JSONObject) obj;
-            Integer type = jsonObj.getInteger("amount_type");
-            if (type == 10 || type == 23 || type == 25 || type == 26|| type == 29) {
-                payPrice = payPrice.add(jsonObj.getBigDecimal("amount"));
-            } else {
-                coupinPrice = coupinPrice.add(jsonObj.getBigDecimal("amount"));
-            }
-        }
-        //总价
-        BigDecimal totalPrice = payPrice.add(coupinPrice);
-        //数量
-        BigDecimal saleCount = totalPrice.divide(dealPrice);
-        payPrice = payPrice.multiply(new BigDecimal(100.0));
-//            log.info("totalPrice:{},saleCount:{}", totalPrice, saleCount);
-        //计算客户这张券的实际单价
-        int price = payPrice.divide(saleCount, 2, RoundingMode.HALF_UP).intValue();
+        int price = getPrice(paymentDetail, dealPrice);
         respVO.setPayAmount(price);
         respVO.setGroupPayType(AppEnum.member_group_no_type.MEITUAN.getValue());
         return respVO;
     }
 
+
+    //获取团购券实际的到账金额
+    private int getPrice(JSONArray paymentDetail, BigDecimal dealPrice) {
+        //用户实际支付的价格
+        BigDecimal payPrice = BigDecimal.ZERO;
+        //所有优惠的价格
+        BigDecimal coupinPrice = BigDecimal.ZERO;
+        for (Object obj : paymentDetail) {
+            //amount_type = 8，17，18，22，24,28表示商家优惠，10，23，25，26，29表示用户支付；其余为平台优惠
+            //到账金额的计算 应为用户支付+平台优惠-商家优惠
+            com.alibaba.fastjson.JSONObject jsonObj = (com.alibaba.fastjson.JSONObject) obj;
+            Integer type = jsonObj.getInteger("amount_type");
+            if (type == 8 || type == 17 || type == 18 || type == 22 || type == 24 || type == 28) {
+                coupinPrice = coupinPrice.add(jsonObj.getBigDecimal("amount"));
+            } else {
+                payPrice = payPrice.add(jsonObj.getBigDecimal("amount"));
+            }
+        }
+        //总价
+        BigDecimal totalPrice = payPrice.add(coupinPrice);
+        //数量  用包含优惠的总价  除以 销售单价可以得到数量（用户可能一次购买多张券）
+        BigDecimal saleCount = totalPrice.divide(dealPrice);
+        payPrice = payPrice.multiply(new BigDecimal(100.0));
+        //计算这张券的实际单价
+        int price = payPrice.divide(saleCount, 2, RoundingMode.HALF_UP).intValue();
+        return price;
+    }
 
     public JSONObject consume(Long storeId, String receiptCode, String dealId) {
         //查询出店铺id

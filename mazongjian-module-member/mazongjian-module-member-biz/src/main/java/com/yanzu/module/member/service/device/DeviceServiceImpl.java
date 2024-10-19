@@ -483,8 +483,8 @@ public class DeviceServiceImpl implements DeviceService {
         String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 10);
         if (!StringUtils.isEmpty(sn)) {
             IotControlKTReqVO req=new IotControlKTReqVO();
-            BeanUtils.copyProperties(reqVO,req);
             req.setDeviceSn(sn);
+            req.setCmd(reqVO.getCmd());
             boolean flag = iotDeviceService.controlKT(req);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
