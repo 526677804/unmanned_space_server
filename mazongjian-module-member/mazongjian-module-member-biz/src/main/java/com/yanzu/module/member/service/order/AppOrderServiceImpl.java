@@ -1345,8 +1345,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                                 //检查距离结束的时间，发送语音提醒
                                 long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
                                 long minutesStart = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getStartTime().toInstant()));
-                                if (minutesStart == 1) {
-                                    //开始1分钟时 播放欢迎语
+                                if (minutesStart == 2) {
+                                    //开始2分钟时 播放欢迎语
                                     deviceService.runSound(x.getRoomId(), 1);
                                 } else if (minutes == 30) {
                                     deviceService.runSound(x.getRoomId(), 2);
@@ -1654,7 +1654,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(new LambdaQueryWrapperX<OrderInfoDO>().eq(OrderInfoDO::getOrderKey, reqVO.getOrderKey()));
         if (!ObjectUtils.isEmpty(orderInfoDO)) {
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.controlKT(reqVO,orderInfoDO.getStoreId(), orderInfoDO.getRoomId());
+                deviceService.controlKT(reqVO, orderInfoDO.getStoreId(), orderInfoDO.getRoomId());
             } else {
                 throw exception(CLEAR_ORDER_STATUS_ERROR);
             }

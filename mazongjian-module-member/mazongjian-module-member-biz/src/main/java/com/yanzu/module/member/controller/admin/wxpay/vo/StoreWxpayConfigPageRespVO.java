@@ -21,6 +21,9 @@ public class StoreWxpayConfigPageRespVO  {
     @Schema(description = "微信支付商户号", requiredMode = Schema.RequiredMode.REQUIRED, example = "23018")
     private String mchId;
 
+    @Schema(description = "APPID", requiredMode = Schema.RequiredMode.REQUIRED, example = "23018")
+    private String appId;
+
     @Schema(description = "服务商支付模式", requiredMode = Schema.RequiredMode.REQUIRED, example = "0")
     private Boolean serviceModel;
 

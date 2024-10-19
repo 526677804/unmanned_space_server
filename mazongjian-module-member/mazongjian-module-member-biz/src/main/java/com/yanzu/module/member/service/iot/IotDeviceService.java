@@ -86,7 +86,7 @@ public class IotDeviceService {
      * 绑定设备
      */
     public String bind(String sn) {
-        IotDeviceBaseVO reqVO = new IotDeviceBaseVO();
+        IotDeviceBaseVO reqVO = new IotDeviceBaseVO(sn);
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
         IotResult<String> resp = iotDeviceClient.bind(reqVO, clientId, secret);
@@ -102,7 +102,7 @@ public class IotDeviceService {
      */
 
     public Boolean unbind(String sn) {
-        IotDeviceBaseVO reqVO = new IotDeviceBaseVO();
+        IotDeviceBaseVO reqVO = new IotDeviceBaseVO(sn);
         reqVO.setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
         IotResult<Boolean> resp = iotDeviceClient.unbind(reqVO, clientId, secret);
@@ -266,7 +266,10 @@ public class IotDeviceService {
                 if (!CollectionUtils.isEmpty(storeVoiceList)) {
                     String tts = getTTSByCallType(callType, roomName);
                     storeVoiceList.forEach(x -> {
-                        runSound(x.getDeviceSn(), tts);
+                        //重复三次
+                        for (int i = 0; i < 3; i++) {
+                            runSound(x.getDeviceSn(), tts);
+                        }
                     });
                     //再异步发送企业微信通知
                     workWxService.sendCallMsg(deviceRoomVO.getStoreId(), tts);
@@ -321,6 +324,10 @@ public class IotDeviceService {
                 //需要点餐
                 tts = roomName + ",顾客,需要点餐";
                 break;
+            case "CALL7":
+                //需要换现金
+                tts = roomName + ",顾客,需要换现金";
+                break;
             case "BTN_ON":
                 //呼叫服务员
                 tts = roomName + ",顾客,呼叫服务员";
@@ -330,25 +337,10 @@ public class IotDeviceService {
     }
 
     private void runSound(String sn, String cmd) {
-        IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
-        List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
-        IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
-        iotDeviceContrlReqVO.setOutlet(0).setCmd(cmd);
-        param.add(iotDeviceContrlReqVO);
-        reqVO.setDeviceSn(sn).setParams(param);
+        IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO(sn);
+        IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO().setOutlet(0).setCmd(cmd);
+        reqVO.getParams().add(iotDeviceContrlReqVO);
         control(reqVO);
     }
 
-    /**
-     * 控制空调
-     */
-    public Boolean controlKT(IotControlKTReqVO req) {
-        IotResult<Boolean> resp = iotDeviceClient.controlKT(req, clientId, secret);
-        if (resp.getCode().intValue() == 0) {
-            return true;
-        } else {
-            throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
-        }
-
-    }
 }

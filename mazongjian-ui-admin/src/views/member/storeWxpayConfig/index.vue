@@ -35,6 +35,7 @@
       <el-table-column label="ID" align="center" prop="id" />
       <el-table-column label="门店" align="center" prop="storeName" />
       <el-table-column label="商户号" align="center" prop="mchId" />
+      <el-table-column label="APPID" align="center" prop="appId" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
           <el-button v-show="scope.row.serviceModel" size="mini" type="text" icon="el-icon-edit" @click="handleProfitsharing(scope.row)"
@@ -60,6 +61,9 @@
       </el-form-item>
         <el-form-item label="商户号" prop="mchId">
           <el-input v-model="form.mchId" placeholder="请输入商户号" />
+        </el-form-item>
+        <el-form-item label="appId" prop="appId">
+          <el-input v-model="form.appId" placeholder="请输入APPID" />
         </el-form-item>
         <el-form-item label="支付密钥" prop="mchKey" v-show="!form.serviceModel">
           <el-input v-model="form.mchKey" placeholder="请输入支付密钥(服务商模式不填)" />
@@ -131,6 +135,7 @@ export default {
       rules: {
         storeId: [{ required: true, message: "门店不能为空", trigger: "change" }],
         mchId: [{ required: true, message: "商户号不能为空", trigger: "blur" }],
+        appId: [{ required: true, message: "appId不能为空", trigger: "blur" }],
       }
     };
   },
@@ -163,6 +168,7 @@ export default {
         id: undefined,
         storeId: undefined,
         mchId: undefined,
+        appId: undefined,
         mchKey: undefined,
         p12: undefined,
         serviceModel: false,
