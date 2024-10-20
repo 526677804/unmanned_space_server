@@ -240,6 +240,8 @@ public class AppEnum {
         //人脸门禁机 9
         //智能语音喇叭 10
         //二维码识别器 11
+        //红外控制器 12
+        //三路控制器 13
 
         DOOR(1),
         ELECTRIC(2),
@@ -252,6 +254,9 @@ public class AppEnum {
         FACE(9),
         SOUND_V2(10),
         QR(11),
+        IR(12),
+        CONTROL_3(13),
+
 
         ;
 

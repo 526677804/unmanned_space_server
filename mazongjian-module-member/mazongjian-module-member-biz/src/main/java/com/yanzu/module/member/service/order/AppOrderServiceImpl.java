@@ -1654,7 +1654,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(new LambdaQueryWrapperX<OrderInfoDO>().eq(OrderInfoDO::getOrderKey, reqVO.getOrderKey()));
         if (!ObjectUtils.isEmpty(orderInfoDO)) {
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.controlKT(reqVO, orderInfoDO.getStoreId(), orderInfoDO.getRoomId());
+                deviceService.controlKT(reqVO.getCmd(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId());
             } else {
                 throw exception(CLEAR_ORDER_STATUS_ERROR);
             }

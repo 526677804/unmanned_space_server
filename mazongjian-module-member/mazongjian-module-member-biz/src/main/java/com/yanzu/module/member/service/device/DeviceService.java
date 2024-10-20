@@ -39,5 +39,5 @@ public interface DeviceService {
 
     void delUserFace(Long storeId, String admitGuid);
 
-    void controlKT(ControlKTReqVO reqVO, Long storeId,Long roomId);
+    void controlKT(String cmd, Long storeId,Long roomId);
 }

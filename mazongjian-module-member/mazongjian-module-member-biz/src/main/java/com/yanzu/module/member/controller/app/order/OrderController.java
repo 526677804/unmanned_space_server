@@ -202,7 +202,7 @@ public class OrderController {
     @Operation(summary = "控制空调", description = "我的订单使用")
     @PermitAll//因为有分享订单功能 所以取消权限校验
 //    @Parameter(name = "orderKey", required = false)
-    @Idempotent(timeout = 1, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    @Idempotent(timeout = 100, timeUnit = TimeUnit.MILLISECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> controlKT(@RequestBody @Valid ControlKTReqVO reqVO) {
         appOrderService.controlKT(reqVO);
         return success(true);

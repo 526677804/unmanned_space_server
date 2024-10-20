@@ -144,7 +144,14 @@
         select count(1)
         from member_device_info
         where deleted = 0
-          and type = 10
+          and type in (10, 12, 13)
+          and room_id = #{roomId}
+    </select>
+    <select id="getIRListByRoomId" resultType="com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO">
+        select *
+        from member_device_info
+        where deleted = 0
+          and type in (10, 12, 13)
           and room_id = #{roomId}
     </select>
 

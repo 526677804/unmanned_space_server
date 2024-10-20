@@ -478,17 +478,19 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public void controlKT(ControlKTReqVO reqVO, Long storeId,Long roomId) {
-        //获取房间设备的sn  10=智能语音喇叭（带红外控制）
-        String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 10);
-        if (!StringUtils.isEmpty(sn)) {
-            IotControlKTReqVO req=new IotControlKTReqVO();
-            req.setDeviceSn(sn);
-            req.setCmd(reqVO.getCmd());
-            boolean flag = iotDeviceService.controlKT(req);
-            if (!flag) {
-                throw exception(DEVICE_OPRATION_ERROR);
-            }
+    public void controlKT(String cmd, Long storeId, Long roomId) {
+        //获取房间设备的sn  10=智能语音喇叭（带红外控制）  12=红外控制器
+        List<DeviceInfoDO> list = deviceInfoMapper.getIRListByRoomId(roomId);
+        if (!CollectionUtils.isEmpty(list)) {
+            list.forEach(x -> {
+                IotControlKTReqVO req = new IotControlKTReqVO();
+                req.setDeviceSn(x.getDeviceSn());
+                req.setCmd(cmd);
+                boolean flag = iotDeviceService.controlKT(req);
+                if (!flag) {
+                    throw exception(DEVICE_OPRATION_ERROR);
+                }
+            });
         }
     }
 

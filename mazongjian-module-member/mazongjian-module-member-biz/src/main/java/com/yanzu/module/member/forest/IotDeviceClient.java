@@ -112,5 +112,5 @@ public interface IotDeviceClient {
                     "clientId:${clientId}",
                     "secret:${secret}",
             })
-    IotResult<Boolean> controlKT(IotControlKTReqVO req, String clientId, String secret);
+    IotResult<Boolean> controlKT(@JSONBody IotControlKTReqVO req, @Var("clientId")String clientId, @Var("secret") String secret);
 }

@@ -654,12 +654,15 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             } else {
                 orederMap = new HashMap<>();
             }
-            if (!CollectionUtils.isEmpty(list)) {
-                if (deviceService.countGateway(storeId) > 0) {
-                    list.forEach(x -> x.setGatewayId(1L));
-                }
+            //是否存在网关
+            if (deviceService.countGateway(storeId) > 0) {
+                list.forEach(x -> x.setGatewayId(1L));
             }
             list.forEach(x -> {
+                //如果有空调控制器，设置一下
+                if (deviceService.countKongtiao(x.getRoomId()) > 0) {
+                    x.setKongtiaoCount(1);
+                }
                 //找出该房间所有订单
                 if (orederMap.containsKey(x.getRoomId().toString())) {
                     List<OrderInfoDO> sortOrder = orederMap.get(x.getRoomId().toString()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
@@ -763,6 +766,15 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             deviceInfoMapper.deleteById(deviceId);
             log.info("用户:{}，删除设备:{}", getLoginUserId(), deviceId);
         }
+    }
+
+    @Override
+    public void controlKT(AppStoreControlKTReqVO reqVO) {
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
+        //权限校验
+        checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        //执行
+        deviceService.controlKT(reqVO.getCmd(), roomInfoDO.getStoreId(), roomInfoDO.getRoomId());
     }
 
 }

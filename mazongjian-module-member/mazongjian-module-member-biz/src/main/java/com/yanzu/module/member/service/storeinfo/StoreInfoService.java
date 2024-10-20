@@ -128,4 +128,6 @@ public interface StoreInfoService {
 
     void delDevice(Long deviceId);
 
+    void controlKT(AppStoreControlKTReqVO reqVO);
+
 }

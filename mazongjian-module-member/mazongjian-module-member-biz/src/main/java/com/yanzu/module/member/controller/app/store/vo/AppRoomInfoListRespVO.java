@@ -52,4 +52,7 @@ public class AppRoomInfoListRespVO {
 
     @Schema(description = "保洁任意开门")
     private Boolean clearOpenDoor;
+
+    @Schema(description = "空调控制器")
+    private Integer kongtiaoCount;
 }

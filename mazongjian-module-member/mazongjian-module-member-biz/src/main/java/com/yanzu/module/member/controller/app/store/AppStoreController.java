@@ -9,6 +9,7 @@ import com.yanzu.module.member.controller.admin.faceblacklist.vo.FaceBlacklistPa
 import com.yanzu.module.member.controller.admin.faceblacklist.vo.FaceBlacklistRespVO;
 import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordPageReqVO;
 import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordRespVO;
+import com.yanzu.module.member.controller.app.order.vo.ControlKTReqVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.faceblacklist.FaceBlacklistService;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -362,5 +364,13 @@ public class AppStoreController {
         return success(true);
     }
 
+    @PostMapping("/controlKT")
+    @Operation(summary = "管理员控制空调", description = "房间控制使用")
+    @PreAuthenticated
+    @Idempotent(timeout = 100, timeUnit = TimeUnit.MILLISECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> controlKT(@RequestBody @Valid AppStoreControlKTReqVO reqVO) {
+        storeInfoService.controlKT(reqVO);
+        return success(true);
+    }
 
 }

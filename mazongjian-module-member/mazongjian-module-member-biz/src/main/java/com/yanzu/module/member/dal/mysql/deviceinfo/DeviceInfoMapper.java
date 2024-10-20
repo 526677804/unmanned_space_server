@@ -60,4 +60,6 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
     int countKongtiao(Long roomId);
 
     int deleteStoreId(Long id);
+
+    List<DeviceInfoDO> getIRListByRoomId(Long roomId);
 }
