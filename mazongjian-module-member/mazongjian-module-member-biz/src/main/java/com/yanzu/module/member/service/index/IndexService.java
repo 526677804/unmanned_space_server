@@ -24,4 +24,8 @@ public interface IndexService {
     List<AppRoomInfoListRespVO> getRoomInfoList(AppRoomListReqVO reqVO);
 
     AppRoomInfoListRespVO getRoomInfo(Long roomId);
+
+    AppSysInfoRespVO getSysInfo();
+
+
 }

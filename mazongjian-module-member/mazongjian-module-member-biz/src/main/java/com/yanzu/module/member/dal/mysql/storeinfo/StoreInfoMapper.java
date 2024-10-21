@@ -14,6 +14,7 @@ import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -70,4 +71,10 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
     String getDouyinPoiId(Long storeId);
 
     boolean getOrderDoorOpen(Long storeId);
+
+    int executeExpire();
+
+
+    int renew(@Param("storeId") Long storeId, @Param("status") Integer status, @Param("newDate") LocalDateTime newDate);
+
 }

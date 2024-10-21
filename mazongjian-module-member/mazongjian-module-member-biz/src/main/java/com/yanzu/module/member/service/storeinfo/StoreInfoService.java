@@ -130,4 +130,6 @@ public interface StoreInfoService {
 
     void controlKT(AppStoreControlKTReqVO reqVO);
 
+    void renew(StoreRenewReqVO reqVO);
+
 }

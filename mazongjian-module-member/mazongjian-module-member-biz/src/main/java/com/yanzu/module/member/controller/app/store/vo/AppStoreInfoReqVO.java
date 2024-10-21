@@ -113,4 +113,7 @@ public class AppStoreInfoReqVO {
     private Boolean orderDoorOpen;
     @Schema(description = "保洁任意开门")
     private Boolean clearOpenDoor;
+
+    @Schema(description = "webhook")
+    private String orderWebhook;
 }

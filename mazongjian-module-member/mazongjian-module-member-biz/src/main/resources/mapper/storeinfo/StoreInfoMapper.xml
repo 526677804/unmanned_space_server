@@ -25,6 +25,23 @@
         <collection property="subscribeTime" column="store_id" ofType="String"
                     select="getSubscribeTime"/>
     </resultMap>
+    <update id="executeExpire">
+        update member_store_info
+        set status=2
+        where deleted = 0
+          and status!=2
+          and expire_time is not null
+          and expire_time&lt; now()
+    </update>
+    <update id="renew">
+        update member_store_info
+        set expire_time=#{newDate}
+        <if test="null!=status">
+            ,status=#{status}
+        </if>
+        where deleted=0 and store_id=#{storeId}
+
+    </update>
     <select id="getDiscountRules" resultType="java.lang.String">
         select concat('充值', pay_money, '元,赠送', gift_money, '元！')
         from member_discount_rules
@@ -33,7 +50,6 @@
           and status = 1
           and exprice_time > now()
         order by pay_money asc
-
     </select>
     <select id="getFreeRoomNum" resultType="Long">
         select count(1)

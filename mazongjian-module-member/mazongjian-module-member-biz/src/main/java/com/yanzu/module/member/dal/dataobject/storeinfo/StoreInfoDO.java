@@ -8,6 +8,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 门店管理 DO
@@ -169,5 +172,7 @@ public class StoreInfoDO extends BaseDO {
     private Boolean clearOpenDoor;
 
 
+    @Schema(description = "过期时间")
+    private LocalDateTime expireTime;
 
 }

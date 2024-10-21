@@ -16,6 +16,7 @@
         <el-select v-model="queryParams.status" placeholder="请选择门店状态" clearable size="small">
           <el-option label="正常" value="0" />
           <el-option label="审核中" value="1" />
+          <el-option label="已到期" value="2" />
         </el-select>
       </el-form-item>
       <el-form-item label="创建时间" prop="createTime">
@@ -50,12 +51,13 @@
       <el-table-column label="纬度" align="center" prop="lat" />
       <el-table-column label="经度" align="center" prop="lon" />
       <el-table-column label="详细地址" align="center" prop="address" />
-      <el-table-column label="门店状态" align="center" :formatter="statusFomat" />
       <el-table-column label="客服电话" align="center" prop="kefuPhone" />
       <!-- <el-table-column label="美团店铺uuid" align="center" prop="meituanOpenShopUuid" />
       <el-table-column label="美团key" align="center" prop="meituanKey" />
       <el-table-column label="美团Secret" align="center" prop="meituanSecret" /> -->
       <el-table-column label="房间数量" align="center" prop="roomNum" />
+      <el-table-column label="门店状态" align="center" :formatter="statusFomat" />
+      <el-table-column label="到期时间" align="center" prop="expireTime" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template v-slot="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
@@ -65,6 +67,8 @@
         <template v-slot="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
                      v-hasPermi="['member:store-info:update']">修改</el-button>
+                     <el-button size="mini" type="text" icon="el-icon-edit" @click="handleRenew(scope.row)"
+                     v-hasPermi="['member:store-info:update']">续费</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
                      v-hasPermi="['member:store-info:delete']">删除</el-button>
         </template>
@@ -128,8 +132,8 @@
         <el-form-item label="客服电话" prop="kefuPhone">
           <el-input v-model="form.kefuPhone" placeholder="请输入客服电话" />
         </el-form-item>
-        <el-form-item label="订单通知webhook" prop="orderWebhook">
-          <el-input v-model="form.orderWebhook" placeholder="请输入订单通知webhook地址" />
+        <el-form-item label="企业微信webhook" prop="orderWebhook">
+          <el-input v-model="form.orderWebhook" placeholder="请输入企业微信webhook地址" />
         </el-form-item>
         <!-- <el-form-item label="组局通知webhook" prop="gameWebhook">
           <el-input v-model="form.gameWebhook" placeholder="请输入组局通知webhook地址" />
@@ -153,11 +157,39 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 对话框 续费 -->
+    <el-dialog title="门店续费" :visible.sync="openRenew" width="500px" v-dialogDrag append-to-body>
+      <el-form ref="renewForm" :model="renewForm" :rules="renewRules" label-width="150px">
+        <el-form-item label="门店名称" prop="storeName">
+          <el-input v-model="renewForm.storeName" readonly/>
+        </el-form-item>
+        <el-form-item label="门店状态" prop="status">
+          <el-select v-model="renewForm.status" placeholder="请选择门店状态">
+            <el-option
+            v-for="item in optionsStas"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="到期时间" prop="expireTime">
+          <el-input v-model="renewForm.expireTime" readonly />
+        </el-form-item>
+        到期时间剩余超过1个月不允许续费。每次续费将为门店增加一年有效期！
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitRenew">确 定</el-button>
+        <el-button @click="cancelRenew">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { createStoreInfo, updateStoreInfo, deleteStoreInfo, getStoreInfo, getStoreInfoPage, exportStoreInfoExcel,getMeituanScope } from "@/api/member/storeInfo";
+import { createStoreInfo, updateStoreInfo, deleteStoreInfo, getStoreInfo, getStoreInfoPage, exportStoreInfoExcel,getMeituanScope,renewStore } from "@/api/member/storeInfo";
 import Editor from '@/components/Editor';
 
 export default {
@@ -181,6 +213,7 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      openRenew: false,
       // 查询参数
       queryParams: {
         pageNo: 1,
@@ -195,10 +228,18 @@ export default {
       form: {
         roomNum: 1
       },
+      renewForm: {
+        storeId: undefined,
+        expireTime: undefined,
+        status: undefined,
+      },
       // 表单校验
       rules: {
         storeName: [{ required: true, message: "门店名称不能为空", trigger: "blur" }],
         cityName: [{ required: true, message: "城市名称不能为空", trigger: "blur" }],
+        status: [{ required: true, message: "门店状态不能为空", trigger: "change" }],
+      },
+      renewRules: {
         status: [{ required: true, message: "门店状态不能为空", trigger: "change" }],
       },
       optionsStas: [
@@ -209,6 +250,10 @@ export default {
         {
           name: "审核中",
           id: 1,
+        },
+        {
+          name: "已到期",
+          id: 2,
         },
       ],
     };
@@ -231,6 +276,10 @@ export default {
     cancel() {
       this.open = false;
       this.reset();
+    },
+    cancelRenew() {
+      this.openRenew = false;
+      this.resetRenew();
     },
     /** 表单重置 */
     reset() {
@@ -255,6 +304,15 @@ export default {
         meituanSecret: undefined,
       };
       this.resetForm("form");
+    },
+    resetRenew() {
+      this.renewForm = {
+        storeId: undefined,
+        storeName: undefined,
+        expireTime: undefined,
+        status: undefined,
+      }
+      this.resetForm("renewForm");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -282,6 +340,16 @@ export default {
         this.title = "修改门店管理";
       });
     },
+    /** 续费按钮操作 */
+    handleRenew(row) {
+      this.renewForm = {
+        storeId: row.storeId,
+        storeName: row.storeName,
+        expireTime: row.expireTime,
+        status: row.status,
+      }
+      this.openRenew = true;
+    },
     /** 美团授权按钮操作 */
     handleMeituan(row) {
       const storeId = row.storeId;
@@ -308,6 +376,19 @@ export default {
         createStoreInfo(this.form).then(response => {
           this.$modal.msgSuccess("新增成功");
           this.open = false;
+          this.getList();
+        });
+      });
+    },
+    submitRenew(){
+      this.$refs["renewForm"].validate(valid => {
+        if (!valid) {
+          return;
+        }
+        // 提交
+        renewStore(this.renewForm).then(response => {
+          this.$modal.msgSuccess("操作成功");
+          this.openRenew = false;
           this.getList();
         });
       });

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.infra.api.config.ConfigApi;
 import com.yanzu.module.member.controller.app.index.vo.*;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.mysql.bannerinfo.BannerInfoMapper;
@@ -48,6 +49,9 @@ public class IndexServiceImpl implements IndexService {
     private OrderInfoMapper orderInfoMapper;
     @Resource
     private DiscountRulesMapper discountRulesMapper;
+
+    @Resource
+    private ConfigApi configApi;
 
     @Override
     public List<String> getCityList() {
@@ -281,6 +285,13 @@ public class IndexServiceImpl implements IndexService {
             timeSlot.set(i, slotRespVO);
         }
         respVO.setTimeSlot(timeSlot);
+        return respVO;
+    }
+
+    @Override
+    public AppSysInfoRespVO getSysInfo() {
+        AppSysInfoRespVO respVO=new AppSysInfoRespVO();
+        respVO.setVersion(configApi.getConfigValueByKey("app.version"));
         return respVO;
     }
 

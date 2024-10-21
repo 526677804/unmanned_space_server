@@ -2,10 +2,7 @@ package com.yanzu.module.member.controller.admin.storeinfo;
 
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoCreateReqVO;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoPageReqVO;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoRespVO;
-import com.yanzu.module.member.controller.admin.storeinfo.vo.StoreInfoUpdateReqVO;
+import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
 import com.yanzu.module.member.convert.storeinfo.StoreInfoConvert;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
@@ -84,6 +81,14 @@ public class StoreInfoController {
     public CommonResult<PageResult<StoreInfoRespVO>> getStoreInfoPage(@Valid StoreInfoPageReqVO pageVO) {
         PageResult<StoreInfoDO> pageResult = storeInfoService.getStoreInfoPage(pageVO);
         return success(StoreInfoConvert.INSTANCE.convertPage(pageResult));
+    }
+
+    @PostMapping("/renew")
+    @Operation(summary = "续费门店")
+    @PreAuthorize("@ss.hasPermission('member:store-info:update')")
+    public CommonResult<Boolean> renew(@Valid @RequestBody StoreRenewReqVO reqVO) {
+        storeInfoService.renew(reqVO);
+        return success(true);
     }
 
 //    @GetMapping("/export-excel")

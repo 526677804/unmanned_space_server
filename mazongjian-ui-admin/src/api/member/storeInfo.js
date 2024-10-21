@@ -58,3 +58,11 @@ export function getMeituanScope(id){
     method: 'get'
   })
 }
+
+export function renewStore(data){
+  return request({
+    url: '/member/store-info/renew',
+    method: 'post',
+    data: data
+  })
+}

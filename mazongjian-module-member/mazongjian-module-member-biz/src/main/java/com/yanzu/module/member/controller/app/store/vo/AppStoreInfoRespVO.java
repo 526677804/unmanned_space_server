@@ -99,4 +99,7 @@ public class AppStoreInfoRespVO {
     @Schema(description = "保洁任意开门")
     private Boolean clearOpenDoor;
 
+
+    @Schema(description = "webhook")
+    private String orderWebhook;
 }

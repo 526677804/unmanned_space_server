@@ -128,6 +128,21 @@ public class AppEnum {
         private final Integer value;
     }
 
+    @Getter
+    @AllArgsConstructor
+    public enum store_status {
+        //正常	0
+        //审核中	1
+        //已到期	2
+        ENABLE(0),
+        AUDIT(1),
+        EXPIRE(2),
+        ;
+
+
+        private final Integer value;
+    }
+
     //miniapp房间类型
     @Getter
     @AllArgsConstructor

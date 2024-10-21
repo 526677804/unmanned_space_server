@@ -406,6 +406,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         StoreInfoDO storeInfo = StoreInfoConvert.INSTANCE.convert(createReqVO);
         //后台添加的门店 默认都是简洁模式
         storeInfo.setSimpleModel(true);
+        //默认1年过期
+        storeInfo.setExpireTime(LocalDateTime.now().plusYears(1));
         storeInfoMapper.insert(storeInfo);
         //建立用户关系
         StoreUserDO storeUserDO = new StoreUserDO();
@@ -738,7 +740,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 case 11:
                     int c = deviceInfoMapper.countByTypeAndRoomId(reqVO.getDeviceType(), reqVO.getRoomId());
                     if (c > 0) {
-                        throw exception(Device_ADD_MAX_NUM_ERROR);
+                        throw exception(DEVICE_ADD_MAX_NUM_ERROR);
                     }
                     break;
             }
@@ -763,6 +765,17 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         if (!ObjectUtils.isEmpty(deviceInfoDO)) {
             //避免操作失误 仅允许超管删除
             checkPermisson(deviceInfoDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+            //如果是多房间共用  只有全部删除绑定关系时才去解绑
+            if (deviceInfoDO.getShare()) {
+                if (deviceInfoMapper.countBySN(deviceInfoDO.getDeviceSn()) == 1) {
+                    //解绑
+                    iotDeviceService.unbind(deviceInfoDO.getDeviceSn());
+                }
+            } else {
+                //解绑
+                iotDeviceService.unbind(deviceInfoDO.getDeviceSn());
+            }
+            //删除
             deviceInfoMapper.deleteById(deviceId);
             log.info("用户:{}，删除设备:{}", getLoginUserId(), deviceId);
         }
@@ -775,6 +788,27 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //执行
         deviceService.controlKT(reqVO.getCmd(), roomInfoDO.getStoreId(), roomInfoDO.getRoomId());
+    }
+
+    @Override
+    @Transactional
+    public void renew(StoreRenewReqVO reqVO) {
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(reqVO.getStoreId());
+        if (!ObjectUtils.isEmpty(storeInfoDO)) {
+            LocalDateTime newDate = null;
+            if (ObjectUtils.isEmpty(storeInfoDO.getExpireTime())) {
+                //没有到期时间  那么取创建时间+1年作为初始的到期时间
+                newDate = storeInfoDO.getCreateTime().plusYears(1);
+            } else {
+                //判断与当前时间是否超过一个月  超过一个月不允许续费
+                if(storeInfoDO.getExpireTime().isBefore(LocalDateTime.now().plusMonths(1))){
+                    newDate = storeInfoDO.getExpireTime().plusYears(1);
+                }else{
+                    throw exception(STORE_RENEW_TIME_ERROR);
+                }
+            }
+            storeInfoMapper.renew(reqVO.getStoreId(),reqVO.getStatus(),newDate);
+        }
     }
 
 }

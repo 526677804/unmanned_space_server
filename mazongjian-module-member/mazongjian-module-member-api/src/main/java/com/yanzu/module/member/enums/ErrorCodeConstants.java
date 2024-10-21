@@ -76,7 +76,7 @@ public interface ErrorCodeConstants {
     ErrorCode CLEAR_IMAGE_NOT_FOUNT_ERROR = new ErrorCode(1004004064, "请上传清洁完成的图片！");
     ErrorCode CLEAR_OPEN_DOOR_ERROR = new ErrorCode(1004004065, "当前状态不支持开门！");
     ErrorCode DEVICE_IOT_OP_ERROR = new ErrorCode(1004004070, "设备平台操作失败,错误信息:{}");
-    ErrorCode DEVICE_IOT_AUTH_ERROR = new ErrorCode(1004004071, "设备平台认证失败！");
+    ErrorCode STORE_STORE_IS_DISABLE = new ErrorCode(1004004071, "门店当前状态不允许此操作！");
     ErrorCode CLEAR_AND_FINISH_ROOM_STATUS_ERROR = new ErrorCode(1004004072, "房间当前状态不允许执行此操作！");
     ErrorCode ORDER_MIN_HOUR_ERROR = new ErrorCode(1004004073, "订单时长必须达到设置的起步时长！");
     ErrorCode GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR = new ErrorCode(1004004080, "团购券适用的房间类型，与当前订单预定的房间类型不匹配，请检查!");
@@ -99,8 +99,8 @@ public interface ErrorCodeConstants {
     ErrorCode CLEAR_FINISH_ORDER_START_ERROR = new ErrorCode(1004004097, "该房间有订单进行中，无法完成保洁订单！");
     ErrorCode DEVICE_DATA_EXISTS_ERROR = new ErrorCode(1004004098, "该设备已存在，请勿重复添加！");
     ErrorCode ROOM_BAN_TIME_ERROR = new ErrorCode(1004004099, "房间禁用时间请填写完整！");
-    ErrorCode Device_ADD_MAX_NUM_ERROR = new ErrorCode(1004004100, "此类型设备每个场地只允许添加1个！");
-
+    ErrorCode DEVICE_ADD_MAX_NUM_ERROR = new ErrorCode(1004004100, "此类型设备每个场地只允许添加1个！");
+    ErrorCode STORE_RENEW_TIME_ERROR = new ErrorCode(1004004101, "不允许超过提前1个月续费！");
 
     ErrorCode PKG_BUY_MAX_NUM_ERROR = new ErrorCode(1004004200, "超过购买该套餐的最大数量限制！");
     ErrorCode PKG_BUY_DISABLE_ERROR = new ErrorCode(1004004201, "该套餐不支持购买！");

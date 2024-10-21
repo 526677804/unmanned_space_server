@@ -1,10 +1,15 @@
 package com.yanzu.module.member.controller.app.store.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+
+import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 
 @Schema(description = "miniapp - 门店管理列表 Response VO")
 @Data
@@ -45,6 +50,8 @@ public class AppStoreAdminRespVO {
     private Integer deviceOnlineNum;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private Date createTime;
 
     @Schema(description = "订单清洁时间")
@@ -61,6 +68,11 @@ public class AppStoreAdminRespVO {
     @Schema(description = "密码锁数据")
     private String lockData;
 
+
+    @Schema(description = "过期时间")
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY, timezone = TIME_ZONE_DEFAULT)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY)
+    private Date expireTime;
 
 
 }

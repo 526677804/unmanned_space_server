@@ -15,6 +15,7 @@ import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
+import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
@@ -56,6 +57,9 @@ public class MemberUserApiImpl implements MemberUserApi {
 
     @Resource
     private PayOrderMapper payOrderMapper;
+
+    @Resource
+    private StoreInfoMapper storeInfoMapper;
 
     @Value("${wx.pay.splitMchId}")
     private String splitMchId;
@@ -99,11 +103,13 @@ public class MemberUserApiImpl implements MemberUserApi {
     @Override
     @Transactional
     public void executeCouponExpire() {
-        log.info("==========     开始执行优惠券定时检查任务     ==========");
+        log.info("==========     开始执行每日定时检查任务     ==========");
         //处理过期 但是未使用的优惠券
         couponInfoMapper.executeCouponExpire();
         //处理过期的充值优惠规则
         discountRulesMapper.executeExpire();
+        //处理门店到期
+        storeInfoMapper.executeExpire();
     }
 
     @Override

@@ -1,11 +1,17 @@
 package com.yanzu.module.member.controller.admin.storeinfo.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yanzu.framework.common.util.date.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
+import java.util.Date;
+
+import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 
 @Schema(description = "管理后台 - 门店管理更新 Request VO")
 @Data
@@ -61,5 +67,11 @@ public class StoreInfoUpdateReqVO extends StoreInfoBaseVO {
 
     @Schema(description = "抖音poiId")
     private String douyinPoiId;
+
+
+    @Schema(description = "过期时间")
+    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
+    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    private Date expireTime;
 
 }

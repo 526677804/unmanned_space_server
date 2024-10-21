@@ -104,4 +104,10 @@ public class IndexController {
         return success(indexService.getRoomList(storeId));
     }
 
+
+    @GetMapping("/getSysInfo")
+    @Operation(summary = "获取系统信息")
+    public CommonResult<AppSysInfoRespVO> getSysInfo() {
+        return success(indexService.getSysInfo());
+    }
 }

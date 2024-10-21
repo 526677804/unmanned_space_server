@@ -207,10 +207,13 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //查询房间的信息 以及门店的信息
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
+        if (roomInfoDO.getStatus().compareTo(AppEnum.store_status.ENABLE.getValue()) != 0) {
+            throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
+        }
         //查询出门店的配置信息
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
-        if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
-            throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
+        if (storeInfoDO.getStatus().compareTo(AppEnum.store_status.ENABLE.getValue()) != 0) {
+            throw exception(STORE_STORE_IS_DISABLE);
         }
         //如果是通宵场  开始时间必须大于设置的通宵起始时间
         if (nightLong) {

@@ -69,7 +69,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
                 case 11:
                     int c = deviceInfoMapper.countByTypeAndRoomId(createReqVO.getType(), createReqVO.getRoomId());
                     if (c > 0) {
-                        throw exception(Device_ADD_MAX_NUM_ERROR);
+                        throw exception(DEVICE_ADD_MAX_NUM_ERROR);
                     }
                     break;
             }
@@ -90,11 +90,18 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
         DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(id);
         //只能操作自己的设备
         if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
-            // 先解绑
-            iotDeviceService.unbind(deviceInfoDO.getDeviceSn());
+            //如果是多房间共用  只有全部删除绑定关系时才去解绑
+            if (deviceInfoDO.getShare()) {
+                if (deviceInfoMapper.countBySN(deviceInfoDO.getDeviceSn()) == 1) {
+                    //解绑
+                    iotDeviceService.unbind(deviceInfoDO.getDeviceSn());
+                }
+            } else {
+                //解绑
+                iotDeviceService.unbind(deviceInfoDO.getDeviceSn());
+            }
             // 删除
             deviceInfoMapper.deleteById(id);
-
         }
     }
 
@@ -147,7 +154,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
                 case 11:
                     int c = deviceInfoMapper.countByTypeAndRoomId(deviceInfoDO.getType(), reqVO.getRoomId());
                     if (c > 0) {
-                        throw exception(Device_ADD_MAX_NUM_ERROR);
+                        throw exception(DEVICE_ADD_MAX_NUM_ERROR);
                     }
                     break;
             }
