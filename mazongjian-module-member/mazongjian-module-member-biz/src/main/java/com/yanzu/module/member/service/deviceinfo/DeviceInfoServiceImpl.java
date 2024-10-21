@@ -67,6 +67,8 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
                 case 9:
                 case 10:
                 case 11:
+                case 12:
+                case 13:
                     int c = deviceInfoMapper.countByTypeAndRoomId(createReqVO.getType(), createReqVO.getRoomId());
                     if (c > 0) {
                         throw exception(DEVICE_ADD_MAX_NUM_ERROR);
@@ -152,6 +154,8 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
                 case 9:
                 case 10:
                 case 11:
+                case 12:
+                case 13:
                     int c = deviceInfoMapper.countByTypeAndRoomId(deviceInfoDO.getType(), reqVO.getRoomId());
                     if (c > 0) {
                         throw exception(DEVICE_ADD_MAX_NUM_ERROR);

@@ -738,6 +738,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 case 9:
                 case 10:
                 case 11:
+                case 12:
+                case 13:
                     int c = deviceInfoMapper.countByTypeAndRoomId(reqVO.getDeviceType(), reqVO.getRoomId());
                     if (c > 0) {
                         throw exception(DEVICE_ADD_MAX_NUM_ERROR);
