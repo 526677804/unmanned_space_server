@@ -876,7 +876,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         orderInfoDO.setStartTime(reqVO.getStartTime());
         //处理加时券
         if (!ObjectUtils.isEmpty(couponInfoDO) && couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
-            reqVO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
+            orderInfoDO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
         }
         orderInfoDO.setEndTime(reqVO.getEndTime());
         orderInfoDO.setNightLong(reqVO.getNightLong());
@@ -1013,9 +1013,11 @@ public class AppOrderServiceImpl implements AppOrderService {
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPayPrice() / 100.0));
         switch (reqVO.getPayType()) {
             case 1://微信
-                payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), wxPayOrderRespVO.getPayPrice());
-                //是微信支付的  增加已支付的金额
-                orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
+                if(wxPayOrderRespVO.getPayPrice()>0){
+                    payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), wxPayOrderRespVO.getPayPrice());
+                    //是微信支付的  增加已支付的金额
+                    orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
+                }
                 break;
             case 2://余额
                 StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, roomInfoDO.getStoreId());
@@ -1067,7 +1069,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         orderInfoDO.setEndTime(endTime);
         //处理加时券
         if (!ObjectUtils.isEmpty(couponInfoDO) && couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
-            reqVO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
+            orderInfoDO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
         }
         //增加订单金额
         orderInfoDO.setPrice(orderInfoDO.getPrice().add(totalPrice));
