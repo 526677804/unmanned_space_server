@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.module.infra.api.config.ConfigApi;
 import com.yanzu.module.member.controller.app.index.vo.*;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
@@ -12,6 +13,7 @@ import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -37,6 +39,8 @@ import java.util.stream.Collectors;
 @Validated
 public class IndexServiceImpl implements IndexService {
 
+    public static final int SEVEN_DAY = 7;
+
     @Resource
     private StoreInfoMapper storeInfoMapper;
 
@@ -49,6 +53,8 @@ public class IndexServiceImpl implements IndexService {
     private OrderInfoMapper orderInfoMapper;
     @Resource
     private DiscountRulesMapper discountRulesMapper;
+    @Resource
+    private RedisTemplate<String, String> redisTemplate;
 
     @Resource
     private ConfigApi configApi;
@@ -70,8 +76,47 @@ public class IndexServiceImpl implements IndexService {
                 reqVO.setCityName("");
             }
         }
+        // 判断当前请求是查看附件的门店 还是 常用门店
+        if ("false".equals(reqVO.getOften())) {
+            return this.getNearByStorePageList(reqVO);
+        }
+        else {
+            return this.getOftenStorePageList(reqVO);
+        }
+    }
+
+    @Override
+    public PageResult<AppStorePageRespVO> getNearByStorePageList(AppStorePageReqVO reqVO) {
         IPage<AppStorePageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
         storeInfoMapper.getStorePageList(page,reqVO);
+        if (!CollectionUtils.isEmpty(page.getRecords())) {
+            page.getRecords().forEach(x -> {
+                if (!ObjectUtils.isEmpty(x.getDistance())) {
+                    x.setDistance(x.getDistance().setScale(2, BigDecimal.ROUND_CEILING));
+                }
+            });
+        }
+        return new PageResult<>(page.getRecords(), page.getTotal());
+    }
+
+    @Override
+    public PageResult<AppStorePageRespVO> getOftenStorePageList(AppStorePageReqVO reqVO) {
+        Set<String> key = redisTemplate.keys("recentStore:"+ SecurityFrameworkUtils.getLoginUserId()+":*");
+
+        List<Long> storeIds = null;
+        if (key != null) {
+            storeIds = key.stream()
+                    .map(item -> redisTemplate.opsForValue().get(item))
+                    .filter(Objects::nonNull)
+                    .map(Long::valueOf)
+                    .collect(Collectors.toList());
+        }
+        System.out.println(storeIds);
+        if (storeIds.isEmpty()){
+            return null;
+        }
+        IPage<AppStorePageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
+        storeInfoMapper.getOftenStorePageList(page,reqVO,storeIds);
         if (!CollectionUtils.isEmpty(page.getRecords())) {
             page.getRecords().forEach(x -> {
                 if (!ObjectUtils.isEmpty(x.getDistance())) {

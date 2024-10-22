@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.index.vo
  * @DESCRIPTION:
@@ -18,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AppStorePageReqVO extends PageParam {
+public class AppStorePageOftenDBVO extends PageParam {
 
     @Schema(description = "城市名称")
     private String cityName;
@@ -34,5 +36,8 @@ public class AppStorePageReqVO extends PageParam {
 
     @Schema(description = "附近false , 常用true")
     private String often;
+
+    @Schema(description = "常用门店ids")
+    private List<Long> storeIds;
 
 }

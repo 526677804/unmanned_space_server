@@ -13,6 +13,10 @@ public interface IndexService {
 
     PageResult<AppStorePageRespVO> getStorePageList(AppStorePageReqVO reqVO);
 
+    PageResult<AppStorePageRespVO> getNearByStorePageList(AppStorePageReqVO reqVO);
+
+    PageResult<AppStorePageRespVO> getOftenStorePageList(AppStorePageReqVO reqVO);
+
     AppIndexStoreInfoRespVO getStoreInfo(Long storeId,String lat,String lon);
 
     List<KeyValue<String, Long>> getStoreList(String name,String cityName);
