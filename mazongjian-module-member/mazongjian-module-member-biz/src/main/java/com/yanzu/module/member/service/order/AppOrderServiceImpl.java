@@ -207,7 +207,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //查询房间的信息 以及门店的信息
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
-        if (roomInfoDO.getStatus().compareTo(AppEnum.store_status.ENABLE.getValue()) != 0) {
+        if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
             throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
         }
         //查询出门店的配置信息
@@ -1004,7 +1004,11 @@ public class AppOrderServiceImpl implements AppOrderService {
             //续费结束时间等于开始时间  退款
             throw exception(ORDER_RENEW_TIME_ERROR);
         }
-        WxPayOrderRespVO wxPayOrderRespVO = preOrder(userId, null, orderInfoDO.getRoomId(), startTime, endTime, null, null, reqVO.getOrderId(), false, false);
+        CouponInfoDO couponInfoDO = null;
+        if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
+            couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
+        }
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(userId, null, orderInfoDO.getRoomId(), startTime, endTime, couponInfoDO, null, reqVO.getOrderId(), false, false);
         //订单价格
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPayPrice() / 100.0));
         switch (reqVO.getPayType()) {
@@ -1054,8 +1058,17 @@ public class AppOrderServiceImpl implements AppOrderService {
             default:
                 throw exception(PAY_TYPE_ERROR);
         }
+        //如果使用了优惠券  则使用掉
+        if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
+            //use
+            couponInfoMapper.updateById(new CouponInfoDO().setCouponId(couponInfoDO.getCouponId()).setStatus(AppEnum.coupon_status.USED.getValue()));
+        }
         //支付完了，增加订单的结束时间
         orderInfoDO.setEndTime(endTime);
+        //处理加时券
+        if (!ObjectUtils.isEmpty(couponInfoDO) && couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
+            reqVO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
+        }
         //增加订单金额
         orderInfoDO.setPrice(orderInfoDO.getPrice().add(totalPrice));
         //如果状态是已完成，则状态改成进行中 并触发一次开房间门操作，以实现通电
@@ -1067,7 +1080,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
-        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), userId, roomInfoDO.getRoomName(), totalPrice, reqVO.getPayType(), orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), false);
+        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), userId, roomInfoDO.getRoomName(), totalPrice, reqVO.getPayType(), orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), couponInfoDO,false);
         //todo...如果有已接单的保洁订单 发消息通知保洁时间延后了
     }
 

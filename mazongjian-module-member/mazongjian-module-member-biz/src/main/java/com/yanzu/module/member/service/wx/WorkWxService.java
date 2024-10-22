@@ -19,9 +19,11 @@ public interface WorkWxService {
 
     void sendClearMsg(String webhookUrl, String content);
 
-    void sendRenewMsg(Long storeId, Long userId, String roomName, BigDecimal price, Integer payType, String orderNo, Date endTime, boolean isAdmin);
+    void sendRenewMsg(Long storeId, Long userId, String roomName, BigDecimal price, Integer payType, String orderNo, Date endTime, CouponInfoDO couponInfoDO,boolean isAdmin);
 
     void sendRechargeMsg(Long storeId, Long userId, BigDecimal price, BigDecimal giftPrice);
+
+    void sendAdminRechargeMsg(Long storeId, Long userId, Long adminUserId, BigDecimal giftPrice);
 
     void sendGiftCouponMsg(Long storeId, Long userId, String couponName, Integer roomType);
 

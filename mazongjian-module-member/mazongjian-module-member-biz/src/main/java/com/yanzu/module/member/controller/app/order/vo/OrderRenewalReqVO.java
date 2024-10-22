@@ -54,4 +54,8 @@ public class OrderRenewalReqVO {
     @Schema(description = "下单的userId", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long userId;
 
+
+    @Schema(description = "优惠券ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long couponId;
+
 }

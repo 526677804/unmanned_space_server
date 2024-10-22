@@ -701,7 +701,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         orderInfoDO.setEndTime(reqVO.getEndTime());
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
-        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), getLoginUserId(), roomInfoDO.getRoomName(), BigDecimal.ZERO, reqVO.getPayType(), orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), true);
+        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), getLoginUserId(), roomInfoDO.getRoomName(), BigDecimal.ZERO, reqVO.getPayType(), orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), null,true);
     }
 
     @Override
@@ -945,14 +945,15 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
         //执行
         memberUserService.recharge(reqVO);
-
+        //发送企业微信通知
+        workWxService.sendAdminRechargeMsg(reqVO.getStoreId(), reqVO.getUserId(), getLoginUserId(), reqVO.getMoney());
     }
 
     @Override
     @Transactional
     public void cancelClear(Long clearId) {
         ClearInfoDO clearInfoDO = clearInfoMapper.selectById(clearId);
-        if(!ObjectUtils.isEmpty(clearInfoDO)){
+        if (!ObjectUtils.isEmpty(clearInfoDO)) {
             //权限检查
             storeInfoService.checkPermisson(clearInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
             //执行

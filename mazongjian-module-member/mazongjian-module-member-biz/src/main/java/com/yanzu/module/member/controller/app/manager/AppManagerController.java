@@ -254,7 +254,7 @@ public class AppManagerController {
     }
 
     @PostMapping("/recharge")
-    @Operation(summary = "用户余额充值")
+    @Operation(summary = "管理员给用户余额充值")
     @PreAuthenticated
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> recharge(@Valid @RequestBody AppUserRechargeReqVO reqVO) {
