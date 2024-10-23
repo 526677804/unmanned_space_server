@@ -27,6 +27,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -137,6 +138,8 @@ public class IndexServiceImpl implements IndexService {
             }
             storeInfo.setDiscountRules(discountRulesMapper.getRulesByStoreId(storeId));
         }
+        String key = String.format("recentStore:%s:%s", SecurityFrameworkUtils.getLoginUserId(), storeId);
+        redisTemplate.opsForValue().set(key, storeId.toString(), SEVEN_DAY, TimeUnit.DAYS);
         return storeInfo;
     }
 
