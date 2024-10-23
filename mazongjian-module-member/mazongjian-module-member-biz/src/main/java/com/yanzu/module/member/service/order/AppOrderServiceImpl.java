@@ -76,6 +76,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -1013,7 +1015,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPayPrice() / 100.0));
         switch (reqVO.getPayType()) {
             case 1://微信
-                if(wxPayOrderRespVO.getPayPrice()>0){
+                if (wxPayOrderRespVO.getPayPrice() > 0) {
                     payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), wxPayOrderRespVO.getPayPrice());
                     //是微信支付的  增加已支付的金额
                     orderInfoDO.setPayPrice(orderInfoDO.getPayPrice().add(totalPrice));
@@ -1082,7 +1084,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
-        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), userId, roomInfoDO.getRoomName(), totalPrice, reqVO.getPayType(), orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), couponInfoDO,false);
+        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), userId, roomInfoDO.getRoomName(), totalPrice, reqVO.getPayType(), orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), couponInfoDO, false);
         //todo...如果有已接单的保洁订单 发消息通知保洁时间延后了
     }
 
@@ -1294,6 +1296,13 @@ public class AppOrderServiceImpl implements AppOrderService {
             orderInfoMapper.updateById(orderInfoDO);
             //房间改为进行中
             roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
+            //异步延时发送欢迎语
+            ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+            executorService.schedule(() -> {
+                // 这是异步执行的任务
+                deviceService.runSound(orderInfoDO.getRoomId(), 1);
+            }, 40, TimeUnit.SECONDS); // 延迟40秒后执行任务
+
         } else {
             throw exception(ORDER_START_OPRATION_ERROR);
         }
@@ -1322,6 +1331,8 @@ public class AppOrderServiceImpl implements AppOrderService {
             Set<Long> startOrderIds = new HashSet<>();
             Set<Long> endOrderIds = new HashSet<>();
             List<ClearInfoDO> clearInfoDOList = new ArrayList<>();
+            //延时异步执行
+            ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
             //按照门店分组，因为不同的门店，有不同的规则
             Map<Long, List<OrderListJobVO>> listByStoreId = orderList.stream().collect(Collectors.groupingBy(x -> x.getStoreId()));
             listByStoreId.entrySet().forEach(v -> {
@@ -1337,6 +1348,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                             if (x.getRoomClass().compareTo(AppEnum.room_class.TAIQIU.getValue()) == 0) {
                                 deviceService.openRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
                             }
+                            //异步延时播放欢迎语
+                            executorService.schedule(() -> {
+                                deviceService.runSound(x.getRoomId(), 1);
+                            }, 40, TimeUnit.SECONDS);
                         }
                     } else if (x.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                         //进行中 主要是完成订单，和关电
@@ -1362,11 +1377,12 @@ public class AppOrderServiceImpl implements AppOrderService {
                             } else {
                                 //检查距离结束的时间，发送语音提醒
                                 long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
-                                long minutesStart = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getStartTime().toInstant()));
-                                if (minutesStart == 2) {
-                                    //开始2分钟时 播放欢迎语
-                                    deviceService.runSound(x.getRoomId(), 1);
-                                } else if (minutes == 30) {
+//                                long minutesStart = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getStartTime().toInstant()));
+//                                if (minutesStart == 2) {
+//                                    //开始2分钟时 播放欢迎语
+//                                    deviceService.runSound(x.getRoomId(), 1);
+//                                } else
+                                if (minutes == 30) {
                                     deviceService.runSound(x.getRoomId(), 2);
                                 }
                                 //暂时取消15分钟时的提醒
@@ -1416,6 +1432,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                     }
                 });
             });
+            // 关闭ExecutorService，不再接受新任务，已经提交的任务将继续执行完毕
+            executorService.shutdown();
             //开始处理
             // 手动提交事务
             TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
