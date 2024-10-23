@@ -69,9 +69,4 @@ public class StoreInfoUpdateReqVO extends StoreInfoBaseVO {
     private String douyinPoiId;
 
 
-    @Schema(description = "过期时间")
-    @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
-    @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private Date expireTime;
-
 }

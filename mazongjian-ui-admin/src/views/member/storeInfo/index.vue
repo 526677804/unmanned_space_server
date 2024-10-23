@@ -108,7 +108,7 @@
         <el-form-item label="经度" prop="lon">
           <el-input v-model="form.lon" placeholder="请输入经度" />
         </el-form-item>
-       
+
         <el-form-item label="详细地址" prop="address">
           <el-input v-model="form.address" placeholder="请输入详细地址" />
         </el-form-item>
@@ -144,7 +144,7 @@
         <el-form-item label="美团店铺uuid" prop="meituanOpenShopUuid">
           <el-input v-model="form.meituanOpenShopUuid" placeholder="请输入美团店铺uuid" />
         </el-form-item>
-        <!-- 
+        <!--
         <el-form-item label="美团key" prop="meituanKey">
           <el-input v-model="form.meituanKey" placeholder="请输入美团key" />
         </el-form-item>
@@ -363,6 +363,7 @@ export default {
         if (!valid) {
           return;
         }
+        this.form.expireTime= undefined;
         // 修改的提交
         if (this.form.storeId != null) {
           updateStoreInfo(this.form).then(response => {
