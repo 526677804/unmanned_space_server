@@ -138,8 +138,10 @@ public class IndexServiceImpl implements IndexService {
             }
             storeInfo.setDiscountRules(discountRulesMapper.getRulesByStoreId(storeId));
         }
-        String key = String.format("recentStore:%s:%s", SecurityFrameworkUtils.getLoginUserId(), storeId);
-        redisTemplate.opsForValue().set(key, storeId.toString(), SEVEN_DAY, TimeUnit.DAYS);
+        if (SecurityFrameworkUtils.getLoginUserId()!=null){
+            String key = String.format("recentStore:%s:%s", SecurityFrameworkUtils.getLoginUserId(), storeId);
+            redisTemplate.opsForValue().set(key, storeId.toString(), SEVEN_DAY, TimeUnit.DAYS);
+        }
         return storeInfo;
     }
 
