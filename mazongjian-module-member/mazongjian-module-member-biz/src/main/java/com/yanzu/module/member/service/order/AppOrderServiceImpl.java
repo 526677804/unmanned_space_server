@@ -876,11 +876,11 @@ public class AppOrderServiceImpl implements AppOrderService {
         orderInfoDO.setRoomId(roomInfoDO.getRoomId());
         orderInfoDO.setUserId(reqVO.getUserId());
         orderInfoDO.setStartTime(reqVO.getStartTime());
+        orderInfoDO.setEndTime(reqVO.getEndTime());
         //处理加时券
         if (!ObjectUtils.isEmpty(couponInfoDO) && couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
-            orderInfoDO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
+            orderInfoDO.setEndTime(new Date(orderInfoDO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
         }
-        orderInfoDO.setEndTime(reqVO.getEndTime());
         orderInfoDO.setNightLong(reqVO.getNightLong());
         orderInfoDO.setPrice(oldPrice);
         orderInfoDO.setDeposit(roomInfoDO.getDeposit());
@@ -1071,7 +1071,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         orderInfoDO.setEndTime(endTime);
         //处理加时券
         if (!ObjectUtils.isEmpty(couponInfoDO) && couponInfoDO.getType().compareTo(AppEnum.coupon_type.JIASHI.getValue()) == 0) {
-            orderInfoDO.setEndTime(new Date(reqVO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
+            orderInfoDO.setEndTime(new Date(orderInfoDO.getEndTime().getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue()));
         }
         //增加订单金额
         orderInfoDO.setPrice(orderInfoDO.getPrice().add(totalPrice));
