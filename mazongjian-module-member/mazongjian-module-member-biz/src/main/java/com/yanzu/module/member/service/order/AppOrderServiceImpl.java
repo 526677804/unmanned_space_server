@@ -1167,7 +1167,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //只能更换到小于等于当前房间级别的房间
             RoomInfoDO newRoomInfo = roomInfoMapper.selectById(roomId);
             RoomInfoDO oldRoomInfo = roomInfoMapper.selectById(orderInfoDO.getRoomId());
-            if (newRoomInfo.getType().compareTo(oldRoomInfo.getType()) <= 0) {
+            if (newRoomInfo.getType().compareTo(oldRoomInfo.getType()) > 0) {
                 throw exception(ORDER_CHANGE_ROOM_ERROR);
             } else {
                 //两个房间押金必须一样 不然会出现退错押金的问题
