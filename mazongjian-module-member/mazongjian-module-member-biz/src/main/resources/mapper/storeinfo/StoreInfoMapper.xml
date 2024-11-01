@@ -99,7 +99,11 @@
             <if test=" null!=reqVO.name and reqVO.name!=''">
                 and locate(#{reqVO.name},s.store_name)>0
             </if>
-
+            <if test="null!=reqVO.often and reqVO.often==true">
+                and s.store_id IN (
+                    select DISTINCT store_id from member_order_info where deleted=0 and user_id=#{userId}
+                )
+            </if>
         </where>
         <if test=" null!=reqVO.lat and null!=reqVO.lon">
             order by distance asc

@@ -48,7 +48,7 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
     List<String> getCityList();
 
 
-    IPage<AppStorePageRespVO> getStorePageList(@Param("page") IPage<AppStorePageRespVO> page, @Param("reqVO") AppStorePageReqVO reqVO);
+    IPage<AppStorePageRespVO> getStorePageList(@Param("page") IPage<AppStorePageRespVO> page, @Param("reqVO") AppStorePageReqVO reqVO, @Param("userId") Long userId);
 
     IPage<AppStorePageRespVO> getOftenStorePageList(@Param("page") IPage<AppStorePageRespVO> page, @Param("reqVO") AppStorePageReqVO reqVO, @Param("storeIds") List<Long> storeIds);
 

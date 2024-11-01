@@ -30,6 +30,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
+
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.index
  * @DESCRIPTION:
@@ -72,24 +74,17 @@ public class IndexServiceImpl implements IndexService {
 
     @Override
     public PageResult<AppStorePageRespVO> getStorePageList(AppStorePageReqVO reqVO) {
+        Long userId = null;
+        if (reqVO.getOften()) {
+            userId = getLoginUserId();
+        }
         if (!ObjectUtils.isEmpty(reqVO.getCityName())) {
             if (reqVO.getCityName().equals("选择城市") || reqVO.getCityName().equals("请选择")) {
                 reqVO.setCityName("");
             }
         }
-        // 判断当前请求是查看附件的门店 还是 常用门店
-        if ("false".equals(reqVO.getOften())) {
-            return this.getNearByStorePageList(reqVO);
-        }
-        else {
-            return this.getOftenStorePageList(reqVO);
-        }
-    }
-
-    @Override
-    public PageResult<AppStorePageRespVO> getNearByStorePageList(AppStorePageReqVO reqVO) {
-        IPage<AppStorePageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        storeInfoMapper.getStorePageList(page,reqVO);
+        IPage<AppStorePageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        storeInfoMapper.getStorePageList(page, reqVO, userId);
         if (!CollectionUtils.isEmpty(page.getRecords())) {
             page.getRecords().forEach(x -> {
                 if (!ObjectUtils.isEmpty(x.getDistance())) {
@@ -100,46 +95,19 @@ public class IndexServiceImpl implements IndexService {
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
-    @Override
-    public PageResult<AppStorePageRespVO> getOftenStorePageList(AppStorePageReqVO reqVO) {
-        Set<String> key = redisTemplate.keys("recentStore:"+ SecurityFrameworkUtils.getLoginUserId()+":*");
-
-        List<Long> storeIds = null;
-        if (key != null) {
-            storeIds = key.stream()
-                    .map(item -> redisTemplate.opsForValue().get(item))
-                    .filter(Objects::nonNull)
-                    .map(Long::valueOf)
-                    .collect(Collectors.toList());
-        }
-        System.out.println(storeIds);
-        if (storeIds.isEmpty()){
-            return null;
-        }
-        IPage<AppStorePageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        storeInfoMapper.getOftenStorePageList(page,reqVO,storeIds);
-        if (!CollectionUtils.isEmpty(page.getRecords())) {
-            page.getRecords().forEach(x -> {
-                if (!ObjectUtils.isEmpty(x.getDistance())) {
-                    x.setDistance(x.getDistance().setScale(2, BigDecimal.ROUND_CEILING));
-                }
-            });
-        }
-        return new PageResult<>(page.getRecords(), page.getTotal());
-    }
 
     @Override
     public AppIndexStoreInfoRespVO getStoreInfo(Long storeId, String lat, String lon) {
         AppIndexStoreInfoRespVO storeInfo = storeInfoMapper.getStoreInfo(storeId, lat, lon);
         if (!ObjectUtils.isEmpty(storeInfo)) {
             storeInfo.setRoomClassList(roomInfoMapper.getClassList(storeId));
-            if(ObjectUtils.isEmpty(storeInfo.getDistance())){
+            if (ObjectUtils.isEmpty(storeInfo.getDistance())) {
                 storeInfo.setDistance(new BigDecimal(9999));
             }
             storeInfo.setDiscountRules(discountRulesMapper.getRulesByStoreId(storeId));
         }
-        if (SecurityFrameworkUtils.getLoginUserId()!=null){
-            String key = String.format("recentStore:%s:%s", SecurityFrameworkUtils.getLoginUserId(), storeId);
+        if (getLoginUserId() != null) {
+            String key = String.format("recentStore:%s:%s", getLoginUserId(), storeId);
             redisTemplate.opsForValue().set(key, storeId.toString(), SEVEN_DAY, TimeUnit.DAYS);
         }
         return storeInfo;
@@ -340,7 +308,7 @@ public class IndexServiceImpl implements IndexService {
 
     @Override
     public AppSysInfoRespVO getSysInfo() {
-        AppSysInfoRespVO respVO=new AppSysInfoRespVO();
+        AppSysInfoRespVO respVO = new AppSysInfoRespVO();
         respVO.setVersion(configApi.getConfigValueByKey("app.version"));
         return respVO;
     }
