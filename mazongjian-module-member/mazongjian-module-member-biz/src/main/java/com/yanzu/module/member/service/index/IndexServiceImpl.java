@@ -75,7 +75,7 @@ public class IndexServiceImpl implements IndexService {
     @Override
     public PageResult<AppStorePageRespVO> getStorePageList(AppStorePageReqVO reqVO) {
         Long userId = null;
-        if (reqVO.getOften()) {
+        if (reqVO.isOften()) {
             userId = getLoginUserId();
         }
         if (!ObjectUtils.isEmpty(reqVO.getCityName())) {

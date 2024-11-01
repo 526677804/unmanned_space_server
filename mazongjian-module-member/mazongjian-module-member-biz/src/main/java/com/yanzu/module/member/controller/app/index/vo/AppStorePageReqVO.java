@@ -33,9 +33,6 @@ public class AppStorePageReqVO extends PageParam {
     private Double lon;
 
     @Schema(description = "附近false , 常用true")
-    private Boolean often;
-
-    @Schema(hidden = true)
-    private Long userId;
+    private boolean often;
 
 }
