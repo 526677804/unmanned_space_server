@@ -1421,7 +1421,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                             //处理延时关灯 如果店铺不需要延时关电，就不处理了
                             try {
                                 if (storeInfoDO.getDelayLight()) {
-                                    deviceService.closeLightByRoomId(null, x.getStoreId(), x.getRoomId(), 4);
+                                    //如果有正在进行的订单也是不允许关的
+                                    if (orderInfoMapper.countByRoomCurrent(x.getRoomId(), null) == 0) {
+                                        deviceService.closeLightByRoomId(null, x.getStoreId(), x.getRoomId(), 4);
+                                    }
                                 }
                             } catch (Exception e) {
                                 //异常时不影响其他订单关闭

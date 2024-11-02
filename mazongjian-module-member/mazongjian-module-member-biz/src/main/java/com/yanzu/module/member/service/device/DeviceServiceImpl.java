@@ -3,6 +3,7 @@ package com.yanzu.module.member.service.device;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.yanzu.module.member.controller.app.order.vo.ControlKTReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppAddDeviceReqVO;
+import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
