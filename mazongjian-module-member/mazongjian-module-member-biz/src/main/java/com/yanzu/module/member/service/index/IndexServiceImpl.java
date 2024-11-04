@@ -101,14 +101,12 @@ public class IndexServiceImpl implements IndexService {
         AppIndexStoreInfoRespVO storeInfo = storeInfoMapper.getStoreInfo(storeId, lat, lon);
         if (!ObjectUtils.isEmpty(storeInfo)) {
             storeInfo.setRoomClassList(roomInfoMapper.getClassList(storeId));
-            if (ObjectUtils.isEmpty(storeInfo.getDistance())) {
+            if (!ObjectUtils.isEmpty(storeInfo.getDistance())) {
+                storeInfo.setDistance(storeInfo.getDistance().setScale(2, BigDecimal.ROUND_CEILING));
+            }else {
                 storeInfo.setDistance(new BigDecimal(9999));
             }
             storeInfo.setDiscountRules(discountRulesMapper.getRulesByStoreId(storeId));
-        }
-        if (getLoginUserId() != null) {
-            String key = String.format("recentStore:%s:%s", getLoginUserId(), storeId);
-            redisTemplate.opsForValue().set(key, storeId.toString(), SEVEN_DAY, TimeUnit.DAYS);
         }
         return storeInfo;
     }
