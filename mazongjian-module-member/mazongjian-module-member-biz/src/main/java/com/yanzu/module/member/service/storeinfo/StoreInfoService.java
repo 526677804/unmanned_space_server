@@ -132,4 +132,5 @@ public interface StoreInfoService {
 
     void renew(StoreRenewReqVO reqVO);
 
+    void addLock(AppAddLockReqVO reqVO);
 }

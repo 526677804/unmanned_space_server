@@ -4,6 +4,7 @@ import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.dtflys.forest.annotation.JSONBody;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
+import com.yanzu.module.member.controller.app.store.vo.AppAddLockReqVO;
 import com.yanzu.module.member.dal.dataobject.facerecord.FaceRecordDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.facerecord.FaceRecordMapper;
@@ -357,5 +358,18 @@ public class IotDeviceService {
             throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
         }
 
+    }
+
+    /**
+     * 添加智能锁
+     * @param reqVO
+     */
+    public Boolean addLock(AppAddLockReqVO reqVO) {
+        IotResult<IotAddLockRespVO> resp = iotDeviceClient.addLock(reqVO, clientId, secret);
+        if (resp.getCode().intValue() == 0) {
+            return true;
+        } else {
+            throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
+        }
     }
 }

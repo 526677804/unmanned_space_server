@@ -813,4 +813,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         }
     }
 
+    @Override
+    public void addLock(AppAddLockReqVO reqVO) {
+        iotDeviceService.addLock(reqVO);
+    }
+
 }

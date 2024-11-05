@@ -4,6 +4,7 @@ import com.dtflys.forest.annotation.JSONBody;
 import com.dtflys.forest.annotation.Post;
 import com.dtflys.forest.annotation.Query;
 import com.dtflys.forest.annotation.Var;
+import com.yanzu.module.member.controller.app.store.vo.AppAddLockReqVO;
 import com.yanzu.module.member.service.iot.device.*;
 
 public interface IotDeviceClient {
@@ -113,4 +114,18 @@ public interface IotDeviceClient {
                     "secret:${secret}",
             })
     IotResult<Boolean> controlKT(@JSONBody IotControlKTReqVO req, @Var("clientId")String clientId, @Var("secret") String secret);
+
+    /**
+     * 添加智能锁
+     * @param req
+     * @param clientId
+     * @param secret
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/addLock",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<IotAddLockRespVO> addLock(@JSONBody AppAddLockReqVO req, @Var("clientId")String clientId,  @Var("secret") String secret);
 }

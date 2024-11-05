@@ -167,6 +167,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     /**
      * 关门禁
+     * 2024年11月5日 修改  关门失败 不影响订单结束
      *
      * @param sn
      */
@@ -178,9 +179,9 @@ public class DeviceServiceImpl implements DeviceService {
             iotDeviceContrlReqVO.setOutlet(0).setCmd("off");
             param.add(iotDeviceContrlReqVO);
             reqVO.setDeviceSn(sn).setParams(param);
-            boolean flag = iotDeviceService.control(reqVO);
-            if (!flag) {
-                throw exception(DEVICE_OPRATION_ERROR);
+            try {
+                iotDeviceService.control(reqVO);
+            } catch (Exception e) {
             }
         }
     }

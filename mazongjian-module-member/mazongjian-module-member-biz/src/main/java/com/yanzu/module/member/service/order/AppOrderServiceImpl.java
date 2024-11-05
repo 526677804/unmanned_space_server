@@ -760,6 +760,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         String orderNo = reqVO.getOrderNo();
         OrderInfoDO orderInfoDO = new OrderInfoDO();
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
+        int deposit = roomInfoDO.getDeposit().multiply(new BigDecimal(100.0)).intValue();
         CouponInfoDO couponInfoDO = null;
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
@@ -791,10 +792,10 @@ public class AppOrderServiceImpl implements AppOrderService {
             groupPayInfoDO = groupPayInfoService.consume(roomInfoDO.getStoreId(), reqVO.getGroupPayNo(), prepare);
             //团购消费的  支付价格设置为0
             totalPrice = BigDecimal.ZERO;
-            if (roomInfoDO.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
-                //需要押金 检查支付结果
+            if (deposit > 0) {
+                //需要押金 检查支付结果 这里注意：只检查押金是否支付
                 try {
-                    payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), wxPayOrderRespVO.getPayPrice());
+                    payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), deposit);
                 } catch (Exception e) {
                     //如果押金没有支付  撤销团购验券
                     groupPayInfoService.revoke(roomInfoDO.getStoreId(), prepare.getGroupPayType(), reqVO.getGroupPayNo(), groupPayInfoDO.getTicketInfo());
@@ -817,9 +818,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                         payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), wxPayOrderRespVO.getPayPrice());
                         break;
                     case 2://余额
-                        if (roomInfoDO.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
+                        if (deposit > 0) {
                             //需要押金 检查支付结果
-                            payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), wxPayOrderRespVO.getPayPrice());
+                            payOrderService.checkWxOrder(reqVO.getOrderNo(), roomInfoDO.getStoreId(), deposit);
                         }
                         if (!ObjectUtils.isEmpty(reqVO.getPkgId())) {
                             //检查套餐是否支持余额支付
@@ -1377,19 +1378,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                             } else {
                                 //检查距离结束的时间，发送语音提醒
                                 long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
-//                                long minutesStart = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getStartTime().toInstant()));
-//                                if (minutesStart == 2) {
-//                                    //开始2分钟时 播放欢迎语
-//                                    deviceService.runSound(x.getRoomId(), 1);
-//                                } else
                                 if (minutes == 30) {
                                     deviceService.runSound(x.getRoomId(), 2);
-                                }
-                                //暂时取消15分钟时的提醒
-                                //                                else if (minutes == 15) {
-                                //                                    deviceService.runSound(x.getRoomId(), 3);
-                                //                                }
-                                else if (minutes == 5) {
+                                } else if (minutes == 5) {
                                     deviceService.runSound(x.getRoomId(), 4);
                                 }
                                 //如果当前是 0-7点  整点 提醒夜间控制噪音  每笔订单只在第一个整点进行提醒
@@ -1406,8 +1397,6 @@ public class AppOrderServiceImpl implements AppOrderService {
                         } catch (Exception e) {
                             //异常时不影响其他订单关闭
                             log.error(e.getMessage());
-//                                e.printStackTrace();
-//                                throw new RuntimeException(e);
                         }
                     } else if (x.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
                         //已完成  主要是处理延时关电的  以及进行押金退款
@@ -1416,7 +1405,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                         if (minutes == 5) {
                             //押金退款
                             if (x.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
-                                payOrderService.refundDeposit(x.getOrderNo(), x.getDeposit().multiply(BigDecimal.valueOf(100D)).intValue());
+                                payOrderService.refundDeposit(x.getOrderNo(), x.getDeposit().multiply(BigDecimal.valueOf(100.0)).intValue());
                             }
                             //处理延时关灯 如果店铺不需要延时关电，就不处理了
                             try {
