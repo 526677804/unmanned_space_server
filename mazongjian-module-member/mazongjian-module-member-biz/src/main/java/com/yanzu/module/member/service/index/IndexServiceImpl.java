@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -89,6 +90,13 @@ public class IndexServiceImpl implements IndexService {
             page.getRecords().forEach(x -> {
                 if (!ObjectUtils.isEmpty(x.getDistance())) {
                     x.setDistance(x.getDistance().setScale(2, BigDecimal.ROUND_CEILING));
+                }
+                if (x.getSubscribeTime()!= null) {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    LocalDateTime subscribeDateTime = LocalDateTime.parse(x.getSubscribeTime(),formatter);
+                    LocalDateTime currentDateTime = LocalDateTime.now();
+                    Duration duration = Duration.between(subscribeDateTime, currentDateTime);
+                    x.setSubscribeTime(String.valueOf(duration.toMinutes()));
                 }
             });
         }
