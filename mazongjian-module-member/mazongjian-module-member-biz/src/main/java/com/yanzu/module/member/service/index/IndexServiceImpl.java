@@ -254,10 +254,15 @@ public class IndexServiceImpl implements IndexService {
         List<AppOrderTimeVO> bookings = new ArrayList<>();
         //找出该房间所有订单
         if (orederMap.containsKey(respVO.getRoomId())) {
-            List<OrderInfoDO> sortOrder = orederMap.get(respVO.getRoomId()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
+            List<OrderInfoDO> sortOrder = orederMap.get(respVO.getRoomId())
+                    .stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime))
+                    .collect(Collectors.toList());
+            List<AppOrderTimeVO> orderTimeVOList=new ArrayList<>(sortOrder.size());
             sortOrder.forEach(x -> {
                 bookings.add(new AppOrderTimeVO(x.getStartTime(), x.getEndTime()));
+                orderTimeVOList.add(new AppOrderTimeVO(x.getStartTime(),x.getEndTime()));
             });
+            respVO.setOrderTimeList(orderTimeVOList);
         }
         //每日不可用时间
         LocalTime bstart = null;
