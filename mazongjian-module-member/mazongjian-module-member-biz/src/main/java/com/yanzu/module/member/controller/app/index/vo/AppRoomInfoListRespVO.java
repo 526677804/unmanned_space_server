@@ -101,8 +101,4 @@ public class AppRoomInfoListRespVO {
     private Integer clearTime;
 
 
-    @Schema(description = "已被预定订单时间列表")
-    private List<AppOrderTimeVO> orderTimeList;
-
-
 }
