@@ -156,7 +156,7 @@
         <if test="null!=status">
             and r.status=#{status}
         </if>
-        order by r.sort_id asc
+        order by r.status , r.sort_id asc
     </select>
     <select id="getPageList" resultType="com.yanzu.module.member.controller.app.store.vo.AppStoreAdminRespVO">
         SELECT
