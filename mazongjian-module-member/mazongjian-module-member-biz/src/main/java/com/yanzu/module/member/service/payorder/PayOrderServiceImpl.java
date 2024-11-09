@@ -162,6 +162,7 @@ public class PayOrderServiceImpl implements PayOrderService {
                             orderRenewalReqVO.setPayType(AppEnum.order_pay_type.WEIXIN.getValue());
                             orderRenewalReqVO.setUserId(wxPayOrderInfo.getUserId());
                             orderRenewalReqVO.setPkgId(wxPayOrderInfo.getPkgId());
+                            orderRenewalReqVO.setCouponId(wxPayOrderInfo.getCouponId());
                             appOrderService.renew(orderRenewalReqVO);
                         } else if (wxPayOrderInfo.getWxPayTypeEnum().compareTo(AppWxPayTypeEnum.RECHARGE) == 0) {
                             //充值
