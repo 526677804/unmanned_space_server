@@ -35,6 +35,9 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "门店id", requiredMode = Schema.RequiredMode.REQUIRED, example = "14069")
     private Long storeId;
 
+    @Schema(description = "门店名称")
+    private String storeName;
+
     @Schema(description = "房间类别  值见字典", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer roomClass;
 

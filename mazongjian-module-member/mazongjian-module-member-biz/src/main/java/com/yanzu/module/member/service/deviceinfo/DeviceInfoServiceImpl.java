@@ -90,8 +90,8 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     @Transactional
     public void deleteDeviceInfo(Long id) {
         DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(id);
-        //只能操作自己的设备
-        if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
+        //后台管理员是随便删
+        if (!ObjectUtils.isEmpty(deviceInfoDO)) {
             //如果是多房间共用  只有全部删除绑定关系时才去解绑
             if (deviceInfoDO.getShare()) {
                 if (deviceInfoMapper.countBySN(deviceInfoDO.getDeviceSn()) == 1) {

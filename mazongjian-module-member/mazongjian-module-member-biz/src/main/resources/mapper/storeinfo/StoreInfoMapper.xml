@@ -201,6 +201,7 @@
             resultType="com.yanzu.module.member.controller.app.index.vo.AppRoomInfoListRespVO">
         select r.*,
                s.tx_start_hour,
+               s.store_name,
                s.tx_hour,
                s.work_price enableWorkPrice,
                s.clear_time clearTime
