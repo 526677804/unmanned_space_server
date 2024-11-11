@@ -197,7 +197,7 @@ public class DeviceServiceImpl implements DeviceService {
         //开门 等于是开门+通电 把房间内所有设备操作一遍
         List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomId(roomId);
         if (!CollectionUtils.isEmpty(deviceList)) {
-            //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器
+            //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器 12=红外控制器 13=三路控制器
             deviceList.forEach(x -> {
                 switch (x.getType().intValue()) {
                     case 1:
@@ -218,7 +218,21 @@ public class DeviceServiceImpl implements DeviceService {
                         break;
                     case 6:
                         break;
-
+                    case 13:
+                        //三路控制器 开的时候三路全开 注意判断是否需要门禁常开
+                        boolean orderDoorOpen = storeInfoMapper.getOrderDoorOpen(storeId);
+                        IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+                        List<IotDeviceContrlReqVO> param = new ArrayList<>(3);
+                        param.add(new IotDeviceContrlReqVO().setOutlet(0).setCmd("on"));
+                        param.add(new IotDeviceContrlReqVO().setOutlet(1).setCmd("on"));
+                        //第三路就是门禁用
+                        param.add(new IotDeviceContrlReqVO().setOutlet(2).setCmd(orderDoorOpen ? "on" : "pulse"));
+                        reqVO.setDeviceSn(x.getDeviceSn()).setParams(param);
+                        boolean flag = iotDeviceService.control(reqVO);
+                        if (!flag) {
+                            throw exception(DEVICE_OPRATION_ERROR);
+                        }
+                        break;
                 }
 
             });
@@ -249,8 +263,16 @@ public class DeviceServiceImpl implements DeviceService {
         //关门断电 把房间内所有设备操作一遍   关灯不在这里处理  因为有延时关灯的功能
         List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomId(roomId);
         if (!CollectionUtils.isEmpty(deviceList)) {
-            //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器
+            //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器 12=红外控制器 13=三路控制器
             deviceList.forEach(x -> {
+                //如果该设备是共用设备，必须绑定的所有房间都不存在订单时，才允许关闭
+                if (x.getShare()) {
+                    //先关闭设备  后结束订单  所以如果存在1个订单以上 就直接退出关闭该设备
+                    int i = deviceInfoMapper.countShare(x.getDeviceSn());
+                    if (i > 1) {
+                        return;
+                    }
+                }
                 switch (x.getType().intValue()) {
                     case 1:
                     case 9:
@@ -268,6 +290,18 @@ public class DeviceServiceImpl implements DeviceService {
                         }
                         break;
                     case 6:
+                        break;
+                    case 13:
+                        //三路控制器 关的时候先不关灯
+                        IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+                        List<IotDeviceContrlReqVO> param = new ArrayList<>(2);
+                        param.add(new IotDeviceContrlReqVO().setOutlet(0).setCmd("off"));
+                        param.add(new IotDeviceContrlReqVO().setOutlet(2).setCmd("off"));
+                        reqVO.setDeviceSn(x.getDeviceSn()).setParams(param);
+                        boolean flag = iotDeviceService.control(reqVO);
+                        if (!flag) {
+                            throw exception(DEVICE_OPRATION_ERROR);
+                        }
                         break;
 
                 }
@@ -379,11 +413,11 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     public void runSound(Long roomId, Integer type) {
         log.info("发送云喇叭提醒,房间id:{}", roomId);
-        //获取设备的sn
-        String sn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 3);
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
-        //获取音量设置
-        if (!ObjectUtils.isEmpty(sn)) {
+        //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器 12=红外控制器 13=三路控制器
+        //获取设备的sn
+        List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomIdAndType(roomId, new Integer[]{3, 10, 13});
+        if (!CollectionUtils.isEmpty(deviceList)) {
             String cmd = String.valueOf(type);
             //获取是否存在自定义播报文字
             StoreSoundInfoDO soundInfoDO = storeSoundInfoMapper.getByStoreId(roomInfoDO.getStoreId());
@@ -411,17 +445,20 @@ public class DeviceServiceImpl implements DeviceService {
                         break;
                 }
             }
-            IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
-            List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
-            IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
-            iotDeviceContrlReqVO.setOutlet(0).setCmd(cmd).setType(roomInfoDO.getYunlabaSound());
-            param.add(iotDeviceContrlReqVO);
-            reqVO.setDeviceSn(sn).setParams(param);
-            boolean flag = iotDeviceService.control(reqVO);
-            if (!flag) {
-                throw exception(DEVICE_OPRATION_ERROR);
+            for (DeviceInfoDO x : deviceList) {
+                IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+                List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+                IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+                iotDeviceContrlReqVO.setOutlet(0).setCmd(cmd).setType(roomInfoDO.getYunlabaSound());
+                param.add(iotDeviceContrlReqVO);
+                reqVO.setDeviceSn(x.getDeviceSn()).setParams(param);
+                boolean flag = iotDeviceService.control(reqVO);
+                if (!flag) {
+                    throw exception(DEVICE_OPRATION_ERROR);
+                }
             }
         }
+
     }
 
 
@@ -481,7 +518,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public void controlKT(String cmd, Long storeId, Long roomId) {
-        //获取房间设备的sn  10=智能语音喇叭（带红外控制）  12=红外控制器
+        //获取房间设备的sn  10=智能语音喇叭（带红外控制）  12=红外控制器  13=三路控制器
         List<DeviceInfoDO> list = deviceInfoMapper.getIRListByRoomId(roomId);
         if (!CollectionUtils.isEmpty(list)) {
             list.forEach(x -> {
@@ -498,18 +535,29 @@ public class DeviceServiceImpl implements DeviceService {
 
 
     private void closeLight(Long roomId) {
-        //获取房间设备的sn 1=门禁 2=空开 4=灯具 5=密码锁 6=网关
-        String lightSn = deviceInfoMapper.getSnByRoomIdAndType(roomId, 4);
-        if (!StringUtils.isEmpty(lightSn)) {
-            //关灯
-            opSwitch(lightSn, "off");
+        //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器 12=红外控制器 13=三路控制器
+        List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomIdAndType(roomId, new Integer[]{4, 13});
+        if (!CollectionUtils.isEmpty(deviceList)) {
+            for (DeviceInfoDO x : deviceList) {
+                switch (x.getType()) {
+                    case 4:
+                        opSwitch(x.getDeviceSn(), "off");
+                        break;
+                    case 13:
+                        //三路控制器  只关第二路 第二路是灯
+                        IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
+                        List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+                        param.add(new IotDeviceContrlReqVO().setOutlet(1).setCmd("off"));
+                        reqVO.setDeviceSn(x.getDeviceSn()).setParams(param);
+                        boolean flag = iotDeviceService.control(reqVO);
+                        if (!flag) {
+                            throw exception(DEVICE_OPRATION_ERROR);
+                        }
+                        break;
+                }
+
+            }
         }
-//        //关灯的同时一定会关电  可能电已经关了，这里保守起见，再关一次
-//        //获取房间空开设备的sn
-//        String kongKaiSN = deviceInfoMapper.getSnByRoomIdAndType(roomId, 2);
-//        if (!ObjectUtils.isEmpty(kongKaiSN)) {
-//            opSwitch(kongKaiSN,"off");
-//        }
     }
 
 }
