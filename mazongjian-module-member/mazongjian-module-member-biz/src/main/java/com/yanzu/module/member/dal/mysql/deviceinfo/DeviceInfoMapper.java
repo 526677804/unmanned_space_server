@@ -31,11 +31,8 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
         return selectList(new LambdaQueryWrapperX<DeviceInfoDO>().likeIfPresent(DeviceInfoDO::getDeviceSn, reqVO.getDeviceSn()).eqIfPresent(DeviceInfoDO::getType, reqVO.getType()).eqIfPresent(DeviceInfoDO::getRoomId, reqVO.getRoomId()).eqIfPresent(DeviceInfoDO::getStoreId, reqVO.getStoreId()).eqIfPresent(DeviceInfoDO::getStatus, reqVO.getStatus()).betweenIfPresent(DeviceInfoDO::getCreateTime, reqVO.getCreateTime()).orderByDesc(DeviceInfoDO::getDeviceId));
     }
 
-    default List<DeviceInfoDO> getByRoomIdAndType(Long roomId, Integer[] type) {
-        return selectList(new LambdaQueryWrapperX<DeviceInfoDO>()
-                .eqIfPresent(DeviceInfoDO::getRoomId, roomId)
-                .inIfPresent(DeviceInfoDO::getType, type));
-    }
+
+    List<DeviceInfoDO> getByRoomIdAndType(@Param("roomId") Long roomId, @Param("type") Integer[] type);
 
     String getSnByStoreIdAndType(@Param("storeId") Long storeId, @Param("type") Integer type);
 

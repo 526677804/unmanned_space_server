@@ -158,5 +158,18 @@
                               and share = 1
                               and device_sn = #{deviceSn})
     </select>
+    <select id="getByRoomIdAndType"
+            resultType="com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO">
+        select *
+        from member_device_info
+        where deleted = 0
+            and room_id=#{roomId}
+        <if test="null!=type and type.length>0">
+            and type in
+            <foreach collection="type" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
 
 </mapper>
