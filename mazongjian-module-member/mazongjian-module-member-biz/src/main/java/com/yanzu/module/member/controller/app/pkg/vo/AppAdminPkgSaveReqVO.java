@@ -25,8 +25,20 @@ public class AppAdminPkgSaveReqVO {
     @NotNull(message = "门店不能为空")
     private Long storeId;
 
-    @Schema(description = "房间类型 空=不限 1小包 2中包 3大包 4豪包 5商务包")
-    private Integer roomType;
+    @Schema(description = "房间类型 1小包 2中包 3大包 4豪包 5商务包")
+    private List<Integer> roomType;
+
+    @Schema(description = "美团团购id")
+    private String mtId;
+
+    @Schema(description = "抖音团购id")
+    private String dyId;
+
+    @Schema(description = "快手团购id")
+    private String ksId;
+
+    @Schema(description = "按包厢设置")
+    private List<Integer> enableRoom;
 
     @Schema(description = "可用时间 0-23数字，空表示不限")
     private List<Integer> enableTime;

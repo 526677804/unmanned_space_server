@@ -1,8 +1,10 @@
 package com.yanzu.module.member.controller.app.pkg.vo;
 
 
+import com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.apache.poi.hpsf.Decimal;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,8 +27,20 @@ public class AppAdminPkgPageRespVO {
     @Schema(description = "门店名称")
     private String storeName;
 
-    @Schema(description = "房间类型 空表示不限")
-    private Integer roomType;
+    @Schema(description = "房间类型 1小包 2中包 3大包 4豪包 5商务包")
+    private List<Integer> roomType;
+
+    @Schema(description = "美团团购id")
+    private String mtId;
+
+    @Schema(description = "抖音团购id")
+    private String dyId;
+
+    @Schema(description = "快手团购id")
+    private String ksId;
+
+    @Schema(description = "按包厢设置")
+    private List<Integer> enableRoom;
 
     @Schema(description = "可用时间 0-23数字，空表示不限")
     private List<Integer> enableTime;
@@ -54,6 +68,9 @@ public class AppAdminPkgPageRespVO {
 
     @Schema(description = "排序")
     private Integer sortId;
+
+    @Schema(description = "门店房间列表")
+    private List<AppRoomListRespVO> roomListRespVOList;
 
 
 }

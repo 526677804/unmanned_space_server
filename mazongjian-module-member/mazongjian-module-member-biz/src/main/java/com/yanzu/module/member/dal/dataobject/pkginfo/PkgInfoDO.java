@@ -1,9 +1,6 @@
 package com.yanzu.module.member.dal.dataobject.pkginfo;
 
-import com.baomidou.mybatisplus.annotation.KeySequence;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 import com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler;
 import lombok.*;
@@ -46,12 +43,36 @@ public class PkgInfoDO extends BaseDO {
     /**
      * 房间类型
      */
-    private Integer roomType;
+    @TableField(typeHandler = IntegerListTypeHandler.class,updateStrategy = FieldStrategy.IGNORED)
+    private List<Integer> roomType;
+
+    /**
+     * 美团团购id
+     */
+    private String mtId;
+
+    /**
+     * 抖音团购id
+     */
+    private String dyId;
+
+    /**
+     * 快手团购id
+     */
+    private String ksId;
+
+    /**
+     * 按照包厢设置
+     */
+    @TableField(typeHandler = IntegerListTypeHandler.class,updateStrategy = FieldStrategy.IGNORED)
+    private List<Integer> enableRoom;
+
     /**
      * 可用时间
      */
     @TableField(typeHandler = IntegerListTypeHandler.class)
     private List<Integer> enableTime;
+
     /**
      * 可用星期
      */

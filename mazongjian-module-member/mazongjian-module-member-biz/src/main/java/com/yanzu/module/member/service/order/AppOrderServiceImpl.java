@@ -400,11 +400,23 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(PKG_USE_STORE_ERROR);
             }
             //有限制的房间类型的  就判断房间类型
-            if (!ObjectUtils.isEmpty(pkgInfoDO.getRoomType()) && pkgInfoDO.getRoomType().compareTo(0) != 0) {
-                if (pkgInfoDO.getRoomType().compareTo(roomType) != 0) {
+            if (!ObjectUtils.isEmpty(pkgInfoDO.getRoomType())) {
+                if (!pkgInfoDO.getRoomType().contains(roomType)) {
                     throw exception(PKG_USE_CHECK_ROOM_TYPE_ERROR);
                 }
             }
+//            if (!ObjectUtils.isEmpty(pkgInfoDO.getRoomType()) && pkgInfoDO.getRoomType().compareTo(0) != 0) {
+//                if (pkgInfoDO.getRoomType().compareTo(roomType) != 0) {
+//                    throw exception(PKG_USE_CHECK_ROOM_TYPE_ERROR);
+//                }
+//            }
+            // 判断是否在包厢限制里面
+            if (!ObjectUtils.isEmpty(pkgInfoDO.getEnableRoom())) {
+                if (!pkgInfoDO.getEnableRoom().contains(roomType)) {
+                    throw exception(PKG_USE_CHECK_ROOM_TYPE_ERROR);
+                }
+            }
+
             //判断时间使用限制
             if (!CollectionUtils.isAnyEmpty(pkgInfoDO.getEnableTime()) || pkgInfoDO.getEnableTime().size() != 24) {
                 //取开始时间到结束时间所有的小时

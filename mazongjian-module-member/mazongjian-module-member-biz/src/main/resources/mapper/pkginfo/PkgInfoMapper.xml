@@ -12,7 +12,13 @@
         <id column="pkg_id" property="pkgId"/>
         <result column="pkg_name" property="pkgName"/>
         <result column="store_id" property="storeId"/>
-        <result column="room_type" property="roomType"/>
+        <result column="room_type" property="roomType"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
+        <result column="mt_id" property="mtId"/>
+        <result column="dy_id" property="dyId"/>
+        <result column="ks_id" property="ksId"/>
+        <result column="enable_room" property="enableRoom"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
         <result column="enable_time" property="enableTime"
                 typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
         <result column="enable_week" property="enableWeek"
@@ -25,7 +31,18 @@
         <result column="balance_buy" property="balanceBuy"/>
         <result column="sort_id" property="sortId"/>
         <result column="store_name" property="storeName"/>
+        <collection property="roomListRespVOList" column="store_id" ofType="list"
+                    select="getDoorRoomList"/>
     </resultMap>
+
+    <select id="getDoorRoomList"
+            resultType="com.yanzu.module.member.controller.app.index.vo.AppRoomInfoListRespVO">
+        select r.*
+        from member_room_info r
+        where r.deleted = 0
+        and r.store_id = #{storeId}
+        order by r.status , r.sort_id asc
+    </select>
 
     <select id="getAdminPkgPage"
             resultMap="AdminPkgPageResultMap">
@@ -34,6 +51,10 @@
         p.hours,
         p.store_id,
         p.room_type,
+        p.mt_id,
+        p.dy_id,
+        p.ks_id,
+        p.enable_room,
         p.enable_time,
         p.enable_week,
         p.enable_holiday,
@@ -66,7 +87,13 @@
         <result column="store_id" property="storeId"/>
         <result column="store_name" property="storeName"/>
         <result column="hours" property="hours"/>
-        <result column="room_type" property="roomType"/>
+        <result column="room_type" property="roomType"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
+        <result column="mt_id" property="mtId"/>
+        <result column="dy_id" property="dyId"/>
+        <result column="ks_id" property="ksId"/>
+        <result column="enable_room" property="enableRoom"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
         <result column="enable_time" property="enableTime"
                 typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
         <result column="enable_week" property="enableWeek"
@@ -86,6 +113,10 @@
         p.store_id,
         s.store_name,
         p.room_type,
+        p.mt_id,
+        p.dy_id,
+        p.ks_id,
+        p.enable_room,
         p.enable_time,
         p.enable_week,
         p.enable_holiday,
@@ -118,7 +149,13 @@
         <result column="store_id" property="storeId"/>
         <result column="store_name" property="storeName"/>
         <result column="hours" property="hours"/>
-        <result column="room_type" property="roomType"/>
+        <result column="room_type" property="roomType"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
+        <result column="mt_id" property="mtId"/>
+        <result column="dy_id" property="dyId"/>
+        <result column="ks_id" property="ksId"/>
+        <result column="enable_room" property="enableRoom"
+                typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
         <result column="enable_time" property="enableTime"
                 typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
         <result column="enable_week" property="enableWeek"
@@ -137,6 +174,10 @@
         p.hours,
         p.store_id,
         p.room_type,
+        p.mt_id,
+        p.dy_id,
+        p.ks_id,
+        p.enable_room,
         p.enable_time,
         p.enable_week,
         p.enable_holiday,

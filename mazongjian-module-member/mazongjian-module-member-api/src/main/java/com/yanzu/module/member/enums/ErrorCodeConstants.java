@@ -118,6 +118,10 @@ public interface ErrorCodeConstants {
     ErrorCode WXPAY_CONFIG_PARAM_ERROR = new ErrorCode(1004004210, "商户收款模式，必须填写支付密钥和支付证书！");
     ErrorCode ORDER_RENEW_TIME_ERROR = new ErrorCode(1004004211, "订单续费时间异常，请重新选择时间提交！");
 
+    ErrorCode PKGINFO_MTID_EXIST = new ErrorCode(1004004212, "该美团团购id已与其他套餐绑定,请更换其他团购id!");
+    ErrorCode PKGINFO_DYID_EXIST = new ErrorCode(1004004213, "该抖音团购id已与其他套餐绑定,请更换其他团购id!");
+    ErrorCode PKGINFO_KSID_EXIST = new ErrorCode(1004004214, "该抖音团购id已与其他套餐绑定,请更换其他团购id!");
+
     ErrorCode STORE_WX_PAY_CONFIG_NOT_FOUND = new ErrorCode(1004004999, "该门店暂不支持微信支付！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");
     ErrorCode DATA_EXISTS_ERROR = new ErrorCode(1004005001, "数据已存在，请不要重复保存！");

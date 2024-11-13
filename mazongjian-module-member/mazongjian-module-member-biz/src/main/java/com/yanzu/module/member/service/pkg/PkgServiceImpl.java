@@ -105,6 +105,48 @@ public class PkgServiceImpl implements PkgService {
     public void saveAdminPkg(AppAdminPkgSaveReqVO reqVO) {
         // 校验用户类型
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        // 判断美团团购id 是否 已经重复
+        if (!ObjectUtils.isEmpty(reqVO.getMtId())) {
+            PkgInfoDO mtPkgInfo = pkgInfoMapper.selectOne(PkgInfoDO::getMtId, reqVO.getMtId());
+            if (mtPkgInfo != null) {
+                // 新增套餐 传递的美团团购id已经存在则抛出异常
+                if (reqVO.getPkgId() == null) {
+                    throw exception(PKGINFO_MTID_EXIST);
+                }
+                // 修改操作 判断查出的mtPkgInfo getPkgId是否与当前reqVo.getPkgId一致
+                if (!reqVO.getPkgId().equals(mtPkgInfo.getPkgId())) {
+                    throw exception(PKGINFO_MTID_EXIST);
+                }
+            }
+        }
+        // 判断抖音团购id 是否 已经重复
+        if (!ObjectUtils.isEmpty(reqVO.getDyId())) {
+            PkgInfoDO mtPkgInfo = pkgInfoMapper.selectOne(PkgInfoDO::getDyId, reqVO.getDyId());
+            if (mtPkgInfo != null) {
+                // 新增套餐 传递的美团团购id已经存在则抛出异常
+                if (reqVO.getPkgId() == null) {
+                    throw exception(PKGINFO_DYID_EXIST);
+                }
+                // 修改操作 判断查出的mtPkgInfo getPkgId是否与当前reqVo.getPkgId一致
+                if (!reqVO.getPkgId().equals(mtPkgInfo.getPkgId())) {
+                    throw exception(PKGINFO_DYID_EXIST);
+                }
+            }
+        }
+        // 判断快手团购id 是否 已经重复
+        if (!ObjectUtils.isEmpty(reqVO.getKsId())) {
+            PkgInfoDO mtPkgInfo = pkgInfoMapper.selectOne(PkgInfoDO::getKsId, reqVO.getKsId());
+            if (mtPkgInfo != null) {
+                // 新增套餐 传递的美团团购id已经存在则抛出异常
+                if (reqVO.getPkgId() == null) {
+                    throw exception(PKGINFO_KSID_EXIST);
+                }
+                // 修改操作 判断查出的mtPkgInfo getPkgId是否与当前reqVo.getPkgId一致
+                if (!reqVO.getPkgId().equals(mtPkgInfo.getPkgId())) {
+                    throw exception(PKGINFO_KSID_EXIST);
+                }
+            }
+        }
         //排序可用时间和星期
         if (!ObjectUtils.isEmpty(reqVO.getEnableTime())) {
             reqVO.setEnableTime(reqVO.getEnableTime().stream().sorted().collect(Collectors.toList()));
@@ -112,6 +154,12 @@ public class PkgServiceImpl implements PkgService {
         if (!ObjectUtils.isEmpty(reqVO.getEnableWeek())) {
             reqVO.setEnableWeek(reqVO.getEnableWeek().stream().sorted().collect(Collectors.toList()));
         }
+        if (!ObjectUtils.isEmpty(reqVO.getRoomType())) {
+            reqVO.setRoomType(reqVO.getRoomType().stream().sorted().collect(Collectors.toList()));
+        }
+//        if (!ObjectUtils.isEmpty(reqVO.getRoomType())) {
+//            reqVO.setRoomType(reqVO.getRoomType().stream().sorted().collect(Collectors.toList()));
+//        }
         if (ObjectUtils.isEmpty(reqVO.getPkgId())) {
             //新增
             PkgInfoDO pkgInfoDO = new PkgInfoDO();
@@ -124,6 +172,12 @@ public class PkgServiceImpl implements PkgService {
                 throw exception(OPRATION_ERROR);
             }
             BeanUtils.copyProperties(reqVO, pkgInfoDO);
+            // 按房间大小 和 包厢限制互斥 , 前端只会传递一个参数回来 判断哪个该设置为null
+            if (!ObjectUtils.isEmpty(reqVO.getEnableRoom())){
+                pkgInfoDO.setRoomType(null);
+            }else {
+                pkgInfoDO.setEnableRoom(null);
+            }
             pkgInfoMapper.updateById(pkgInfoDO);
         }
     }
