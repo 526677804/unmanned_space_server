@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.module.member.controller.app.manager.vo.AppAdminUserPageRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.AppClearUserPageRespVO;
+import com.yanzu.module.member.controller.app.manager.vo.AppVipBlacklistRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppGiftBalanceListRespVO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import org.apache.ibatis.annotations.Mapper;
@@ -48,4 +49,6 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
     int deleteAdminUser(@Param("storeId") Long storeId, @Param("userId") Long userId);
 
     StoreUserDO getTotalBalance(Long userId);
+
+    List<AppVipBlacklistRespVO> getVipBlacklist(@Param("storeId") Long storeId);
 }

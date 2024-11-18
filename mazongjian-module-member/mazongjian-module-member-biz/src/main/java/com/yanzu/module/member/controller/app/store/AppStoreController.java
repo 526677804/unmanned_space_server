@@ -9,6 +9,7 @@ import com.yanzu.module.member.controller.admin.faceblacklist.vo.FaceBlacklistPa
 import com.yanzu.module.member.controller.admin.faceblacklist.vo.FaceBlacklistRespVO;
 import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordPageReqVO;
 import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordRespVO;
+import com.yanzu.module.member.controller.app.manager.vo.AppVipBlacklistRespVO;
 import com.yanzu.module.member.controller.app.order.vo.ControlKTReqVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.service.device.DeviceService;
@@ -379,6 +380,32 @@ public class AppStoreController {
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> addLock(@RequestBody @Valid AppAddLockReqVO reqVO) {
         storeInfoService.addLock(reqVO);
+        return success(true);
+    }
+
+    @GetMapping("/vip/blacklist/{storeId}")
+    @Operation(summary = "获取黑名单列表")
+    @PreAuthenticated
+    @Parameter(name = "storeId")
+    public CommonResult<List<AppVipBlacklistRespVO>> getVipBlacklist(@PathVariable Long storeId){
+        return success(storeInfoService.getVipBlacklist(storeId));
+    }
+
+    @PostMapping("/addBlackList")
+    @Operation(summary = "添加黑名单")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> addBlackList(@RequestBody @Valid AppAddBlackList addBlackList) {
+        storeInfoService.addBlackList(addBlackList);
+        return success(true);
+    }
+
+    @PostMapping("/remove/{id}")
+    @Operation(summary = "移出黑名单")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> removeBlackList(@PathVariable Long id) {
+        storeInfoService.removeBlackList(id);
         return success(true);
     }
 

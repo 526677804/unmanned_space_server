@@ -8,9 +8,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
+import com.yanzu.module.member.controller.admin.user.vo.AppUserCreateReqVO;
+import com.yanzu.module.member.controller.app.manager.vo.AppVipBlacklistRespVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
@@ -34,12 +37,14 @@ import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
 import com.yanzu.module.member.dal.mysql.storesound.StoreSoundInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
+import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
+import com.yanzu.module.member.service.user.MemberUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import lombok.extern.slf4j.Slf4j;
@@ -109,6 +114,10 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     private DeviceInfoMapper deviceInfoMapper;
     @Resource
     private AppOrderService appOrderService;
+    @Resource
+    private MemberUserMapper memberUserMapper;
+    @Resource
+    private MemberUserService memberUserService;
 
     @Resource
     private FileApi fileApi;
@@ -816,6 +825,66 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public void addLock(AppAddLockReqVO reqVO) {
         iotDeviceService.addLock(reqVO);
+    }
+
+    @Override
+    public List<AppVipBlacklistRespVO> getVipBlacklist(Long storeId) {
+        return storeUserMapper.getVipBlacklist(storeId);
+    }
+
+    @Override
+    public void addBlackList(AppAddBlackList addBlackList) {
+        // 先查询是否member_user
+        MemberUserDO memberUserDO = memberUserMapper.selectOne(MemberUserDO::getMobile, addBlackList.getPhone().trim());
+        //判断是否存在该用户
+        Long user_id = null;
+        if (ObjectUtils.isEmpty(memberUserDO)){
+            AppUserCreateReqVO appUserCreateReqVO = new AppUserCreateReqVO();
+            appUserCreateReqVO.setStatus(0);
+            appUserCreateReqVO.setMobile(addBlackList.getPhone().trim());
+            appUserCreateReqVO.setUserType((byte)11);
+            user_id = memberUserService.createAppUser(appUserCreateReqVO);
+
+            // 用户都不存在 则直接向 store_user中插入数据
+            StoreUserDO storeUserDO = new StoreUserDO();
+            storeUserDO.setStoreId(addBlackList.getStoreId());
+            storeUserDO.setUserId(user_id);
+            storeUserDO.setType(AppEnum.member_user_type.MEMBER.getValue());
+            // 1表示是该门店的黑名单用户
+            storeUserDO.setVipBlacklist(1);
+            storeUserMapper.insert(storeUserDO);
+        }else {
+            user_id = memberUserDO.getId();
+        }
+        // 该用户存在 先查询store-user中是否包含此关系
+        StoreUserDO storeUserDO = storeUserMapper.selectOne(StoreUserDO::getUserId, user_id,
+                StoreUserDO::getStoreId, addBlackList.getStoreId());
+
+        // 用户与该门店没存在关联 直接新增关联
+        if (ObjectUtils.isEmpty(storeUserDO)){
+            // 用户都不存在 则直接向 store_user中插入数据
+            StoreUserDO insertStoreUser = new StoreUserDO();
+            insertStoreUser.setStoreId(addBlackList.getStoreId());
+            insertStoreUser.setUserId(user_id);
+            insertStoreUser.setType(AppEnum.member_user_type.MEMBER.getValue());
+            // 1表示是该门店的黑名单用户
+            insertStoreUser.setVipBlacklist(1);
+            storeUserMapper.insert(insertStoreUser);
+        } // 有关联 直接修改是否黑名单
+        else {
+            storeUserDO.setVipBlacklist(1);
+            storeUserDO.setAddTime(DateUtils.of(LocalDateTime.now()));
+            storeUserMapper.updateById(storeUserDO);
+        }
+
+    }
+
+    @Override
+    public void removeBlackList(Long id) {
+        StoreUserDO storeUserDO = new StoreUserDO();
+        storeUserDO.setId(id);
+        storeUserDO.setVipBlacklist(0);
+        storeUserMapper.updateById(storeUserDO);
     }
 
 }

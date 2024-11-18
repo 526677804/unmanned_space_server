@@ -169,4 +169,22 @@
           and user_id = #{userId}
     </select>
 
+    <select id="getVipBlacklist"
+            resultType="com.yanzu.module.member.controller.app.manager.vo.AppVipBlacklistRespVO">
+        select msu.id,
+        msu.user_id,
+        msu.store_id,
+        msu.add_time,
+        mu.nickname,
+        mu.avatar,
+        REPLACE(mu.mobile, SUBSTRING(mu.mobile, 4, 4), '****') mobile
+        from member_store_user msu
+        left join member_user mu ON msu.user_id = mu.id
+        where msu.deleted = 0
+        and mu.deleted = 0
+        and msu.vip_blacklist = 1
+        and msu.store_id = #{storeId}
+        order by msu.id
+    </select>
+
 </mapper>

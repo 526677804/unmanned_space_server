@@ -7,6 +7,7 @@ import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 门店用户管理 DO
@@ -52,6 +53,14 @@ public class StoreUserDO extends BaseDO {
      * 赠送余额
      */
     private BigDecimal giftBalance;
+
+    /**
+     * 会员黑名单 0否 1是
+     */
+    private Integer vipBlacklist;
+
+    private Date addTime;
+
     /**
      * 状态
      */

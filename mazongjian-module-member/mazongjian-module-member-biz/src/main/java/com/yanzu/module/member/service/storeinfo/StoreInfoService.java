@@ -3,6 +3,7 @@ package com.yanzu.module.member.service.storeinfo;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
+import com.yanzu.module.member.controller.app.manager.vo.AppVipBlacklistRespVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 
@@ -133,4 +134,23 @@ public interface StoreInfoService {
     void renew(StoreRenewReqVO reqVO);
 
     void addLock(AppAddLockReqVO reqVO);
+
+    /**
+     * 获取门店黑名单
+     * @param storeId 门店id
+     * @return
+     */
+    List<AppVipBlacklistRespVO> getVipBlacklist(Long storeId);
+
+    /**
+     * 添加黑名单用户
+     * @param addBlackList
+     */
+    void addBlackList(AppAddBlackList addBlackList);
+
+    /**
+     * 移除黑名单
+     * @param id
+     */
+    void removeBlackList(Long id);
 }
