@@ -46,9 +46,11 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
 
     IPage<AppAdminUserPageRespVO> getAdminUserPage(@Param("page") IPage<AppAdminUserPageRespVO> page, @Param("storeId") Long storeId,@Param("storeIds") String storeIds);
 
+    IPage<AppVipBlacklistRespVO> getVipBlacklist(@Param("page") IPage<AppVipBlacklistRespVO> page,
+                                                 @Param("storeId") Long storeId);
+
     int deleteAdminUser(@Param("storeId") Long storeId, @Param("userId") Long userId);
 
     StoreUserDO getTotalBalance(Long userId);
 
-    List<AppVipBlacklistRespVO> getVipBlacklist(@Param("storeId") Long storeId);
 }

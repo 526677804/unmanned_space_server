@@ -15,7 +15,6 @@ import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
 import com.yanzu.module.member.controller.admin.user.vo.AppUserCreateReqVO;
 import com.yanzu.module.member.controller.app.manager.vo.AppVipBlacklistRespVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
-import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
 import com.yanzu.module.member.convert.roominfo.RoomInfoConvert;
 import com.yanzu.module.member.convert.storeinfo.StoreInfoConvert;
@@ -828,12 +827,15 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     }
 
     @Override
-    public List<AppVipBlacklistRespVO> getVipBlacklist(Long storeId) {
-        return storeUserMapper.getVipBlacklist(storeId);
+    public PageResult<AppVipBlacklistRespVO> getVipBlacklist(AppGetVipBlackListVO pageVo) {
+
+        IPage<AppVipBlacklistRespVO> page = new Page<>(pageVo.getPageNo(), pageVo.getPageSize());
+        storeUserMapper.getVipBlacklist(page, pageVo.getStoreId());
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
-    public void addBlackList(AppAddBlackList addBlackList) {
+    public void addBlackList(AppAddBlackListVO addBlackList) {
         // 先查询是否member_user
         MemberUserDO memberUserDO = memberUserMapper.selectOne(MemberUserDO::getMobile, addBlackList.getPhone().trim());
         //判断是否存在该用户

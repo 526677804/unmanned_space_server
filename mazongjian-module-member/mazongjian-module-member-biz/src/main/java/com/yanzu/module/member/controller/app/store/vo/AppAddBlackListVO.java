@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Data
-public class AppAddBlackList {
+public class AppAddBlackListVO {
 
     @Schema(description = "用户手机号")
     @NotNull(message = "用户手机号不能为空")

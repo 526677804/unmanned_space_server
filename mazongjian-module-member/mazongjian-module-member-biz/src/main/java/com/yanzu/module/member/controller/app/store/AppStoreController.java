@@ -10,7 +10,6 @@ import com.yanzu.module.member.controller.admin.faceblacklist.vo.FaceBlacklistRe
 import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordPageReqVO;
 import com.yanzu.module.member.controller.admin.facerecord.vo.FaceRecordRespVO;
 import com.yanzu.module.member.controller.app.manager.vo.AppVipBlacklistRespVO;
-import com.yanzu.module.member.controller.app.order.vo.ControlKTReqVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.faceblacklist.FaceBlacklistService;
@@ -20,13 +19,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -383,19 +380,18 @@ public class AppStoreController {
         return success(true);
     }
 
-    @GetMapping("/vip/blacklist/{storeId}")
+    @PostMapping("/vip/blacklist")
     @Operation(summary = "获取黑名单列表")
     @PreAuthenticated
-    @Parameter(name = "storeId")
-    public CommonResult<List<AppVipBlacklistRespVO>> getVipBlacklist(@PathVariable Long storeId){
-        return success(storeInfoService.getVipBlacklist(storeId));
+    public CommonResult<PageResult<AppVipBlacklistRespVO>> getVipBlacklist(@RequestBody AppGetVipBlackListVO pageVo){
+        return success(storeInfoService.getVipBlacklist(pageVo));
     }
 
     @PostMapping("/addBlackList")
     @Operation(summary = "添加黑名单")
     @PreAuthenticated
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
-    public CommonResult<Boolean> addBlackList(@RequestBody @Valid AppAddBlackList addBlackList) {
+    public CommonResult<Boolean> addBlackList(@RequestBody @Valid AppAddBlackListVO addBlackList) {
         storeInfoService.addBlackList(addBlackList);
         return success(true);
     }

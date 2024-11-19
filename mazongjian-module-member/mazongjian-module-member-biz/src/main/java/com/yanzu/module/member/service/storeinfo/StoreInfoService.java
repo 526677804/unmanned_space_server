@@ -137,16 +137,16 @@ public interface StoreInfoService {
 
     /**
      * 获取门店黑名单
-     * @param storeId 门店id
+     * @param pageVO 分页参数
      * @return
      */
-    List<AppVipBlacklistRespVO> getVipBlacklist(Long storeId);
+    PageResult<AppVipBlacklistRespVO> getVipBlacklist(AppGetVipBlackListVO pageVO);
 
     /**
      * 添加黑名单用户
      * @param addBlackList
      */
-    void addBlackList(AppAddBlackList addBlackList);
+    void addBlackList(AppAddBlackListVO addBlackList);
 
     /**
      * 移除黑名单
