@@ -1,6 +1,5 @@
 package com.yanzu.module.member.controller.app.order.vo;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.Data;
 
 import java.math.BigDecimal;

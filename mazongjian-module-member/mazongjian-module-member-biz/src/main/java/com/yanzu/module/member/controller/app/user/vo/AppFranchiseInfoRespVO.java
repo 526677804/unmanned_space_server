@@ -1,6 +1,5 @@
 package com.yanzu.module.member.controller.app.user.vo;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
