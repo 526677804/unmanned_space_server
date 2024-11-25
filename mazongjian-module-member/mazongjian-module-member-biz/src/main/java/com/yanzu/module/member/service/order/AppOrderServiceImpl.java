@@ -1352,23 +1352,24 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //先查询出门店信息 以读取配置
                 StoreInfoDO storeInfoDO = storeInfoMapper.selectById(v.getKey());
                 v.getValue().forEach(x -> {
-                    if (x.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
-                        //未开始 达到预订时间后，就开始订单
-                        if (x.getStartTime().before(now)) {
-                            startRoomIds.add(x.getRoomId());
-                            startOrderIds.add(x.getOrderId());
-                            //如果房间类型是台球，那么直接开电
-                            if (x.getRoomClass().compareTo(AppEnum.room_class.TAIQIU.getValue()) == 0) {
-                                deviceService.openRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
+                    try {
+                        if (x.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0) {
+                            //未开始 达到预订时间后，就开始订单
+                            if (x.getStartTime().before(now)) {
+                                startRoomIds.add(x.getRoomId());
+                                startOrderIds.add(x.getOrderId());
+                                //如果房间类型是台球，那么直接开电
+                                if (x.getRoomClass().compareTo(AppEnum.room_class.TAIQIU.getValue()) == 0) {
+                                    deviceService.openRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
+                                }
+                                //异步延时播放欢迎语
+                                executorService.schedule(() -> {
+                                    deviceService.runSound(x.getRoomId(), 1);
+                                }, 40, TimeUnit.SECONDS);
                             }
-                            //异步延时播放欢迎语
-                            executorService.schedule(() -> {
-                                deviceService.runSound(x.getRoomId(), 1);
-                            }, 40, TimeUnit.SECONDS);
-                        }
-                    } else if (x.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                        //进行中 主要是完成订单，和关电
-                        try {
+                        } else if (x.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                            //进行中 主要是完成订单，和关电
+
                             if (x.getEndTime().before(now)) {
                                 //关电
                                 deviceService.closeRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
@@ -1406,33 +1407,28 @@ public class AppOrderServiceImpl implements AppOrderService {
                                     }
                                 }
                             }
-                        } catch (Exception e) {
-                            //异常时不影响其他订单关闭
-                            log.error(e.getMessage());
-                        }
-                    } else if (x.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
-                        //已完成  主要是处理延时关电的  以及进行押金退款
-                        long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
-                        //完成后第5分钟再处理  避免与设置的订单结束后5分钟才能预订起冲突
-                        if (minutes == 5) {
-                            //押金退款
-                            if (x.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
-                                payOrderService.refundDeposit(x.getOrderNo(), x.getDeposit().multiply(BigDecimal.valueOf(100.0)).intValue());
-                            }
-                            //处理延时关灯 如果店铺不需要延时关电，就不处理了
-                            try {
+
+                        } else if (x.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0) {
+                            //已完成  主要是处理延时关电的  以及进行押金退款
+                            long minutes = Math.abs(ChronoUnit.MINUTES.between(now.toInstant(), x.getEndTime().toInstant()));
+                            //完成后第5分钟再处理  避免与设置的订单结束后5分钟才能预订起冲突
+                            if (minutes == 5) {
+                                //押金退款
+                                if (x.getDeposit().compareTo(BigDecimal.ZERO) != 0) {
+                                    payOrderService.refundDeposit(x.getOrderNo(), x.getDeposit().multiply(BigDecimal.valueOf(100.0)).intValue());
+                                }
+                                //处理延时关灯 如果店铺不需要延时关电，就不处理了
                                 if (storeInfoDO.getDelayLight()) {
                                     //如果有正在进行的订单也是不允许关的
                                     if (orderInfoMapper.countByRoomCurrent(x.getRoomId(), null) == 0) {
                                         deviceService.closeLightByRoomId(null, x.getStoreId(), x.getRoomId(), 4);
                                     }
                                 }
-                            } catch (Exception e) {
-                                //异常时不影响其他订单关闭
-                                log.error(e.getMessage());
-//                                throw new RuntimeException(e);
                             }
                         }
+                    } catch (Exception e) {
+                        //异常时不影响其他订单关闭
+                        log.error(e.getMessage());
                     }
                 });
             });
