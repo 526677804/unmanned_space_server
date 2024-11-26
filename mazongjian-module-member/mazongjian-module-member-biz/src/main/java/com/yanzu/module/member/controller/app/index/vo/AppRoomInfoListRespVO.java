@@ -103,6 +103,8 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "订单清洁时间")
     private Integer clearTime;
 
+    @Schema(description = "第一个套餐名称")
+    private String pkgName;
 
     @Schema(description = "已被预定订单时间列表")
     private List<AppOrderTimeVO> orderTimeList;

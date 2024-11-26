@@ -201,4 +201,11 @@
         </if>
         order by pu.expire_date ASC
     </select>
+    <select id="getFirstPkgByRoomType" resultType="com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO">
+        select p.*
+        from member_pkg_info p
+        where p.deleted = 0 and p.enable=1 and p.store_id=#{storeId} and (p.room_type=0 or p.room_type=#{roomType})
+        order by p.sort_id asc
+            limit 1
+    </select>
 </mapper>

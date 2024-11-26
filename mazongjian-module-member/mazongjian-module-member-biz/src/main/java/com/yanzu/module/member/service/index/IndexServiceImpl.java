@@ -8,9 +8,11 @@ import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.module.infra.api.config.ConfigApi;
 import com.yanzu.module.member.controller.app.index.vo.*;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
+import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 import com.yanzu.module.member.dal.mysql.bannerinfo.BannerInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
+import com.yanzu.module.member.dal.mysql.pkginfo.PkgInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -60,6 +62,8 @@ public class IndexServiceImpl implements IndexService {
     @Resource
     private RedisTemplate<String, String> redisTemplate;
 
+    @Resource
+    private PkgInfoMapper pkgInfoMapper;
     @Resource
     private ConfigApi configApi;
 
@@ -225,6 +229,12 @@ public class IndexServiceImpl implements IndexService {
                     timeSlot.set(i, slotRespVO);
                 }
                 respVO.setTimeSlot(timeSlot);
+                //设置第一个可用套餐名称
+                PkgInfoDO firstPkg=pkgInfoMapper.getFirstPkgByRoomType(respVO.getStoreId(),respVO.getType());
+                if (!ObjectUtils.isEmpty(firstPkg)){
+                    String pkgName = firstPkg.getHours()+"小时：￥"+firstPkg.getPrice()+"元";
+                    respVO.setPkgName(pkgName);
+                }
             }
         }
         return roomInfoList;
