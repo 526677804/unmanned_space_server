@@ -163,4 +163,23 @@ public interface ErrorCodeConstants {
     // ========== 站内信发送 1002028000 ==========
     ErrorCode NOTIFY_SEND_TEMPLATE_PARAM_MISS = new ErrorCode(1002028000, "模板参数({})缺失");
 
+    // ========== 商品 ==========
+    ErrorCode STORE_PRODUCT_ATTR_NOT_EXISTS = new ErrorCode(1008003001, "商品属性不存在");
+    ErrorCode STORE_PRODUCT_ATTR_NEED = new ErrorCode(1008003009, "请设置至少一个属性");
+    ErrorCode STORE_PRODUCT_RULE_NEED = new ErrorCode(1008003005, "请至少添加一个规格值哦");
+    ErrorCode STORE_PRODUCT_RULE_RE = new ErrorCode(1008003006, "规格值里包含'-',请重新添加");
+    ErrorCode STORE_PRODUCT_NOT_EXISTS = new ErrorCode(1008003000, "商品不存在");
+    ErrorCode PRODUCT_STOCK_LESS = new ErrorCode(1008005003, "商品库存不足");
+    ErrorCode STORE_PRODUCT_SLIDER_ERROR = new ErrorCode(1008003008, "请上传轮播图");
+    ErrorCode STORE_PRODUCT_STOCK_ERROR = new ErrorCode(1008003007, "库存不能低于0");
+    ErrorCode STORE_PRODUCT_ATTR_RESULT_NOT_EXISTS = new ErrorCode(1008003002, "商品属性详情不存在");
+    ErrorCode STORE_PRODUCT_ATTR_VALUE_NOT_EXISTS = new ErrorCode(1008003003, "商品属性值不存在");
+    ErrorCode CATEGORY_EXISTS_CHILDREN = new ErrorCode(1008001003, "存在子分类，无法删除");
+    ErrorCode CATEGORY_PARENT_NOT_EXISTS = new ErrorCode(1008001001, "父分类不存在");
+    ErrorCode CATEGORY_PARENT_NOT_FIRST_LEVEL = new ErrorCode(1008001002, "分类最多只有二级哦");
+    ErrorCode CATEGORY_NOT_EXISTS = new ErrorCode(1008001000, "商品分类不存在");
+    ErrorCode CATEGORY_DISABLED = new ErrorCode(1008001004, "商品分类({})已禁用，无法使用");
+    ErrorCode STORE_PRODUCT_REPLY_NOT_EXISTS = new ErrorCode(1008005000, "评论不存在");
+    ErrorCode STORE_PRODUCT_RULE_NOT_EXISTS = new ErrorCode(1008003004, "商品规则值(规格)不存在");
+
 }
