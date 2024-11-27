@@ -232,7 +232,7 @@ public class IndexServiceImpl implements IndexService {
                 //设置第一个可用套餐名称
                 PkgInfoDO firstPkg=pkgInfoMapper.getFirstPkgByRoomType(respVO.getStoreId(),respVO.getType());
                 if (!ObjectUtils.isEmpty(firstPkg)){
-                    String pkgName = firstPkg.getHours()+"小时：￥"+firstPkg.getPrice()+"元";
+                    String pkgName = firstPkg.getHours()+"小时套餐:￥"+firstPkg.getPrice()+"元";
                     respVO.setPkgName(pkgName);
                 }
             }
