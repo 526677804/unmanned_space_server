@@ -38,7 +38,7 @@ public class AppAdminPkgSaveReqVO {
     private String ksId;
 
     @Schema(description = "按包厢设置")
-    private List<Integer> enableRoom;
+    private List<Long> enableRoom;
 
     @Schema(description = "可用时间 0-23数字，空表示不限")
     private List<Integer> enableTime;

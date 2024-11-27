@@ -151,9 +151,6 @@
         <result column="hours" property="hours"/>
         <result column="room_type" property="roomType"
                 typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
-        <result column="mt_id" property="mtId"/>
-        <result column="dy_id" property="dyId"/>
-        <result column="ks_id" property="ksId"/>
         <result column="enable_room" property="enableRoom"
                 typeHandler="com.yanzu.framework.mybatis.core.type.IntegerListTypeHandler"/>
         <result column="enable_time" property="enableTime"

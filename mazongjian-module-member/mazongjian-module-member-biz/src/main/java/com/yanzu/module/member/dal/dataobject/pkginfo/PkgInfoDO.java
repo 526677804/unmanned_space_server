@@ -65,7 +65,7 @@ public class PkgInfoDO extends BaseDO {
      * 按照包厢设置
      */
     @TableField(typeHandler = IntegerListTypeHandler.class,updateStrategy = FieldStrategy.IGNORED)
-    private List<Integer> enableRoom;
+    private List<Long> enableRoom;
 
     /**
      * 可用时间

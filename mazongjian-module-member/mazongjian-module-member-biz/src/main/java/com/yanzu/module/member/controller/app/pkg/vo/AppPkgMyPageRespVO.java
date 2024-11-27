@@ -32,13 +32,16 @@ public class AppPkgMyPageRespVO {
     private String storeName;
 
     @Schema(description = "房间类型 空表示不限")
-    private Integer roomType;
+    private List<Integer> roomType;
 
     @Schema(description = "可用时间 0-23数字，空表示不限")
     private List<Integer> enableTime;
 
     @Schema(description = "可用星期 1-7 数字，空表示不限")
     private List<Integer> enableWeek;
+
+    @Schema(description = "可用房间id")
+    private List<Long> enableRoom;
 
     @Schema(description = "节假日可用")
     private Boolean enableHoliday;
