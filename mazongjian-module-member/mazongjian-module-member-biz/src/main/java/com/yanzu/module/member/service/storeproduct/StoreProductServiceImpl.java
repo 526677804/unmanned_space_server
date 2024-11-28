@@ -527,9 +527,9 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
         JSONObject result = JSON.parseObject(storeProductAttrResult.getResult());
         List<StoreProductAttrValueDO> attrValues = storeProductAttrValueService.list(new LambdaQueryWrapper<StoreProductAttrValueDO>().eq(StoreProductAttrValueDO::getProductId, id));
         List<ProductFormatDto> productFormatDtos =attrValues.stream().map(i ->{
-            ProductFormatDto productFormatDto = new ProductFormatDto();
-            BeanUtils.copyProperties(i,productFormatDto);
+            ProductFormatDto productFormatDto = BeanUtil.toBean(i, ProductFormatDto.class);
             productFormatDto.setPic(i.getImage());
+            System.out.println(productFormatDto);
             return productFormatDto;
         }).collect(Collectors.toList());
         if(SpecTypeEnum.TYPE_1.getValue().equals(storeProduct.getSpecType())){

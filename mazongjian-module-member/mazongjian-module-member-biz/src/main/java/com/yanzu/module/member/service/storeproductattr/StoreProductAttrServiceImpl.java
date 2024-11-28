@@ -99,12 +99,12 @@ public class StoreProductAttrServiceImpl extends ServiceImpl<StoreProductAttrMap
 
         List<StoreProductAttrValueDO> valueGroup = new ArrayList<>();
         for (ProductFormatDto productFormatDto : attrs) {
-
+            System.out.println(productFormatDto);
 //            if(productFormatDto.getPinkStock()>productFormatDto.getStock() || productFormatDto.getSeckillStock()>productFormatDto.getStock()){
 //                throw new BadRequestException("活动商品库存不能大于原有商品库存");
 //            }
             List<String> stringList = new ArrayList<>(productFormatDto.getDetail().values());
-            Collections.sort(stringList);
+//            Collections.sort(stringList);
             StoreProductAttrValueDO oldAttrValue = storeProductAttrValueService.getOne(new LambdaQueryWrapper<StoreProductAttrValueDO>()
                     .eq(StoreProductAttrValueDO::getSku, productFormatDto.getSku())
                     .eq(StoreProductAttrValueDO::getProductId, productId));
