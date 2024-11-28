@@ -9,6 +9,7 @@ import com.yanzu.module.member.convert.storeproductcategory.ProductCategoryConve
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeproductcategory.ProductCategoryDO;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.dal.mysql.storeproduct.StoreProductMapper;
 import com.yanzu.module.member.dal.mysql.storeproductcategory.ProductCategoryMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -34,6 +35,8 @@ public class ProductCategoryServiceImpl extends ServiceImpl<ProductCategoryMappe
     private ProductCategoryMapper productCategoryMapper;
     @Resource
     private StoreInfoMapper storeInfoMapper;
+    @Resource
+    private StoreProductMapper storeProductMapper;
 
     @Override
     public Long createCategory(ProductCategoryCreateReqVO createReqVO) {
@@ -71,7 +74,10 @@ public class ProductCategoryServiceImpl extends ServiceImpl<ProductCategoryMappe
         if (productCategoryMapper.selectCountByParentId(id) > 0) {
             throw exception(CATEGORY_EXISTS_CHILDREN);
         }
-        // TODO yshop 补充只有不存在商品才可以删除
+        Long l = storeProductMapper.selectCount("cate_id", id);
+        if (l>0){
+            throw exception(KIND_EXISTS_PRODUCT);
+        }
         // 删除
         productCategoryMapper.deleteById(id);
     }

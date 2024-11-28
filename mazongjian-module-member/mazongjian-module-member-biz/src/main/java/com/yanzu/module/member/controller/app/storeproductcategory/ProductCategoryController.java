@@ -39,7 +39,7 @@ public class ProductCategoryController {
         return success(categoryService.createCategory(createReqVO));
     }
 
-    @PutMapping("/update")
+    @PostMapping("/update")
     @Operation(summary = "更新商品分类")
 //    @PreAuthorize("@ss.hasPermission('product:category:update')")
     public CommonResult<Boolean> updateCategory(@Valid @RequestBody ProductCategoryUpdateReqVO updateReqVO) {
@@ -47,11 +47,11 @@ public class ProductCategoryController {
         return success(true);
     }
 
-    @DeleteMapping("/delete")
+    @PostMapping("/delete/{id}")
     @Operation(summary = "删除商品分类")
     @Parameter(name = "id", description = "编号", required = true)
 //    @PreAuthorize("@ss.hasPermission('product:category:delete')")
-    public CommonResult<Boolean> deleteCategory(@RequestParam("id") Long id) {
+    public CommonResult<Boolean> deleteCategory(@PathVariable("id") Long id) {
         categoryService.deleteCategory(id);
         return success(true);
     }

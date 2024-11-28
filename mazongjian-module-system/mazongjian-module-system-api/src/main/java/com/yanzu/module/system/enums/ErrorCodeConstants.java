@@ -175,6 +175,7 @@ public interface ErrorCodeConstants {
     ErrorCode STORE_PRODUCT_ATTR_RESULT_NOT_EXISTS = new ErrorCode(1008003002, "商品属性详情不存在");
     ErrorCode STORE_PRODUCT_ATTR_VALUE_NOT_EXISTS = new ErrorCode(1008003003, "商品属性值不存在");
     ErrorCode CATEGORY_EXISTS_CHILDREN = new ErrorCode(1008001003, "存在子分类，无法删除");
+    ErrorCode KIND_EXISTS_PRODUCT = new ErrorCode(1008001005, "分类存在商品，无法删除");
     ErrorCode CATEGORY_PARENT_NOT_EXISTS = new ErrorCode(1008001001, "父分类不存在");
     ErrorCode CATEGORY_PARENT_NOT_FIRST_LEVEL = new ErrorCode(1008001002, "分类最多只有二级哦");
     ErrorCode CATEGORY_NOT_EXISTS = new ErrorCode(1008001000, "商品分类不存在");

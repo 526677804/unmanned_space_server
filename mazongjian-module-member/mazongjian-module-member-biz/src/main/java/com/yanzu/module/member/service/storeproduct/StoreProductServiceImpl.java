@@ -170,7 +170,7 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
         for (Map<String, Map<String, String>> map : detailDto.getRes()) {
             Map<String, String> detail = map.get("detail");
             String[] detailArr = detail.values().toArray(new String[]{});
-            Arrays.sort(detailArr);
+//            Arrays.sort(detailArr);
 
             String sku = String.join(",", detailArr);
 
@@ -525,13 +525,17 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
                 .getOne(Wrappers.<StoreProductAttrResultDO>lambdaQuery()
                         .eq(StoreProductAttrResultDO::getProductId,id).last("limit 1"));
         JSONObject result = JSON.parseObject(storeProductAttrResult.getResult());
-        List<StoreProductAttrValueDO> attrValues = storeProductAttrValueService.list(new LambdaQueryWrapper<StoreProductAttrValueDO>().eq(StoreProductAttrValueDO::getProductId, id));
+        List<StoreProductAttrValueDO> attrValues = storeProductAttrValueService.
+                list(new LambdaQueryWrapper<StoreProductAttrValueDO>().eq(StoreProductAttrValueDO::getProductId, id)
+                        .orderByAsc(StoreProductAttrValueDO::getId)); // 为了确保顺序与小程序执行的操作一致
+        System.out.println(attrValues);
         List<ProductFormatDto> productFormatDtos =attrValues.stream().map(i ->{
             ProductFormatDto productFormatDto = BeanUtil.toBean(i, ProductFormatDto.class);
             productFormatDto.setPic(i.getImage());
             System.out.println(productFormatDto);
             return productFormatDto;
         }).collect(Collectors.toList());
+        System.out.println(productFormatDtos);
         if(SpecTypeEnum.TYPE_1.getValue().equals(storeProduct.getSpecType())){
             productDto.setAttr(new ProductFormatDto());
             productDto.setAttrs(productFormatDtos);
