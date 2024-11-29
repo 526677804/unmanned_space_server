@@ -38,7 +38,7 @@ public class AppStoreProductAttrServiceImpl extends ServiceImpl<StoreProductAttr
         List<StoreProductAttrDO>  storeProductAttrs = this.baseMapper
                 .selectList(Wrappers.<StoreProductAttrDO>lambdaQuery()
                         .eq(StoreProductAttrDO::getProductId,productId)
-                        .orderByAsc(StoreProductAttrDO::getAttrValues));
+                        .orderByAsc(StoreProductAttrDO::getId));
 
         List<StoreProductAttrValueDO>  productAttrValues = storeProductAttrValueService
                 .list(Wrappers.<StoreProductAttrValueDO>lambdaQuery()
