@@ -28,6 +28,8 @@ public class AppStoreProductRespVo implements Serializable {
     @Schema(description = "id", required = true)
     private Long id;
 
+    private Long shopId;
+
     @Schema(description = "分类id", required = true)
     private String cateId;
 

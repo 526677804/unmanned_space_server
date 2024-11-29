@@ -130,7 +130,7 @@ public class AppStoreProductServiceImpl extends ServiceImpl<StoreProductMapper, 
             for (StoreProductDO storeProductDO : storeProductDOList) {
                 Map<String, Object> returnMap = appStoreProductAttrService.getProductAttrDetail(storeProductDO.getId());
                 AppStoreProductRespVo storeProductQueryVo = StoreProductConvert.INSTANCE.convert01(storeProductDO);
-
+                storeProductQueryVo.setShopId(Long.valueOf(storeProductDO.getShopId()));
                 storeProductQueryVo.setProductAttr((List<AppStoreProductAttrQueryVo>) returnMap.get("productAttr"));
                 storeProductQueryVo.setProductValue((Map<String, StoreProductAttrValueDO>) returnMap.get("productValue"));
 
