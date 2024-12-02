@@ -54,6 +54,8 @@ public interface PayOrderService {
 
     String updateOrder(String xmlData);
 
+    String updateProductOrder(String xmlData);
+
     String updateOrderRefunded(Map<String, String> params, String body);
 
     void create(Long userId, String orderNo,Long orderId, Long storeId, Integer payType, String orderDesc, Integer price);

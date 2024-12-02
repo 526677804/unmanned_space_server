@@ -75,6 +75,15 @@ public class AppCallbackController {
         iotDeviceService.iotPlatform(json);
     }
 
+    @PostMapping("/wxpay/product/update")
+    @Operation(summary = "购买商品——微信支付回调")
+    @PermitAll // 无需登录
+    @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
+    @Parameter(name = "xmlData")
+    public String updateProductOrder(@RequestBody String xmlData) {
+        return payOrderService.updateProductOrder(xmlData);
+    }
+
 
 
 }

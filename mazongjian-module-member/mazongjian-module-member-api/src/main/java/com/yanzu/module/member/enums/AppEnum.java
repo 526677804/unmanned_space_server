@@ -15,6 +15,9 @@ public class AppEnum {
     public static final String WX_PAY_ORDER = "WX_PAY_ORDER_%s";
 
     @Getter
+    public static final String WX_PRODUCT_PAY_ORDER = "WX_PRODUCT_PAY_ORDER_%s";
+
+    @Getter
     public static final String DOUYIN_CLIENT_TOKEN = "DOUYIN_CLIENT_TOKEN";
 
     @Getter

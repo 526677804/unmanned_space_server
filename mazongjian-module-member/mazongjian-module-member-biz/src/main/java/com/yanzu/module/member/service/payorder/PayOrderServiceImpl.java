@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.payorder;
 
+import cn.hutool.core.date.DateUtil;
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
@@ -8,6 +9,7 @@ import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.exception.ServiceException;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
@@ -17,10 +19,12 @@ import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
 import com.yanzu.module.member.controller.app.pkg.vo.AppBuyPkgReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppRechargeBalanceReqVO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
+import com.yanzu.module.member.dal.dataobject.productorder.ProductOrderDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
+import com.yanzu.module.member.dal.mysql.productorder.ProductOrderMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
@@ -83,9 +87,11 @@ public class PayOrderServiceImpl implements PayOrderService {
     @Resource
     private StoreInfoMapper storeInfoMapper;
 
-
     @Resource
     private RedisTemplate redisTemplate;
+
+    @Resource
+    private ProductOrderMapper productOrderMapper;
 
     @Override
     public PayOrderDO getPayOrder(Long id) {
@@ -215,6 +221,23 @@ public class PayOrderServiceImpl implements PayOrderService {
             return WxPayNotifyResponse.fail(e.getMessage());
         }
 //        payOrderMapper.selectByOrderNoAndPayNo(notifyReqDTO);
+    }
+
+    @Override
+    public String updateProductOrder(String xmlData) {
+        WxPayOrderNotifyResult result = WxPayOrderNotifyResult.fromXML(xmlData);
+        // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
+        String orderNo = result.getOutTradeNo();
+        Long orderId = productOrderMapper.selectByOrderNo(orderNo);
+        ProductOrderDO productOrderDO = new ProductOrderDO();
+        productOrderDO.setOrderId(orderId);
+        productOrderDO.setPayTime(DateUtil.date());
+        productOrderDO.setStatus(1L); // 已支付
+        int i = productOrderMapper.updateById(productOrderDO);
+        if (i != 1){
+            return WxPayNotifyResponse.fail("修改商品订单状态失败");
+        }
+        return WxPayNotifyResponse.success("接收成功!");
     }
 
     @Override

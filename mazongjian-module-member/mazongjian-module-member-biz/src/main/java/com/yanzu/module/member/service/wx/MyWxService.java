@@ -51,6 +51,9 @@ public class MyWxService {
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
 
+    @Value("${wx.pay.returnProductUrl}")
+    private String returnProductUrl;
+
     public WxPayService initWxPay(Long storeId) {
         log.info("初始化门店：{}，微信支付", storeId);
         if (ObjectUtils.isEmpty(storeId)) {
@@ -99,6 +102,25 @@ public class MyWxService {
         wxPayUnifiedOrderRequest.setTotalFee(payPrice);
         wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
         wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
+        wxPayUnifiedOrderRequest.setTradeType("JSAPI");
+        wxPayUnifiedOrderRequest.setProfitSharing(config.getServiceModel() && config.getSplit() ? "Y" : "N");
+        if (config.getServiceModel()) {
+            wxPayUnifiedOrderRequest.setSubOpenid(openId);
+        } else {
+            wxPayUnifiedOrderRequest.setOpenid(openId);
+        }
+        return wxPayService.createOrder(wxPayUnifiedOrderRequest);
+    }
+
+    @SneakyThrows
+    public WxPayMpOrderResult createProductOrder(WxPayService wxPayService, Long storeId, String orderNo, Integer payPrice, String openId) {
+        StoreWxpayConfigDO config = getWxPayConfig(storeId);
+        WxPayUnifiedOrderRequest wxPayUnifiedOrderRequest = new WxPayUnifiedOrderRequest();
+        wxPayUnifiedOrderRequest.setBody("微信支付订单");
+        wxPayUnifiedOrderRequest.setOutTradeNo(orderNo);
+        wxPayUnifiedOrderRequest.setTotalFee(payPrice);
+        wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
+        wxPayUnifiedOrderRequest.setNotifyUrl(returnProductUrl);
         wxPayUnifiedOrderRequest.setTradeType("JSAPI");
         wxPayUnifiedOrderRequest.setProfitSharing(config.getServiceModel() && config.getSplit() ? "Y" : "N");
         if (config.getServiceModel()) {

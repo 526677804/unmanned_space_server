@@ -528,18 +528,16 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
         List<StoreProductAttrValueDO> attrValues = storeProductAttrValueService.
                 list(new LambdaQueryWrapper<StoreProductAttrValueDO>().eq(StoreProductAttrValueDO::getProductId, id)
                         .orderByAsc(StoreProductAttrValueDO::getId)); // 为了确保顺序与小程序执行的操作一致
-        System.out.println(attrValues);
         List<ProductFormatDto> productFormatDtos =attrValues.stream().map(i ->{
             ProductFormatDto productFormatDto = BeanUtil.toBean(i, ProductFormatDto.class);
             productFormatDto.setPic(i.getImage());
-            System.out.println(productFormatDto);
             return productFormatDto;
         }).collect(Collectors.toList());
-        System.out.println(productFormatDtos);
         if(SpecTypeEnum.TYPE_1.getValue().equals(storeProduct.getSpecType())){
             productDto.setAttr(new ProductFormatDto());
             productDto.setAttrs(productFormatDtos);
             productDto.setItems(result.getObject("attr",ArrayList.class));
+            productDto.setProductResult(result);
         }else{
            // this.productFromat(productDto, result);
             this.productFromatNew(productDto, attrValues.get(0));
