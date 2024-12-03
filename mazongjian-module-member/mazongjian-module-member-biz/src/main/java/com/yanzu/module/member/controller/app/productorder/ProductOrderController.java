@@ -1,21 +1,20 @@
 package com.yanzu.module.member.controller.app.productorder;
 
 import com.yanzu.framework.common.pojo.CommonResult;
+import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
-import com.yanzu.module.member.controller.app.productorder.vo.AppCancelPayReqVo;
-import com.yanzu.module.member.controller.app.productorder.vo.AppSaveOrderReqVo;
+import com.yanzu.module.member.controller.app.productorder.vo.*;
 import com.yanzu.module.member.service.productorder.ProductOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+
+import java.util.List;
 
 import static com.yanzu.framework.common.pojo.CommonResult.success;
 
@@ -36,10 +35,29 @@ public class ProductOrderController {
     }
 
     @PostMapping("/cancel")
-    @Operation(summary = "订单创建")
+    @Operation(summary = "订单取消")
     public CommonResult<Boolean> cancelPay(@RequestBody AppCancelPayReqVo reqVo) {
         productOrderService.cancelPay(reqVo.getOrderNo());
         return success(true);
     }
+
+    @PostMapping("/page")
+    @Operation(summary = "用户获取订单分页")
+    public CommonResult<PageResult<AppUserOrderPageRespVo>> getOrderPage(@RequestBody AppUserOrderPageReqVo reqVo){
+        return success(productOrderService.userOrderByPage(reqVo));
+    }
+
+    @GetMapping("/getstore")
+    @Operation(summary = "获取在哪些门店下过单")
+    public CommonResult<List<AppHaveOrderStoreRespVo>> selectHaveOrderStore(){
+        return success(productOrderService.selectHaveOrderStore());
+    }
+
+    @PostMapping("/pay/{id}")
+    @Operation(summary = "商品订单列表-支付金额")
+    public CommonResult<WxPayOrderRespVO> create(@PathVariable Long id) {
+        return success(productOrderService.pay(id));
+    }
+
 
 }

@@ -1,8 +1,11 @@
 package com.yanzu.module.member.dal.mysql.productorder;
 
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.app.productorder.vo.AppHaveOrderStoreRespVo;
 import com.yanzu.module.member.dal.dataobject.productorder.ProductOrderDO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * 商品订单 Mapper
@@ -15,5 +18,7 @@ public interface ProductOrderMapper extends BaseMapperX<ProductOrderDO> {
     Long selectByOrderNo(String orderNo);
 
     void updateByOrderNo(String orderNo);
+
+    List<AppHaveOrderStoreRespVo> selectHaveOrderStore(Long userId);
 
 }

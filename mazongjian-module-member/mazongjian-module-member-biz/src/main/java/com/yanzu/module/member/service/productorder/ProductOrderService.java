@@ -1,7 +1,13 @@
 package com.yanzu.module.member.service.productorder;
 
+import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
+import com.yanzu.module.member.controller.app.productorder.vo.AppHaveOrderStoreRespVo;
 import com.yanzu.module.member.controller.app.productorder.vo.AppSaveOrderReqVo;
+import com.yanzu.module.member.controller.app.productorder.vo.AppUserOrderPageReqVo;
+import com.yanzu.module.member.controller.app.productorder.vo.AppUserOrderPageRespVo;
+
+import java.util.List;
 
 public interface ProductOrderService {
 
@@ -13,5 +19,11 @@ public interface ProductOrderService {
     WxPayOrderRespVO createOrder(AppSaveOrderReqVo reqVo);
 
     void cancelPay(String orderNo);
+
+    PageResult<AppUserOrderPageRespVo> userOrderByPage(AppUserOrderPageReqVo reqVo);
+
+    List<AppHaveOrderStoreRespVo> selectHaveOrderStore();
+
+    WxPayOrderRespVO pay(Long orderId);
 
 }

@@ -36,9 +36,24 @@ public class ProductOrderDO extends BaseDO {
     private Long storeId;
 
     /**
+     * 门店名称
+     */
+    private String storeName;
+
+    /**
      * 用户Id
      */
     private Long userId;
+
+    /**
+     * 用户姓名
+     */
+    private String userName;
+
+    /**
+     * 用户手机号
+     */
+    private String userPhone;
 
     /**
      * 产品信息
@@ -79,10 +94,5 @@ public class ProductOrderDO extends BaseDO {
      * 备注
      */
     private String mark;
-
-    /**
-     * 唯一id
-     */
-    private String unique;
 
 }
