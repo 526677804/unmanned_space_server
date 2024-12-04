@@ -15,6 +15,7 @@ import com.yanzu.module.member.dal.dataobject.storeproduct.StoreProductDO;
 import com.yanzu.module.member.dal.mysql.productorder.ProductOrderMapper;
 import com.yanzu.module.member.dal.mysql.storeproduct.StoreProductMapper;
 import com.yanzu.module.member.dal.mysql.storeproductattrvalue.StoreProductAttrValueMapper;
+import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.service.storeproduct.StoreProductService;
 import com.yanzu.module.member.service.storeproduct.dto.FromatDetailDto;
 import com.yanzu.module.member.service.storeproduct.dto.ProductDto;
@@ -65,6 +66,9 @@ public class ProductOrderServiceImpl implements ProductOrderService {
     @Resource
     private StoreProductAttrValueMapper productAttrValueMapper;
 
+    @Resource
+    private StoreUserMapper storeUserMapper;
+
     @Autowired
     private MyWxService myWxService;
 
@@ -100,14 +104,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
             try {
                 WxPayMpOrderResult wxPayMpOrderResult = myWxService.createProductOrder(wxPayService, reqVo.getStoreId(),
                         orderNo, reqVo.getTotalPrice().multiply(BigDecimal.valueOf(100D)).intValue(), openId);
-                respVO.setPkg(wxPayMpOrderResult.getPackageValue());
-                respVO.setAppId(wxPayMpOrderResult.getAppId());
-                respVO.setNonceStr(wxPayMpOrderResult.getNonceStr());
-                respVO.setPaySign(wxPayMpOrderResult.getPaySign());
-                respVO.setSignType("MD5");
-                respVO.setTimeStamp(wxPayMpOrderResult.getTimeStamp());
-                respVO.setPayPrice(reqVo.getTotalPrice().multiply(BigDecimal.valueOf(100D)).intValue());
-                respVO.setPrice(reqVo.getTotalPrice().multiply(BigDecimal.valueOf(100D)).intValue());
+                getWxPayOrderRespVo(respVO, wxPayMpOrderResult, reqVo.getTotalPrice(), productOrderDO);
                 respVO.setOrderNo(orderNo);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -187,21 +184,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
                 .eqIfPresent(ProductOrderDO::getStatus, reqVo.getStatus())
                 .orderByDesc(ProductOrderDO::getCreateTime);
 
-        PageResult<ProductOrderDO> pageResult = productOrderMapper.selectPage(reqVo, queryWrapper);
-
-        return pageResult.getList().stream()
-                .map(item -> {
-                    AppUserOrderPageRespVo bean = BeanUtil.toBean(item, AppUserOrderPageRespVo.class);
-                    bean.setUserPhone(bean.getUserPhone().replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
-                    bean.setProductInfoVoList(JSONObject.parseArray(item.getProductInfo(), ProductInfoVo.class));
-                    return bean;
-                })
-                .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
-                    PageResult<AppUserOrderPageRespVo> result = new PageResult<>();
-                    result.setList(list);
-                    result.setTotal(pageResult.getTotal());
-                    return result;
-                }));
+        return getAppUserOrderPageRespVoPageResult(reqVo, queryWrapper);
     }
 
     @Override
@@ -220,18 +203,62 @@ public class ProductOrderServiceImpl implements ProductOrderService {
         WxPayOrderRespVO respVO = new WxPayOrderRespVO();
         WxPayMpOrderResult wxPayMpOrderResult = myWxService.createProductOrder(wxPayService, productOrderDO.getStoreId(),
                 productOrderDO.getOrderNo(), productOrderDO.getTotalPrice().multiply(BigDecimal.valueOf(100D)).intValue(), openId);
+        getWxPayOrderRespVo(respVO, wxPayMpOrderResult, productOrderDO.getTotalPrice(), productOrderDO);
+        respVO.setOrderNo(productOrderDO.getOrderNo());
+        return respVO;
+    }
+
+
+    @Override
+    public PageResult<AppUserOrderPageRespVo> managerProductOrder(AppUserOrderPageReqVo reqVo) {
+        // 获取自己管理的门店列表
+        List<Long> longs = storeUserMapper.selectSelfStoreIds(getLoginUserId());
+
+        LambdaQueryWrapperX<ProductOrderDO> queryWrapper = new LambdaQueryWrapperX<>();
+        queryWrapper.in(ProductOrderDO::getStoreId,longs)
+                .eqIfPresent(ProductOrderDO::getStoreId, reqVo.getStoreId())
+                .eqIfPresent(ProductOrderDO::getStatus, reqVo.getStatus())
+                .orderByDesc(ProductOrderDO::getCreateTime);
+
+        return getAppUserOrderPageRespVoPageResult(reqVo, queryWrapper);
+    }
+
+    @Override
+    public void finishOrder(Long id) {
+        ProductOrderDO productOrderDO = new ProductOrderDO();
+        productOrderDO.setOrderId(id);
+        productOrderDO.setStatus(2L);
+        productOrderMapper.updateById(productOrderDO);
+    }
+
+    private PageResult<AppUserOrderPageRespVo> getAppUserOrderPageRespVoPageResult(AppUserOrderPageReqVo reqVo, LambdaQueryWrapperX<ProductOrderDO> queryWrapper) {
+        PageResult<ProductOrderDO> pageResult = productOrderMapper.selectPage(reqVo, queryWrapper);
+
+        return pageResult.getList().stream()
+                .map(item -> {
+                    AppUserOrderPageRespVo bean = BeanUtil.toBean(item, AppUserOrderPageRespVo.class);
+                    bean.setUserPhone(bean.getUserPhone().replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
+                    bean.setProductInfoVoList(JSONObject.parseArray(item.getProductInfo(), ProductInfoVo.class));
+                    return bean;
+                })
+                .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
+                    PageResult<AppUserOrderPageRespVo> result = new PageResult<>();
+                    result.setList(list);
+                    result.setTotal(pageResult.getTotal());
+                    return result;
+                }));
+    }
+
+    private void getWxPayOrderRespVo(WxPayOrderRespVO respVO, WxPayMpOrderResult wxPayMpOrderResult, BigDecimal totalPrice, ProductOrderDO productOrderDO) {
         respVO.setPkg(wxPayMpOrderResult.getPackageValue());
         respVO.setAppId(wxPayMpOrderResult.getAppId());
         respVO.setNonceStr(wxPayMpOrderResult.getNonceStr());
         respVO.setPaySign(wxPayMpOrderResult.getPaySign());
         respVO.setSignType("MD5");
         respVO.setTimeStamp(wxPayMpOrderResult.getTimeStamp());
-        respVO.setPayPrice(productOrderDO.getTotalPrice().multiply(BigDecimal.valueOf(100D)).intValue());
-        respVO.setPrice(productOrderDO.getTotalPrice().multiply(BigDecimal.valueOf(100D)).intValue());
-        respVO.setOrderNo(productOrderDO.getOrderNo());
-        return respVO;
+        respVO.setPayPrice(totalPrice.multiply(BigDecimal.valueOf(100D)).intValue());
+        respVO.setPrice(totalPrice.multiply(BigDecimal.valueOf(100D)).intValue());
     }
-
 
     private String getOrderNo() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");

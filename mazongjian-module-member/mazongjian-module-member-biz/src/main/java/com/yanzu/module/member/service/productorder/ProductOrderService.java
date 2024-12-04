@@ -26,4 +26,10 @@ public interface ProductOrderService {
 
     WxPayOrderRespVO pay(Long orderId);
 
+    // 商家经营管理调用
+    PageResult<AppUserOrderPageRespVo> managerProductOrder(AppUserOrderPageReqVo reqVo);
+
+    // 商家完成订单
+    void finishOrder(Long id);
+
 }

@@ -53,4 +53,6 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
 
     StoreUserDO getTotalBalance(Long userId);
 
+    List<Long> selectSelfStoreIds(Long userId);
+
 }
