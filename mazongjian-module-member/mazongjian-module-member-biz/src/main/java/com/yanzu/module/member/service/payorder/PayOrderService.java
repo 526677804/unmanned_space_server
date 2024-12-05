@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.payorder;
 
+import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
@@ -54,7 +55,7 @@ public interface PayOrderService {
 
     String updateOrder(String xmlData);
 
-    String updateProductOrder(String xmlData);
+    String updateProductOrder(WxPayOrderNotifyResult result);
 
     String updateOrderRefunded(Map<String, String> params, String body);
 

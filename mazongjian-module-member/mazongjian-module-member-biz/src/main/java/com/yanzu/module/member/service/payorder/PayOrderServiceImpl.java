@@ -134,6 +134,10 @@ public class PayOrderServiceImpl implements PayOrderService {
         WxPayOrderNotifyResult result = WxPayOrderNotifyResult.fromXML(xmlData);
         // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
         String orderNo = result.getOutTradeNo();
+        if(orderNo.startsWith("SH")){
+            //商品订单
+            return updateProductOrder(result);
+        }
         PayOrderDO payOrderDO = payOrderMapper.getByOrderNo(orderNo);
         Long tenantId = null;
         try {
@@ -224,8 +228,7 @@ public class PayOrderServiceImpl implements PayOrderService {
     }
 
     @Override
-    public String updateProductOrder(String xmlData) {
-        WxPayOrderNotifyResult result = WxPayOrderNotifyResult.fromXML(xmlData);
+    public String updateProductOrder(WxPayOrderNotifyResult result) {
         // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
         String orderNo = result.getOutTradeNo();
         Long orderId = productOrderMapper.selectByOrderNo(orderNo);

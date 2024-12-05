@@ -51,8 +51,6 @@ public class MyWxService {
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
 
-    @Value("${wx.pay.returnProductUrl}")
-    private String returnProductUrl;
 
     public WxPayService initWxPay(Long storeId) {
         log.info("初始化门店：{}，微信支付", storeId);
@@ -120,7 +118,7 @@ public class MyWxService {
         wxPayUnifiedOrderRequest.setOutTradeNo(orderNo);
         wxPayUnifiedOrderRequest.setTotalFee(payPrice);
         wxPayUnifiedOrderRequest.setSpbillCreateIp("127.0.0.1");
-        wxPayUnifiedOrderRequest.setNotifyUrl(returnProductUrl);
+        wxPayUnifiedOrderRequest.setNotifyUrl(returnUrl);
         wxPayUnifiedOrderRequest.setTradeType("JSAPI");
         wxPayUnifiedOrderRequest.setProfitSharing(config.getServiceModel() && config.getSplit() ? "Y" : "N");
         if (config.getServiceModel()) {

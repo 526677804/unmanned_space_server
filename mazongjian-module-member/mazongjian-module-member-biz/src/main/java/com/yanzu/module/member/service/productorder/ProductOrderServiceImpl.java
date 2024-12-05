@@ -265,9 +265,9 @@ public class ProductOrderServiceImpl implements ProductOrderService {
         LocalDateTime currentDateTime = LocalDateTime.now();
         String currentDate = currentDateTime.format(dateFormatter);
         Random random = new Random();
-        int randomNum = random.nextInt(1000000000);
+        int randomNum = random.nextInt(10000000);
         String randomNumString = String.format("%09d", randomNum);
-        return currentDate + randomNumString;
+        return "SH"+currentDate + randomNumString;
     }
 
 }
