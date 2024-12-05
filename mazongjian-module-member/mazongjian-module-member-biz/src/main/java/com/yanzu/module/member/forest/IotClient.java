@@ -21,7 +21,7 @@ public interface IotClient {
 //                    "secret:${secret}",
 //            })
 //    IotResult<JSONBody> pushData(@JSONBody IotPushDataReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
-    @Post(url = "http://iot-test.scyanzu.com/admin-api/iot/platform/pushData",
+    @Post(url = "https://iot-test.scyanzu.com/admin-api/iot/platform/pushData",
             headers = {
                     "clientId:${clientId}",
                     "secret:${secret}",

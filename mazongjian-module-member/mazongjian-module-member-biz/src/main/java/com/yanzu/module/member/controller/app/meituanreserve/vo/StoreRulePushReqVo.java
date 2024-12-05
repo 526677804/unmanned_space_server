@@ -25,7 +25,7 @@ public class StoreRulePushReqVo {
     private Boolean irregularRefund;
 
     @Schema(name = "最晚延迟时间点，2023-09-08 20:00:00")
-    private String latestPeriodRulePoint="2024-12-08 20:00:00";
+    private String latestPeriodRulePoint;
 
 //    @Schema(name = "手动接单开始时段，如：“01:00”")
 //    private String acceptPeriodBegin;

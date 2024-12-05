@@ -19,7 +19,7 @@ public interface MeiTuanReserveClient {
      * @param secret
      * @return
      */
-    @Post(url = "http://iot-test.scyanzu.com/admin-api/meituan/yuding/ddzhYudingUpdatebookrule",contentType = "application/json",headers = {
+    @Post(url = "https://iot-test.scyanzu.com/admin-api/meituan/yuding/ddzhYudingUpdatebookrule",contentType = "application/json",headers = {
             "clientId:${clientId}",
             "secret:${secret}",
     })
@@ -33,7 +33,7 @@ public interface MeiTuanReserveClient {
      * @param secret
      * @return
      */
-    @Post(url = "http://iot-test.scyanzu.com/admin-api/meituan/yuding/ddzhYudingUpdatestock",contentType = "application/json",headers = {
+    @Post(url = "https://iot-test.scyanzu.com/admin-api/meituan/yuding/ddzhYudingUpdatestock",contentType = "application/json",headers = {
             "clientId:${clientId}",
             "secret:${secret}",
     })
