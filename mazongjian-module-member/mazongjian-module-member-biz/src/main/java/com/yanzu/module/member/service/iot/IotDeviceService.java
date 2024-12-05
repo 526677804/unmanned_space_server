@@ -209,7 +209,6 @@ public class IotDeviceService {
             String newSign = SecureUtil.md5(secret + t);
             if (newSign.equals(sign)) {
                 JSONObject data = json.getJSONObject("data");
-                IotDeviceRoomInfoVO deviceRoomVO = null;
                 switch (type) {
                     case "online":
                         //设备上线/下线
@@ -217,23 +216,7 @@ public class IotDeviceService {
                         break;
                     case "face_record":
                         //人脸识别记录回调
-                        //查找出设备
-                        deviceRoomVO = deviceInfoMapper.getDeviceRoomVO(data.getString("deviceSn"));
-                        //把照片url转成base64编码
-                        String base64Image = convertImageToBase64(data.getString("photoUrl"));
-                        FaceRecordDO faceRecordDO = new FaceRecordDO()
-                                .setStoreId(deviceRoomVO.getStoreId())
-                                .setFaceId(data.getString("faceId"))
-                                .setDeviceSn(data.getString("deviceSn"))
-                                .setAdmitGuid(data.getString("admitGuid"))
-                                .setPhotoUrl(data.getString("photoUrl"))
-                                .setPhotoData(base64Image)
-                                .setShowTime(new Date(data.getLong("showTime")))
-                                .setType(data.getInteger("type"));
-                        //模拟租户
-                        TenantUtils.execute(deviceRoomVO.getTenantId(), () -> {
-                            faceRecordMapper.insert(faceRecordDO);
-                        });
+                        callBackFace(data);
                         break;
                     case "call":
                         //客户呼叫
@@ -246,7 +229,25 @@ public class IotDeviceService {
         }
     }
 
-
+    private void callBackFace(JSONObject data){
+        //查找出设备
+        IotDeviceRoomInfoVO deviceRoomVO = deviceInfoMapper.getDeviceRoomVO(data.getString("deviceSn"));
+        //把照片url转成base64编码
+        String base64Image = convertImageToBase64(data.getString("photoUrl"));
+        FaceRecordDO faceRecordDO = new FaceRecordDO()
+                .setStoreId(deviceRoomVO.getStoreId())
+                .setFaceId(data.getString("faceId"))
+                .setDeviceSn(data.getString("deviceSn"))
+                .setAdmitGuid(data.getString("admitGuid"))
+                .setPhotoUrl(data.getString("photoUrl"))
+                .setPhotoData(base64Image)
+                .setShowTime(new Date(data.getLong("showTime")))
+                .setType(data.getInteger("type"));
+        //模拟租户
+        TenantUtils.execute(deviceRoomVO.getTenantId(), () -> {
+            faceRecordMapper.insert(faceRecordDO);
+        });
+    }
 
 
     /**

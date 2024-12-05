@@ -89,15 +89,15 @@ public class AppCallbackController {
         return payOrderService.updateProductOrder(xmlData);
     }
 
-    @PostMapping("/mt/reserve")
-    @Operation(summary = "物联网平台给我们推数据")
-    @PermitAll // 无需登录
-    @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
-    @Parameter(name = "xmlData")
-    public CommonResult mtReserve(@RequestBody MeiTuanReserveReqVo reqVo) {
-        System.out.println(reqVo);
-        return reserveCallback.matchMethod(reqVo);
-    }
+//    @PostMapping("/mt/reserve")
+//    @Operation(summary = "物联网平台给我们推数据")
+//    @PermitAll // 无需登录
+//    @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
+//    @Parameter(name = "xmlData")
+//    public CommonResult mtReserve(@RequestBody MeiTuanReserveReqVo reqVo) {
+//        System.out.println(reqVo);
+//        return reserveCallback.matchMethod(reqVo);
+//    }
 
 
 }

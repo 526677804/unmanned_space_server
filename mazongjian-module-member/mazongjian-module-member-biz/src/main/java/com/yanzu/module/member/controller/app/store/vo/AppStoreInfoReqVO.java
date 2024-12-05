@@ -37,16 +37,16 @@ public class AppStoreInfoReqVO {
     private String bannerImg;
 
     @Schema(description = "门店公告")
-    @NotNull(message = "门店公告不能为空")
+//    @NotNull(message = "门店公告不能为空")
     private String notice;
 
     @Schema(description = "纬度")
-    @NotNull(message = "纬度不能为空")
+//    @NotNull(message = "纬度不能为空")
     @Max(value = 999,message = "纬度最大999")
     private Double lat;
 
     @Schema(description = "经度")
-    @Max(value = 999,message = "经度最大999")
+//    @Max(value = 999,message = "经度最大999")
     @NotNull(message = "经度不能为空")
     private Double lon;
 
