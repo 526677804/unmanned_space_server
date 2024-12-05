@@ -140,22 +140,6 @@ public class OrderController {
         return success(appOrderService.getOrderInfo(orderId, orderKey));
     }
 
-//    @GetMapping("/getOrderInfo")
-//    @Operation(summary = "获取订单详情(开门按钮)", description = "我的订单使用")
-//    @PreAuthenticated
-//    public CommonResult<OrderInfoAppRespVO> getOrderInfo1() {
-//        return success(appOrderService.getOrderInfo(null, null));
-//    }
-
-//    @PostMapping("/startOrder/{orderId}")
-//    @Operation(summary = "开始订单", description = "我的订单使用")
-//    @PreAuthenticated
-//    @Parameter(name = "orderId")
-//    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
-//    public CommonResult<Boolean> startOrder(@PathVariable("orderId") Long orderId) {
-//        appOrderService.startOrder(orderId);
-//        return success(true);
-//    }
 
     @PostMapping("/cancelOrder/{orderId}")
     @Operation(summary = "取消订单 ", description = "我的订单使用")
