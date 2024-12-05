@@ -1,11 +1,13 @@
 package com.yanzu.module.member.service.storeinfo;
 
 import com.yanzu.framework.common.core.KeyValue;
+import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
 import com.yanzu.module.member.controller.app.manager.vo.AppVipBlacklistRespVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
+import com.yanzu.module.member.service.meituanreserve.vo.RoomInfoVo;
 
 import javax.validation.Valid;
 import java.io.InputStream;
@@ -153,4 +155,6 @@ public interface StoreInfoService {
      * @param id
      */
     void removeBlackList(Long id);
+
+    CommonResult<List<RoomInfoVo>> getStoreRoomInfo(Long storeId);
 }

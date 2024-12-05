@@ -10,6 +10,7 @@ import com.yanzu.module.member.controller.app.store.vo.AppRoomInfoListRespVO;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
+import com.yanzu.module.member.service.meituanreserve.vo.RoomInfoVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -67,5 +68,7 @@ public interface RoomInfoMapper extends BaseMapperX<RoomInfoDO> {
     List<AppRoomInfoListRespVO> getRoomInfoList2(@Param("storeIds") List<String> storeIds, @Param("storeId") Long storeId);
 
     List<Integer> getClassList(Long storeId);
+
+    List<RoomInfoVo> getStoreRoomInfo(Long storeId);
 
 }

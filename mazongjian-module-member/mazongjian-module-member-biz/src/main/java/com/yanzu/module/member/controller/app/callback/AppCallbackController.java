@@ -1,9 +1,12 @@
 package com.yanzu.module.member.controller.app.callback;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
+import com.yanzu.module.member.controller.app.meituanreserve.vo.MeiTuanReserveReqVo;
 import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.meituan.MeituanService;
+import com.yanzu.module.member.service.meituanreserve.MeiTuanReserveCallback;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +41,8 @@ public class AppCallbackController {
     @Resource
     private IotDeviceService iotDeviceService;
 
+    @Resource
+    private MeiTuanReserveCallback reserveCallback;
 
     @PostMapping("/wxpay/update")
     @Operation(summary = "微信支付回调")
@@ -84,6 +89,15 @@ public class AppCallbackController {
         return payOrderService.updateProductOrder(xmlData);
     }
 
+    @PostMapping("/mt/reserve")
+    @Operation(summary = "物联网平台给我们推数据")
+    @PermitAll // 无需登录
+    @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
+    @Parameter(name = "xmlData")
+    public CommonResult mtReserve(@RequestBody MeiTuanReserveReqVo reqVo) {
+        System.out.println(reqVo);
+        return reserveCallback.matchMethod(reqVo);
+    }
 
 
 }

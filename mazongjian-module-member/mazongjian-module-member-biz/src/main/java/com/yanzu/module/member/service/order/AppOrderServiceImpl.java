@@ -1,10 +1,17 @@
 package com.yanzu.module.member.service.order;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.HexUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.service.WxPayService;
+import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
@@ -12,6 +19,9 @@ import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.security.core.LoginUser;
 import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.framework.tenant.core.context.TenantContextHolder;
+import com.yanzu.module.member.controller.admin.user.vo.AppUserCreateReqVO;
+import com.yanzu.module.member.controller.app.meituanreserve.vo.MeiTuanReserveReqVo;
+import com.yanzu.module.member.controller.app.meituanreserve.vo.MeituanYudingBookResultCallbackReqVo;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
@@ -25,6 +35,8 @@ import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
+import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
+import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
@@ -43,6 +55,7 @@ import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.enums.AppWxPayTypeEnum;
+import com.yanzu.module.member.forest.MeiTuanReserveClient;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
@@ -50,7 +63,12 @@ import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
+import com.yanzu.module.member.service.meituanreserve.MeiTuanReserveService;
+import com.yanzu.module.member.service.order.vo.ProductInfoVo;
+import com.yanzu.module.member.service.order.vo.StoreInfoTenantIdVo;
 import com.yanzu.module.member.service.payorder.PayOrderService;
+import com.yanzu.module.member.service.user.MemberUserService;
+import com.yanzu.module.member.service.user.vo.SelectUserByTantentIdVo;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import com.yanzu.module.system.api.social.SocialUserApi;
@@ -82,6 +100,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
@@ -159,6 +178,12 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Resource
     private IotGroupPayService iotGroupPayService;
 
+    @Resource
+    private MemberUserService memberUserService;
+
+    @Resource
+    private MeiTuanReserveService meiTuanReserveService;
+
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -169,12 +194,17 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Resource
     private StoreMeituanInfoMapper storeMeituanInfoMapper;
 
+    @Resource
+    private MeiTuanReserveClient meiTuanReserveClient;
+
     @Autowired
     private PlatformTransactionManager transactionManager;
 
     @Value("${wx.pay.returnUrl}")
     private String returnUrl;
 
+    private static final String CLIENT_ID = "71b71240-f15f";
+    private static final String SECRET = "b92c9bdb-8b50-4454-b588-5e66a5e858fd";
 
     /**
      * @param roomId        房间id
@@ -1331,7 +1361,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         log.info("==========     开始执行订单定时检查任务     ==========");
         Date now = new Date();
         now.setSeconds(0);
-        log.info("当前时间:{}", DateUtils.dateToStr(now, DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
+        log.info("当前时间:{}", DateUtils.dateToStr(now, FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
         boolean night = now.getHours() < 8 && now.getMinutes() == 0;//是否深夜
         log.info("night:{}", night);
         //取出所有需要处理的订单
@@ -1476,7 +1506,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Async
     protected void sendClearMsg(Set<Long> roomIds) {
-        String dateStr = DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
+        String dateStr = DateUtils.dateToStr(new Date(), FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
         //查询出所有房间
         List<AppRoomListVO> roomList = roomInfoMapper.getListByIds(roomIds);
         //开始发消息
@@ -1492,7 +1522,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Async
     protected void sendClearMsg(Long roomId) {
-        String dateStr = DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
+        String dateStr = DateUtils.dateToStr(new Date(), FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
         AppRoomListVO vo = roomInfoMapper.getInfoById(roomId);
         StringBuffer sb = new StringBuffer();
         sb.append("订单已结束通知\n");
@@ -1697,6 +1727,63 @@ public class AppOrderServiceImpl implements AppOrderService {
         } else {
             throw exception(ORDER_NOT_FOUND_ERROR);
         }
+    }
+
+    @Override
+    public CommonResult startBooking(MeiTuanReserveReqVo reqVo) throws JsonProcessingException {
+        Long storeId = reqVo.getStoreId();
+        String message = reqVo.getMessage();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.readTree(message);
+        // 用户手机号
+        String mobile = rootNode.get("mobile").asText();
+
+        String begintime = rootNode.get("begintime").asText();
+        String endtime = rootNode.get("endtime").asText();
+        Date begin = DateUtils.strToDate(begintime, FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
+        Date end = DateUtils.strToDate(endtime, FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
+
+        // 产品信息
+        String products = rootNode.get("products").asText();
+        ProductInfoVo productInfoVo = BeanUtil.toBean(products, ProductInfoVo.class);
+
+        // 根据门店id 查询到租户编号
+        StoreInfoTenantIdVo storeInfoTenantIdVo = storeInfoMapper.getTenantId(storeId);
+
+        SelectUserByTantentIdVo selectUserByTantentIdVo = new SelectUserByTantentIdVo();
+        selectUserByTantentIdVo.setMobile(mobile);
+        selectUserByTantentIdVo.setTenantId(storeInfoTenantIdVo.getTenantId());
+
+        Long uid = memberUserMapper.getUidByMobileAndTenantId(selectUserByTantentIdVo);
+        // 根据手机号和租户编号未查询到用户 创建用户
+        if (ObjectUtils.isEmpty(uid)){
+            AppUserCreateReqVO appUserCreateReqVO = new AppUserCreateReqVO();
+            appUserCreateReqVO.setUserType((byte) 11);
+            appUserCreateReqVO.setMobile(mobile);
+            appUserCreateReqVO.setStatus(0);
+            uid = memberUserService.createAppUser(appUserCreateReqVO);
+        }
+
+        // 将开始预定的参数设置进入 订单校验
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(uid, null, Long.valueOf(productInfoVo.getProduct_id()), begin, end, null, null, null, false, false);
+        // todo 调用 预定结果回调 推消息给物联网平台
+        MeituanYudingBookResultCallbackReqVo meituanYudingBookResultCallbackReqVo = new MeituanYudingBookResultCallbackReqVo();
+
+        //todo 开始预定传递两个参数进入 预定结果推送 传递哪个进去
+        String orderId = rootNode.get("orderId").asText();
+        String uniOrderId = productInfoVo.getUni_order_id();
+        meituanYudingBookResultCallbackReqVo.setOrderId(orderId);
+        meituanYudingBookResultCallbackReqVo.setStoreId(storeId);
+        meituanYudingBookResultCallbackReqVo.setCode(wxPayOrderRespVO.getOrderNo() != null? 200:700);
+        meituanYudingBookResultCallbackReqVo.setBookStatus(wxPayOrderRespVO.getOrderNo() != null? 2:3);
+        // 预定结果回调
+        CommonResult commonResult = meiTuanReserveClient.reserveResult(meituanYudingBookResultCallbackReqVo, CLIENT_ID, SECRET);
+        // todo  推送房间信息至服务？
+//        if (wxPayOrderRespVO.getOrderNo() != null){
+//            meiTuanReserveService.updateStock(Long.valueOf(productInfoVo.getProduct_id()));
+//        }
+        return commonResult;
     }
 
 }

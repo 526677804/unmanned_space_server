@@ -60,4 +60,9 @@
     <select id="getNameById" resultType="java.lang.String">
         select nickname from member_user where deleted=0 and id=#{userId}
     </select>
+    <select id="getUidByMobileAndTenantId" resultType="Long" parameterType="com.yanzu.module.member.service.user.vo.SelectUserByTantentIdVo">
+        select id
+        from member_user
+        where mobile=#{mobile} and tenant_id = #{tenantId} and status=0
+    </select>
 </mapper>

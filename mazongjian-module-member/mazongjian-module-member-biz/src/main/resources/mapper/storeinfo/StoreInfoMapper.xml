@@ -247,5 +247,10 @@
         from member_store_info
         where deleted = 0 AND store_id=#{storeId}
     </select>
+    <select id="getTenantId" parameterType="Long" resultType="com.yanzu.module.member.service.order.vo.StoreInfoTenantIdVo">
+        select store_id , sotre_name , tenant_id
+        from member_store_info
+        where deleted = 0 AND store_id=#{storeId}
+    </select>
 
 </mapper>

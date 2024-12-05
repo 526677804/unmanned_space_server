@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class MeiTuanReserveRespVo {
+public class MeiTuanReserveReqVo {
 
     //消息类型
     @Schema(description = "消息类型")

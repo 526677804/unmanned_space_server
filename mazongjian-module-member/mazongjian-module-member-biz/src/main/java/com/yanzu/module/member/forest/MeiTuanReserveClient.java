@@ -2,6 +2,7 @@ package com.yanzu.module.member.forest;
 
 import com.dtflys.forest.annotation.*;
 import com.yanzu.framework.common.pojo.CommonResult;
+import com.yanzu.module.member.controller.app.meituanreserve.vo.MeituanYudingBookResultCallbackReqVo;
 import com.yanzu.module.member.controller.app.meituanreserve.vo.StoreRulePushReqVo;
 import com.yanzu.module.member.controller.app.meituanreserve.vo.UpdateStockReqVo;
 
@@ -38,5 +39,19 @@ public interface MeiTuanReserveClient {
             "secret:${secret}",
     })
     CommonResult pushData(@Body List<UpdateStockReqVo> reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
+
+
+    /**
+     * 开始预定之后执行  将预定结果推送美团   todo 未测试
+     * @param reqVo
+     * @param clientId
+     * @param secret
+     * @return
+     */
+    @Post(url = "https://iot-test.scyanzu.com/admin-api/meituan/yuding/bookResultCallback",contentType = "application/json",headers = {
+            "clientId:${clientId}",
+            "secret:${secret}",
+    })
+    CommonResult reserveResult(@Body MeituanYudingBookResultCallbackReqVo reqVo, @Var("clientId") String clientId, @Var("secret") String secret);
 
 }

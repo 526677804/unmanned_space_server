@@ -72,6 +72,7 @@ public class MeiTuanReserveService {
         deskSoldTimePeriodsSub.setBizType(roomInfoDO.getDeposit().compareTo(BigDecimal.ZERO) == 0 ? "1" : "3");
         List<TimePeriodItemsSub> timePeriodItemsSubs = new ArrayList<>();
         TimePeriodItemsSub timePeriodItemsSub = new TimePeriodItemsSub();
+        // 房间自带的禁止时间  todo 是否应该查询当天的订单 将开始和结束时间设置上去？
         if (ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart())) {
             timePeriodItemsSub.setBeginMinutes(0);
             timePeriodItemsSub.setEndMinutes(0);

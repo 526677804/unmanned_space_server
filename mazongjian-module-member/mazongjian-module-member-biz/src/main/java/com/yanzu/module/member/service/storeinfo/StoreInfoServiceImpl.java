@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.core.KeyValue;
+import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.framework.web.core.util.WebFrameworkUtils;
@@ -41,6 +42,7 @@ import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
+import com.yanzu.module.member.service.meituanreserve.vo.RoomInfoVo;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.user.MemberUserService;
@@ -887,6 +889,11 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         storeUserDO.setId(id);
         storeUserDO.setVipBlacklist(0);
         storeUserMapper.updateById(storeUserDO);
+    }
+
+    @Override
+    public CommonResult<List<RoomInfoVo>> getStoreRoomInfo(Long storeId) {
+        return CommonResult.success(roomInfoMapper.getStoreRoomInfo(storeId));
     }
 
 }

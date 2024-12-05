@@ -3,6 +3,7 @@ package com.yanzu.module.member.dal.mysql.user;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
+import com.yanzu.module.member.service.user.vo.SelectUserByTantentIdVo;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -23,6 +24,8 @@ public interface MemberUserMapper extends BaseMapperX<MemberUserDO> {
         return selectList(new LambdaQueryWrapperX<MemberUserDO>()
                 .likeIfPresent(MemberUserDO::getNickname, nickname));
     }
+
+    Long getUidByMobileAndTenantId(SelectUserByTantentIdVo vo);
 
 
 }

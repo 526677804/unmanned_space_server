@@ -1,6 +1,9 @@
 package com.yanzu.module.member.service.order;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
+import com.yanzu.module.member.controller.app.meituanreserve.vo.MeiTuanReserveReqVo;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
@@ -61,5 +64,12 @@ public interface AppOrderService {
 
     void controlKT(ControlKTReqVO reqVO);
 
+    /**
+     * 开始预订
+     * @param reqVo
+     * @return
+     * @throws JsonProcessingException
+     */
+    CommonResult startBooking(MeiTuanReserveReqVo reqVo) throws JsonProcessingException;
 
 }

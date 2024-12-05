@@ -11,6 +11,7 @@ import com.yanzu.module.member.controller.app.index.vo.*;
 import com.yanzu.module.member.controller.app.store.vo.AppStoreAdminReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppStoreAdminRespVO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
+import com.yanzu.module.member.service.order.vo.StoreInfoTenantIdVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -76,4 +77,5 @@ public interface StoreInfoMapper extends BaseMapperX<StoreInfoDO> {
 
     int renew(@Param("storeId") Long storeId, @Param("status") Integer status, @Param("newDate") LocalDateTime newDate);
 
+    StoreInfoTenantIdVo getTenantId(Long storeId);
 }
