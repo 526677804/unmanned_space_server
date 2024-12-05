@@ -9,8 +9,8 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
-    <select id="selectByOrderNo" resultType="Long" parameterType="String">
-        select order_id from product_order
+    <select id="selectByOrderNo" resultType="com.yanzu.module.member.dal.dataobject.productorder.ProductOrderDO" parameterType="String">
+        select * from product_order
         where order_no = #{orderNo}
     </select>
 

@@ -65,11 +65,11 @@ public interface AppOrderService {
     void controlKT(ControlKTReqVO reqVO);
 
     /**
-     * 开始预订
-     * @param reqVo
+     * 开始预定
+     * @param storeId
+     * @param message
      * @return
-     * @throws JsonProcessingException
      */
-    CommonResult startBooking(MeiTuanReserveReqVo reqVo) throws JsonProcessingException;
+    CommonResult startBooking(Long storeId , String message);
 
 }
