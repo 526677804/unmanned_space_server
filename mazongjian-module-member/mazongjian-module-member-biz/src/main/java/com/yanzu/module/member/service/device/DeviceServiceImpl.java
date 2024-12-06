@@ -1,6 +1,7 @@
 package com.yanzu.module.member.service.device;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.yanzu.framework.common.exception.ServiceException;
 import com.yanzu.module.member.controller.app.order.vo.ControlKTReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppAddDeviceReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
@@ -124,9 +125,15 @@ public class DeviceServiceImpl implements DeviceService {
                 iotDeviceContrlReqVO.setOutlet(0).setCmd("pulse");
                 param.add(iotDeviceContrlReqVO);
                 reqVO.setDeviceSn(sn).setParams(param);
-                boolean flag = iotDeviceService.control(reqVO);
-                if (!flag) {
-                    throw exception(DEVICE_OPRATION_ERROR);
+                try {
+                    iotDeviceService.control(reqVO);
+                } catch (ServiceException e) {
+                    //忽略密码锁开锁失败
+                    if (e.getCode().compareTo(1004004070) != 0) {
+                        throw e;
+                    } else {
+                        log.error("密码锁开锁失败:{},{}",sn, e.getMessage());
+                    }
                 }
             }
         } else {
@@ -213,7 +220,16 @@ public class DeviceServiceImpl implements DeviceService {
                     case 5:
                         //如果有网关 就尝试网关开锁
                         if (countGateway(storeId) > 0) {
-                            openDoor(x.getDeviceSn(), storeId);
+                            try {
+                                openDoor(x.getDeviceSn(), storeId);
+                            } catch (ServiceException e) {
+                                //忽略密码锁开锁失败
+                                if (e.getCode().compareTo(1004004070) != 0) {
+                                    throw e;
+                                } else {
+                                    log.error("密码锁开锁失败:{},{}", x.getDeviceSn(),e.getMessage());
+                                }
+                            }
                         }
                         break;
                     case 6:
@@ -286,7 +302,16 @@ public class DeviceServiceImpl implements DeviceService {
                     case 5:
                         //如果有网关 就尝试网关关锁
                         if (countGateway(storeId) > 0) {
-                            closeDoor(x.getDeviceSn());
+                            try {
+                                closeDoor(x.getDeviceSn());
+                            } catch (ServiceException e) {
+                                //忽略密码锁开锁失败
+                                if (e.getCode().compareTo(1004004070) != 0) {
+                                    throw e;
+                                } else {
+                                    log.error("密码锁开锁失败:{},{}", x.getDeviceSn(), e.getMessage());
+                                }
+                            }
                         }
                         break;
                     case 6:

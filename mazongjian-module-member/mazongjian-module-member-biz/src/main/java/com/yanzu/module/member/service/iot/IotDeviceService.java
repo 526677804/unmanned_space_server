@@ -381,6 +381,7 @@ public class IotDeviceService {
 
     public String getLockPwd(String sn){
         IotDeviceBaseVO reqVO=new IotDeviceBaseVO().setDeviceSn(sn);
+        reqVO.setTs(new Date().getTime());
         IotResult<String> resp = iotDeviceClient.getLockPwd(reqVO, clientId, secret);
         if (resp.getCode().intValue() == 0) {
             return resp.getData();
