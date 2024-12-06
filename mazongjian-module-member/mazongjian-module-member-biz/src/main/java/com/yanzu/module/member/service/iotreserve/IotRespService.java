@@ -1,12 +1,21 @@
 package com.yanzu.module.member.service.iotreserve;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.module.member.controller.app.meituanreserve.vo.*;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
+import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.forest.MeiTuanReserveClient;
+import com.yanzu.module.member.service.iot.device.IotResult;
+import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
+import com.yanzu.module.member.service.iotreserve.enums.YudingRequestPaltformTypeEnum;
+import com.yanzu.module.member.service.iotreserve.enums.YudingRequestTypeEnum;
+import com.yanzu.module.member.service.iotreserve.vo.YudingCommonReqVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,6 +35,8 @@ public class IotRespService {
 
     @Autowired
     private MeiTuanReserveClient reserveClient;
+    @Autowired
+    private IotClient iotClient;
 
     @Resource
     private RoomInfoMapper roomInfoMapper;
@@ -50,7 +61,7 @@ public class IotRespService {
      * @param roomId
      * @return
      */
-    public CommonResult updateStock(Long roomId) {
+    public IotResult updateStock(Long roomId) {
 
         // updateStockReqVos 发送client请求的vo
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
@@ -71,7 +82,7 @@ public class IotRespService {
         if (ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart())) {
             timePeriodItemsSub.setBeginMinutes(0);
             timePeriodItemsSub.setEndMinutes(0);
-            timePeriodItemsSub.setBeginTime(0L);
+            timePeriodItemsSub.setBeginTime(System.currentTimeMillis());
             timePeriodItemsSub.setEndTime(0L);
         } else {
             String banTimeStart = roomInfoDO.getBanTimeStart();
@@ -87,7 +98,18 @@ public class IotRespService {
         deskSoldTimePeriodsSubs.add(deskSoldTimePeriodsSub);
         updateStockReqVo.setDeskSoldTimePeriods(deskSoldTimePeriodsSubs);
 
-        return reserveClient.pushData(updateStockReqVo, CLIENT_ID, SECRET);
+        IotPushDataReqVO iotPushDataReqVO = new IotPushDataReqVO();
+        iotPushDataReqVO.setType("push_yuding_data");
+
+        YudingCommonReqVO yudingCommonReqVO = new YudingCommonReqVO();
+        yudingCommonReqVO.setPlatformType(YudingRequestPaltformTypeEnum.MT.getType());
+        yudingCommonReqVO.setYudingRequestType(YudingRequestTypeEnum.MT_DDZH_YUDING_UPDATESTOCK.getType());
+        yudingCommonReqVO.setStoreId(roomInfoDO.getStoreId());
+        yudingCommonReqVO.setData(JSONObject.toJSONString(updateStockReqVo));
+
+        iotPushDataReqVO.setData(JSON.parseObject(JSON.toJSONString(yudingCommonReqVO),JSONObject.class));
+
+        return iotClient.pushData(iotPushDataReqVO, CLIENT_ID, SECRET);
     }
 
     public static Integer convertToMinutes(String timeStr) {
@@ -96,6 +118,5 @@ public class IotRespService {
         int minutes = Integer.parseInt(parts[1]);
         return hours * 60 + minutes;
     }
-
 
 }

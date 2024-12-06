@@ -2,6 +2,7 @@ package com.yanzu.module.member.service.order;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.HexUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -55,6 +56,7 @@ import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.enums.AppWxPayTypeEnum;
+import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.forest.MeiTuanReserveClient;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.douyin.DouyinService;
@@ -62,6 +64,10 @@ import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
 import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
+import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
+import com.yanzu.module.member.service.iotreserve.enums.YudingRequestPaltformTypeEnum;
+import com.yanzu.module.member.service.iotreserve.enums.YudingRequestTypeEnum;
+import com.yanzu.module.member.service.iotreserve.vo.YudingCommonReqVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.iotreserve.IotRespService;
 import com.yanzu.module.member.service.order.vo.*;
@@ -200,6 +206,8 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Resource
     private MeiTuanReserveClient meiTuanReserveClient;
+    @Autowired
+    private IotClient iotClient;
 
     @Autowired
     private PlatformTransactionManager transactionManager;
@@ -1794,7 +1802,19 @@ public class AppOrderServiceImpl implements AppOrderService {
         meituanYudingBookResultCallbackReqVo.setCode(wxPayOrderRespVO.get().getOrderNo() != null? 200:700);
         meituanYudingBookResultCallbackReqVo.setBookStatus(wxPayOrderRespVO.get().getOrderNo() != null? 2:3);
         // 预定结果回调
-        meiTuanReserveClient.reserveResult(meituanYudingBookResultCallbackReqVo, CLIENT_ID, SECRET);
+        IotPushDataReqVO iotPushDataReqVO = new IotPushDataReqVO();
+        iotPushDataReqVO.setType("push_yuding_data");
+
+        YudingCommonReqVO yudingCommonReqVO = new YudingCommonReqVO();
+        yudingCommonReqVO.setPlatformType(YudingRequestPaltformTypeEnum.MT.getType());
+        yudingCommonReqVO.setYudingRequestType(YudingRequestTypeEnum.MT_BOOK_RESULT_CALLBACK.getType());
+        yudingCommonReqVO.setStoreId(storeId);
+        yudingCommonReqVO.setData(JSONObject.toJSONString(meituanYudingBookResultCallbackReqVo));
+
+        iotPushDataReqVO.setData(JSON.parseObject(JSON.toJSONString(yudingCommonReqVO),JSONObject.class));
+
+        iotClient.pushData(iotPushDataReqVO, CLIENT_ID, SECRET);
+
         // todo  推送房间信息至服务？
 //        if (wxPayOrderRespVO.getOrderNo() != null){
 //            meiTuanReserveService.updateStock(Long.valueOf(productInfoVo.getProduct_id()));

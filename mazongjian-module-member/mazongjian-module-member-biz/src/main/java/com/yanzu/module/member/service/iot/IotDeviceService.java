@@ -218,7 +218,7 @@ public class IotDeviceService {
                         //客户呼叫
                         callTask(data);
                         break;
-                    case "yuding_msg":
+                    case "mt_yuding_msg":
                         reserveCallback.matchMethod(data, response);
                         break;
                 }
