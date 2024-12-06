@@ -8,6 +8,7 @@ import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -66,11 +67,43 @@ public interface AppOrderService {
 
     /**
      * 开始预定
+     *
      * @param storeId
      * @param message
+     * @param response
      * @return
      */
-    CommonResult startBooking(Long storeId , String message);
+    void startBooking(Long storeId , String message, HttpServletResponse response);
+
+    /**
+     * 预定结果同步
+     *
+     * @param storeId
+     * @param message
+     * @param response
+     * @return
+     */
+    void resultSynchronization(Long storeId , String message, HttpServletResponse response);
+
+    /**
+     * 取消预定
+     *
+     * @param storeId
+     * @param message
+     * @param response
+     * @return
+     */
+    void cancelReserve(Long storeId , String message, HttpServletResponse response);
+
+    /**
+     * 核销状态查询
+     *
+     * @param storeId
+     * @param message
+     * @param response
+     * @return
+     */
+    void verificationStatus(Long storeId , String message, HttpServletResponse response);
 
     String getLockPwd(String orderKey);
 

@@ -9,6 +9,7 @@ import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.service.meituanreserve.vo.RoomInfoVo;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.InputStream;
 import java.util.Collection;
@@ -156,7 +157,7 @@ public interface StoreInfoService {
      */
     void removeBlackList(Long id);
 
-    CommonResult<List<RoomInfoVo>> getStoreRoomInfo(Long storeId);
+    void getStoreRoomInfo(Long storeId, HttpServletResponse response);
 
     String getLockPwd(AppGetLockPwdReqVO reqVO);
 

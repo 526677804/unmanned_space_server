@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 /**
@@ -75,9 +76,9 @@ public class AppCallbackController {
     @Operation(summary = "物联网平台回调")
     @PermitAll // 无需登录
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
-    public void iotCallback(@RequestBody JSONObject json) {
+    public void iotCallback(@RequestBody JSONObject json, HttpServletResponse response) {
         log.info("收到物联网平台回调,params:{}", json);
-        iotDeviceService.iotPlatform(json);
+        iotDeviceService.iotPlatform(json, response);
     }
 
 

@@ -3,6 +3,7 @@ package com.yanzu.module.member.service.storeinfo;
 import cn.binarywang.wx.miniapp.api.WxMaQrcodeService;
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.hutool.core.io.IoUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,6 +15,7 @@ import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
 import com.yanzu.module.member.controller.admin.user.vo.AppUserCreateReqVO;
+import com.yanzu.module.member.controller.app.callback.common.MeituanYudingMsgCallbackCommonRespVo;
 import com.yanzu.module.member.controller.app.manager.vo.AppVipBlacklistRespVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.convert.discountrules.DiscountRulesConvert;
@@ -60,6 +62,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -892,8 +896,15 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     }
 
     @Override
-    public CommonResult<List<RoomInfoVo>> getStoreRoomInfo(Long storeId) {
-        return CommonResult.success(roomInfoMapper.getStoreRoomInfo(storeId));
+    public void getStoreRoomInfo(Long storeId, HttpServletResponse response) {
+        try {
+            response.getWriter().write(JSONObject.toJSONString(
+                    MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(
+                            roomInfoMapper.getStoreRoomInfo(storeId)))));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override

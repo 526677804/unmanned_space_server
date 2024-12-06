@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -201,8 +202,9 @@ public class IotDeviceService {
      * 新版本回调接收 建议用此方式
      *
      * @param json
+     * @param response
      */
-    public void iotPlatform(JSONObject json) {
+    public void iotPlatform(JSONObject json, HttpServletResponse response) {
         if (json.containsKey("type") && json.containsKey("t") && json.containsKey("sign")) {
             String type = json.getString("type");
             String sign = json.getString("sign");
@@ -225,7 +227,7 @@ public class IotDeviceService {
                         callTask(data);
                         break;
                     case "yuding_msg":
-                        reserveCallback.matchMethod(data);
+                        reserveCallback.matchMethod(data, response);
                         break;
                 }
             } else {
