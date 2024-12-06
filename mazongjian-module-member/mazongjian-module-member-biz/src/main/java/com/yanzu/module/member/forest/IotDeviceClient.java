@@ -1,5 +1,6 @@
 package com.yanzu.module.member.forest;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dtflys.forest.annotation.JSONBody;
 import com.dtflys.forest.annotation.Post;
 import com.dtflys.forest.annotation.Query;
@@ -141,6 +142,6 @@ public interface IotDeviceClient {
                     "clientId:${clientId}",
                     "secret:${secret}",
             })
-    IotResult<String> getLockPwd(@JSONBody IotDeviceBaseVO reqVO, @Var("clientId")String clientId,  @Var("secret") String secret);
+    IotResult<JSONObject> getLockPwd(@JSONBody IotDeviceBaseVO reqVO, @Var("clientId")String clientId, @Var("secret") String secret);
 
 }

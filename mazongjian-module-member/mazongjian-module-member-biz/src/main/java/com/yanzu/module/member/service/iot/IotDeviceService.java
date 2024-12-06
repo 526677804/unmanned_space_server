@@ -1,6 +1,7 @@
 package com.yanzu.module.member.service.iot;
 
 import cn.hutool.crypto.SecureUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dtflys.forest.annotation.JSONBody;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
@@ -382,9 +383,9 @@ public class IotDeviceService {
     public String getLockPwd(String sn){
         IotDeviceBaseVO reqVO=new IotDeviceBaseVO().setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
-        IotResult<String> resp = iotDeviceClient.getLockPwd(reqVO, clientId, secret);
+        IotResult<JSONObject> resp = iotDeviceClient.getLockPwd(reqVO, clientId, secret);
         if (resp.getCode().intValue() == 0) {
-            return resp.getData();
+            return resp.getData().getString("pwd");
         } else {
             throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
         }

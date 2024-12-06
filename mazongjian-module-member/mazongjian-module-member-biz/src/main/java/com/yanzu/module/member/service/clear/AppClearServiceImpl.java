@@ -223,7 +223,7 @@ public class AppClearServiceImpl implements AppClearService {
             if (!ObjectUtils.isEmpty(sn)) {
                 return deviceService.getLockPwd(getLoginUserId(), clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), sn);
             } else {
-                throw exception(DATA_NOT_EXISTS);
+                throw exception(LOCK_NOT_FOUND_ERROR);
             }
         } else {
             throw exception(CLEAR_OPEN_DOOR_ERROR);

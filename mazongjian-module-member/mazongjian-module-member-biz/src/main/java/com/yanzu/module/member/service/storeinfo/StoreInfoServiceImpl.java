@@ -909,9 +909,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             sn = deviceInfoMapper.getSnByRoomIdAndType(reqVO.getRoomId(), AppEnum.device_type.LOCK.getValue());
         }
         if (!ObjectUtils.isEmpty(sn)) {
-            deviceService.getLockPwd(getLoginUserId(), reqVO.getStoreId(), reqVO.getRoomId(), sn);
+            return deviceService.getLockPwd(getLoginUserId(), reqVO.getStoreId(), reqVO.getRoomId(), sn);
         }
-        throw exception(DATA_NOT_EXISTS);
+        throw exception(LOCK_NOT_FOUND_ERROR);
     }
 
 }

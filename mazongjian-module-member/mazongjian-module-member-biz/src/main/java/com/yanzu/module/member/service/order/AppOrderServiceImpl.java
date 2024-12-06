@@ -1804,7 +1804,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (!ObjectUtils.isEmpty(sn)) {
                     return deviceService.getLockPwd(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), sn);
                 } else {
-                    throw exception(DATA_NOT_EXISTS);
+                    throw exception(LOCK_NOT_FOUND_ERROR);
                 }
             } else {
                 throw exception(CLEAR_OPEN_DOOR_ERROR);
