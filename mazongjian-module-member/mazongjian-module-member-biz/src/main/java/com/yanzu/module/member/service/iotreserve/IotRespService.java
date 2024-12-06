@@ -1,14 +1,11 @@
-package com.yanzu.module.member.service.meituanreserve;
+package com.yanzu.module.member.service.iotreserve;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.module.member.controller.app.meituanreserve.vo.*;
-import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
-import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.forest.MeiTuanReserveClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +19,7 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class MeiTuanReserveService {
+public class IotRespService {
 
     private static final String CLIENT_ID = "71b71240-f15f";
     private static final String SECRET = "b92c9bdb-8b50-4454-b588-5e66a5e858fd";
@@ -56,8 +53,6 @@ public class MeiTuanReserveService {
     public CommonResult updateStock(Long roomId) {
 
         // updateStockReqVos 发送client请求的vo
-        List<UpdateStockReqVo> updateStockReqVos = new ArrayList<>();
-
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
 
         UpdateStockReqVo updateStockReqVo = new UpdateStockReqVo();
@@ -91,9 +86,8 @@ public class MeiTuanReserveService {
         deskSoldTimePeriodsSub.setTimePeriodItems(timePeriodItemsSubs);
         deskSoldTimePeriodsSubs.add(deskSoldTimePeriodsSub);
         updateStockReqVo.setDeskSoldTimePeriods(deskSoldTimePeriodsSubs);
-        updateStockReqVos.add(updateStockReqVo);
 
-        return reserveClient.pushData(updateStockReqVos, CLIENT_ID, SECRET);
+        return reserveClient.pushData(updateStockReqVo, CLIENT_ID, SECRET);
     }
 
     public static Integer convertToMinutes(String timeStr) {
@@ -102,5 +96,6 @@ public class MeiTuanReserveService {
         int minutes = Integer.parseInt(parts[1]);
         return hours * 60 + minutes;
     }
+
 
 }

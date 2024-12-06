@@ -2,13 +2,10 @@ package com.yanzu.module.member.controller.app.meituanreserve;
 
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.module.member.controller.app.meituanreserve.vo.StoreRuleReqVo;
-import com.yanzu.module.member.service.meituanreserve.MeiTuanReserveService;
+import com.yanzu.module.member.service.iotreserve.IotRespService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -19,7 +16,7 @@ import javax.annotation.Resource;
 public class MeiTuanReserveController {
 
     @Resource
-    private MeiTuanReserveService reserveService;
+    private IotRespService reserveService;
 
     @PostMapping("/push/rule")
     public CommonResult pushRule(@RequestBody StoreRuleReqVo storeRuleReqVo){

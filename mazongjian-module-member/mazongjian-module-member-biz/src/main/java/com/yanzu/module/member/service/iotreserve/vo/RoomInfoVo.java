@@ -1,4 +1,4 @@
-package com.yanzu.module.member.service.meituanreserve.vo;
+package com.yanzu.module.member.service.iotreserve.vo;
 
 import lombok.Data;
 

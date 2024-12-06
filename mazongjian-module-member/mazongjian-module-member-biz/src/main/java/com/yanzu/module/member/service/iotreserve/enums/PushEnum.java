@@ -1,4 +1,4 @@
-package com.yanzu.module.member.service.meituanreserve.enums;
+package com.yanzu.module.member.service.iotreserve.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

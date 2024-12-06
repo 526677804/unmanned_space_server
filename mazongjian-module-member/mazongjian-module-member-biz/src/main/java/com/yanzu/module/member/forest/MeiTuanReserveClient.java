@@ -38,7 +38,7 @@ public interface MeiTuanReserveClient {
             "clientId:${clientId}",
             "secret:${secret}",
     })
-    CommonResult pushData(@Body List<UpdateStockReqVo> reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
+    CommonResult pushData(@Body UpdateStockReqVo reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
 
     /**

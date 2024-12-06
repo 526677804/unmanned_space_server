@@ -2,7 +2,6 @@ package com.yanzu.module.member.service.order;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.HexUtil;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.exception.ServiceException;
-import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
@@ -23,7 +21,6 @@ import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
 import com.yanzu.module.member.controller.admin.user.vo.AppUserCreateReqVO;
 import com.yanzu.module.member.controller.app.callback.common.MeituanYudingMsgCallbackCommonRespVo;
-import com.yanzu.module.member.controller.app.meituanreserve.vo.MeiTuanReserveReqVo;
 import com.yanzu.module.member.controller.app.meituanreserve.vo.MeituanYudingBookResultCallbackReqVo;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
@@ -38,7 +35,6 @@ import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
-import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
@@ -67,11 +63,10 @@ import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
-import com.yanzu.module.member.service.meituanreserve.MeiTuanReserveService;
+import com.yanzu.module.member.service.iotreserve.IotRespService;
 import com.yanzu.module.member.service.order.vo.*;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.user.MemberUserService;
-import com.yanzu.module.member.service.user.vo.SelectUserByTantentIdVo;
 import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import com.yanzu.module.system.api.social.SocialUserApi;
@@ -191,7 +186,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     private MemberUserService memberUserService;
 
     @Resource
-    private MeiTuanReserveService meiTuanReserveService;
+    private IotRespService meiTuanReserveService;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -1786,7 +1781,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             wxPayOrderRespVO.set(preOrder(uid.get(), null, Long.valueOf(productInfoVo.getProduct_id()), begin, end, null, null, null, false, false));
             // 将美团提供的id存入
             OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getOrderNo, wxPayOrderRespVO.get().getOrderNo());
-            orderInfoDO.setMtOrderId(orderId);
+            orderInfoDO.setTripartiteOrderIdOrderId(orderId);
             orderInfoMapper.updateById(orderInfoDO);
         });
 
@@ -1854,7 +1849,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         Long tenantId = storeInfoTenantIdVo.getTenantId();
         try {
             MeituanYudingMsgCallbackCommonRespVo ok = TenantUtils.execute(tenantId, () -> {
-                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getMtOrderId, orderId);
+                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderIdOrderId, orderId);
                 // 已经生成了订单 但是结果同步通知预订
                 if (!ObjectUtils.isEmpty(orderInfoDO) && bookStatus.equals("3") || ObjectUtils.isEmpty(orderInfoDO) && bookStatus.equals("2")) {
                     throw new ServiceException(500, "预订结果不一致。");
@@ -1913,7 +1908,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         try {
             // 模拟商户取消订单
             MeituanYudingMsgCallbackCommonRespVo ok = TenantUtils.execute(storeInfoTenantIdVo.getTenantId(), () -> {
-                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getMtOrderId, orderId);
+                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderIdOrderId, orderId);
                 if (ObjectUtils.isEmpty(orderInfoDO)) {
                     throw new ServiceException(500, "未找到相关订单");
                 }
@@ -1953,7 +1948,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         StoreInfoTenantIdVo storeInfoTenantIdVo = storeInfoMapper.getTenantId(storeId);
         try {
             MeituanYudingMsgCallbackCommonRespVo success = TenantUtils.execute(storeInfoTenantIdVo.getTenantId(), () -> {
-                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getMtOrderId, orderId);
+                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderIdOrderId, orderId);
                 if (ObjectUtils.isEmpty(orderInfoDO)) {
                     throw new ServiceException(500, "未查询到相关订单。");
                 }
@@ -1963,7 +1958,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
                 VerificationStatusRespVo verificationStatusRespVo = new VerificationStatusRespVo();
                 verificationStatusRespVo.setConsumeStatus(status == 1 || status == 2 ? 2 : 1);
-                verificationStatusRespVo.setOrderId(orderInfoDO.getMtOrderId());
+                verificationStatusRespVo.setOrderId(orderInfoDO.getTripartiteOrderIdOrderId());
                 return MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(verificationStatusRespVo));
             });
             response.getWriter().write(JSONObject.toJSONString(success));

@@ -1,11 +1,8 @@
-package com.yanzu.module.member.service.meituanreserve;
+package com.yanzu.module.member.service.iotreserve;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.module.member.controller.app.callback.common.MeituanYudingMsgCallbackCommonRespVo;
-import com.yanzu.module.member.controller.app.meituanreserve.vo.MeiTuanReserveReqVo;
-import com.yanzu.module.member.service.meituanreserve.enums.PushEnum;
+import com.yanzu.module.member.service.iotreserve.enums.PushEnum;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +14,7 @@ import java.io.IOException;
 
 @Service
 @Slf4j
-public class MeiTuanReserveCallback {
+public class YuDingCallback {
 
     @Resource
     private StoreInfoService storeInfoService;

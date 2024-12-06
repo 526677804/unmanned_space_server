@@ -1,12 +1,10 @@
 package com.yanzu.module.member.controller.app.callback;
 
 import com.alibaba.fastjson.JSONObject;
-import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
-import com.yanzu.module.member.controller.app.meituanreserve.vo.MeiTuanReserveReqVo;
 import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.meituan.MeituanService;
-import com.yanzu.module.member.service.meituanreserve.MeiTuanReserveCallback;
+import com.yanzu.module.member.service.iotreserve.YuDingCallback;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -43,7 +41,7 @@ public class AppCallbackController {
     private IotDeviceService iotDeviceService;
 
     @Resource
-    private MeiTuanReserveCallback reserveCallback;
+    private YuDingCallback reserveCallback;
 
     @PostMapping("/wxpay/update")
     @Operation(summary = "微信支付回调")

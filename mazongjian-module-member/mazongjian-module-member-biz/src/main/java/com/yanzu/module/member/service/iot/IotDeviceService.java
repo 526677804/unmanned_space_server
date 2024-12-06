@@ -1,7 +1,6 @@
 package com.yanzu.module.member.service.iot;
 
 import cn.hutool.crypto.SecureUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dtflys.forest.annotation.JSONBody;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
@@ -13,7 +12,7 @@ import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.forest.IotDeviceClient;
 import com.yanzu.module.member.service.iot.device.*;
 import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
-import com.yanzu.module.member.service.meituanreserve.MeiTuanReserveCallback;
+import com.yanzu.module.member.service.iotreserve.YuDingCallback;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
@@ -24,19 +23,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -74,7 +66,7 @@ public class IotDeviceService {
     private WorkWxService workWxService;
 
     @Resource
-    private MeiTuanReserveCallback reserveCallback;
+    private YuDingCallback reserveCallback;
 
 
     public void pushData(IotPushDataReqVO iotPushDataReqVO) {

@@ -10,7 +10,7 @@ import com.yanzu.module.member.controller.app.store.vo.AppRoomInfoListRespVO;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListRespVO;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
-import com.yanzu.module.member.service.meituanreserve.vo.RoomInfoVo;
+import com.yanzu.module.member.service.iotreserve.vo.RoomInfoVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
