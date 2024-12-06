@@ -40,6 +40,7 @@ import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
+import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.groupPay.GroupPayInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
@@ -162,6 +163,9 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Resource
     private AppUserMapper appUserMapper;
+
+    @Resource
+    private DeviceInfoMapper deviceInfoMapper;
 
     @Resource
     private GroupPayInfoMapper groupPayInfoMapper;
@@ -1757,7 +1761,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 
         Long uid = memberUserMapper.getUidByMobileAndTenantId(selectUserByTantentIdVo);
         // 根据手机号和租户编号未查询到用户 创建用户
-        if (ObjectUtils.isEmpty(uid)){
+        if (ObjectUtils.isEmpty(uid)) {
             AppUserCreateReqVO appUserCreateReqVO = new AppUserCreateReqVO();
             appUserCreateReqVO.setUserType((byte) 11);
             appUserCreateReqVO.setMobile(mobile);
@@ -1775,8 +1779,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         String uniOrderId = productInfoVo.getUni_order_id();
         meituanYudingBookResultCallbackReqVo.setOrderId(orderId);
         meituanYudingBookResultCallbackReqVo.setStoreId(storeId);
-        meituanYudingBookResultCallbackReqVo.setCode(wxPayOrderRespVO.getOrderNo() != null? 200:700);
-        meituanYudingBookResultCallbackReqVo.setBookStatus(wxPayOrderRespVO.getOrderNo() != null? 2:3);
+        meituanYudingBookResultCallbackReqVo.setCode(wxPayOrderRespVO.getOrderNo() != null ? 200 : 700);
+        meituanYudingBookResultCallbackReqVo.setBookStatus(wxPayOrderRespVO.getOrderNo() != null ? 2 : 3);
         // 预定结果回调
         CommonResult commonResult = meiTuanReserveClient.reserveResult(meituanYudingBookResultCallbackReqVo, CLIENT_ID, SECRET);
         // todo  推送房间信息至服务？
@@ -1784,6 +1788,25 @@ public class AppOrderServiceImpl implements AppOrderService {
 //            meiTuanReserveService.updateStock(Long.valueOf(productInfoVo.getProduct_id()));
 //        }
         return commonResult;
+    }
+
+    @Override
+    public String getLockPwd(String orderKey) {
+        OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(new LambdaQueryWrapperX<OrderInfoDO>().eq(OrderInfoDO::getOrderKey, orderKey));
+        if (!ObjectUtils.isEmpty(orderInfoDO)) {
+            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                String sn = deviceInfoMapper.getSnByRoomIdAndType(orderInfoDO.getRoomId(), AppEnum.device_type.LOCK.getValue());
+                if (!ObjectUtils.isEmpty(sn)) {
+                    return deviceService.getLockPwd(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), sn);
+                } else {
+                    throw exception(DATA_NOT_EXISTS);
+                }
+            } else {
+                throw exception(CLEAR_OPEN_DOOR_ERROR);
+            }
+        } else {
+            throw exception(ORDER_NOT_FOUND_ERROR);
+        }
     }
 
 }

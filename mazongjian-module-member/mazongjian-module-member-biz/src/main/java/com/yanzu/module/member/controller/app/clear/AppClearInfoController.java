@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
 
 import java.util.concurrent.TimeUnit;
@@ -120,4 +121,11 @@ public class AppClearInfoController {
         return success(appClearService.getClearBillPage(reqVO));
     }
 
+    @PostMapping("/getLockPwd")
+    @Operation(summary = "获取智能锁随机密码", description = "保洁订单使用")
+    @PreAuthenticated
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<String> getLockPwd(@PathVariable("id") Long id) {
+        return success(appClearService.getLockPwd(id));
+    }
 }

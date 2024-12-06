@@ -20,5 +20,5 @@ public interface AppClearService {
 
     void finish(AppStartClearReqVO reqVO);
 
-
+    String getLockPwd(Long id);
 }

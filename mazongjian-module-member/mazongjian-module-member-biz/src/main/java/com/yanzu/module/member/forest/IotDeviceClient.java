@@ -128,4 +128,19 @@ public interface IotDeviceClient {
                     "secret:${secret}",
             })
     IotResult<IotAddLockRespVO> addLock(@JSONBody AppAddLockReqVO req, @Var("clientId")String clientId,  @Var("secret") String secret);
+
+    /**
+     * 获取智能锁随机密码
+     * @param reqVO
+     * @param clientId
+     * @param secret
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/device/getLockPwd",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<String> getLockPwd(@JSONBody IotDeviceBaseVO reqVO, @Var("clientId")String clientId,  @Var("secret") String secret);
+
 }

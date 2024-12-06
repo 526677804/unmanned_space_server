@@ -1,5 +1,6 @@
 package com.yanzu.module.member.api.user;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.binarywang.wxpay.bean.profitsharing.ProfitSharingFinishRequest;
@@ -11,11 +12,17 @@ import com.yanzu.module.member.api.user.dto.MemberUserRespDTO;
 import com.yanzu.module.member.convert.user.UserConvert;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
+import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
+import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
+import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.forest.IotClient;
+import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
@@ -59,7 +66,13 @@ public class MemberUserApiImpl implements MemberUserApi {
     private PayOrderMapper payOrderMapper;
 
     @Resource
+    private IotDeviceService iotDeviceService;
+
+    @Resource
     private StoreInfoMapper storeInfoMapper;
+
+    @Resource
+    private RoomInfoMapper roomInfoMapper;
 
     @Value("${wx.pay.splitMchId}")
     private String splitMchId;
@@ -110,6 +123,25 @@ public class MemberUserApiImpl implements MemberUserApi {
         discountRulesMapper.executeExpire();
         //处理门店到期
         storeInfoMapper.executeExpire();
+        //定时上报一下门店的信息，用于美团预定同步
+        List<StoreInfoDO> storeInfoDOS = storeInfoMapper.selectList();
+        if (!CollectionUtils.isEmpty(storeInfoDOS)) {
+            IotPushDataReqVO storeDataReq = new IotPushDataReqVO();
+            storeDataReq.setType("push_store_list");
+            JSONObject list = new JSONObject();
+            list.put("list", storeInfoDOS);
+            storeDataReq.setData(list);
+            iotDeviceService.pushData(storeDataReq);
+        }
+        List<RoomInfoDO> roomInfoDOS = roomInfoMapper.selectList();
+        if (!CollectionUtils.isEmpty(roomInfoDOS)) {
+            IotPushDataReqVO roomDataReq = new IotPushDataReqVO();
+            roomDataReq.setType("push_room_list");
+            JSONObject list = new JSONObject();
+            list.put("list", roomInfoDOS);
+            roomDataReq.setData(list);
+            iotDeviceService.pushData(roomDataReq);
+        }
     }
 
     @Override
@@ -124,7 +156,7 @@ public class MemberUserApiImpl implements MemberUserApi {
             for (Map.Entry<Long, List<PayOrderDO>> entry : listMap.entrySet()) {
                 //查询分账比例
                 StoreWxpayConfigDO config = myWxService.getWxPayConfig(entry.getKey());
-                if(config.getSplit()){
+                if (config.getSplit()) {
                     //初始化微信支付
                     WxPayService wxPayService = myWxService.initWxPay(entry.getKey());
                     //初始化分账服务

@@ -40,4 +40,7 @@ public interface DeviceService {
     void delUserFace(Long storeId, String admitGuid);
 
     void controlKT(String cmd, Long storeId,Long roomId);
+
+    String getLockPwd(Long userId,Long storeId,Long roomId,String deviceSn);
+
 }

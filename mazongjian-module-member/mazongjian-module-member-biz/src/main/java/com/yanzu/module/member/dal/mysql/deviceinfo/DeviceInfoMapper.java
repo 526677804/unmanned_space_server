@@ -33,8 +33,10 @@ public interface DeviceInfoMapper extends BaseMapperX<DeviceInfoDO> {
 
 
     List<DeviceInfoDO> getByRoomIdAndType(@Param("roomId") Long roomId, @Param("type") Integer[] type);
+    List<DeviceInfoDO> getByStoreIdAndType(@Param("storeId") Long storeId, @Param("type") Integer[] type);
 
     String getSnByStoreIdAndType(@Param("storeId") Long storeId, @Param("type") Integer type);
+    String getSnByRoomIdAndType(@Param("roomId") Long roomId, @Param("type") Integer type);
 
 
     List<DeviceInfoDO> getByRoomId(@Param("roomId") Long roomId);

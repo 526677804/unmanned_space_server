@@ -72,4 +72,6 @@ public interface AppOrderService {
      */
     CommonResult startBooking(MeiTuanReserveReqVo reqVo) throws JsonProcessingException;
 
+    String getLockPwd(String orderKey);
+
 }

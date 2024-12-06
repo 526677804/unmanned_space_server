@@ -380,6 +380,14 @@ public class AppStoreController {
         return success(true);
     }
 
+    @PostMapping("/getLockPwd")
+    @Operation(summary = "获取智能锁随机密码", description = "设备管理使用")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<String> getLockPwd(@RequestBody @Valid AppGetLockPwdReqVO reqVO) {
+        return success(storeInfoService.getLockPwd(reqVO));
+    }
+
     @PostMapping("/vip/blacklist")
     @Operation(summary = "获取黑名单列表")
     @PreAuthenticated

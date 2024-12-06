@@ -157,4 +157,7 @@ public interface StoreInfoService {
     void removeBlackList(Long id);
 
     CommonResult<List<RoomInfoVo>> getStoreRoomInfo(Long storeId);
+
+    String getLockPwd(AppGetLockPwdReqVO reqVO);
+
 }

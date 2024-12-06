@@ -5,6 +5,7 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.idempotent.core.annotation.Idempotent;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.order.vo.*;
+import com.yanzu.module.member.controller.app.store.vo.AppGetLockPwdReqVO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
@@ -219,4 +220,12 @@ public class OrderController {
         return success(appOrderService.getDiscountRules(storeId));
     }
 
+    @PostMapping("/getLockPwd")
+    @Operation(summary = "获取智能锁随机密码", description = "我的订单")
+//    @PreAuthenticated
+    @PermitAll//因为有分享订单功能 所以取消权限校验
+    @Idempotent(timeout = 5, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<String> getLockPwd(@RequestParam(value = "orderKey", required = true) String orderKey) {
+        return success(appOrderService.getLockPwd(orderKey));
+    }
 }

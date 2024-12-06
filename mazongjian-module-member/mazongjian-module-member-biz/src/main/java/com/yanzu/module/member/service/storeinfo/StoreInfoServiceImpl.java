@@ -813,13 +813,13 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 newDate = storeInfoDO.getCreateTime().plusYears(1);
             } else {
                 //判断与当前时间是否超过一个月  超过一个月不允许续费
-                if(storeInfoDO.getExpireTime().isBefore(LocalDateTime.now().plusMonths(1))){
+                if (storeInfoDO.getExpireTime().isBefore(LocalDateTime.now().plusMonths(1))) {
                     newDate = storeInfoDO.getExpireTime().plusYears(1);
-                }else{
+                } else {
                     throw exception(STORE_RENEW_TIME_ERROR);
                 }
             }
-            storeInfoMapper.renew(reqVO.getStoreId(),reqVO.getStatus(),newDate);
+            storeInfoMapper.renew(reqVO.getStoreId(), reqVO.getStatus(), newDate);
         }
     }
 
@@ -842,11 +842,11 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         MemberUserDO memberUserDO = memberUserMapper.selectOne(MemberUserDO::getMobile, addBlackList.getPhone().trim());
         //判断是否存在该用户
         Long user_id = null;
-        if (ObjectUtils.isEmpty(memberUserDO)){
+        if (ObjectUtils.isEmpty(memberUserDO)) {
             AppUserCreateReqVO appUserCreateReqVO = new AppUserCreateReqVO();
             appUserCreateReqVO.setStatus(0);
             appUserCreateReqVO.setMobile(addBlackList.getPhone().trim());
-            appUserCreateReqVO.setUserType((byte)11);
+            appUserCreateReqVO.setUserType((byte) 11);
             user_id = memberUserService.createAppUser(appUserCreateReqVO);
 
             // 用户都不存在 则直接向 store_user中插入数据
@@ -857,7 +857,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             // 1表示是该门店的黑名单用户
             storeUserDO.setVipBlacklist(1);
             storeUserMapper.insert(storeUserDO);
-        }else {
+        } else {
             user_id = memberUserDO.getId();
         }
         // 该用户存在 先查询store-user中是否包含此关系
@@ -865,7 +865,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 StoreUserDO::getStoreId, addBlackList.getStoreId());
 
         // 用户与该门店没存在关联 直接新增关联
-        if (ObjectUtils.isEmpty(storeUserDO)){
+        if (ObjectUtils.isEmpty(storeUserDO)) {
             // 用户都不存在 则直接向 store_user中插入数据
             StoreUserDO insertStoreUser = new StoreUserDO();
             insertStoreUser.setStoreId(addBlackList.getStoreId());
@@ -894,6 +894,24 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public CommonResult<List<RoomInfoVo>> getStoreRoomInfo(Long storeId) {
         return CommonResult.success(roomInfoMapper.getStoreRoomInfo(storeId));
+    }
+
+    @Override
+    public String getLockPwd(AppGetLockPwdReqVO reqVO) {
+        //校验门店权限
+        checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        String sn;
+        if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
+            //门店大门的
+            sn = deviceInfoMapper.getSnByStoreIdAndType(reqVO.getStoreId(), AppEnum.device_type.LOCK.getValue());
+        } else {
+            //房间门的
+            sn = deviceInfoMapper.getSnByRoomIdAndType(reqVO.getRoomId(), AppEnum.device_type.LOCK.getValue());
+        }
+        if (!ObjectUtils.isEmpty(sn)) {
+            deviceService.getLockPwd(getLoginUserId(), reqVO.getStoreId(), reqVO.getRoomId(), sn);
+        }
+        throw exception(DATA_NOT_EXISTS);
     }
 
 }

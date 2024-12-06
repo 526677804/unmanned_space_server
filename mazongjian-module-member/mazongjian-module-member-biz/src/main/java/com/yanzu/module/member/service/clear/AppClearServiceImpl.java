@@ -8,6 +8,7 @@ import com.yanzu.module.member.controller.app.clear.vo.*;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.mysql.clearbill.ClearBillMapper;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
+import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
@@ -57,6 +58,9 @@ public class AppClearServiceImpl implements AppClearService {
     private StoreUserMapper storeUserMapper;
 
     @Resource
+    private DeviceInfoMapper deviceInfoMapper;
+
+    @Resource
     private AppOrderService appOrderService;
 
     @Resource
@@ -65,8 +69,8 @@ public class AppClearServiceImpl implements AppClearService {
     @Override
     public PageResult<AppClearPageRespVO> getClearPage(AppClearPageReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        IPage<AppClearPageRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        orderInfoMapper.getClearPage(page,reqVO);
+        IPage<AppClearPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        orderInfoMapper.getClearPage(page, reqVO);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -171,8 +175,8 @@ public class AppClearServiceImpl implements AppClearService {
     @Override
     public PageResult<AppClearBillRespVO> getClearBillPage(AppClearBillReqVO reqVO) {
         reqVO.setUserId(getLoginUserId());
-        IPage<AppClearBillRespVO> page=new Page<>(reqVO.getPageNo(),reqVO.getPageSize());
-        clearBillMapper.getClearBillPage(page,reqVO);
+        IPage<AppClearBillRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        clearBillMapper.getClearBillPage(page, reqVO);
         return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
@@ -206,6 +210,23 @@ public class AppClearServiceImpl implements AppClearService {
 
         } else {
             throw exception(OPRATION_ERROR);
+        }
+    }
+
+    @Override
+    public String getLockPwd(Long id) {
+        //获取任务信息
+        ClearInfoDO clearInfoDO = clearInfoMapper.selectById(id);
+        //只有是自己的订单 并且状态是已开始 才能开门
+        if (clearInfoDO.getUserId().compareTo(getLoginUserId()) == 0 && clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.START.getValue()) == 0) {
+            String sn = deviceInfoMapper.getSnByRoomIdAndType(clearInfoDO.getRoomId(), AppEnum.device_type.LOCK.getValue());
+            if (!ObjectUtils.isEmpty(sn)) {
+                return deviceService.getLockPwd(getLoginUserId(), clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), sn);
+            } else {
+                throw exception(DATA_NOT_EXISTS);
+            }
+        } else {
+            throw exception(CLEAR_OPEN_DOOR_ERROR);
         }
     }
 

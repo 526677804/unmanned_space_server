@@ -415,8 +415,14 @@ public class DeviceServiceImpl implements DeviceService {
         log.info("发送云喇叭提醒,房间id:{}", roomId);
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
         //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器 12=红外控制器 13=三路控制器
-        //获取设备的sn
+        //获取设备的sn  优先从房间获取
         List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomIdAndType(roomId, new Integer[]{3, 10, 13});
+        String startStr = "";//如果只是门店绑定的喇叭，播报的文字前面得加上房间名称
+        if (CollectionUtils.isEmpty(deviceList)) {
+            //房间没有 再从门店获取
+            deviceList = deviceInfoMapper.getByStoreIdAndType(roomInfoDO.getStoreId(), new Integer[]{3, 10, 13});
+            startStr = roomInfoDO.getRoomCallName() + ",顾客,";
+        }
         if (!CollectionUtils.isEmpty(deviceList)) {
             String cmd = String.valueOf(type);
             //获取是否存在自定义播报文字
@@ -444,7 +450,25 @@ public class DeviceServiceImpl implements DeviceService {
                         }
                         break;
                 }
+            } else {
+                if (!StringUtils.isEmpty(startStr)) {
+                    switch (type) {
+                        case 1:
+                            cmd = "欢迎您光临,本店无人值守,需要帮助请联系客服，请您文明娱乐,禁止从事赌博等违法行为.祝您玩的开心！";
+                            break;
+                        case 2:
+                            cmd = "您的订单剩余时间已不足三十分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！";
+                            break;
+                        case 4:
+                            cmd = "您的订单剩余时间已不足五分钟,到期后将自动关闭房间电源,请您及时进行续费,避免影响使用！";
+                            break;
+                        case 5:
+                            cmd = "尊敬的顾客您好,根据城市管理条例要求,请您在深夜消费时,注意控制噪音,以免影响到他人,感谢您的支持与理解！";
+                            break;
+                    }
+                }
             }
+            cmd = startStr + cmd;
             for (DeviceInfoDO x : deviceList) {
                 IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
                 List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
@@ -458,7 +482,6 @@ public class DeviceServiceImpl implements DeviceService {
                 }
             }
         }
-
     }
 
 
@@ -531,6 +554,13 @@ public class DeviceServiceImpl implements DeviceService {
                 }
             });
         }
+    }
+
+    @Override
+    public String getLockPwd(Long userId, Long storeId, Long roomId, String deviceSn) {
+        //异步添加使用记录
+        saveDeviceUseRecord(userId, storeId, roomId, "获取门锁密码");
+        return iotDeviceService.getLockPwd(deviceSn);
     }
 
 

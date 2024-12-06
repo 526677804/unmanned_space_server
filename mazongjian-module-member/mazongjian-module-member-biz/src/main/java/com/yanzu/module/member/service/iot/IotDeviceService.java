@@ -50,8 +50,7 @@ public class IotDeviceService {
     private String clientId;
     @Value("${iot.secret}")
     private String secret;
-    @Value("${iot.redirectUrl}")
-    private String redirectUrl;
+
 
     @Resource
     private IotDeviceClient iotDeviceClient;
@@ -71,18 +70,16 @@ public class IotDeviceService {
     @Resource
     private WorkWxService workWxService;
 
-    public void online() {
-        if (!ObjectUtils.isEmpty(redirectUrl) && redirectUrl.startsWith("https://")) {
-            JSONObject data = new JSONObject();
-            data.put("redirectUrl", redirectUrl);
-            data.put("clientId", clientId);
-            IotPushDataReqVO iotPushDataReqVO = new IotPushDataReqVO()
-                    .setType("online")
-                    .setData(data);
-            IotResult<JSONBody> result = iotClient.pushData(iotPushDataReqVO, clientId, secret);
-        }
-    }
 
+    public void pushData(IotPushDataReqVO iotPushDataReqVO) {
+        JSONObject data = iotPushDataReqVO.getData();
+        if(ObjectUtils.isEmpty(data)){
+            data = new JSONObject();
+        }
+        data.put("clientId", clientId);
+        iotPushDataReqVO.setData(data);
+        IotResult<JSONBody> result = iotClient.pushData(iotPushDataReqVO, clientId, secret);
+    }
     /**
      * 绑定设备
      */
@@ -369,6 +366,17 @@ public class IotDeviceService {
         IotResult<IotAddLockRespVO> resp = iotDeviceClient.addLock(reqVO, clientId, secret);
         if (resp.getCode().intValue() == 0) {
             return true;
+        } else {
+            throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
+        }
+    }
+
+
+    public String getLockPwd(String sn){
+        IotDeviceBaseVO reqVO=new IotDeviceBaseVO().setDeviceSn(sn);
+        IotResult<String> resp = iotDeviceClient.getLockPwd(reqVO, clientId, secret);
+        if (resp.getCode().intValue() == 0) {
+            return resp.getData();
         } else {
             throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
         }
