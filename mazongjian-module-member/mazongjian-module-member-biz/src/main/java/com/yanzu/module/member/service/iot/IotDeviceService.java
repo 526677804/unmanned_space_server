@@ -12,6 +12,7 @@ import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.forest.IotDeviceClient;
 import com.yanzu.module.member.service.iot.device.*;
 import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
+import com.yanzu.module.member.service.meituanreserve.MeiTuanReserveCallback;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
@@ -69,6 +70,9 @@ public class IotDeviceService {
 
     @Resource
     private WorkWxService workWxService;
+
+    @Resource
+    private MeiTuanReserveCallback reserveCallback;
 
 
     public void pushData(IotPushDataReqVO iotPushDataReqVO) {
@@ -218,6 +222,9 @@ public class IotDeviceService {
                     case "call":
                         //客户呼叫
                         callTask(data);
+                        break;
+                    case "yuding_msg":
+                        reserveCallback.matchMethod(data);
                         break;
                 }
             } else {

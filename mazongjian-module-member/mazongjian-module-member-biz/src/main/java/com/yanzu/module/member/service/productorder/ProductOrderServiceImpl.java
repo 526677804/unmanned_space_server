@@ -7,6 +7,9 @@ import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.yanzu.framework.security.core.LoginUser;
+import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
+import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.productorder.vo.*;
@@ -36,10 +39,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
+import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
+import static com.yanzu.module.member.enums.AppEnum.WX_PRODUCT_PAY_ORDER;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.AUTH_USER_BIND_MINIAPP_ERROR;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.USER_WEIXIN_PAY_ERROR;
 
@@ -166,6 +172,13 @@ public class ProductOrderServiceImpl implements ProductOrderService {
                     }
                 }
             }
+            Long tenantId = TenantContextHolder.getTenantId();
+            // 如果获取不到租户编号，则尝试使用登陆用户的租户编号
+            if (tenantId == null) {
+                LoginUser user = SecurityFrameworkUtils.getLoginUser();
+                tenantId = user.getTenantId();
+            }
+            redisTemplate.opsForValue().set(String.format(WX_PRODUCT_PAY_ORDER, orderNo), tenantId, 1, TimeUnit.DAYS);
         }
         return respVO;
     }
@@ -205,6 +218,14 @@ public class ProductOrderServiceImpl implements ProductOrderService {
                 productOrderDO.getOrderNo(), productOrderDO.getTotalPrice().multiply(BigDecimal.valueOf(100D)).intValue(), openId);
         getWxPayOrderRespVo(respVO, wxPayMpOrderResult, productOrderDO.getTotalPrice(), productOrderDO);
         respVO.setOrderNo(productOrderDO.getOrderNo());
+
+        Long tenantId = TenantContextHolder.getTenantId();
+        // 如果获取不到租户编号，则尝试使用登陆用户的租户编号
+        if (tenantId == null) {
+            LoginUser user = SecurityFrameworkUtils.getLoginUser();
+            tenantId = user.getTenantId();
+        }
+        redisTemplate.opsForValue().set(String.format(WX_PRODUCT_PAY_ORDER, productOrderDO.getOrderNo()), tenantId, 1, TimeUnit.DAYS);
         return respVO;
     }
 

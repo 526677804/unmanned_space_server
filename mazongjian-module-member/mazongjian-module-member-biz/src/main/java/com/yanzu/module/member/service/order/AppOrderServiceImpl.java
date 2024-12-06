@@ -1734,12 +1734,17 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
-    public CommonResult startBooking(MeiTuanReserveReqVo reqVo) throws JsonProcessingException {
-        Long storeId = reqVo.getStoreId();
-        String message = reqVo.getMessage();
+    public CommonResult startBooking(Long storeId , String message){
+//        Long storeId = reqVo.getStoreId();
+//        String message = reqVo.getMessage();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = objectMapper.readTree(message);
+        JsonNode rootNode = null;
+        try {
+            rootNode = objectMapper.readTree(message);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         // 用户手机号
         String mobile = rootNode.get("mobile").asText();
 

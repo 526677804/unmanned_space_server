@@ -48,6 +48,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -56,6 +57,7 @@ import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
+import static com.yanzu.module.member.enums.AppEnum.WX_PRODUCT_PAY_ORDER;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
@@ -231,16 +233,72 @@ public class PayOrderServiceImpl implements PayOrderService {
     public String updateProductOrder(WxPayOrderNotifyResult result) {
         // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
         String orderNo = result.getOutTradeNo();
-        Long orderId = productOrderMapper.selectByOrderNo(orderNo);
-        ProductOrderDO productOrderDO = new ProductOrderDO();
-        productOrderDO.setOrderId(orderId);
-        productOrderDO.setPayTime(DateUtil.date());
-        productOrderDO.setStatus(1L); // 已支付
-        int i = productOrderMapper.updateById(productOrderDO);
-        if (i != 1){
-            return WxPayNotifyResponse.fail("修改商品订单状态失败");
+        Integer totalFee = result.getTotalFee();
+        ProductOrderDO productOrderDO = productOrderMapper.selectByOrderNo(orderNo);
+        Long tenantId = null;
+        try {
+            String redisKey = String.format(WX_PRODUCT_PAY_ORDER, orderNo);
+            if (redisTemplate.hasKey(redisKey)) {
+                tenantId = (Long) redisTemplate.opsForValue().get(redisKey);
+            }
+            if (productOrderDO.getStatus()!=0){
+                throw new ServiceException(-200,"订单重复支付。");
+            }
+            if (productOrderDO.getTotalPrice().
+                    compareTo(new BigDecimal(totalFee).divide(BigDecimal.valueOf(100D),2, RoundingMode.UP))!=0){
+                throw new RuntimeException("支付金额与订单不一致。");
+            }
+
+            TenantUtils.execute(tenantId, () -> {
+                productOrderDO.setPayTime(DateUtil.date());
+                productOrderDO.setStatus(1L); // 已支付
+                productOrderMapper.updateById(productOrderDO);
+            });
+
+            return WxPayNotifyResponse.success("接收成功!");
+        }catch (ServiceException e){
+            e.printStackTrace();
+            //模拟租户 处理支付订单
+            TenantUtils.execute(tenantId, () -> {
+                //业务异常 退款
+                WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+                refundRequest.setOutTradeNo(productOrderDO.getOrderNo());
+                refundRequest.setOutRefundNo("TK" + productOrderDO.getOrderNo());
+                refundRequest.setTotalFee(result.getTotalFee());
+                refundRequest.setRefundFee(result.getTotalFee());
+                refundRequest.setRefundDesc("订单支付失败退款");
+                WxPayService wxPayService = myWxService.initWxPay(productOrderDO.getStoreId());
+                try {
+                    wxPayService.refundV2(refundRequest);
+                } catch (WxPayException ex) {
+                    log.error("微信支付订单退款失败:{}", orderNo);
+                }
+                productOrderDO.setPayTime(DateUtil.date());
+                productOrderDO.setStatus(1L); // 已支付
+                productOrderMapper.updateById(productOrderDO);
+            });
+            return WxPayNotifyResponse.success("接收成功!");
+        }catch (RuntimeException e){
+            e.printStackTrace();
+            //模拟租户 处理支付订单
+            TenantUtils.execute(tenantId, () -> {
+                //业务异常 退款
+                WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+                refundRequest.setOutTradeNo(productOrderDO.getOrderNo());
+                refundRequest.setOutRefundNo("TK" + productOrderDO.getOrderNo());
+                refundRequest.setTotalFee(result.getTotalFee());
+                refundRequest.setRefundFee(result.getTotalFee());
+                refundRequest.setRefundDesc("订单支付失败退款");
+                WxPayService wxPayService = myWxService.initWxPay(productOrderDO.getStoreId());
+                try {
+                    wxPayService.refundV2(refundRequest);
+                } catch (WxPayException ex) {
+                    log.error("微信支付订单退款失败:{}", orderNo);
+                }
+            });
+            return WxPayNotifyResponse.success("接收成功!");
         }
-        return WxPayNotifyResponse.success("接收成功!");
+
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.meituanreserve;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.module.member.controller.app.meituanreserve.vo.MeiTuanReserveReqVo;
@@ -20,8 +21,11 @@ public class MeiTuanReserveCallback {
     @Resource
     private AppOrderService orderService;
 
-    public CommonResult matchMethod(MeiTuanReserveReqVo reqVo) throws JsonProcessingException {
-        PushEnum pushEnum = PushEnum.fromValue(reqVo.getMsgType());
+    public CommonResult matchMethod(JSONObject jsonObject){
+        Integer msgType = jsonObject.getInteger("msgType");
+        Long storeId = jsonObject.getLong("storeId");
+        String message = jsonObject.getString("message");
+        PushEnum pushEnum = PushEnum.fromValue(msgType);
         if (pushEnum == null) {
             return CommonResult.error(-200, "未找到相关枚举");
         }
@@ -29,10 +33,10 @@ public class MeiTuanReserveCallback {
         switch (pushEnum) {
             case ROOM_INFORMATION:
                 log.info("---------------查询三方房间信息---------------");
-                return storeInfoService.getStoreRoomInfo(reqVo.getStoreId());
+                return storeInfoService.getStoreRoomInfo(storeId);
             case START_BOOKING:
                 log.info("---------------开始预订---------------");
-                return orderService.startBooking(reqVo);
+                return orderService.startBooking(storeId,message);
             case BOOKING_RESULT:
                 log.info("---------------预订结果同步---------------");
                 return CommonResult.success("");

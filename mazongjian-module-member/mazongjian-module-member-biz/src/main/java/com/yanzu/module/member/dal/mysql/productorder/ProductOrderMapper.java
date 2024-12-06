@@ -15,7 +15,7 @@ import java.util.List;
 @Mapper
 public interface ProductOrderMapper extends BaseMapperX<ProductOrderDO> {
 
-    Long selectByOrderNo(String orderNo);
+    ProductOrderDO selectByOrderNo(String orderNo);
 
     void updateByOrderNo(String orderNo);
 
