@@ -139,6 +139,14 @@ public class AppStoreController {
         return success(true);
     }
 
+    @PostMapping("/runYunlaba")
+    @Operation(summary = "测试云喇叭", description = "房间管理使用")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> testYunlaba(@RequestBody AppDeviceRunSoundReqVO reqVO) {
+        deviceService.runYunlaba(reqVO);
+        return success(true);
+    }
 
     @PostMapping("/addDevice")
     @Operation(summary = "添加设备", description = "房间管理使用")
@@ -347,16 +355,16 @@ public class AppStoreController {
     @PostMapping("/moveFaceByRecord")
     @Operation(summary = "根据人脸识别记录修改黑名单")
     @PreAuthenticated
-    @Idempotent(timeout = 3,message = "你的点击太快了~")
+    @Idempotent(timeout = 3, message = "你的点击太快了~")
     public CommonResult<Boolean> moveFaceByRecord(@RequestBody @Valid AppMoveBlacklistReqVO reqVO) {
-        faceRecordService.moveFaceByRecord(reqVO.getId(), reqVO.getRemark(),false);
+        faceRecordService.moveFaceByRecord(reqVO.getId(), reqVO.getRemark(), false);
         return success(true);
     }
 
     @PostMapping("/moveFaceById/{id}")
     @Operation(summary = "移出人脸识黑名单")
     @PreAuthenticated
-    @Idempotent(timeout = 3,message = "你的点击太快了~")
+    @Idempotent(timeout = 3, message = "你的点击太快了~")
     public CommonResult<Boolean> moveFaceById(@PathVariable("id") Long id) {
         faceBlacklistService.moveFaceById(id);
         return success(true);
@@ -391,7 +399,7 @@ public class AppStoreController {
     @PostMapping("/vip/blacklist")
     @Operation(summary = "获取黑名单列表")
     @PreAuthenticated
-    public CommonResult<PageResult<AppVipBlacklistRespVO>> getVipBlacklist(@RequestBody AppGetVipBlackListVO pageVo){
+    public CommonResult<PageResult<AppVipBlacklistRespVO>> getVipBlacklist(@RequestBody AppGetVipBlackListVO pageVo) {
         return success(storeInfoService.getVipBlacklist(pageVo));
     }
 

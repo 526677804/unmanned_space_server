@@ -2,6 +2,7 @@ package com.yanzu.module.member.service.device;
 
 import com.yanzu.module.member.controller.app.order.vo.ControlKTReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppAddDeviceReqVO;
+import com.yanzu.module.member.controller.app.store.vo.AppDeviceRunSoundReqVO;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.service.device
@@ -42,5 +43,7 @@ public interface DeviceService {
     void controlKT(String cmd, Long storeId,Long roomId);
 
     String getLockPwd(Long userId,Long storeId,Long roomId,String deviceSn);
+
+    void runYunlaba(AppDeviceRunSoundReqVO reqVO);
 
 }

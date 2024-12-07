@@ -30,4 +30,5 @@ public class StoreSoundInfoDO extends BaseDO {
     private String endText30;
     private String endText5;
     private String nightText;
+    private String customizeText;
 }

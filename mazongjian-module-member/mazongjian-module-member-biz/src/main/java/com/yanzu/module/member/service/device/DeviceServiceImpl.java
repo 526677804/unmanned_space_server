@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.yanzu.framework.common.exception.ServiceException;
 import com.yanzu.module.member.controller.app.order.vo.ControlKTReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppAddDeviceReqVO;
+import com.yanzu.module.member.controller.app.store.vo.AppDeviceRunSoundReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
@@ -132,7 +133,7 @@ public class DeviceServiceImpl implements DeviceService {
                     if (e.getCode().compareTo(1004004070) != 0) {
                         throw e;
                     } else {
-                        log.error("密码锁开锁失败:{},{}",sn, e.getMessage());
+                        log.error("密码锁开锁失败:{},{}", sn, e.getMessage());
                     }
                 }
             }
@@ -227,7 +228,7 @@ public class DeviceServiceImpl implements DeviceService {
                                 if (e.getCode().compareTo(1004004070) != 0) {
                                     throw e;
                                 } else {
-                                    log.error("密码锁开锁失败:{},{}", x.getDeviceSn(),e.getMessage());
+                                    log.error("密码锁开锁失败:{},{}", x.getDeviceSn(), e.getMessage());
                                 }
                             }
                         }
@@ -586,6 +587,38 @@ public class DeviceServiceImpl implements DeviceService {
         //异步添加使用记录
         saveDeviceUseRecord(userId, storeId, roomId, "获取门锁密码");
         return iotDeviceService.getLockPwd(deviceSn);
+    }
+
+    @Override
+    public void runYunlaba(AppDeviceRunSoundReqVO reqVO) {
+        //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器 12=红外控制器 13=三路控制器
+        //获取设备的sn  优先从房间获取
+        List<DeviceInfoDO> deviceList;
+        if (!ObjectUtils.isEmpty(reqVO.getRoomId())) {
+            deviceList = deviceInfoMapper.getByRoomIdAndType(reqVO.getRoomId(), new Integer[]{3, 10, 13});
+        } else {
+            deviceList = deviceInfoMapper.getByStoreIdAndType(reqVO.getStoreId(), new Integer[]{3, 10, 13});
+        }
+        if (!CollectionUtils.isEmpty(deviceList)) {
+            String cmd = "欢迎您光临,本店无人值守,需要帮助请联系客服,请您文明娱乐,禁止从事赌博等违法行为.祝您玩的开心！";
+            //获取是否存在自定义播报文字
+            StoreSoundInfoDO soundInfoDO = storeSoundInfoMapper.getByStoreId(reqVO.getStoreId());
+            if (!ObjectUtils.isEmpty(soundInfoDO) && !StringUtils.isEmpty(soundInfoDO.getCustomizeText())) {
+                cmd = soundInfoDO.getCustomizeText();
+            }
+            for (DeviceInfoDO x : deviceList) {
+                IotDeviceBaseVO<IotDeviceContrlReqVO> vo = new IotDeviceBaseVO();
+                List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
+                IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
+                iotDeviceContrlReqVO.setOutlet(0).setCmd(cmd);
+                param.add(iotDeviceContrlReqVO);
+                vo.setDeviceSn(x.getDeviceSn()).setParams(param);
+                boolean flag = iotDeviceService.control(vo);
+                if (!flag) {
+                    throw exception(DEVICE_OPRATION_ERROR);
+                }
+            }
+        }
     }
 
 
