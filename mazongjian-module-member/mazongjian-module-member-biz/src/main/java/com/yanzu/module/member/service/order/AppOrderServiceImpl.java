@@ -1789,7 +1789,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             wxPayOrderRespVO.set(preOrder(uid.get(), null, Long.valueOf(productInfoVo.getProduct_id()), begin, end, null, null, null, false, false));
             // 将美团提供的id存入
             OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getOrderNo, wxPayOrderRespVO.get().getOrderNo());
-            orderInfoDO.setTripartiteOrderIdOrderId(orderId);
+            orderInfoDO.setTripartiteOrderId(orderId);
             orderInfoMapper.updateById(orderInfoDO);
         });
 
@@ -1869,7 +1869,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         Long tenantId = storeInfoTenantIdVo.getTenantId();
         try {
             MeituanYudingMsgCallbackCommonRespVo ok = TenantUtils.execute(tenantId, () -> {
-                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderIdOrderId, orderId);
+                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderId, orderId);
                 // 已经生成了订单 但是结果同步通知预订
                 if (!ObjectUtils.isEmpty(orderInfoDO) && bookStatus.equals("3") || ObjectUtils.isEmpty(orderInfoDO) && bookStatus.equals("2")) {
                     throw new ServiceException(500, "预订结果不一致。");
@@ -1928,7 +1928,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         try {
             // 模拟商户取消订单
             MeituanYudingMsgCallbackCommonRespVo ok = TenantUtils.execute(storeInfoTenantIdVo.getTenantId(), () -> {
-                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderIdOrderId, orderId);
+                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderId, orderId);
                 if (ObjectUtils.isEmpty(orderInfoDO)) {
                     throw new ServiceException(500, "未找到相关订单");
                 }
@@ -1968,7 +1968,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         StoreInfoTenantIdVo storeInfoTenantIdVo = storeInfoMapper.getTenantId(storeId);
         try {
             MeituanYudingMsgCallbackCommonRespVo success = TenantUtils.execute(storeInfoTenantIdVo.getTenantId(), () -> {
-                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderIdOrderId, orderId);
+                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderId, orderId);
                 if (ObjectUtils.isEmpty(orderInfoDO)) {
                     throw new ServiceException(500, "未查询到相关订单。");
                 }
@@ -1978,7 +1978,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
                 VerificationStatusRespVo verificationStatusRespVo = new VerificationStatusRespVo();
                 verificationStatusRespVo.setConsumeStatus(status == 1 || status == 2 ? 2 : 1);
-                verificationStatusRespVo.setOrderId(orderInfoDO.getTripartiteOrderIdOrderId());
+                verificationStatusRespVo.setOrderId(orderInfoDO.getTripartiteOrderId());
                 return MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(verificationStatusRespVo));
             });
             response.getWriter().write(JSONObject.toJSONString(success));

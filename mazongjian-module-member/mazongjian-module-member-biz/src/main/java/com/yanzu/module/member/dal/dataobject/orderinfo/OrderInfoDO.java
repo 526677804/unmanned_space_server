@@ -40,7 +40,7 @@ public class OrderInfoDO extends BaseDO {
     /**
      * 美团订单id
      */
-    private String tripartiteOrderIdOrderId;
+    private String tripartiteOrderId;
     /**
      * 门店id
      */

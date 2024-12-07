@@ -60,7 +60,7 @@ spring:
 wx:
   pay:
     #支付回调通知地址
-    returnUrl: https://malaoban.scyanzu.com/app-api/callback/wxpay/update
+    returnUrl: https://wq.scyanzu.com/app-api/callback/wxpay/update
     ################################以下内容为微信支付服务商模式以及分账配置############################################
     appId:  #微信支付服务商的小程序APPID
     mchId:  #微信支付服务商的商户号
@@ -87,6 +87,6 @@ douyin:
 iot:
   clientId: 5d3cf1ed-d534
   secret: 5942a5b9-292b-4be5-b00e-aceef1e832f5
-  redirectUrl: https://malaoban.scyanzu.com/app-api/callback/iotCallback
+  redirectUrl: https://wq.scyanzu.com/app-api/callback/iotCallback
   groupPay: true #是否启用统一团购功能
 
