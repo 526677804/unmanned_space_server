@@ -1,6 +1,7 @@
 package com.yanzu.module.member.controller.app.callback;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
 import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.meituan.MeituanService;
@@ -17,6 +18,8 @@ import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+
+import static com.yanzu.framework.common.pojo.CommonResult.success;
 
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.order
@@ -74,9 +77,9 @@ public class AppCallbackController {
     @Operation(summary = "物联网平台回调")
     @PermitAll // 无需登录
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
-    public void iotCallback(@RequestBody JSONObject json, HttpServletResponse response) {
+    public CommonResult<JSONObject> iotCallback(@RequestBody JSONObject json, HttpServletResponse response) {
         log.info("收到物联网平台回调,params:{}", json);
-        iotDeviceService.iotPlatform(json, response);
+        return success(iotDeviceService.iotPlatform(json, response));
     }
 
 

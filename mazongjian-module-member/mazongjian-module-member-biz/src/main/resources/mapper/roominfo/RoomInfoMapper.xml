@@ -140,4 +140,12 @@
         where deleted = 0
         and store_id = #{storeId}
     </select>
+    <select id="getIotRoomList" resultType="com.yanzu.module.member.service.iot.platform.IotRoomListRespVO">
+        select r.room_id, r.room_name, r.store_id, s.store_name
+        from member_room_info r
+                 left join member_store_info s ON s.store_id = r.store_id
+        where r.deleted = 0
+          and s.deleted = 0
+          and s.store_id = #{storeId}
+    </select>
 </mapper>

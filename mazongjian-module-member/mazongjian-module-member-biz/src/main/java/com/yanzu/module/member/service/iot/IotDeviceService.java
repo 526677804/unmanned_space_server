@@ -8,10 +8,12 @@ import com.yanzu.module.member.controller.app.store.vo.AppAddLockReqVO;
 import com.yanzu.module.member.dal.dataobject.facerecord.FaceRecordDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.facerecord.FaceRecordMapper;
+import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.forest.IotDeviceClient;
 import com.yanzu.module.member.service.iot.device.*;
 import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
+import com.yanzu.module.member.service.iot.platform.IotRoomListRespVO;
 import com.yanzu.module.member.service.iotreserve.YuDingCallback;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +65,9 @@ public class IotDeviceService {
     private FaceRecordMapper faceRecordMapper;
 
     @Resource
+    private RoomInfoMapper roomInfoMapper;
+
+    @Resource
     private WorkWxService workWxService;
 
     @Resource
@@ -71,13 +76,14 @@ public class IotDeviceService {
 
     public void pushData(IotPushDataReqVO iotPushDataReqVO) {
         JSONObject data = iotPushDataReqVO.getData();
-        if(ObjectUtils.isEmpty(data)){
+        if (ObjectUtils.isEmpty(data)) {
             data = new JSONObject();
         }
         data.put("clientId", clientId);
         iotPushDataReqVO.setData(data);
         IotResult<JSONBody> result = iotClient.pushData(iotPushDataReqVO, clientId, secret);
     }
+
     /**
      * 绑定设备
      */
@@ -196,7 +202,7 @@ public class IotDeviceService {
      * @param json
      * @param response
      */
-    public void iotPlatform(JSONObject json, HttpServletResponse response) {
+    public JSONObject iotPlatform(JSONObject json, HttpServletResponse response) {
         if (json.containsKey("type") && json.containsKey("t") && json.containsKey("sign")) {
             String type = json.getString("type");
             String sign = json.getString("sign");
@@ -218,17 +224,35 @@ public class IotDeviceService {
                         //客户呼叫
                         callTask(data);
                         break;
-                    case "mt_yuding_msg":
-                        reserveCallback.matchMethod(data, response);
-                        break;
+                    case "getRoomList":
+                        //获取房间列表
+                        return getRoomList(data);
                 }
             } else {
                 log.error("签名不匹配,{}", sign);
             }
         }
+        return null;
     }
 
-    private void callBackFace(JSONObject data){
+    /**
+     * 获取房间列表数据
+     *
+     * @param data
+     * @return
+     */
+    private JSONObject getRoomList(JSONObject data) {
+        if (!data.containsKey("storeId") || data.getLong("storeId") == null) {
+            return null;
+        }
+        Long storeId = data.getLong("storeId");
+        List<IotRoomListRespVO> iotRoomList = roomInfoMapper.getIotRoomList(storeId);
+        JSONObject result=new JSONObject();
+        result.put("list",iotRoomList);
+        return result;
+    }
+
+    private void callBackFace(JSONObject data) {
         //查找出设备
         IotDeviceRoomInfoVO deviceRoomVO = deviceInfoMapper.getDeviceRoomVO(data.getString("deviceSn"));
         //把照片url转成base64编码
@@ -251,9 +275,10 @@ public class IotDeviceService {
 
     /**
      * 顾客呼叫处理
+     *
      * @param data
      */
-    private void callTask(JSONObject data){
+    private void callTask(JSONObject data) {
         String deviceSn = data.getString("deviceSn");
         //通过设备编号找出该设备所在门店的喇叭编号
         IotDeviceRoomInfoVO deviceRoomVO = deviceInfoMapper.getDeviceRoomVO(deviceSn);
@@ -362,6 +387,7 @@ public class IotDeviceService {
 
     /**
      * 添加智能锁
+     *
      * @param reqVO
      */
     public Boolean addLock(AppAddLockReqVO reqVO) {
@@ -374,8 +400,8 @@ public class IotDeviceService {
     }
 
 
-    public String getLockPwd(String sn){
-        IotDeviceBaseVO reqVO=new IotDeviceBaseVO().setDeviceSn(sn);
+    public String getLockPwd(String sn) {
+        IotDeviceBaseVO reqVO = new IotDeviceBaseVO().setDeviceSn(sn);
         reqVO.setTs(new Date().getTime());
         IotResult<JSONObject> resp = iotDeviceClient.getLockPwd(reqVO, clientId, secret);
         if (resp.getCode().intValue() == 0) {
