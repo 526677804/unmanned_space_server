@@ -48,4 +48,7 @@ public class OrderSubmitReqVO {
     @Mobile
     private String mobile;
 
+    @Schema(description = "是否计入数据统计")
+    private Boolean statistics;
+
 }

@@ -116,4 +116,9 @@ public class OrderInfoDO extends BaseDO {
      */
     private Integer status;
 
+    /**
+     * 是否计入数据统计
+     */
+    private Boolean statistics;
+
 }

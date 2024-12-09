@@ -922,6 +922,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         orderInfoDO.setPayPrice(BigDecimal.ZERO);
         orderInfoDO.setRefundPrice(BigDecimal.ZERO);
         orderInfoDO.setPayType(AppEnum.order_pay_type.WALLET.getValue());
+        orderInfoDO.setStatistics(reqVO.getStatistics());
         orderInfoMapper.insert(orderInfoDO);
         //如果房间状态是待清洁，就发送提醒保洁的通知
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {
