@@ -252,6 +252,15 @@ public class ProductOrderServiceImpl implements ProductOrderService {
         productOrderMapper.updateById(productOrderDO);
     }
 
+    @Override
+    public AppUserOrderPageRespVo orderInfo(Long orderId) {
+        ProductOrderDO productOrderDO = productOrderMapper.selectById(orderId);
+        AppUserOrderPageRespVo bean = BeanUtil.toBean(productOrderDO, AppUserOrderPageRespVo.class);
+        bean.setUserPhone(bean.getUserPhone().replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
+        bean.setProductInfoVoList(JSONObject.parseArray(productOrderDO.getProductInfo(), ProductInfoVo.class));
+        return bean;
+    }
+
     private PageResult<AppUserOrderPageRespVo> getAppUserOrderPageRespVoPageResult(AppUserOrderPageReqVo reqVo, LambdaQueryWrapperX<ProductOrderDO> queryWrapper) {
         PageResult<ProductOrderDO> pageResult = productOrderMapper.selectPage(reqVo, queryWrapper);
 

@@ -32,4 +32,6 @@ public interface ProductOrderService {
     // 商家完成订单
     void finishOrder(Long id);
 
+    AppUserOrderPageRespVo orderInfo(Long orderId);
+
 }

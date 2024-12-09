@@ -80,7 +80,12 @@ public class ProductOrderController {
         return success(true);
     }
 
-
+    @PostMapping("/info/{id}")
+    @Operation(summary = "获取订单详情")
+    @PreAuthenticated
+    public CommonResult<AppUserOrderPageRespVo> orderInfo(@PathVariable Long id) {
+        return success(productOrderService.orderInfo(id));
+    }
 
 
 }
