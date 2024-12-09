@@ -117,67 +117,44 @@ public class MemberUserServiceImpl implements MemberUserService {
     @Transactional
     public void recharge(AppUserRechargeReqVO reqVO) {
         //查询出用户
-        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(reqVO.getUserId(), reqVO.getStoreId());
-        if (ObjectUtils.isEmpty(storeUserDO)) {
-            //没有 则新增一个用户关系
-            storeUserDO = new StoreUserDO();
-            storeUserDO.setUserId(reqVO.getUserId()).setStoreId(reqVO.getStoreId()).setType(AppEnum.member_user_type.MEMBER.getValue());
-            if (reqVO.getMoney().compareTo(BigDecimal.ZERO) > 0) {
-                storeUserDO.setGiftBalance(reqVO.getMoney());
-                //新增一条赠送记录
-                userMoneyBillMapper.insert(new UserMoneyBillDO()
-                        .setUserId(reqVO.getUserId())
-                        .setStoreId(reqVO.getStoreId())
-                        .setMoney(reqVO.getMoney())
-                        .setRemark("管理员赠送")
-                        .setMoneyType(AppEnum.user_money_type.GIFT_MONEY.getValue())
-                        .setTotalGiftMoney(reqVO.getMoney())
-                        .setType(AppEnum.user_money_bill_type.ADMIN_GIFT.getValue()));
-            }
-            storeUserMapper.insert(storeUserDO);
+        AppUserDO appUserDO = appUserMapper.selectById(reqVO.getUserId());
+        if (reqVO.getMoney().compareTo(BigDecimal.ZERO) > 0) {
+            //加余额
+            appUserDO.setGiftBalance(appUserDO.getGiftBalance().add(reqVO.getMoney()));
+            appUserMapper.updateById(appUserDO);
+            //加记录
+            userMoneyBillMapper.insert(new UserMoneyBillDO()
+                    .setUserId(reqVO.getUserId())
+                    .setMoney(reqVO.getMoney())
+                    .setRemark("管理员赠送")
+                    .setMoneyType(AppEnum.user_money_type.GIFT_MONEY.getValue())
+                    .setTotalGiftMoney(appUserDO.getGiftBalance())
+                    .setType(AppEnum.user_money_bill_type.ADMIN_GIFT.getValue()));
         } else {
-            //已存在
-            if (reqVO.getMoney().compareTo(BigDecimal.ZERO) > 0) {
-                //加余额
-                storeUserDO.setGiftBalance(storeUserDO.getGiftBalance().add(reqVO.getMoney()));
-                storeUserMapper.updateById(storeUserDO);
+            //清空余额
+            if (appUserDO.getGiftBalance().compareTo(BigDecimal.ZERO) > 0) {
                 //加记录
                 userMoneyBillMapper.insert(new UserMoneyBillDO()
                         .setUserId(reqVO.getUserId())
-                        .setStoreId(reqVO.getStoreId())
-                        .setMoney(reqVO.getMoney())
-                        .setRemark("管理员赠送")
+                        .setMoney(appUserDO.getGiftBalance())
+                        .setRemark("管理员清空余额")
                         .setMoneyType(AppEnum.user_money_type.GIFT_MONEY.getValue())
-                        .setTotalGiftMoney(storeUserDO.getGiftBalance())
-                        .setType(AppEnum.user_money_bill_type.ADMIN_GIFT.getValue()));
-            } else {
-                //清空在该门店余额
-                if (storeUserDO.getGiftBalance().compareTo(BigDecimal.ZERO) > 0) {
-                    //加记录
-                    userMoneyBillMapper.insert(new UserMoneyBillDO()
-                            .setUserId(reqVO.getUserId())
-                            .setStoreId(reqVO.getStoreId())
-                            .setMoney(storeUserDO.getGiftBalance())
-                            .setRemark("管理员清空余额")
-                            .setMoneyType(AppEnum.user_money_type.GIFT_MONEY.getValue())
-                            .setTotalGiftMoney(storeUserDO.getGiftBalance())
-                            .setType(AppEnum.user_money_bill_type.ADMIN_CLEAN.getValue()));
-                    storeUserDO.setGiftBalance(BigDecimal.ZERO);
-                }
-                if (storeUserDO.getBalance().compareTo(BigDecimal.ZERO) > 0) {
-                    //加记录
-                    userMoneyBillMapper.insert(new UserMoneyBillDO()
-                            .setUserId(reqVO.getUserId())
-                            .setStoreId(reqVO.getStoreId())
-                            .setMoney(storeUserDO.getBalance())
-                            .setRemark("管理员清空余额")
-                            .setMoneyType(AppEnum.user_money_type.MONEY.getValue())
-                            .setTotalMoney(storeUserDO.getGiftBalance())
-                            .setType(AppEnum.user_money_bill_type.ADMIN_CLEAN.getValue()));
-                    storeUserDO.setBalance(BigDecimal.ZERO);
-                }
-                storeUserMapper.updateById(storeUserDO);
+                        .setTotalGiftMoney(BigDecimal.ZERO)
+                        .setType(AppEnum.user_money_bill_type.ADMIN_CLEAN.getValue()));
+                appUserDO.setGiftBalance(BigDecimal.ZERO);
             }
+            if (appUserDO.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+                //加记录
+                userMoneyBillMapper.insert(new UserMoneyBillDO()
+                        .setUserId(reqVO.getUserId())
+                        .setMoney(appUserDO.getBalance())
+                        .setRemark("管理员清空余额")
+                        .setMoneyType(AppEnum.user_money_type.MONEY.getValue())
+                        .setTotalMoney(BigDecimal.ZERO)
+                        .setType(AppEnum.user_money_bill_type.ADMIN_CLEAN.getValue()));
+                appUserDO.setBalance(BigDecimal.ZERO);
+            }
+            appUserMapper.updateById(appUserDO);
         }
 
     }
