@@ -842,8 +842,18 @@ public class AppOrderServiceImpl implements AppOrderService {
             IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(roomInfoDO.getStoreId(), reqVO.getGroupPayNo());
             //校验券合法性
             checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
-            //把券使用了
-            groupPayInfoDO = groupPayInfoService.consume(roomInfoDO.getStoreId(), reqVO.getGroupPayNo(), prepare);
+            //查询是否绑定了套餐
+            String shopId = prepare.getShopId();
+            PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByCouponId(shopId);
+            if (!ObjectUtils.isEmpty(pkgByCouponId)){
+                //订单时长 （分钟）
+                long orderMinutes = Math.abs(ChronoUnit.MINUTES.between(reqVO.getStartTime().toInstant(), reqVO.getEndTime().toInstant()));
+                // 走套餐的校验
+                checkPkgUse(pkgByCouponId,false,roomInfoDO.getType(),roomInfoDO.getStoreId(),reqVO.getStartTime(), reqVO.getEndTime(),orderMinutes);
+            }else {
+                //把券使用了
+                groupPayInfoDO = groupPayInfoService.consume(roomInfoDO.getStoreId(), reqVO.getGroupPayNo(), prepare);
+            }
             //团购消费的  支付价格设置为0
             totalPrice = BigDecimal.ZERO;
             if (deposit > 0) {

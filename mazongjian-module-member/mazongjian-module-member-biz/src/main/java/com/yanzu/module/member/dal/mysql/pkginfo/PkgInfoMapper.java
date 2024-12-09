@@ -28,4 +28,6 @@ public interface PkgInfoMapper extends BaseMapperX<PkgInfoDO> {
     IPage<AppPkgMyPageRespVO> getMyPkgPage(@Param("page") IPage<AppPkgMyPageRespVO> page, @Param("reqVO") AppMyPkgPageReqVO reqVO, @Param("userId") Long userId);
 
     PkgInfoDO getFirstPkgByRoomType(@Param("storeId") Long storeId, @Param("roomType") Integer roomType);
+
+    PkgInfoDO getPkgByCouponId(@Param("couponId") String couponId);
 }
