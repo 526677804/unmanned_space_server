@@ -268,6 +268,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //新增
             RoomInfoDO roomInfoDO = RoomInfoConvert.INSTANCE.convert3(reqVO);
+            roomInfoDO.setReserve(reqVO.getReserve()); // 转换属性丢失
             roomInfoMapper.insert(roomInfoDO);
             //门店的房间数量+1
             StoreInfoDO storeInfoDO = storeInfoMapper.selectById(reqVO.getStoreId());
@@ -299,6 +300,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //校验门店权限
             checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
             RoomInfoDO roomInfoDO = RoomInfoConvert.INSTANCE.convert3(reqVO);
+            roomInfoDO.setReserve(reqVO.getReserve()); // 转换属性丢失
             WxMaService wxMaService = myWxService.initWxMa();
             if (ObjectUtils.isEmpty(roomInfoDO.getRenewCode())) {
                 //生成续费码

@@ -88,4 +88,7 @@ public class AppRoomDetailReqVO {
 
     @Schema(description = "跳过清洁")
     private Boolean jumpClear;
+
+    @Schema(description = "是否预约")
+    private Boolean reserve;
 }

@@ -123,7 +123,8 @@ public class RoomInfoDO extends BaseDO {
     @Schema(description = "跳过清洁")
     private Boolean jumpClear;
 
-
+    @Schema(description = "是否预定")
+    private Boolean reserve;
 
 
 }

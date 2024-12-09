@@ -109,5 +109,7 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "已被预定订单时间列表")
     private List<AppOrderTimeVO> orderTimeList;
 
+    @Schema(description = "是否预约")
+    private Boolean reserve;
 
 }
