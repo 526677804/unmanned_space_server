@@ -850,8 +850,6 @@ public class AppOrderServiceImpl implements AppOrderService {
             reqVO.setGroupPayNo(reqVO.getGroupPayNo().replaceAll(" ", ""));
             //查询券信息
             IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(roomInfoDO.getStoreId(), reqVO.getGroupPayNo());
-            //校验券合法性
-            checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
             //查询是否绑定了套餐
             String shopId = prepare.getShopId();
             PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByCouponId(shopId);
@@ -861,9 +859,11 @@ public class AppOrderServiceImpl implements AppOrderService {
                 // 走套餐的校验
                 checkPkgUse(pkgByCouponId,false,roomInfoDO.getType(),roomInfoDO.getStoreId(),reqVO.getStartTime(), reqVO.getEndTime(),orderMinutes);
             }else {
-                //把券使用了
-                groupPayInfoDO = groupPayInfoService.consume(roomInfoDO.getStoreId(), reqVO.getGroupPayNo(), prepare);
+                //校验券合法性
+                checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
             }
+            //把券使用了
+            groupPayInfoDO = groupPayInfoService.consume(roomInfoDO.getStoreId(), reqVO.getGroupPayNo(), prepare);
             //团购消费的  支付价格设置为0
             totalPrice = BigDecimal.ZERO;
             if (deposit > 0) {
@@ -2031,6 +2031,42 @@ public class AppOrderServiceImpl implements AppOrderService {
         } else {
             throw exception(ORDER_NOT_FOUND_ERROR);
         }
+    }
+
+    @Override
+    public Integer getGroupPayTime(GroupPayTimeReqVo reqVo) {
+        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVo.getRoomId());
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
+        //查询券信息
+        IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(reqVo.getStoreId(), reqVo.getTicketNo());
+        //查询是否绑定了套餐
+        String shopId = prepare.getShopId();
+        PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByCouponId(shopId);
+        if (!ObjectUtils.isEmpty(pkgByCouponId)){
+            return pkgByCouponId.getHours();
+        }else {
+            return getTime(prepare.getTicketName(), storeInfoDO.getTxHour());
+        }
+
+    }
+
+    private Integer getTime(String title,Integer txHour){
+        int timeHour = 0;
+
+        int timeIndex = title.indexOf("个小时");
+        if (timeIndex == -1) {
+            //没找到 再尝试找一下  “个小时”
+            timeIndex = title.indexOf("小时");
+        }
+        //还是没找到  就报错了
+        if (timeIndex == -1) {
+            throw exception(CHECK_GROUP_NO_TIME_ERROR);
+        }
+        // 取时间
+        String timeStr = title.substring(timeIndex - 1, timeIndex);
+        timeHour = Integer.valueOf(timeStr);
+
+        return timeHour;
     }
 
 }

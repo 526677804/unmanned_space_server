@@ -6,16 +6,14 @@ import com.dtflys.forest.annotation.Var;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
 import com.yanzu.module.member.service.iot.device.IotResult;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayConsumeReqVO;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareReqVO;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayScopeUrlReqVO;
+import com.yanzu.module.member.service.iot.groupPay.*;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.security.PermitAll;
+import java.util.List;
 
 public interface IotGroupPayClient {
 
@@ -73,6 +71,33 @@ public interface IotGroupPayClient {
                     "secret:${secret}",
             })
     IotResult<Boolean> revoke(@JSONBody IotGroupPayConsumeReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
+
+    /**
+     * 手机号查询可用团购券
+     *
+     * @param reqVO
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/groupPay/queryCodeByMobile",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<List<IotGroupPaySelectByPhoneRespVo>> selectGroupPayByPhone(@JSONBody IotGroupPaySelectByPhoneReqVo reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
+
+
+    /**
+     * 团购券码查询详细信息
+     *
+     * @param reqVO
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/groupPay/prepare",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<SelectGroupPayInfoRespVo> selectGroupPayInfo(@JSONBody SelectGroupPayInfoReqVo reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
 
 }

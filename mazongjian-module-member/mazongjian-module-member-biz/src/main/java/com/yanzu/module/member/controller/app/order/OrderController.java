@@ -11,6 +11,7 @@ import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.pkginfo.PkgInfoMapper;
 import com.yanzu.module.member.service.order.AppOrderService;
+import com.yanzu.module.member.service.order.vo.GroupPayTimeReqVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -228,4 +229,13 @@ public class OrderController {
     public CommonResult<String> getLockPwd(@RequestParam(value = "orderKey", required = true) String orderKey) {
         return success(appOrderService.getLockPwd(orderKey));
     }
+
+    @PostMapping("/getTime")
+    @Operation(summary = "选择团购券获取时间", description = "选择团购券获取时间")
+    @PreAuthenticated
+    public CommonResult<Integer> getTime(@RequestBody GroupPayTimeReqVo reqVo) {
+        return success(appOrderService.getGroupPayTime(reqVo));
+    }
+
+
 }

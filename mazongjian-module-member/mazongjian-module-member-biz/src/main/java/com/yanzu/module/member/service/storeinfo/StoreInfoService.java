@@ -1,11 +1,16 @@
 package com.yanzu.module.member.service.storeinfo;
 
 import com.yanzu.framework.common.core.KeyValue;
+import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
 import com.yanzu.module.member.controller.app.manager.vo.AppVipBlacklistRespVO;
 import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
+import com.yanzu.module.member.service.iot.device.IotResult;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneReqVo;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneRespVo;
+import com.yanzu.module.member.service.iot.groupPay.SelectGroupPayInfoRespVo;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -158,5 +163,7 @@ public interface StoreInfoService {
     void getStoreRoomInfo(Long storeId, HttpServletResponse response);
 
     String getLockPwd(AppGetLockPwdReqVO reqVO);
+
+    CommonResult<List<IotGroupPaySelectByPhoneRespVo>> selectGroupPayByPhone(IotGroupPaySelectByPhoneReqVo reqVo);
 
 }

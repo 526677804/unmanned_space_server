@@ -8,8 +8,10 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.core.KeyValue;
+import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.date.DateUtils;
+import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
@@ -40,9 +42,13 @@ import com.yanzu.module.member.dal.mysql.storesound.StoreSoundInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
+import com.yanzu.module.member.forest.IotGroupPayClient;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.iot.IotDeviceService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
+import com.yanzu.module.member.service.iot.device.IotResult;
+import com.yanzu.module.member.service.iot.groupPay.*;
+import com.yanzu.module.member.service.iot.groupPay.enums.GroupPayTypeEnums;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.user.MemberUserService;
@@ -148,6 +154,17 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Value("${iot.groupPay:false}")
     private boolean iotGroupPay;
+
+    @Resource
+    private IotGroupPayClient groupPayClient;
+
+    @Value("${iot.clientId}")
+    private String clientId;
+    @Value("${iot.secret}")
+    private String secret;
+
+    private static final String CLIENT_ID = "73e6ffc6-d534";
+    private static final String SECRET = "f7f7d8cb-2dbb-47bf-bbce-3242f717ec73";
 
     private static final String MINIAPP_IMG_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='%s'&secret='%s'";
 
@@ -923,6 +940,15 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             return deviceService.getLockPwd(getLoginUserId(), reqVO.getStoreId(), reqVO.getRoomId(), sn);
         }
         throw exception(LOCK_NOT_FOUND_ERROR);
+    }
+
+    @Override
+    public CommonResult<List<IotGroupPaySelectByPhoneRespVo>> selectGroupPayByPhone(IotGroupPaySelectByPhoneReqVo reqVo) {
+        MemberUserDO memberUserDO = memberUserMapper.selectById(getLoginUserId());
+        reqVo.setMobile(memberUserDO.getMobile());
+        IotResult<List<IotGroupPaySelectByPhoneRespVo>> listIotResult = groupPayClient.selectGroupPayByPhone(reqVo, CLIENT_ID, SECRET);
+        List<IotGroupPaySelectByPhoneRespVo> groups = listIotResult.getData();
+        return CommonResult.success(groups);
     }
 
 }

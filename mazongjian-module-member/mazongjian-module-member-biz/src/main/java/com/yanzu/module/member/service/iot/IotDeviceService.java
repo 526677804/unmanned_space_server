@@ -227,6 +227,27 @@ public class IotDeviceService {
                     case "getRoomList":
                         //获取房间列表
                         return getRoomList(data);
+                    case "sendBooking":
+                        // 开始预定
+                        return null;
+                    case "syncBookingResult":
+                        // 预订结果同步
+                        return null;
+                    case "cancelReservation":
+                        // 取消预订
+                        return null;
+                    case "updateBookingResult":
+                        // 核销状态同步？
+                        return null;
+                    case "getBookingStatus":
+                        // 订单状态查询
+                        return null;
+                    case "refundBooking":
+                        // 用户申请退款（需业务系统审核）
+                        return null;
+                    case "cancelBookingResult":
+                        // 用户取消预订结果通知
+                        return null;
                 }
             } else {
                 log.error("签名不匹配,{}", sign);

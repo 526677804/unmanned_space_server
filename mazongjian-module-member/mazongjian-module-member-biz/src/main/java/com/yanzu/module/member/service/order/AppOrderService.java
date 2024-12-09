@@ -7,6 +7,7 @@ import com.yanzu.module.member.controller.app.meituanreserve.vo.MeiTuanReserveRe
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
+import com.yanzu.module.member.service.order.vo.GroupPayTimeReqVo;
 
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
@@ -106,5 +107,7 @@ public interface AppOrderService {
     void verificationStatus(Long storeId , String message, HttpServletResponse response);
 
     String getLockPwd(String orderKey);
+
+    Integer getGroupPayTime(GroupPayTimeReqVo reqVo);
 
 }
