@@ -84,4 +84,6 @@ public class AppUserDO extends BaseDO {
      */
     private BigDecimal balance;
 
+    private BigDecimal giftBalance;
+
 }

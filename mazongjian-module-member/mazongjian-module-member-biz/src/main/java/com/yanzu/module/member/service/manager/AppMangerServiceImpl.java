@@ -943,11 +943,9 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Transactional
     public void recharge(AppUserRechargeReqVO reqVO) {
         //权限检查
-        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
         //执行
         memberUserService.recharge(reqVO);
-        //发送企业微信通知
-        workWxService.sendAdminRechargeMsg(reqVO.getStoreId(), reqVO.getUserId(), getLoginUserId(), reqVO.getMoney());
     }
 
     @Override
