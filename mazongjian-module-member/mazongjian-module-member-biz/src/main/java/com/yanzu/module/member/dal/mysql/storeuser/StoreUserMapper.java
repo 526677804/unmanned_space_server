@@ -55,4 +55,6 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
 
     List<Long> selectSelfStoreIds(Long userId);
 
+    StoreUserDO isInBlack(@Param("storeId") Long storeId,@Param("userId") Long userId);
+
 }

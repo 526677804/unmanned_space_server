@@ -195,4 +195,13 @@
           and user_id = #{userId}
     </select>
 
+    <select id="isInBlack" resultType="com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO">
+        select *
+        from member_store_user u
+        where deleted = 0
+        and store_id = #{storeId}
+        and user_id = #{userId}
+        and vip_blacklist = 1
+    </select>
+
 </mapper>

@@ -197,7 +197,6 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Autowired
     private RedisTemplate redisTemplate;
 
-
     @Resource
     private GroupPayInfoService groupPayInfoService;
 
@@ -253,6 +252,11 @@ public class AppOrderServiceImpl implements AppOrderService {
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
             throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
+        }
+        // 判断用户是否拉黑
+        StoreUserDO inBlack = storeUserMapper.isInBlack(roomInfoDO.getStoreId(), getLoginUserId());
+        if (!ObjectUtils.isEmpty(inBlack)){
+            throw exception(IS_BLACK);
         }
         //查询出门店的配置信息
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
@@ -805,6 +809,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Override
     @Transactional
     public Long save(OrderSaveReqVO reqVO) {
+
         //说明一下  只有不存在微信付款时，才直接调用此接口
         //如果是微信付款的  那么是由支付回调来调用的此接口
         if (ObjectUtils.isEmpty(reqVO.getUserId())) {
@@ -814,6 +819,11 @@ public class AppOrderServiceImpl implements AppOrderService {
         String orderNo = reqVO.getOrderNo();
         OrderInfoDO orderInfoDO = new OrderInfoDO();
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
+        // 判断用户是否拉黑
+        StoreUserDO inBlack = storeUserMapper.isInBlack(roomInfoDO.getStoreId(), getLoginUserId());
+        if (!ObjectUtils.isEmpty(inBlack)){
+            throw exception(IS_BLACK);
+        }
         int deposit = roomInfoDO.getDeposit().multiply(new BigDecimal(100.0)).intValue();
         CouponInfoDO couponInfoDO = null;
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
