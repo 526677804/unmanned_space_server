@@ -9,9 +9,6 @@ public class GroupPayTimeReqVo {
     @Schema(name = "门店id")
     private Long storeId;
 
-    @Schema(name = "房间id")
-    private Long roomId;
-
     @Schema(name = "团购券编号")
     private String ticketNo;
 }

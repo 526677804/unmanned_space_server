@@ -2048,8 +2048,6 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Override
     public Integer getGroupPayTime(GroupPayTimeReqVo reqVo) {
-        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVo.getRoomId());
-        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
         //查询券信息
         IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(reqVo.getStoreId(), reqVo.getTicketNo());
         //查询是否绑定了套餐
@@ -2058,12 +2056,12 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (!ObjectUtils.isEmpty(pkgByCouponId)) {
             return pkgByCouponId.getHours();
         } else {
-            return getTime(prepare.getTicketName(), storeInfoDO.getTxHour());
+            return getTime(prepare.getTicketName());
         }
 
     }
 
-    private Integer getTime(String title, Integer txHour) {
+    private Integer getTime(String title) {
         int timeHour = 0;
 
         int timeIndex = title.indexOf("个小时");
