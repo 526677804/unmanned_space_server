@@ -23,12 +23,6 @@ public class AppSaveOrderReqVo {
     @NotNull(message = "非法操作，无商品总价")
     private BigDecimal totalPrice;
 
-    @NotNull(message = "用户信息未完善，缺少用户名")
-    private String userName;
-
-    @NotNull(message = "用户信息未完善，缺少用户名联系方式")
-    private String userPhone;
-
     private String mark;
 
 }

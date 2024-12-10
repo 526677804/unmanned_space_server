@@ -15,10 +15,12 @@ import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
 import com.yanzu.module.member.controller.app.productorder.vo.*;
 import com.yanzu.module.member.dal.dataobject.productorder.ProductOrderDO;
 import com.yanzu.module.member.dal.dataobject.storeproduct.StoreProductDO;
+import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.productorder.ProductOrderMapper;
 import com.yanzu.module.member.dal.mysql.storeproduct.StoreProductMapper;
 import com.yanzu.module.member.dal.mysql.storeproductattrvalue.StoreProductAttrValueMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
+import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.service.storeproduct.StoreProductService;
 import com.yanzu.module.member.service.storeproduct.dto.FromatDetailDto;
 import com.yanzu.module.member.service.storeproduct.dto.ProductDto;
@@ -81,17 +83,21 @@ public class ProductOrderServiceImpl implements ProductOrderService {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private MemberUserMapper userMapper;
+
     @Override
     public WxPayOrderRespVO createOrder(AppSaveOrderReqVo reqVo) {
         Long uid = getLoginUserId();
+        MemberUserDO memberUserDO = userMapper.selectById(uid);
         String orderNo = getOrderNo();
         ProductOrderDO productOrderDO = new ProductOrderDO();
         productOrderDO.setOrderNo(orderNo);
         productOrderDO.setStoreId(reqVo.getStoreId());
         productOrderDO.setStoreName(reqVo.getStoreName());
         productOrderDO.setUserId(uid);
-        productOrderDO.setUserName(reqVo.getUserName());
-        productOrderDO.setUserPhone(reqVo.getUserPhone());
+        productOrderDO.setUserName(memberUserDO.getNickname());
+        productOrderDO.setUserPhone(memberUserDO.getMobile());
         productOrderDO.setMark(reqVo.getMark());
         productOrderDO.setProductInfo(JSON.toJSONString(reqVo.getProductInfo()));
         productOrderDO.setTotalPrice(reqVo.getTotalPrice());
