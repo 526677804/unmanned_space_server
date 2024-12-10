@@ -3,6 +3,8 @@ package com.yanzu.module.member.service.index;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.app.index.vo.*;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneRespVO;
 
 import java.util.List;
 
@@ -26,6 +28,8 @@ public interface IndexService {
     AppRoomInfoListRespVO getRoomInfo(Long roomId);
 
     AppSysInfoRespVO getSysInfo();
+
+    List<IotGroupPaySelectByPhoneRespVO> selectGroupPayByPhone(IotGroupPaySelectByPhoneReqVO reqVo);
 
 
 }

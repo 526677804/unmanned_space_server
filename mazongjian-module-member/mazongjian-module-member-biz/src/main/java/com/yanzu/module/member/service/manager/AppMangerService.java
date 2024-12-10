@@ -88,4 +88,7 @@ public interface AppMangerService {
 
     void cancelClear(Long clearId);
 
+    List<AppCouponPageRespVO> getUserCouponByAdmin(AppManagerUserCouponListReqVO reqVO);
+
+    void revokeCoupon(Long id);
 }

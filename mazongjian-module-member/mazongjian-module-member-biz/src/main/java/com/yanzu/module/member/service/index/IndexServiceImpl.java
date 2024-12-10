@@ -4,17 +4,22 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.module.infra.api.config.ConfigApi;
 import com.yanzu.module.member.controller.app.index.vo.*;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
+import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.bannerinfo.BannerInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.pkginfo.PkgInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
+import com.yanzu.module.member.service.iot.IotGroupPayService;
+import com.yanzu.module.member.service.iot.device.IotResult;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneRespVO;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -23,14 +28,12 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
@@ -59,6 +62,13 @@ public class IndexServiceImpl implements IndexService {
     private OrderInfoMapper orderInfoMapper;
     @Resource
     private DiscountRulesMapper discountRulesMapper;
+
+    @Resource
+    private MemberUserMapper memberUserMapper;
+
+    @Resource
+    private IotGroupPayService iotGroupPayService;
+
     @Resource
     private RedisTemplate<String, String> redisTemplate;
 
@@ -94,13 +104,6 @@ public class IndexServiceImpl implements IndexService {
             page.getRecords().forEach(x -> {
                 if (!ObjectUtils.isEmpty(x.getDistance())) {
                     x.setDistance(x.getDistance().setScale(2, BigDecimal.ROUND_CEILING));
-                }
-                if (x.getSubscribeTime()!= null) {
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                    LocalDateTime subscribeDateTime = LocalDateTime.parse(x.getSubscribeTime(),formatter);
-                    LocalDateTime currentDateTime = LocalDateTime.now();
-                    Duration duration = Duration.between(subscribeDateTime, currentDateTime);
-                    x.setSubscribeTime(String.valueOf(duration.toMinutes()));
                 }
             });
         }
@@ -332,5 +335,11 @@ public class IndexServiceImpl implements IndexService {
         return respVO;
     }
 
+    @Override
+    public List<IotGroupPaySelectByPhoneRespVO> selectGroupPayByPhone(IotGroupPaySelectByPhoneReqVO reqVo) {
+        MemberUserDO memberUserDO = memberUserMapper.selectById(getLoginUserId());
+        reqVo.setMobile(memberUserDO.getMobile());
+        return iotGroupPayService.selectGroupPayByPhone(reqVo);
+    }
 
 }

@@ -22,8 +22,6 @@
                     select="getDiscountRules"/>
         <collection property="freeRoomNum" column="store_id" ofType="Long"
                     select="getFreeRoomNum"/>
-        <collection property="subscribeTime" column="store_id" ofType="String"
-                    select="getSubscribeTime"/>
     </resultMap>
     <update id="executeExpire">
         update member_store_info
@@ -56,17 +54,9 @@
         from member_room_info
         where deleted = 0
         and store_id = #{store_id}
-        and status = 1
+        and status IN (1,2)
     </select>
-    <select id="getSubscribeTime" resultType="java.lang.String">
-        select create_time AS subscribeTime
-        from member_order_info
-        where deleted = 0
-        and store_id = #{store_id}
-        and status != 3
-        ORDER BY create_time DESC
-        LIMIT 1
-    </select>
+
     <select id="getCityList" resultType="java.lang.String">
         select distinct city_name
         from member_store_info

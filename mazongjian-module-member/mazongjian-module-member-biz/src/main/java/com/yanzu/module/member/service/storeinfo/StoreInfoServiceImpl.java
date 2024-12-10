@@ -155,9 +155,6 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Value("${iot.groupPay:false}")
     private boolean iotGroupPay;
 
-    @Resource
-    private IotGroupPayClient groupPayClient;
-
     @Value("${iot.clientId}")
     private String clientId;
     @Value("${iot.secret}")
@@ -942,13 +939,5 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         throw exception(LOCK_NOT_FOUND_ERROR);
     }
 
-    @Override
-    public CommonResult<List<IotGroupPaySelectByPhoneRespVo>> selectGroupPayByPhone(IotGroupPaySelectByPhoneReqVo reqVo) {
-        MemberUserDO memberUserDO = memberUserMapper.selectById(getLoginUserId());
-        reqVo.setMobile(memberUserDO.getMobile());
-        IotResult<List<IotGroupPaySelectByPhoneRespVo>> listIotResult = groupPayClient.selectGroupPayByPhone(reqVo, CLIENT_ID, SECRET);
-        List<IotGroupPaySelectByPhoneRespVo> groups = listIotResult.getData();
-        return CommonResult.success(groups);
-    }
 
 }

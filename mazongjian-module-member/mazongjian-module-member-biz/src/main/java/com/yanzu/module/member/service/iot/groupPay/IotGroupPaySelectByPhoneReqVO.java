@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Valid
-public class IotGroupPaySelectByPhoneReqVo {
+public class IotGroupPaySelectByPhoneReqVO {
 
     @Schema(name = "手机号")
     private String mobile;

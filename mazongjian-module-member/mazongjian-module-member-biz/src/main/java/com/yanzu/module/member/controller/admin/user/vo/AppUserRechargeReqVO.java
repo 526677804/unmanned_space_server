@@ -14,6 +14,10 @@ public class AppUserRechargeReqVO {
     @NotNull(message = "用户不能为空")
     private Long userId;
 
+    @Schema(description = "门店id")
+    @NotNull(message = "充值门店不能为空")
+    private Long storeId;
+
     @Schema(description = "充值金额")
     @NotNull(message = "充值金额不能为空")
     private BigDecimal money;

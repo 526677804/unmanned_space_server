@@ -256,7 +256,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         // 判断用户是否拉黑
         StoreUserDO inBlack = storeUserMapper.isInBlack(roomInfoDO.getStoreId(), getLoginUserId());
         if (!ObjectUtils.isEmpty(inBlack)){
-            throw exception(IS_BLACK);
+            throw exception(USER_IS_STORE_BLACK);
         }
         //查询出门店的配置信息
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(roomInfoDO.getStoreId());
@@ -822,7 +822,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         // 判断用户是否拉黑
         StoreUserDO inBlack = storeUserMapper.isInBlack(roomInfoDO.getStoreId(), getLoginUserId());
         if (!ObjectUtils.isEmpty(inBlack)){
-            throw exception(IS_BLACK);
+            throw exception(USER_IS_STORE_BLACK);
         }
         int deposit = roomInfoDO.getDeposit().multiply(new BigDecimal(100.0)).intValue();
         CouponInfoDO couponInfoDO = null;

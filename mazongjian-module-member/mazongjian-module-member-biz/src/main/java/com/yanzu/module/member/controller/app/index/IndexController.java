@@ -6,16 +6,16 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.security.core.annotations.PreAuthenticated;
 import com.yanzu.module.member.controller.app.index.vo.*;
 import com.yanzu.module.member.service.index.IndexService;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneRespVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -109,5 +109,12 @@ public class IndexController {
     @Operation(summary = "获取系统信息")
     public CommonResult<AppSysInfoRespVO> getSysInfo() {
         return success(indexService.getSysInfo());
+    }
+
+    @PostMapping("/groupPay/getListByPhone")
+    @Operation(summary = "手机号查询可用团购券")
+    @PreAuthenticated
+    public CommonResult<List<IotGroupPaySelectByPhoneRespVO>> selectGroupPayByPhone(@RequestBody @Valid IotGroupPaySelectByPhoneReqVO reqVo) {
+        return success(indexService.selectGroupPayByPhone(reqVo));
     }
 }

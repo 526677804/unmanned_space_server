@@ -2,16 +2,15 @@ package com.yanzu.module.member.service.iot;
 
 import com.yanzu.module.member.forest.IotGroupPayClient;
 import com.yanzu.module.member.service.iot.device.IotResult;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayConsumeReqVO;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareReqVO;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayScopeUrlReqVO;
+import com.yanzu.module.member.service.iot.groupPay.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+
+import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.IOT_ERROR;
@@ -94,4 +93,17 @@ public class IotGroupPayService {
     }
 
 
+    /**
+     * 手机获取团购券
+     * @return
+     */
+    public List<IotGroupPaySelectByPhoneRespVO> selectGroupPayByPhone(IotGroupPaySelectByPhoneReqVO reqVO) {
+        IotResult<List<IotGroupPaySelectByPhoneRespVO>> result = iotGroupPayClient.selectGroupPayByPhone(reqVO, clientId, secret);
+        if (result.getCode().intValue() == 0) {
+            return result.getData();
+        } else {
+            throw exception(IOT_ERROR, result.getMsg());
+        }
+
+    }
 }

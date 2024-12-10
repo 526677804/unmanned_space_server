@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -73,6 +74,22 @@ public class AppManagerController {
     @PreAuthenticated
     public CommonResult<PageResult<AppCouponPageRespVO>> getCouponPage(@RequestBody @Valid AppManagerCouponPageReqVO reqVO) {
         return success(appMangerService.getCouponPage(reqVO));
+    }
+
+    @PostMapping("/getUserCouponByAdmin")
+    @Operation(summary = "管理员获取会员的优惠券列表")
+    @PreAuthenticated
+    public CommonResult<List<AppCouponPageRespVO>> getUserCouponByAdmin(@RequestBody @Valid AppManagerUserCouponListReqVO reqVO) {
+        return success(appMangerService.getUserCouponByAdmin(reqVO));
+    }
+
+    @PostMapping("/revokeCoupon/{id}")
+    @Operation(summary = "管理员回收会员的优惠券")
+    @PreAuthenticated
+    @Parameter(name = "id")
+    public CommonResult<Boolean> revokeCoupon(@PathVariable("id")Long id) {
+        appMangerService.revokeCoupon(id);
+        return success(true);
     }
 
     @PostMapping("/giftCoupon")

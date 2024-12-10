@@ -87,4 +87,15 @@
           and store_id = #{storeId}
           and coupon_name = '新用户1小时加时券'
     </select>
+    <select id="getUserCouponByAdmin"
+            resultType="com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO">
+        SELECT c.*,
+               s.store_name
+        FROM member_coupon_info c
+                 left join member_store_info s ON s.store_id = c.store_id
+        WHERE c.deleted = 0
+          and c.user_id = #{userId}
+          and c.store_id IN (${storeIds})
+          and c.status = 0
+    </select>
 </mapper>

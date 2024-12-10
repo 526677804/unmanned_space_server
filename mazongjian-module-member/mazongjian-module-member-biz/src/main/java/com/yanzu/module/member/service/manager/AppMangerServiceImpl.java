@@ -173,6 +173,9 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         String storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId()).stream().collect(Collectors.joining(","));
         reqVO.setStoreIds(storeIds);
+        if (StringUtils.isEmpty(storeIds)) {
+            return new PageResult<>();
+        }
         IPage<OrderListRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
         orderInfoMapper.getOrderPage(page, reqVO);
         if (!CollectionUtils.isEmpty(page.getRecords())) {
@@ -701,7 +704,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         orderInfoDO.setEndTime(reqVO.getEndTime());
         orderInfoMapper.updateById(orderInfoDO);
         //异步发送微信通知
-        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), getLoginUserId(), roomInfoDO.getRoomName(), BigDecimal.ZERO, reqVO.getPayType(), orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), null,true);
+        workWxService.sendRenewMsg(roomInfoDO.getStoreId(), getLoginUserId(), roomInfoDO.getRoomName(), BigDecimal.ZERO, reqVO.getPayType(), orderInfoDO.getOrderNo(), orderInfoDO.getEndTime(), null, true);
     }
 
     @Override
@@ -943,9 +946,11 @@ public class AppMangerServiceImpl implements AppMangerService {
     @Transactional
     public void recharge(AppUserRechargeReqVO reqVO) {
         //权限检查
-        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.BOSS.getValue());
         //执行
         memberUserService.recharge(reqVO);
+        //发送企业微信通知
+        workWxService.sendAdminRechargeMsg(reqVO.getStoreId(), reqVO.getUserId(), getLoginUserId(), reqVO.getMoney());
     }
 
     @Override
@@ -960,5 +965,34 @@ public class AppMangerServiceImpl implements AppMangerService {
             clearInfoDO.setComplaintDesc("管理员取消");
             clearInfoMapper.updateById(clearInfoDO);
         }
+    }
+
+    @Override
+    public List<AppCouponPageRespVO> getUserCouponByAdmin(AppManagerUserCouponListReqVO reqVO) {
+        //权限检查
+        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        String storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId()).stream().collect(Collectors.joining(","));
+        if (StringUtils.isEmpty(storeIds)) {
+            return new ArrayList<>();
+        }
+        reqVO.setStoreIds(storeIds);
+        return couponInfoMapper.getUserCouponByAdmin(reqVO.getUserId(), reqVO.getStoreIds());
+    }
+
+    @Override
+    @Transactional
+    public void revokeCoupon(Long id) {
+        //查询出优惠券
+        CouponInfoDO couponInfoDO = couponInfoMapper.selectById(id);
+        if (ObjectUtils.isEmpty(couponInfoDO)) {
+            throw exception(DATA_NOT_EXISTS);
+        }
+        if (couponInfoDO.getStatus().compareTo(AppEnum.coupon_status.AVAILABLE.getValue()) != 0) {
+            throw exception(COUPON_IS_NOT_ENABLE);
+        }
+        //权限检查
+        storeInfoService.checkPermisson(couponInfoDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        //删除优惠券
+        couponInfoMapper.deleteById(id);
     }
 }

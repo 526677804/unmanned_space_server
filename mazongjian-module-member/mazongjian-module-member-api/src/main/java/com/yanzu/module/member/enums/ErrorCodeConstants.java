@@ -102,7 +102,8 @@ public interface ErrorCodeConstants {
     ErrorCode DEVICE_ADD_MAX_NUM_ERROR = new ErrorCode(1004004100, "此类型设备每个场地只允许添加1个！");
     ErrorCode STORE_RENEW_TIME_ERROR = new ErrorCode(1004004101, "不允许超过提前1个月续费！");
     ErrorCode LOCK_NOT_FOUND_ERROR = new ErrorCode(1004004102, "密码锁不存在！");
-    ErrorCode IS_BLACK = new ErrorCode(1004004103, "黑名单用户不允许下单。");
+    ErrorCode USER_IS_STORE_BLACK = new ErrorCode(1004004103, "黑名单用户不允许下单");
+    ErrorCode COUPON_IS_NOT_ENABLE = new ErrorCode(1004004104, "优惠券状态不允许回收");
 
     ErrorCode PKG_BUY_MAX_NUM_ERROR = new ErrorCode(1004004200, "超过购买该套餐的最大数量限制！");
     ErrorCode PKG_BUY_DISABLE_ERROR = new ErrorCode(1004004201, "该套餐不支持购买！");

@@ -14,10 +14,6 @@ import com.yanzu.module.member.controller.app.store.vo.*;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.faceblacklist.FaceBlacklistService;
 import com.yanzu.module.member.service.facerecord.FaceRecordService;
-import com.yanzu.module.member.service.iot.device.IotResult;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneReqVo;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneRespVo;
-import com.yanzu.module.member.service.iot.groupPay.SelectGroupPayInfoRespVo;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -423,13 +419,6 @@ public class AppStoreController {
     public CommonResult<Boolean> removeBlackList(@PathVariable Long id) {
         storeInfoService.removeBlackList(id);
         return success(true);
-    }
-
-    @PostMapping("/groupPay/phone")
-    @Operation(summary = "手机号查询可用团购券")
-    @PreAuthenticated
-    public CommonResult<List<IotGroupPaySelectByPhoneRespVo>> selectGroupPayByPhone(@RequestBody @Valid IotGroupPaySelectByPhoneReqVo reqVo) {
-        return storeInfoService.selectGroupPayByPhone(reqVo);
     }
 
 }
