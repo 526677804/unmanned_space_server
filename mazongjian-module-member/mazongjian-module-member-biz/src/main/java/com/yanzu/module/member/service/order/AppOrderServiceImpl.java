@@ -1,6 +1,7 @@
 package com.yanzu.module.member.service.order;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.HexUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -28,6 +29,7 @@ import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
+import com.yanzu.module.member.dal.dataobject.holiday.HolidayDo;
 import com.yanzu.module.member.dal.dataobject.member.StoreWxpayConfigDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
@@ -43,6 +45,7 @@ import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.groupPay.GroupPayInfoMapper;
+import com.yanzu.module.member.dal.mysql.holiday.HolidayMapper;
 import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.pkginfo.PkgInfoMapper;
@@ -207,6 +210,8 @@ public class AppOrderServiceImpl implements AppOrderService {
     private MeiTuanReserveClient meiTuanReserveClient;
     @Autowired
     private IotClient iotClient;
+    @Autowired
+    private HolidayMapper holidayMapper;
 
     @Autowired
     private PlatformTransactionManager transactionManager;
@@ -255,7 +260,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         // 判断用户是否拉黑
         StoreUserDO inBlack = storeUserMapper.isInBlack(roomInfoDO.getStoreId(), getLoginUserId());
-        if (!ObjectUtils.isEmpty(inBlack)){
+        if (!ObjectUtils.isEmpty(inBlack)) {
             throw exception(USER_IS_STORE_BLACK);
         }
         //查询出门店的配置信息
@@ -276,7 +281,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //检查优惠券是否允许使用
         checkCouponUse(couponInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime);
         //检查套餐是否允许使用
-        checkPkgUse(pkgInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime, orderMinutes);
+        checkPkgUse(pkgInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime, orderMinutes, Math.toIntExact(roomId));
         //计算订单价格
         BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getDeposit(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(),
                 roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO, pkgInfoDO);
@@ -431,7 +436,7 @@ public class AppOrderServiceImpl implements AppOrderService {
      * @param startTime
      * @param endTime
      */
-    private void checkPkgUse(PkgInfoDO pkgInfoDO, boolean nightLong, Integer roomType, Long storeId, Date startTime, Date endTime, long orderMinutes) {
+    private void checkPkgUse(PkgInfoDO pkgInfoDO, boolean nightLong, Integer roomType, Long storeId, Date startTime, Date endTime, long orderMinutes, Integer roomId) {
         //有使用 再判断
         if (!ObjectUtils.isEmpty(pkgInfoDO)) {
             //判断购买数量限制
@@ -458,7 +463,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 //            }
             // 判断是否在包厢限制里面
             if (!ObjectUtils.isEmpty(pkgInfoDO.getEnableRoom())) {
-                if (!pkgInfoDO.getEnableRoom().contains(roomType)) {
+                if (!pkgInfoDO.getEnableRoom().contains(roomId)) {
                     throw exception(PKG_USE_CHECK_ROOM_TYPE_ERROR);
                 }
             }
@@ -488,7 +493,15 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(PKG_USE_CHECK_HOUR_ERROR);
             }
             //节假日判断
-            //TODO....
+            // 节假日不允许使用
+            if (!pkgInfoDO.getEnableHoliday()) {
+                String formatTime = DateUtil.format(startTime, "yyyy-MM-dd");
+                HolidayDo holiday = holidayMapper.isHoliday(formatTime);
+                // 查出当天为节假日
+                if (!ObjectUtils.isEmpty(holiday)) {
+                    throw exception(PKG_USE_CHECK_HOLIDAY_ERROR);
+                }
+            }
         }
 
     }
@@ -821,7 +834,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(reqVO.getRoomId());
         // 判断用户是否拉黑
         StoreUserDO inBlack = storeUserMapper.isInBlack(roomInfoDO.getStoreId(), getLoginUserId());
-        if (!ObjectUtils.isEmpty(inBlack)){
+        if (!ObjectUtils.isEmpty(inBlack)) {
             throw exception(USER_IS_STORE_BLACK);
         }
         int deposit = roomInfoDO.getDeposit().multiply(new BigDecimal(100.0)).intValue();
@@ -853,12 +866,12 @@ public class AppOrderServiceImpl implements AppOrderService {
             //查询是否绑定了套餐
             String shopId = prepare.getShopId();
             PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByCouponId(shopId);
-            if (!ObjectUtils.isEmpty(pkgByCouponId)){
+            if (!ObjectUtils.isEmpty(pkgByCouponId)) {
                 //订单时长 （分钟）
                 long orderMinutes = Math.abs(ChronoUnit.MINUTES.between(reqVO.getStartTime().toInstant(), reqVO.getEndTime().toInstant()));
                 // 走套餐的校验
-                checkPkgUse(pkgByCouponId,false,roomInfoDO.getType(),roomInfoDO.getStoreId(),reqVO.getStartTime(), reqVO.getEndTime(),orderMinutes);
-            }else {
+                checkPkgUse(pkgByCouponId, false, roomInfoDO.getType(), roomInfoDO.getStoreId(), reqVO.getStartTime(), reqVO.getEndTime(), orderMinutes, Math.toIntExact(reqVO.getRoomId()));
+            } else {
                 //校验券合法性
                 checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
             }
@@ -1762,7 +1775,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
-    public void startBooking(Long storeId , String message, HttpServletResponse response){
+    public void startBooking(Long storeId, String message, HttpServletResponse response) {
 //        Long storeId = reqVo.getStoreId();
 //        String message = reqVo.getMessage();
 
@@ -1794,11 +1807,11 @@ public class AppOrderServiceImpl implements AppOrderService {
 
         AtomicReference<Long> uid = null;
         AtomicReference<WxPayOrderRespVO> wxPayOrderRespVO = null;
-        TenantUtils.execute(storeInfoTenantIdVo.getTenantId(),()->{
+        TenantUtils.execute(storeInfoTenantIdVo.getTenantId(), () -> {
             MemberUserDO memberUserDO = memberUserMapper.selectByMobile(mobile);
             uid.set(memberUserDO.getId());
             // 根据手机号和租户编号未查询到用户 创建用户
-            if (ObjectUtils.isEmpty(memberUserDO)){
+            if (ObjectUtils.isEmpty(memberUserDO)) {
                 AppUserCreateReqVO appUserCreateReqVO = new AppUserCreateReqVO();
                 appUserCreateReqVO.setUserType((byte) 11);
                 appUserCreateReqVO.setMobile(mobile);
@@ -1819,8 +1832,8 @@ public class AppOrderServiceImpl implements AppOrderService {
 
         meituanYudingBookResultCallbackReqVo.setOrderId(orderId);
         meituanYudingBookResultCallbackReqVo.setStoreId(storeId);
-        meituanYudingBookResultCallbackReqVo.setCode(wxPayOrderRespVO.get().getOrderNo() != null? 200:700);
-        meituanYudingBookResultCallbackReqVo.setBookStatus(wxPayOrderRespVO.get().getOrderNo() != null? 2:3);
+        meituanYudingBookResultCallbackReqVo.setCode(wxPayOrderRespVO.get().getOrderNo() != null ? 200 : 700);
+        meituanYudingBookResultCallbackReqVo.setBookStatus(wxPayOrderRespVO.get().getOrderNo() != null ? 2 : 3);
         // 预定结果回调
         IotPushDataReqVO iotPushDataReqVO = new IotPushDataReqVO();
         iotPushDataReqVO.setType("push_yuding_data");
@@ -1831,7 +1844,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         yudingCommonReqVO.setStoreId(storeId);
         yudingCommonReqVO.setData(JSONObject.toJSONString(meituanYudingBookResultCallbackReqVo));
 
-        iotPushDataReqVO.setData(JSON.parseObject(JSON.toJSONString(yudingCommonReqVO),JSONObject.class));
+        iotPushDataReqVO.setData(JSON.parseObject(JSON.toJSONString(yudingCommonReqVO), JSONObject.class));
 
         iotClient.pushData(iotPushDataReqVO, CLIENT_ID, SECRET);
 
@@ -1846,7 +1859,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         try {
             response.getWriter().write(
                     JSONObject.toJSONString(
-                            MeituanYudingMsgCallbackCommonRespVo.ok("success",JSONObject.toJSONString(startBookingRespVo))));
+                            MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(startBookingRespVo))));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -1910,7 +1923,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 return MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(resultSynchronizationRespVo));
             });
             response.getWriter().write(JSONObject.toJSONString(ok));
-        }catch (ServiceException e){
+        } catch (ServiceException e) {
             e.printStackTrace();
             try {
                 response.getWriter().write(JSONObject.toJSONString(MeituanYudingMsgCallbackCommonRespVo.error(JSONObject.toJSONString(e))));
@@ -1962,7 +1975,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 return MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(cancelReserveRespVo));
             });
             response.getWriter().write(JSONObject.toJSONString(ok));
-        }catch (ServiceException e){
+        } catch (ServiceException e) {
             e.printStackTrace();
             try {
                 response.getWriter().write(JSONObject.toJSONString(MeituanYudingMsgCallbackCommonRespVo.error(JSONObject.toJSONString(e))));
@@ -2002,7 +2015,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 return MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(verificationStatusRespVo));
             });
             response.getWriter().write(JSONObject.toJSONString(success));
-        }catch (ServiceException e){
+        } catch (ServiceException e) {
             e.printStackTrace();
             try {
                 response.getWriter().write(JSONObject.toJSONString(MeituanYudingMsgCallbackCommonRespVo.error(JSONObject.toJSONString(e))));
@@ -2042,15 +2055,15 @@ public class AppOrderServiceImpl implements AppOrderService {
         //查询是否绑定了套餐
         String shopId = prepare.getShopId();
         PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByCouponId(shopId);
-        if (!ObjectUtils.isEmpty(pkgByCouponId)){
+        if (!ObjectUtils.isEmpty(pkgByCouponId)) {
             return pkgByCouponId.getHours();
-        }else {
+        } else {
             return getTime(prepare.getTicketName(), storeInfoDO.getTxHour());
         }
 
     }
 
-    private Integer getTime(String title,Integer txHour){
+    private Integer getTime(String title, Integer txHour) {
         int timeHour = 0;
 
         int timeIndex = title.indexOf("个小时");

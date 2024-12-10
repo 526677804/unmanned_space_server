@@ -133,9 +133,10 @@
                 and p.store_id=#{reqVO.storeId}
             </if>
             <if test="null!=reqVO.roomId">
-                and (p.room_type is null or p.room_type=0 or p.room_type=(
-                select type from member_room_info where room_id=#{reqVO.roomId}
-                ))
+                and ((p.room_type is null and enable_room is null) or p.room_type=0 or  FIND_IN_SET(
+                (select type from member_room_info where room_id=#{reqVO.roomId}),
+                p.room_type
+                ) or FIND_IN_SET(#{reqVO.roomId}, p.enable_room))
             </if>
             <if test="null!=reqVO.hours">
                 and p.hours>=#{reqVO.hours}
