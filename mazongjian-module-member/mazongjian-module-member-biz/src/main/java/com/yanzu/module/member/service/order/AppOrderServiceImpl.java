@@ -718,6 +718,7 @@ public class AppOrderServiceImpl implements AppOrderService {
      * @param nightLong
      */
     private void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong, Integer txStartHour, Integer txHour) {
+        title=title.replaceAll(" ","");
         if (nightLong || title.indexOf("通宵") != -1) {
             //团购的通宵场 要求团购券必须包含 “通宵”两个字
             if (title.indexOf("通宵") == -1) {
