@@ -1,4 +1,4 @@
-package com.yanzu.module.member.controller.app.meituanreserve.vo;
+package com.yanzu.module.member.controller.app.reserve.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -15,6 +15,6 @@ public class TimePeriodItemsSub {
     @Schema(name = "开始日期（时间戳毫秒数）")
     private Long beginTime;
 
-    @Schema(name = "结束时间（从0:00开始至结束的分钟数）")
+    @Schema(name = "结束日期（时间戳毫秒数）")
     private Long endTime;
 }

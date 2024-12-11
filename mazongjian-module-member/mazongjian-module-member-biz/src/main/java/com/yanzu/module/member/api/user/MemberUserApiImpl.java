@@ -1,6 +1,5 @@
 package com.yanzu.module.member.api.user;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.binarywang.wxpay.bean.profitsharing.ProfitSharingFinishRequest;
@@ -20,8 +19,7 @@ import com.yanzu.module.member.dal.mysql.discountrules.DiscountRulesMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
-import com.yanzu.module.member.forest.IotClient;
-import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
@@ -66,7 +64,7 @@ public class MemberUserApiImpl implements MemberUserApi {
     private PayOrderMapper payOrderMapper;
 
     @Resource
-    private IotDeviceService iotDeviceService;
+    private IotService iotService;
 
     @Resource
     private StoreInfoMapper storeInfoMapper;
@@ -131,7 +129,7 @@ public class MemberUserApiImpl implements MemberUserApi {
             JSONObject list = new JSONObject();
             list.put("list", storeInfoDOS);
             storeDataReq.setData(list);
-            iotDeviceService.pushData(storeDataReq);
+            iotService.pushData(storeDataReq);
         }
         List<RoomInfoDO> roomInfoDOS = roomInfoMapper.selectList();
         if (!CollectionUtils.isEmpty(roomInfoDOS)) {
@@ -140,7 +138,7 @@ public class MemberUserApiImpl implements MemberUserApi {
             JSONObject list = new JSONObject();
             list.put("list", roomInfoDOS);
             roomDataReq.setData(list);
-            iotDeviceService.pushData(roomDataReq);
+            iotService.pushData(roomDataReq);
         }
     }
 

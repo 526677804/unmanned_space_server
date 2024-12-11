@@ -3,7 +3,6 @@ package com.yanzu.module.member.service.order;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.module.member.controller.app.meituanreserve.vo.MeiTuanReserveReqVo;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
@@ -65,46 +64,6 @@ public interface AppOrderService {
     AppGroupNoInfoRespVO preGroupNo(PreGroupNoReqVO reqVO);
 
     void controlKT(ControlKTReqVO reqVO);
-
-    /**
-     * 开始预定
-     *
-     * @param storeId
-     * @param message
-     * @param response
-     * @return
-     */
-    void startBooking(Long storeId , String message, HttpServletResponse response);
-
-    /**
-     * 预定结果同步
-     *
-     * @param storeId
-     * @param message
-     * @param response
-     * @return
-     */
-    void resultSynchronization(Long storeId , String message, HttpServletResponse response);
-
-    /**
-     * 取消预定
-     *
-     * @param storeId
-     * @param message
-     * @param response
-     * @return
-     */
-    void cancelReserve(Long storeId , String message, HttpServletResponse response);
-
-    /**
-     * 核销状态查询
-     *
-     * @param storeId
-     * @param message
-     * @param response
-     * @return
-     */
-    void verificationStatus(Long storeId , String message, HttpServletResponse response);
 
     String getLockPwd(String orderKey);
 

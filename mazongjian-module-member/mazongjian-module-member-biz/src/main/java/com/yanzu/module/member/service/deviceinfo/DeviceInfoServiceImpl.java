@@ -8,7 +8,7 @@ import com.yanzu.module.member.convert.deviceinfo.DeviceInfoConvert;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
-import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.device.IotDeviceBaseVO;
 import com.yanzu.module.member.service.iot.device.IotDeviceConfigWifiReqVO;
 import com.yanzu.module.member.service.iot.device.IotDeviceContrlReqVO;
@@ -42,7 +42,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     private DeviceInfoMapper deviceInfoMapper;
 
     @Resource
-    private IotDeviceService iotDeviceService;
+    private IotService iotService;
 
     @Resource
     private StoreInfoService storeInfoService;
@@ -77,7 +77,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             }
         }
         //先在iot平台绑定设备
-        String data = iotDeviceService.bind(createReqVO.getDeviceSn());
+        String data = iotService.bind(createReqVO.getDeviceSn());
         // 插入
         DeviceInfoDO deviceInfo = DeviceInfoConvert.INSTANCE.convert(createReqVO);
         deviceInfo.setDeviceData(data);
@@ -96,11 +96,11 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             if (deviceInfoDO.getShare()) {
                 if (deviceInfoMapper.countBySN(deviceInfoDO.getDeviceSn()) == 1) {
                     //解绑
-                    iotDeviceService.unbind(deviceInfoDO.getDeviceSn());
+                    iotService.unbind(deviceInfoDO.getDeviceSn());
                 }
             } else {
                 //解绑
-                iotDeviceService.unbind(deviceInfoDO.getDeviceSn());
+                iotService.unbind(deviceInfoDO.getDeviceSn());
             }
             // 删除
             deviceInfoMapper.deleteById(id);
@@ -175,7 +175,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             vo.setDeviceSn(deviceInfoDO.getDeviceSn());
             vo.setSsid(reqVO.getSsid());
             vo.setPasswd(reqVO.getPasswd());
-            iotDeviceService.configWifi(vo);
+            iotService.configWifi(vo);
         }
     }
 
@@ -187,7 +187,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             IotDeviceSetAutoLockReqVO vo = new IotDeviceSetAutoLockReqVO();
             vo.setDeviceSn(deviceInfoDO.getDeviceSn());
             vo.setSecend(reqVO.getSecend());
-            iotDeviceService.setLockAutoLock(vo);
+            iotService.setLockAutoLock(vo);
         }
 
     }
@@ -203,7 +203,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             iotDeviceContrlReqVO.setOutlet(0).setCmd(reqVO.getCmd());
             param.add(iotDeviceContrlReqVO);
             vo.setDeviceSn(deviceInfoDO.getDeviceSn()).setParams(param);
-            boolean flag = iotDeviceService.control(vo);
+            boolean flag = iotService.control(vo);
             if (!flag) {
                 throw exception(DEVICE_OPRATION_ERROR);
             }

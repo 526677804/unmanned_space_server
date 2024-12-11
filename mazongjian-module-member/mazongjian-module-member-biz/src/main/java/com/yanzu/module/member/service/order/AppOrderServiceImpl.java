@@ -1,18 +1,11 @@
 package com.yanzu.module.member.service.order;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.HexUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.service.WxPayService;
-import com.yanzu.framework.common.exception.ServiceException;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
@@ -20,10 +13,6 @@ import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.security.core.LoginUser;
 import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.framework.tenant.core.context.TenantContextHolder;
-import com.yanzu.framework.tenant.core.util.TenantUtils;
-import com.yanzu.module.member.controller.admin.user.vo.AppUserCreateReqVO;
-import com.yanzu.module.member.controller.app.callback.common.MeituanYudingMsgCallbackCommonRespVo;
-import com.yanzu.module.member.controller.app.meituanreserve.vo.MeituanYudingBookResultCallbackReqVo;
 import com.yanzu.module.member.controller.app.order.vo.*;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
@@ -38,7 +27,6 @@ import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
-import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
@@ -60,20 +48,13 @@ import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.enums.AppWxPayTypeEnum;
 import com.yanzu.module.member.forest.IotClient;
-import com.yanzu.module.member.forest.MeiTuanReserveClient;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
-import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
-import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
-import com.yanzu.module.member.service.iotreserve.enums.YudingRequestPaltformTypeEnum;
-import com.yanzu.module.member.service.iotreserve.enums.YudingRequestTypeEnum;
-import com.yanzu.module.member.service.iotreserve.vo.YudingCommonReqVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
-import com.yanzu.module.member.service.iotreserve.IotRespService;
-import com.yanzu.module.member.service.order.vo.*;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.user.MemberUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
@@ -96,8 +77,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -106,7 +85,6 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -186,16 +164,13 @@ public class AppOrderServiceImpl implements AppOrderService {
     private WorkWxService workWxService;
 
     @Resource
-    private IotDeviceService iotDeviceService;
+    private IotService iotService;
 
     @Resource
     private IotGroupPayService iotGroupPayService;
 
     @Resource
     private MemberUserService memberUserService;
-
-    @Resource
-    private IotRespService meiTuanReserveService;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -206,21 +181,11 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Resource
     private StoreMeituanInfoMapper storeMeituanInfoMapper;
 
-    @Resource
-    private MeiTuanReserveClient meiTuanReserveClient;
-    @Autowired
-    private IotClient iotClient;
     @Autowired
     private HolidayMapper holidayMapper;
 
     @Autowired
     private PlatformTransactionManager transactionManager;
-
-    @Value("${wx.pay.returnUrl}")
-    private String returnUrl;
-
-    private static final String CLIENT_ID = "71b71240-f15f";
-    private static final String SECRET = "b92c9bdb-8b50-4454-b588-5e66a5e858fd";
 
     /**
      * @param roomId        房间id
@@ -1782,259 +1747,6 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
         } else {
             throw exception(ORDER_NOT_FOUND_ERROR);
-        }
-    }
-
-    @Override
-    public void startBooking(Long storeId, String message, HttpServletResponse response) {
-//        Long storeId = reqVo.getStoreId();
-//        String message = reqVo.getMessage();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = null;
-        try {
-            rootNode = objectMapper.readTree(message);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        // 用户手机号
-        String mobile = rootNode.get("mobile").asText();
-
-        String begintime = rootNode.get("begintime").asText();
-        String endtime = rootNode.get("endtime").asText();
-        Date begin = DateUtils.strToDate(begintime, FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
-        Date end = DateUtils.strToDate(endtime, FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
-
-        // 产品信息
-        String products = rootNode.get("products").asText();
-        ProductInfoVo productInfoVo = BeanUtil.toBean(products, ProductInfoVo.class);
-
-        // 根据门店id 查询到租户编号
-        StoreInfoTenantIdVo storeInfoTenantIdVo = storeInfoMapper.getTenantId(storeId);
-
-        //todo 开始预定传递两个参数进入 预定结果推送 传递哪个进去
-        String orderId = rootNode.get("orderId").asText();
-        String uniOrderId = productInfoVo.getUni_order_id();
-
-        AtomicReference<Long> uid = null;
-        AtomicReference<WxPayOrderRespVO> wxPayOrderRespVO = null;
-        TenantUtils.execute(storeInfoTenantIdVo.getTenantId(), () -> {
-            MemberUserDO memberUserDO = memberUserMapper.selectByMobile(mobile);
-            uid.set(memberUserDO.getId());
-            // 根据手机号和租户编号未查询到用户 创建用户
-            if (ObjectUtils.isEmpty(memberUserDO)) {
-                AppUserCreateReqVO appUserCreateReqVO = new AppUserCreateReqVO();
-                appUserCreateReqVO.setUserType((byte) 11);
-                appUserCreateReqVO.setMobile(mobile);
-                appUserCreateReqVO.setStatus(0);
-                uid.set(memberUserService.createAppUser(appUserCreateReqVO));
-            }
-            // 将开始预定的参数设置进入 订单校验
-            wxPayOrderRespVO.set(preOrder(uid.get(), null, Long.valueOf(productInfoVo.getProduct_id()), begin, end, null, null, null, false, false));
-            // 将美团提供的id存入
-            OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getOrderNo, wxPayOrderRespVO.get().getOrderNo());
-            orderInfoDO.setTripartiteOrderId(orderId);
-            orderInfoMapper.updateById(orderInfoDO);
-        });
-
-
-        // todo 调用 预定结果回调 推消息给物联网平台
-        MeituanYudingBookResultCallbackReqVo meituanYudingBookResultCallbackReqVo = new MeituanYudingBookResultCallbackReqVo();
-
-        meituanYudingBookResultCallbackReqVo.setOrderId(orderId);
-        meituanYudingBookResultCallbackReqVo.setStoreId(storeId);
-        meituanYudingBookResultCallbackReqVo.setCode(wxPayOrderRespVO.get().getOrderNo() != null ? 200 : 700);
-        meituanYudingBookResultCallbackReqVo.setBookStatus(wxPayOrderRespVO.get().getOrderNo() != null ? 2 : 3);
-        // 预定结果回调
-        IotPushDataReqVO iotPushDataReqVO = new IotPushDataReqVO();
-        iotPushDataReqVO.setType("push_yuding_data");
-
-        YudingCommonReqVO yudingCommonReqVO = new YudingCommonReqVO();
-        yudingCommonReqVO.setPlatformType(YudingRequestPaltformTypeEnum.MT.getType());
-        yudingCommonReqVO.setYudingRequestType(YudingRequestTypeEnum.MT_BOOK_RESULT_CALLBACK.getType());
-        yudingCommonReqVO.setStoreId(storeId);
-        yudingCommonReqVO.setData(JSONObject.toJSONString(meituanYudingBookResultCallbackReqVo));
-
-        iotPushDataReqVO.setData(JSON.parseObject(JSON.toJSONString(yudingCommonReqVO), JSONObject.class));
-
-        iotClient.pushData(iotPushDataReqVO, CLIENT_ID, SECRET);
-
-        // todo  推送房间信息至服务？
-//        if (wxPayOrderRespVO.getOrderNo() != null){
-//            meiTuanReserveService.updateStock(Long.valueOf(productInfoVo.getProduct_id()));
-//        }
-        StartBookingRespVo startBookingRespVo = new StartBookingRespVo();
-        startBookingRespVo.setOrderId(orderId);
-        startBookingRespVo.setAppOrderId(wxPayOrderRespVO.get().getOrderNo());
-        startBookingRespVo.setMobile(mobile);
-        try {
-            response.getWriter().write(
-                    JSONObject.toJSONString(
-                            MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(startBookingRespVo))));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    @Override
-    public void resultSynchronization(Long storeId, String message, HttpServletResponse response) {
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = null;
-        try {
-            rootNode = objectMapper.readTree(message);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        // 用户手机号
-        String mobile = rootNode.get("mobile").asText();
-        // 美团提供的orderId
-        String orderId = rootNode.get("orderId").asText();
-        // 房间id？ 三方项目id（KTV为包房类型id），若第三方可通过服务名称识别，可不传。
-        String appProductId = rootNode.get("appProductId").asText();
-        // 预订结果，2-预订成功，3-预订失败
-        String bookStatus = rootNode.get("bookStatus").asText();
-        // 订单总价
-        String amount = rootNode.get("amount").asText();
-
-        // 美团传递的预定开始 和 结束时间
-        String begintime = rootNode.get("begintime").asText();
-        String endtime = rootNode.get("endtime").asText();
-        Date begin = DateUtils.strToDate(begintime, FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
-        Date end = DateUtils.strToDate(endtime, FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND);
-
-        // 产品信息
-        String products = rootNode.get("products").asText();
-        ProductInfoVo productInfoVo = BeanUtil.toBean(products, ProductInfoVo.class);
-
-        // 根据门店id 查询到租户编号
-        StoreInfoTenantIdVo storeInfoTenantIdVo = storeInfoMapper.getTenantId(storeId);
-        Long tenantId = storeInfoTenantIdVo.getTenantId();
-        try {
-            MeituanYudingMsgCallbackCommonRespVo ok = TenantUtils.execute(tenantId, () -> {
-                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderId, orderId);
-                // 已经生成了订单 但是结果同步通知预订
-                if (!ObjectUtils.isEmpty(orderInfoDO) && bookStatus.equals("3") || ObjectUtils.isEmpty(orderInfoDO) && bookStatus.equals("2")) {
-                    throw new ServiceException(500, "预订结果不一致。");
-                }
-                Date startTime = orderInfoDO.getStartTime();
-                Date endTime = orderInfoDO.getEndTime();
-                if (startTime.compareTo(begin) != 0 || endTime.compareTo(end) != 0) {
-                    throw new ServiceException(500, "预定时间不一致。");
-                }
-                if (orderInfoDO.getRoomId().equals(Long.valueOf(appProductId))) {
-                    throw new ServiceException(500, "预定房间不一致。");
-                }
-                if (orderInfoDO.getPrice().compareTo(new BigDecimal(amount)) != 0) {
-                    throw new ServiceException(500, "预定金额不一致。");
-                }
-                ResultSynchronizationRespVo resultSynchronizationRespVo = new ResultSynchronizationRespVo();
-                resultSynchronizationRespVo.setOrderId(orderId);
-                return MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(resultSynchronizationRespVo));
-            });
-            response.getWriter().write(JSONObject.toJSONString(ok));
-        } catch (ServiceException e) {
-            e.printStackTrace();
-            try {
-                response.getWriter().write(JSONObject.toJSONString(MeituanYudingMsgCallbackCommonRespVo.error(JSONObject.toJSONString(e))));
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    @Override
-    public void cancelReserve(Long storeId, String message, HttpServletResponse response) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = null;
-        try {
-            rootNode = objectMapper.readTree(message);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        // 取消类型，1-规则取消：用户正常规则下取消，2-非规则取消：除规则取消之外的其他取消，如用户通过开放平台客服强制取消 3：超退（客服退款）
-        String cancelType = rootNode.get("cancelType").asText();
-        // 技术合作中心上的订单ID
-        String orderId = rootNode.get("orderId").asText();
-        // 取消预订审核渠道，1-三方平台审核，2-技术合作中心审核
-        String auditChannel = rootNode.get("auditChannel").asText();
-        // 取消预订原因
-        String reason = rootNode.get("reason").asText();
-
-        // 根据门店id 查询到租户编号
-        StoreInfoTenantIdVo storeInfoTenantIdVo = storeInfoMapper.getTenantId(storeId);
-        CancelReserveRespVo cancelReserveRespVo = new CancelReserveRespVo();
-        cancelReserveRespVo.setOrderId(orderId);
-        try {
-            // 模拟商户取消订单
-            MeituanYudingMsgCallbackCommonRespVo ok = TenantUtils.execute(storeInfoTenantIdVo.getTenantId(), () -> {
-                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderId, orderId);
-                if (ObjectUtils.isEmpty(orderInfoDO)) {
-                    throw new ServiceException(500, "未找到相关订单");
-                }
-                if (orderInfoDO.getStatus() != 0) {
-                    throw new ServiceException(500, "订单不可取消。");
-                }
-                log.info("取消类型：{}", cancelType);
-                log.info("取消预订审核渠道，1-三方平台审核，2-技术合作中心审核：{}", auditChannel);
-                log.info("取消预订原因：{}", reason);
-                orderInfoMapper.updateStatusByIds(3, String.valueOf(orderInfoDO.getOrderId()));
-                return MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(cancelReserveRespVo));
-            });
-            response.getWriter().write(JSONObject.toJSONString(ok));
-        } catch (ServiceException e) {
-            e.printStackTrace();
-            try {
-                response.getWriter().write(JSONObject.toJSONString(MeituanYudingMsgCallbackCommonRespVo.error(JSONObject.toJSONString(e))));
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void verificationStatus(Long storeId, String message, HttpServletResponse response) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = null;
-        try {
-            rootNode = objectMapper.readTree(message);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        String orderId = rootNode.get("orderId").asText();
-        // 根据门店id 查询到租户编号
-        StoreInfoTenantIdVo storeInfoTenantIdVo = storeInfoMapper.getTenantId(storeId);
-        try {
-            MeituanYudingMsgCallbackCommonRespVo success = TenantUtils.execute(storeInfoTenantIdVo.getTenantId(), () -> {
-                OrderInfoDO orderInfoDO = orderInfoMapper.selectOne(OrderInfoDO::getTripartiteOrderId, orderId);
-                if (ObjectUtils.isEmpty(orderInfoDO)) {
-                    throw new ServiceException(500, "未查询到相关订单。");
-                }
-                Integer status = orderInfoDO.getStatus();
-                if (status == 3) {
-                    throw new ServiceException(500, "订单已取消。");
-                }
-                VerificationStatusRespVo verificationStatusRespVo = new VerificationStatusRespVo();
-                verificationStatusRespVo.setConsumeStatus(status == 1 || status == 2 ? 2 : 1);
-                verificationStatusRespVo.setOrderId(orderInfoDO.getTripartiteOrderId());
-                return MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(verificationStatusRespVo));
-            });
-            response.getWriter().write(JSONObject.toJSONString(success));
-        } catch (ServiceException e) {
-            e.printStackTrace();
-            try {
-                response.getWriter().write(JSONObject.toJSONString(MeituanYudingMsgCallbackCommonRespVo.error(JSONObject.toJSONString(e))));
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 

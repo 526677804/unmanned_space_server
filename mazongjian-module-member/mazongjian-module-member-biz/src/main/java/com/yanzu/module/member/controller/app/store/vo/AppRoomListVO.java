@@ -24,10 +24,18 @@ public class AppRoomListVO {
     @Schema(description = "门店名称")
     private String storeName;
 
-
     @Schema(description = "webhook地址")
     private String orderWebhook;
 
+    private Integer status;
+    /**
+     * 禁用开始时间
+     */
+    private String banTimeStart;
+    /**
+     * 禁用结束时间
+     */
+    private String banTimeEnd;
 
 
 

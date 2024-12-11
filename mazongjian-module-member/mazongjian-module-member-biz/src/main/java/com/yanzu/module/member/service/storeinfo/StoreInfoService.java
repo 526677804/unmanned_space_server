@@ -155,8 +155,6 @@ public interface StoreInfoService {
      */
     void removeBlackList(Long id);
 
-    void getStoreRoomInfo(Long storeId, HttpServletResponse response);
-
     String getLockPwd(AppGetLockPwdReqVO reqVO);
 
 }

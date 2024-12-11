@@ -2,8 +2,7 @@ package com.yanzu.server;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dtflys.forest.springboot.annotation.ForestScan;
-import com.yanzu.module.member.forest.IotClient;
-import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -38,7 +37,7 @@ public class MazongjianServerApplication {
 
 
     @Resource
-    private IotDeviceService iotDeviceService;
+    private IotService iotService;
 
     //启动成功后 向iot平台上报一下信息
     @Bean
@@ -49,7 +48,7 @@ public class MazongjianServerApplication {
                         .setType("online");
                 JSONObject data = new JSONObject();
                 data.put("redirectUrl", redirectUrl);
-                iotDeviceService.pushData(iotPushDataReqVO);
+                iotService.pushData(iotPushDataReqVO);
             }
         };
     }

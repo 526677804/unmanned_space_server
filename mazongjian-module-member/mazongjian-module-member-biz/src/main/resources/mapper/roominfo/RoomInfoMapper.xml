@@ -120,7 +120,7 @@
 
     </select>
     <select id="getInfoById" resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomListVO">
-        select r.room_id, r.room_name, r.store_id, s.store_name,s.order_webhook
+        select r.room_id, r.room_name, r.store_id,r.status, s.store_name,s.order_webhook,r.ban_time_start,r.ban_time_end
         from member_room_info r
                  left join member_store_info s ON s.store_id = r.store_id
         where r.deleted = 0
@@ -133,12 +133,6 @@
         where deleted = 0
           and store_id = #{storeId}
         order by room_class asc
-    </select>
-    <select id="getStoreRoomInfo" resultType="com.yanzu.module.member.service.iotreserve.vo.RoomInfoVo" parameterType="Long">
-        select room_id , room_name
-        from member_room_info
-        where deleted = 0
-        and store_id = #{storeId}
     </select>
     <select id="getIotRoomList" resultType="com.yanzu.module.member.service.iot.platform.IotRoomListRespVO">
         select r.room_id, r.room_name, r.store_id, s.store_name

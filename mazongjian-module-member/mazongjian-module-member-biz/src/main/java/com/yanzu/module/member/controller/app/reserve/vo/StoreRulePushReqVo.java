@@ -1,10 +1,13 @@
-package com.yanzu.module.member.controller.app.meituanreserve.vo;
+package com.yanzu.module.member.controller.app.reserve.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class StoreRuleReqVo {
+public class StoreRulePushReqVo {
+
+    @Schema(name = "门店Id")
+    private Integer storeId;
 
     @Schema(name = "是否可退，0-可退，1-不可退")
     private Integer refundable;
@@ -19,14 +22,15 @@ public class StoreRuleReqVo {
     private String notifyPhone;
 
     @Schema(name = "是否支持非规则退款")
-    private Boolean irregularRefund=false;
+    private Boolean irregularRefund;
 
     @Schema(name = "最晚延迟时间点，2023-09-08 20:00:00")
-    private String latestPeriodRulePoint="2023-09-08 20:00:00";
+    private String latestPeriodRulePoint;
 
 //    @Schema(name = "手动接单开始时段，如：“01:00”")
 //    private String acceptPeriodBegin;
 //
 //    @Schema(name = "手动接单结束时段，如：“23:00”")
 //    private String acceptPeriodEnd;
+
 }

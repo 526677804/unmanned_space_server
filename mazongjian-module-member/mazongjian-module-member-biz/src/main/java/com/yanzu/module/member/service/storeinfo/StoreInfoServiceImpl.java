@@ -8,10 +8,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yanzu.framework.common.core.KeyValue;
-import com.yanzu.framework.common.pojo.CommonResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.date.DateUtils;
-import com.yanzu.framework.security.core.util.SecurityFrameworkUtils;
 import com.yanzu.framework.web.core.util.WebFrameworkUtils;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.member.controller.admin.storeinfo.vo.*;
@@ -42,13 +40,9 @@ import com.yanzu.module.member.dal.mysql.storesound.StoreSoundInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
-import com.yanzu.module.member.forest.IotGroupPayClient;
 import com.yanzu.module.member.service.device.DeviceService;
-import com.yanzu.module.member.service.iot.IotDeviceService;
+import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
-import com.yanzu.module.member.service.iot.device.IotResult;
-import com.yanzu.module.member.service.iot.groupPay.*;
-import com.yanzu.module.member.service.iot.groupPay.enums.GroupPayTypeEnums;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.user.MemberUserService;
@@ -150,7 +144,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     private IotGroupPayService iotGroupPayService;
 
     @Resource
-    private IotDeviceService iotDeviceService;
+    private IotService iotService;
 
     @Value("${iot.groupPay:false}")
     private boolean iotGroupPay;
@@ -635,6 +629,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //改成禁用
             roomInfoMapper.updateStatusById(AppEnum.room_status.DISABLE.getValue(), roomId);
         }
+        //同步一下预订平台的房间占用信息
+        iotService.updateStock(roomId);
     }
 
     @Override
@@ -693,13 +689,13 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 if (deviceService.countKongtiao(x.getRoomId()) > 0) {
                     x.setKongtiaoCount(1);
                 }
-                //找出该房间所有订单
-                if (orederMap.containsKey(x.getRoomId().toString())) {
-                    List<OrderInfoDO> sortOrder = orederMap.get(x.getRoomId().toString()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
-                    //把第一个订单的开始和结束时间 设置给房间
-                    x.setStartTime(sortOrder.get(0).getStartTime());
-                    x.setEndTime(sortOrder.get(0).getEndTime());
-                }
+//                //找出该房间所有订单
+//                if (orederMap.containsKey(x.getRoomId().toString())) {
+//                    List<OrderInfoDO> sortOrder = orederMap.get(x.getRoomId().toString()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
+//                    //把第一个订单的开始和结束时间 设置给房间
+//                    x.setStartTime(sortOrder.get(0).getStartTime());
+//                    x.setEndTime(sortOrder.get(0).getEndTime());
+//                }
             });
         }
         return list;
@@ -776,7 +772,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             }
         }
         //先在iot平台绑定设备
-        String data = iotDeviceService.bind(reqVO.getDeviceSn());
+        String data = iotService.bind(reqVO.getDeviceSn());
         // 插入
         DeviceInfoDO deviceInfo = new DeviceInfoDO()
                 .setDeviceSn(reqVO.getDeviceSn())
@@ -799,11 +795,11 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             if (deviceInfoDO.getShare()) {
                 if (deviceInfoMapper.countBySN(deviceInfoDO.getDeviceSn()) == 1) {
                     //解绑
-                    iotDeviceService.unbind(deviceInfoDO.getDeviceSn());
+                    iotService.unbind(deviceInfoDO.getDeviceSn());
                 }
             } else {
                 //解绑
-                iotDeviceService.unbind(deviceInfoDO.getDeviceSn());
+                iotService.unbind(deviceInfoDO.getDeviceSn());
             }
             //删除
             deviceInfoMapper.deleteById(deviceId);
@@ -843,7 +839,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
 
     @Override
     public void addLock(AppAddLockReqVO reqVO) {
-        iotDeviceService.addLock(reqVO);
+        iotService.addLock(reqVO);
     }
 
     @Override
@@ -907,18 +903,6 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         storeUserDO.setId(id);
         storeUserDO.setVipBlacklist(0);
         storeUserMapper.updateById(storeUserDO);
-    }
-
-    @Override
-    public void getStoreRoomInfo(Long storeId, HttpServletResponse response) {
-        try {
-            response.getWriter().write(JSONObject.toJSONString(
-                    MeituanYudingMsgCallbackCommonRespVo.ok("success", JSONObject.toJSONString(
-                            roomInfoMapper.getStoreRoomInfo(storeId)))));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
     }
 
     @Override

@@ -1,20 +1,26 @@
 package com.yanzu.module.member.service.iot;
 
 import cn.hutool.crypto.SecureUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dtflys.forest.annotation.JSONBody;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
+import com.yanzu.module.member.controller.app.reserve.vo.TimePeriodItemsSub;
+import com.yanzu.module.member.controller.app.reserve.vo.UpdateStockReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppAddLockReqVO;
+import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.facerecord.FaceRecordDO;
+import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.facerecord.FaceRecordMapper;
+import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
+import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.forest.IotDeviceClient;
 import com.yanzu.module.member.service.iot.device.*;
 import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
 import com.yanzu.module.member.service.iot.platform.IotRoomListRespVO;
-import com.yanzu.module.member.service.iotreserve.YuDingCallback;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
@@ -31,17 +37,15 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalTime;
+import java.util.*;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 @Slf4j
 @Component
-public class IotDeviceService {
+public class IotService {
 
     @Value("${iot.clientId}")
     private String clientId;
@@ -71,7 +75,7 @@ public class IotDeviceService {
     private WorkWxService workWxService;
 
     @Resource
-    private YuDingCallback reserveCallback;
+    private OrderInfoMapper orderInfoMapper;
 
 
     public void pushData(IotPushDataReqVO iotPushDataReqVO) {
@@ -268,8 +272,8 @@ public class IotDeviceService {
         }
         Long storeId = data.getLong("storeId");
         List<IotRoomListRespVO> iotRoomList = roomInfoMapper.getIotRoomList(storeId);
-        JSONObject result=new JSONObject();
-        result.put("list",iotRoomList);
+        JSONObject result = new JSONObject();
+        result.put("list", iotRoomList);
         return result;
     }
 
@@ -430,5 +434,114 @@ public class IotDeviceService {
         } else {
             throw exception(DEVICE_IOT_OP_ERROR, resp.getMsg());
         }
+    }
+
+    /**
+     * 产生订单后、修改房间信息调用 主动推送房间信息至美团
+     *
+     * @param roomId
+     * @return
+     */
+    public void updateStock(Long roomId) {
+        // updateStockReqVos 发送client请求的vo
+        AppRoomListVO roomInfo = roomInfoMapper.getInfoById(roomId);
+        UpdateStockReqVO updateStockReqVo = new UpdateStockReqVO();
+        updateStockReqVo.setRoomId(roomInfo.getRoomId());
+        updateStockReqVo.setRoomName(roomInfo.getRoomName());
+        updateStockReqVo.setStoreId(roomInfo.getStoreId());
+        updateStockReqVo.setStoreName(roomInfo.getStoreName());
+        //时间段被占用信息
+        List<TimePeriodItemsSub> timePeriods = new ArrayList<>();
+        updateStockReqVo.setTimePeriods(timePeriods);
+        //如果房间状态是禁用，那么未来的时间都不能预订
+        if (roomInfo.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
+            TimePeriodItemsSub item = new TimePeriodItemsSub();
+            item.setBeginTime(new Date().getTime());
+            item.setEndTime(new Date().getTime() + 1000 * 60 * 60 * 24 * 3650);//加10年  一直禁用
+            item.setBeginMinutes(0);
+            item.setEndMinutes(24 * 60);//一整天都被占用
+            timePeriods.add(item);
+        } else {
+            //查询出该房间所有订单
+            List<OrderInfoDO> orderList = orderInfoMapper.getByRoomId(roomId, null);
+            if (!CollectionUtils.isEmpty(orderList)) {
+                orderList.forEach(x -> {
+                    TimePeriodItemsSub item = new TimePeriodItemsSub();
+                    item.setBeginTime(x.getStartTime().getTime());
+                    item.setEndTime(x.getEndTime().getTime());
+                    item.setBeginMinutes(getMinuteByDate(x.getStartTime()));
+                    item.setEndMinutes(getMinuteByDate(x.getEndTime()));
+                    timePeriods.add(item);
+                });
+            }
+            //处理房间的每日禁用时间
+            // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
+            if (!ObjectUtils.isEmpty(roomInfo.getBanTimeStart()) && !ObjectUtils.isEmpty(roomInfo.getBanTimeStart())) {
+                LocalTime bstart = LocalTime.parse(roomInfo.getBanTimeStart());
+                LocalTime bend = LocalTime.parse(roomInfo.getBanTimeEnd());
+                Integer bStar = convertToMinutes(roomInfo.getBanTimeStart());
+                Integer bEnd = convertToMinutes(roomInfo.getBanTimeEnd());
+                //至少给5天的禁用时间
+                Date currentDay = new Date();
+                currentDay.setHours(0);
+                currentDay.setMinutes(0);
+                currentDay.setSeconds(0);
+                for (int i = 0; i < 5; i++) {
+                    // 兼容处理禁用时间跨越两天的情况
+                    if (bstart.getHour() > bend.getHour()) {
+                        //跨天了 加两段
+                        TimePeriodItemsSub item1 = new TimePeriodItemsSub();
+                        item1.setBeginTime(currentDay.getTime() + bStar * 60 * 1000);
+                        item1.setEndTime(currentDay.getTime() + 1000 * 60 * 60 * 24);//当日结束时间
+                        item1.setBeginMinutes(bStar);
+                        item1.setEndMinutes(60 * 24);//当日结束时间
+                        timePeriods.add(item1);
+
+                        TimePeriodItemsSub item2 = new TimePeriodItemsSub();
+                        item2.setBeginTime(currentDay.getTime() + 1000 * 60 * 60 * 24);//次日0时开始
+                        item2.setEndTime(currentDay.getTime() + bEnd * 60 * 1000 + 1000 * 60 * 60 * 24);//次日结束时间
+                        item2.setBeginMinutes(0);
+                        item2.setEndMinutes(bEnd);//次日结束时间
+                        timePeriods.add(item2);
+                    } else {
+                        //没跨天 只加一段
+                        TimePeriodItemsSub item = new TimePeriodItemsSub();
+                        item.setBeginTime(currentDay.getTime()+bStar*60*1000);
+                        item.setEndTime(currentDay.getTime()+bEnd*60*1000);
+                        item.setBeginMinutes(bStar);
+                        item.setEndMinutes(bEnd);
+                        timePeriods.add(item);
+                    }
+                }
+            }
+            //追加当前时间5天后的时间全部禁用
+            TimePeriodItemsSub item = new TimePeriodItemsSub();
+            item.setBeginTime(new Date().getTime() + 1000 * 60 * 60 * 24 * 5);
+            item.setEndTime(new Date().getTime() + 1000 * 60 * 60 * 24 * 3650);//加10年  一直禁用
+            item.setBeginMinutes(0);
+            item.setEndMinutes(24 * 60);//一整天都被占用
+            timePeriods.add(item);
+        }
+        IotPushDataReqVO iotPushDataReqVO = new IotPushDataReqVO();
+        iotPushDataReqVO.setType("updateRoomInfo");//更新房间库存消息类型
+        iotPushDataReqVO.setData(JSON.parseObject(JSON.toJSONString(updateStockReqVo), JSONObject.class));
+        pushData(iotPushDataReqVO);
+    }
+
+    public static Integer convertToMinutes(String timeStr) {
+        String[] parts = timeStr.split(":");
+        int hours = Integer.parseInt(parts[0]);
+        int minutes = Integer.parseInt(parts[1]);
+        return hours * 60 + minutes;
+    }
+
+    public Integer getMinuteByDate(Date date) {
+        // 使用Calendar来计算分钟数
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT")); // 使用GMT以确保不受系统时区影响
+        calendar.setTime(date);
+        int hours = calendar.get(Calendar.HOUR_OF_DAY);
+        int minutes = calendar.get(Calendar.MINUTE);
+        // 计算从午夜开始到指定时间的总分钟数
+        return hours * 60 + minutes;
     }
 }
