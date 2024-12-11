@@ -1763,7 +1763,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (!ObjectUtils.isEmpty(pkgByCouponId)) {
             hours =  pkgByCouponId.getHours();
         } else {
-            hours = getTime(prepare.getTicketName());
+            hours = getHoursByGroupTitle(prepare.getTicketName());
         }
         return new AppGroupNoInfoRespVO().setTitile(prepare.getTicketName()).setHours(hours);
     }
@@ -2056,27 +2056,15 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
     }
 
-    @Override
-    public Integer getGroupPayTime(GroupPayTimeReqVo reqVo) {
-        //查询券信息
-        IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(reqVo.getStoreId(), reqVo.getTicketNo());
-        //查询是否绑定了套餐
-        String shopId = prepare.getShopId();
-        PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByCouponId(shopId);
-        if (!ObjectUtils.isEmpty(pkgByCouponId)) {
-            return pkgByCouponId.getHours();
-        } else {
-            return getTime(prepare.getTicketName());
-        }
 
-    }
-
-    private Integer getTime(String title) {
+    private Integer getHoursByGroupTitle(String title) {
         int timeHour = 0;
-
+        if(title.contains("通宵")){
+            return 99;//通宵固定返回99 方便前端处理
+        }
         int timeIndex = title.indexOf("个小时");
         if (timeIndex == -1) {
-            //没找到 再尝试找一下  “个小时”
+            //没找到 再尝试找一下  “小时”
             timeIndex = title.indexOf("小时");
         }
         //还是没找到  就报错了
@@ -2086,7 +2074,6 @@ public class AppOrderServiceImpl implements AppOrderService {
         // 取时间
         String timeStr = title.substring(timeIndex - 1, timeIndex);
         timeHour = Integer.valueOf(timeStr);
-
         return timeHour;
     }
 

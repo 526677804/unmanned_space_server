@@ -230,12 +230,5 @@ public class OrderController {
         return success(appOrderService.getLockPwd(orderKey));
     }
 
-    @PostMapping("/getTime")
-    @Operation(summary = "选择团购券获取时间", description = "选择团购券获取时间")
-    @PreAuthenticated
-    public CommonResult<Integer> getTime(@RequestBody GroupPayTimeReqVo reqVo) {
-        return success(appOrderService.getGroupPayTime(reqVo));
-    }
-
 
 }

@@ -108,6 +108,4 @@ public interface AppOrderService {
 
     String getLockPwd(String orderKey);
 
-    Integer getGroupPayTime(GroupPayTimeReqVo reqVo);
-
 }
