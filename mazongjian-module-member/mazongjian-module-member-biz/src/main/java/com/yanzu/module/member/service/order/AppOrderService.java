@@ -62,7 +62,7 @@ public interface AppOrderService {
 
     void closeOrder(Long orderId);
 
-    String preGroupNo(PreGroupNoReqVO reqVO);
+    AppGroupNoInfoRespVO preGroupNo(PreGroupNoReqVO reqVO);
 
     void controlKT(ControlKTReqVO reqVO);
 

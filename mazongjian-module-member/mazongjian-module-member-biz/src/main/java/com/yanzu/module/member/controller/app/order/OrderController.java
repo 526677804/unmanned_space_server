@@ -79,9 +79,9 @@ public class OrderController {
     }
 
     @PostMapping("/preGroupNo")
-    @Operation(summary = "查询团购券信息（支持美团和抖音）", description = "下单使用")
+    @Operation(summary = "查询团购券信息", description = "下单使用")
     @PreAuthenticated
-    public CommonResult<String> preGroupNo(@RequestBody @Valid PreGroupNoReqVO reqVO) {
+    public CommonResult<AppGroupNoInfoRespVO> preGroupNo(@RequestBody @Valid PreGroupNoReqVO reqVO) {
         return success( appOrderService.preGroupNo(reqVO));
     }
 

@@ -1751,11 +1751,14 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
-    public String preGroupNo(PreGroupNoReqVO reqVO) {
+    public AppGroupNoInfoRespVO preGroupNo(PreGroupNoReqVO reqVO) {
         //处理掉中间有空格的情况
         reqVO.setCode(reqVO.getCode().replaceAll(" ", ""));
         IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(reqVO.getStoreId(), reqVO.getCode());
-        return prepare.getTicketName();
+        Integer hours=0;
+        //todo...计算出团购券包含的hours, 1 从标题读取   2 关联套餐的 从套餐读取
+
+        return new AppGroupNoInfoRespVO().setTitile(prepare.getTicketName()).setHours(hours);
     }
 
     @Override
