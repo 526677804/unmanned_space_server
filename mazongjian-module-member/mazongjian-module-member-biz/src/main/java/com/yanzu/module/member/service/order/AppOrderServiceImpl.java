@@ -1757,7 +1757,14 @@ public class AppOrderServiceImpl implements AppOrderService {
         IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(reqVO.getStoreId(), reqVO.getCode());
         Integer hours=0;
         //todo...计算出团购券包含的hours, 1 从标题读取   2 关联套餐的 从套餐读取
-
+        //查询是否绑定了套餐
+        String shopId = prepare.getShopId();
+        PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByCouponId(shopId);
+        if (!ObjectUtils.isEmpty(pkgByCouponId)) {
+            hours =  pkgByCouponId.getHours();
+        } else {
+            hours = getTime(prepare.getTicketName());
+        }
         return new AppGroupNoInfoRespVO().setTitile(prepare.getTicketName()).setHours(hours);
     }
 
