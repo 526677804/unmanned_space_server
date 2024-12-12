@@ -121,7 +121,6 @@ public class IndexServiceImpl implements IndexService {
             }else {
                 storeInfo.setDistance(new BigDecimal(9999));
             }
-            storeInfo.setDiscountRules(discountRulesMapper.getRulesByStoreId(storeId));
         }
         return storeInfo;
     }

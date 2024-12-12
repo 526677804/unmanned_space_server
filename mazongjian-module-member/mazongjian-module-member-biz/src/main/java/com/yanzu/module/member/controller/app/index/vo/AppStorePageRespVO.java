@@ -53,9 +53,6 @@ public class AppStorePageRespVO {
     @Schema(description = "简洁模式")
     private Boolean simpleModel;
 
-    @Schema(description = "充值优惠信息")
-    private List<String> discountRules;
-
     @Schema(description = "空闲房间数量")
     private Long freeRoomNum;
 

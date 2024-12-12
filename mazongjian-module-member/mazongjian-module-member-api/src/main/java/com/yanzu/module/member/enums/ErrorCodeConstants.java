@@ -130,5 +130,7 @@ public interface ErrorCodeConstants {
     ErrorCode DATA_EXISTS_ERROR = new ErrorCode(1004005001, "数据已存在，请不要重复保存！");
     ErrorCode OPRATION_ERROR = new ErrorCode(1004005002, "非法操作");
     ErrorCode IOT_ERROR = new ErrorCode(1004005003, "操作失败！{}");
+    ErrorCode IOT_SIGN_ERROR = new ErrorCode(1004005004, "签名不匹配");
+    ErrorCode IOT_PARAMS_ERROR = new ErrorCode(1004005005, "参数不符合要求");
 
 }

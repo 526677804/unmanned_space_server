@@ -37,6 +37,11 @@ public class AppRoomListVO {
      */
     private String banTimeEnd;
 
+    /**
+     * 租户ID
+     */
+    private Long tenantId;
+
 
 
 }

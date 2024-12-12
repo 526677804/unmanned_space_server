@@ -18,8 +18,6 @@
         <result column="address" property="address"/>
         <result column="status" property="status"/>
         <result column="distance" property="distance"/>
-        <collection property="discountRules" column="store_id" ofType="String"
-                    select="getDiscountRules"/>
         <collection property="freeRoomNum" column="store_id" ofType="Long"
                     select="getFreeRoomNum"/>
     </resultMap>
@@ -40,15 +38,6 @@
         where deleted=0 and store_id=#{storeId}
 
     </update>
-    <select id="getDiscountRules" resultType="java.lang.String">
-        select concat('充值', pay_money, '元,赠送', gift_money, '元！')
-        from member_discount_rules
-        where deleted = 0
-          and store_id = #{store_id}
-          and status = 1
-          and exprice_time > now()
-        order by pay_money asc
-    </select>
     <select id="getFreeRoomNum" resultType="Long">
         select count(1)
         from member_room_info
@@ -135,18 +124,21 @@
     </select>
     <select id="getRoomInfoList"
             resultType="com.yanzu.module.member.controller.app.index.vo.AppRoomInfoListRespVO">
+        SELECT t.*,(case t.status when 1 then 0 when 3 then 1 else 2 end) caseStatus
+        from(
         select r.*,s.clear_time
         from member_room_info r
         left join member_store_info s ON r.store_id=s.store_id
         where r.deleted = 0
-          and r.store_id = #{storeId}
+        and r.store_id = #{storeId}
         <if test="null!=roomClass">
             and r.room_class=#{roomClass}
         </if>
         <if test="null!=status">
             and r.status=#{status}
         </if>
-        order by r.status , r.sort_id asc
+        ) as t
+        order by caseStatus asc ,t.sort_id asc
     </select>
     <select id="getPageList" resultType="com.yanzu.module.member.controller.app.store.vo.AppStoreAdminRespVO">
         SELECT

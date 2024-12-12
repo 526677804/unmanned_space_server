@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.common.pojo.CommonResult.success;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.OPRATION_ERROR;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.ORDER_PAGE_PARAM_ERROR;
 
 /**
@@ -65,7 +66,7 @@ public class OrderController {
         if (!ObjectUtils.isEmpty(reqVO.getPkgId())) {
             pkgInfoDO = pkgInfoMapper.selectById(reqVO.getPkgId());
         }
-        return success(appOrderService.preOrder(getLoginUserId(), reqVO.getPayType(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(),
+        return success(appOrderService.preOrder(null, getLoginUserId(), reqVO.getPayType(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(),
                 couponInfoDO, pkgInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), true));
     }
 
@@ -82,9 +83,8 @@ public class OrderController {
     @Operation(summary = "查询团购券信息", description = "下单使用")
     @PreAuthenticated
     public CommonResult<AppGroupNoInfoRespVO> preGroupNo(@RequestBody @Valid PreGroupNoReqVO reqVO) {
-        return success( appOrderService.preGroupNo(reqVO));
+        return success(appOrderService.preGroupNo(reqVO));
     }
-
 
 
     @PostMapping("/save")
@@ -92,6 +92,10 @@ public class OrderController {
     @PreAuthenticated
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Long> save(@RequestBody @Valid OrderSaveReqVO reqVO) {
+        //注意！如果是接口提交订单，不允许提交支付类型=0和5的  不然会有安全隐患
+        if (reqVO.getPayType().compareTo(0) == 0 || reqVO.getPayType().compareTo(5) == 0) {
+            throw exception(OPRATION_ERROR);
+        }
         return success(appOrderService.save(reqVO));
     }
 

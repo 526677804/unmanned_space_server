@@ -156,13 +156,18 @@ public class AppEnum {
         //大包	3
         //豪包	4
         //商务包	5
+        //斯洛克 6
+        //中式黑八 7
+        //美式球桌 8
 
         XIAO(1),
         ZHONG(2),
         DA(3),
         HAO(4),
-        SW(5);
-
+        SW(5),
+        SLK(6),
+        HB(7),
+        MS(8);
 
         private final Integer value;
     }
@@ -191,17 +196,18 @@ public class AppEnum {
     @Getter
     @AllArgsConstructor
     public enum order_pay_type {
+        //管理员	0
         //微信	1
         //余额	2
         //团购	3
         //套餐	4
-
+        //预定	5
+        ADMIN(0),
         WEIXIN(1),
         WALLET(2),
         TUANGOU(3),
-        PKG(4);
-//        DAZONG(4),
-//        DOUYIN(5);
+        PKG(4),
+        YUDING(5);
 
 
         private final Integer value;

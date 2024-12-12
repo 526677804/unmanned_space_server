@@ -44,7 +44,7 @@ spring:
       datasource:
         #修改为自己创建的mysql信息 支持5.7或8.0
         master:
-          url: jdbc:mysql://182.44.14.243:8306/malaoban?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://182.44.14.243:8306/malaoban?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&connectTimeout=30000&socketTimeout=60000 # MySQL Connector/J 8.X 连接的示例
           username: malaoban
           password: FR7n6tW5xbzHmS3r
 

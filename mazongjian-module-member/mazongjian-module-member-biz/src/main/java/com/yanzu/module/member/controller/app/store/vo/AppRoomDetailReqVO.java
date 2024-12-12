@@ -52,11 +52,11 @@ public class AppRoomDetailReqVO {
     private BigDecimal tongxiaoPrice;
 
     @Schema(description = "房间标签 逗号分隔")
-    @NotNull(message = "房间标签不能为空")
+//    @NotNull(message = "房间标签不能为空")
     private String label;
 
     @Schema(description = "房间照片 逗号分隔")
-    @NotNull(message = "房间照片不能为空")
+//    @NotNull(message = "房间照片不能为空")
     private String imageUrls;
 
     @Schema(description = "排序位置", example = "0")

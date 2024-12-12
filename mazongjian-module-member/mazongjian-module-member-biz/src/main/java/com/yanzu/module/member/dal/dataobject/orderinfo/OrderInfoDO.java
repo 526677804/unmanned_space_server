@@ -38,10 +38,6 @@ public class OrderInfoDO extends BaseDO {
      */
     private String orderKey;
     /**
-     * 美团订单id
-     */
-    private String tripartiteOrderId;
-    /**
      * 门店id
      */
     private Long storeId;
@@ -86,6 +82,10 @@ public class OrderInfoDO extends BaseDO {
      * 团购支付价格
      */
     private BigDecimal groupPayPrice;
+    /**
+     * 续费价格
+     */
+    private BigDecimal renewPrice;
     /**
      * 退款价格
      */

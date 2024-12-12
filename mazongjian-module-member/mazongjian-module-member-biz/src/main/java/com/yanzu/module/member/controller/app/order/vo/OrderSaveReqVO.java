@@ -27,6 +27,7 @@ import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 @Builder
 public class OrderSaveReqVO {
 
+
     @Schema(description = "房间id", requiredMode = Schema.RequiredMode.REQUIRED, example = "2319")
     @NotNull(message = "房间id不能为空")
     private Long roomId;
@@ -65,4 +66,7 @@ public class OrderSaveReqVO {
 
     @Schema(description = "是否通宵局", example = "false")
     private Boolean nightLong;
+
+    @Schema(description = "指定订单价格 单位是分")
+    private Integer price;
 }

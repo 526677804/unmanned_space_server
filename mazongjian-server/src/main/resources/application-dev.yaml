@@ -44,7 +44,7 @@ spring:
       datasource:
         #修改为自己创建的mysql信息 支持5.7或8.0
         master:
-          url: jdbc:mysql://101.43.208.88:3306/mazongjian?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://101.43.208.88:3306/mazongjian?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&connectTimeout=30000&socketTimeout=60000 # MySQL Connector/J 8.X 连接的示例
           username: mazongjian
           password: 22H2zYzPkXc3cMBA
 
