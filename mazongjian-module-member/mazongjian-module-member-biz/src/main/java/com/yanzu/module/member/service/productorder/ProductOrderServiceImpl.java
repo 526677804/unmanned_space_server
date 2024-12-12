@@ -267,6 +267,11 @@ public class ProductOrderServiceImpl implements ProductOrderService {
         return bean;
     }
 
+    @Override
+    public String getPhone(Long orderId) {
+        return productOrderMapper.getPhone(orderId);
+    }
+
     private PageResult<AppUserOrderPageRespVo> getAppUserOrderPageRespVoPageResult(AppUserOrderPageReqVo reqVo, LambdaQueryWrapperX<ProductOrderDO> queryWrapper) {
         PageResult<ProductOrderDO> pageResult = productOrderMapper.selectPage(reqVo, queryWrapper);
 

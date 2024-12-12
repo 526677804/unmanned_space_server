@@ -27,4 +27,10 @@
         where o.user_id = #{userId}
     </select>
 
+    <select id="getPhone" resultType="String" parameterType="Long">
+        select user_phone
+        from product_order
+        where deleted = 0
+        and order_id = #{orderId}
+    </select>
 </mapper>

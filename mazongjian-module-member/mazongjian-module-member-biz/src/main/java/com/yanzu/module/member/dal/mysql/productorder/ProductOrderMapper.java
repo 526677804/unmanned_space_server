@@ -21,4 +21,5 @@ public interface ProductOrderMapper extends BaseMapperX<ProductOrderDO> {
 
     List<AppHaveOrderStoreRespVo> selectHaveOrderStore(Long userId);
 
+    String getPhone(Long orderId);
 }

@@ -34,4 +34,6 @@ public interface ProductOrderService {
 
     AppUserOrderPageRespVo orderInfo(Long orderId);
 
+    String getPhone(Long orderId);
+
 }

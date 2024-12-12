@@ -87,5 +87,10 @@ public class ProductOrderController {
         return success(productOrderService.orderInfo(id));
     }
 
+    @GetMapping("/phone/{orderId}")
+    public CommonResult<String> getPhone(@PathVariable Long orderId){
+        return success(productOrderService.getPhone(orderId));
+    }
+
 
 }
