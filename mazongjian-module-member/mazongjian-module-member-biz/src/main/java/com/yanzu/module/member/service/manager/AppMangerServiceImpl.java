@@ -52,6 +52,7 @@ import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
 import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
+import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayConsumeReqVO;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareReqVO;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
@@ -137,13 +138,7 @@ public class AppMangerServiceImpl implements AppMangerService {
     private WorkWxService workWxService;
 
     @Resource
-    private MyWxService myWxService;
-
-    @Resource
-    private MeituanService meituanService;
-
-    @Resource
-    private DouyinService douyinService;
+    private IotService iotService;
 
     @Resource
     private GroupPayInfoMapper groupPayInfoMapper;
@@ -857,10 +852,14 @@ public class AppMangerServiceImpl implements AppMangerService {
                 if (reqVO.getRoomId().compareTo(oldRoomId) != 0) {
                     //刷新 新房间的状态
                     appOrderService.flushRoomStatus(reqVO.getRoomId());
+                    //同步一下预订平台的房间占用信息
+                    iotService.updateStock(reqVO.getRoomId());
                 }
             }
             //刷新 旧房间的状态
             appOrderService.flushRoomStatus(oldRoomId);
+            //同步一下预订平台的房间占用信息
+            iotService.updateStock(oldRoomId);
             //发送消息到企业微信
             workWxService.sendChangeMsg(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), oldRoomId, orderInfoDO.getRoomId(), userId);
 

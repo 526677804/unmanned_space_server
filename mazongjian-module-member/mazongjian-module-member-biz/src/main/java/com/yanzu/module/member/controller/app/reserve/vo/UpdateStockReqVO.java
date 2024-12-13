@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.app.reserve.vo;
 
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -21,5 +22,5 @@ public class UpdateStockReqVO {
     private String roomName;
 
     @Schema(name = "时段库存信息")
-    private List<TimePeriodItemsSub> timePeriods;
+    private List<JSONObject> timePeriods;
 }

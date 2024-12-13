@@ -438,7 +438,8 @@
                o.end_time,
                o.status,
                r.room_class,
-               r.jump_clear
+               r.jump_clear,
+               o.pay_type
         from member_order_info o
                  left join member_room_info r ON r.room_id = o.room_id
                  left join member_store_info s ON s.store_id = o.store_id

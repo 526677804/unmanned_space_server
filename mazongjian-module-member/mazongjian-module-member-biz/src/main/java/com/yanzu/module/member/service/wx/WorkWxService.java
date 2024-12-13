@@ -13,6 +13,7 @@ public interface WorkWxService {
     void sendOrderCancelMsg(Long storeId, Long userId, Long roomId, BigDecimal price, CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType, String orderNo, boolean isadmin);
 
     void sendYDOrderCancelMsg(Long storeId, Long roomId, String orderNo);
+    void sendYDOrderCancelAuthMsg(Long storeId, Long roomId, String orderNo,String reason);
 
     void sendCloseOrderMsg(Long storeId, Long userId, Long roomId, Integer payType, Integer groupPayType, String orderNo);
 

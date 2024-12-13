@@ -2,6 +2,7 @@ package com.yanzu.module.member.service.order;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.HexUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
@@ -54,6 +55,7 @@ import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
 import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
+import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.user.MemberUserService;
@@ -1207,6 +1209,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //改旧房间的状态
                 Long oldRoomId = oldRoomInfo.getRoomId();
                 flushRoomStatus(oldRoomId);
+                //同步一下预订平台的房间占用信息
+                iotService.updateStock(roomId);
+                iotService.updateStock(oldRoomId);
                 //发送消息到企业微信
                 workWxService.sendChangeRoomMsg(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), oldRoomInfo.getRoomName(), newRoomInfo.getRoomName(), loginUserId);
             }
@@ -1319,12 +1324,18 @@ public class AppOrderServiceImpl implements AppOrderService {
             orderInfoMapper.updateById(orderInfoDO);
             //房间改为进行中
             roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), orderInfoDO.getRoomId());
+            //如果是预订订单还要通知平台
+            if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.YUDING.getValue()) == 0) {
+                iotService.bookingFinish(orderInfoDO.getOrderNo());
+            }
+            //同步一下预订平台的房间占用信息
+            iotService.updateStock(orderInfoDO.getRoomId());
             //异步延时发送欢迎语
             ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
             executorService.schedule(() -> {
                 // 这是异步执行的任务
                 deviceService.runSound(orderInfoDO.getRoomId(), 1);
-            }, 40, TimeUnit.SECONDS); // 延迟40秒后执行任务
+            }, 30, TimeUnit.SECONDS); // 延迟40秒后执行任务
 
         } else {
             throw exception(ORDER_START_OPRATION_ERROR);
@@ -1352,6 +1363,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             Set<Long> clearRoomIds = new HashSet<>();
             Set<Long> jumpClearRoomIds = new HashSet<>();
             Set<Long> startOrderIds = new HashSet<>();
+            Set<String> ydOrderNos = new HashSet<>();
             Set<Long> endOrderIds = new HashSet<>();
             List<ClearInfoDO> clearInfoDOList = new ArrayList<>();
             //延时异步执行
@@ -1372,10 +1384,14 @@ public class AppOrderServiceImpl implements AppOrderService {
                                 if (x.getRoomClass().compareTo(AppEnum.room_class.TAIQIU.getValue()) == 0) {
                                     deviceService.openRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
                                 }
+                                //如果订单是预订下单的 还要上报此订单已经核销
+                                if (x.getPayType().compareTo(AppEnum.order_pay_type.YUDING.getValue()) == 0) {
+                                    ydOrderNos.add(x.getOrderNo());
+                                }
                                 //异步延时播放欢迎语
                                 executorService.schedule(() -> {
                                     deviceService.runSound(x.getRoomId(), 1);
-                                }, 40, TimeUnit.SECONDS);
+                                }, 30, TimeUnit.SECONDS);
                             }
                         } else if (x.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                             //进行中 主要是完成订单，和关电
@@ -1453,6 +1469,12 @@ public class AppOrderServiceImpl implements AppOrderService {
                     roomInfoMapper.updateStatusByIds(AppEnum.room_status.USED.getValue(), startRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
                     //批量修改订单状态为进行中
                     orderInfoMapper.updateStatusByIds(AppEnum.order_status.START.getValue(), startOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    //如果订单是预订下单的 还要上报此订单已经核销
+                    if (!CollectionUtils.isAnyEmpty(ydOrderNos)) {
+                        ydOrderNos.forEach(no -> {
+                            iotService.bookingFinish(no);
+                        });
+                    }
                 }
                 if (!CollectionUtils.isAnyEmpty(jumpClearRoomIds)) {
                     //批量修改房间状态为空闲

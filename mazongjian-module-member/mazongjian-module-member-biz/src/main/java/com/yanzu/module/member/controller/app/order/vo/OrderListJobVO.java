@@ -19,6 +19,7 @@ public class OrderListJobVO {
     private Integer status;
     private Integer roomClass;
     private Boolean jumpClear;
+    private Integer payType;
 
 
 
