@@ -52,9 +52,7 @@ import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
 import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayConsumeReqVO;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareReqVO;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
+import com.yanzu.module.member.service.iot.groupPay.*;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.order.AppOrderService;
@@ -162,6 +160,9 @@ public class AppMangerServiceImpl implements AppMangerService {
 
     @Resource
     private GroupPayInfoService groupPayInfoService;
+
+    @Resource
+    private IotGroupPayService iotGroupPayService;
 
 
     @Value("${iot.groupPay:false}")
@@ -691,7 +692,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (orderInfoDO.getEndTime().before(reqVO.getEndTime())) {
             //增加时间
             //管理员续费  不需要算钱了，但是要校验时间冲突
-            appOrderService.preOrder(null,userId, null, orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), false, false);
+            appOrderService.preOrder(null, userId, null, orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), false, false);
             //如果状态是已完成  则状态改成进行中 并触发一次通电 还要清除保洁订单信息
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0 && reqVO.getEndTime().after(new Date())) {
                 orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
@@ -834,7 +835,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (flag) {
             //检查目标房间的时间是否占用
-            appOrderService.preOrder(null,orderInfoDO.getUserId(), null, reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
+            appOrderService.preOrder(null, orderInfoDO.getUserId(), null, reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
             //开始修改
             //改时间
             orderInfoDO.setStartTime(reqVO.getStartTime());
@@ -911,7 +912,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         //定义一些参数 备用
         OrderInfoDO orderInfoDO = new OrderInfoDO();
         //下单检查一遍可用时间
-        WxPayOrderRespVO wxPayOrderRespVO = appOrderService.preOrder(null,user.getId(), null, reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, null, false, false);
+        WxPayOrderRespVO wxPayOrderRespVO = appOrderService.preOrder(null, user.getId(), null, reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, null, false, false);
         //生成订单，并修改房间状态
         orderInfoDO.setOrderNo(getOrderNo());
         orderInfoDO.setOrderKey(HexUtil.encodeHexStr(orderInfoDO.getOrderNo() + UUID.randomUUID().toString()));
@@ -994,5 +995,28 @@ public class AppMangerServiceImpl implements AppMangerService {
         storeInfoService.checkPermisson(couponInfoDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //删除优惠券
         couponInfoMapper.deleteById(id);
+    }
+
+    @Override
+    public List<IotGroupPayGetYDCancelAuthListRespVO> getYDCancelAuthList(Long storeId) {
+        //权限检查
+        storeInfoService.checkPermisson(storeId, getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        if (!iotGroupPay) {
+            throw exception(IOT_GROUP_PAY_NOT_SUPPOT);
+        }
+        IotGroupPayGetYDCancelAuthListReqVO reqVO = new IotGroupPayGetYDCancelAuthListReqVO();
+        reqVO.setStoreId(storeId);
+        reqVO.setGroupPayType(AppEnum.member_group_no_type.MEITUAN.getValue());//目前只支持美团
+        return iotGroupPayService.getYDCancelAuthList(reqVO);
+    }
+
+    @Override
+    public void auditYD(IotGroupPayAuditYDReqVO reqVO) {
+        //权限检查
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        if (!iotGroupPay) {
+            throw exception(IOT_GROUP_PAY_NOT_SUPPOT);
+        }
+        iotGroupPayService.auditYD(reqVO);
     }
 }
