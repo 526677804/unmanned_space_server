@@ -13,6 +13,8 @@ import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayAuditYDReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayGetYDCancelAuthListRespVO;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -91,4 +93,10 @@ public interface AppMangerService {
     List<AppCouponPageRespVO> getUserCouponByAdmin(AppManagerUserCouponListReqVO reqVO);
 
     void revokeCoupon(Long id);
+
+    List<IotGroupPayGetYDCancelAuthListRespVO> getYDCancelAuthList(Long storeId);
+
+
+    void auditYD(IotGroupPayAuditYDReqVO reqVO);
+
 }

@@ -24,7 +24,6 @@ public interface IotGroupPayClient {
     IotResult<String> getScopeUrl(@JSONBody IotGroupPayScopeUrlReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
 
-
     /**
      * 验券准备
      *
@@ -78,6 +77,32 @@ public interface IotGroupPayClient {
             })
     IotResult<List<IotGroupPaySelectByPhoneRespVO>> selectGroupPayByPhone(@JSONBody IotGroupPaySelectByPhoneReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
+
+    /**
+     * 获取预订退款待审核列表
+     *
+     * @param reqVO
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/groupPay/getYDCancelAuthList",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<List<IotGroupPayGetYDCancelAuthListRespVO>> getYDCancelAuthList(@JSONBody IotGroupPayGetYDCancelAuthListReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
+
+    /**
+     * 审核预订取消
+     *
+     * @param reqVO
+     * @return
+     */
+    @Post(url = "https://iot.scyanzu.com/admin-api/iot/groupPay/auditYD",
+            headers = {
+                    "clientId:${clientId}",
+                    "secret:${secret}",
+            })
+    IotResult<Boolean> auditYD(@JSONBody IotGroupPayAuditYDReqVO reqVO, @Var("clientId") String clientId, @Var("secret") String secret);
 
 
 }

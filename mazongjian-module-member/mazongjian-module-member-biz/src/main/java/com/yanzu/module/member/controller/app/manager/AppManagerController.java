@@ -14,6 +14,8 @@ import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayAuditYDReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayGetYDCancelAuthListRespVO;
 import com.yanzu.module.member.service.manager.AppMangerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -288,6 +290,26 @@ public class AppManagerController {
         appMangerService.cancelClear(clearId);
         return success(true);
     }
+
+    @PostMapping("/getYDCancelAuthList/{storeId}")
+    @Operation(summary = "获取预订退款待审核列表")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    @Parameter(name = "storeId",description = "门店ID")
+    public CommonResult<List<IotGroupPayGetYDCancelAuthListRespVO>> getYDCancelAuthList(@PathVariable("storeId")Long storeId) {
+        return success(appMangerService.getYDCancelAuthList(storeId));
+    }
+
+    @PostMapping("/auditYD")
+    @Operation(summary = "获取预订退款待审核列表")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> auditYD(@RequestBody @Validated IotGroupPayAuditYDReqVO reqVO) {
+        appMangerService.auditYD(reqVO);
+        return success(true);
+    }
+
+
 
 //    @PostMapping("/changeOrderTime")
 //    @Operation(summary = "管理员修改订单时间")

@@ -52,10 +52,11 @@ public class IotGroupPayService {
 
     /**
      * 验券准备
+     *
      * @param reqVO
      * @return
      */
-    public IotGroupPayPrepareRespVO prepare(IotGroupPayPrepareReqVO reqVO){
+    public IotGroupPayPrepareRespVO prepare(IotGroupPayPrepareReqVO reqVO) {
         IotResult<IotGroupPayPrepareRespVO> result = iotGroupPayClient.prepare(reqVO, clientId, secret);
         if (result.getCode().intValue() == 0) {
             return result.getData();
@@ -65,25 +66,27 @@ public class IotGroupPayService {
     }
 
     /**
-     *  使用团购券
+     * 使用团购券
+     *
      * @param reqVO
      * @return
      */
-   public Boolean consume(IotGroupPayConsumeReqVO reqVO){
-       IotResult<Boolean> result = iotGroupPayClient.consume(reqVO, clientId, secret);
-       if (result.getCode().intValue() == 0) {
-           return result.getData();
-       } else {
-           throw exception(IOT_ERROR, result.getMsg());
-       }
-   }
+    public Boolean consume(IotGroupPayConsumeReqVO reqVO) {
+        IotResult<Boolean> result = iotGroupPayClient.consume(reqVO, clientId, secret);
+        if (result.getCode().intValue() == 0) {
+            return result.getData();
+        } else {
+            throw exception(IOT_ERROR, result.getMsg());
+        }
+    }
 
     /**
-     *  撤销验券
+     * 撤销验券
+     *
      * @param reqVO
      * @return
      */
-    public Boolean revoke(IotGroupPayConsumeReqVO reqVO){
+    public Boolean revoke(IotGroupPayConsumeReqVO reqVO) {
         IotResult<Boolean> result = iotGroupPayClient.revoke(reqVO, clientId, secret);
         if (result.getCode().intValue() == 0) {
             return result.getData();
@@ -95,6 +98,7 @@ public class IotGroupPayService {
 
     /**
      * 手机获取团购券
+     *
      * @return
      */
     public List<IotGroupPaySelectByPhoneRespVO> selectGroupPayByPhone(IotGroupPaySelectByPhoneReqVO reqVO) {
@@ -105,5 +109,33 @@ public class IotGroupPayService {
             throw exception(IOT_ERROR, result.getMsg());
         }
 
+    }
+
+    /**
+     * 获取预订退款待审核列表
+     *
+     * @return
+     */
+    public List<IotGroupPayGetYDCancelAuthListRespVO> getYDCancelAuthList(IotGroupPayGetYDCancelAuthListReqVO reqVO) {
+        IotResult<List<IotGroupPayGetYDCancelAuthListRespVO>> result = iotGroupPayClient.getYDCancelAuthList(reqVO, clientId, secret);
+        if (result.getCode().intValue() == 0) {
+            return result.getData();
+        } else {
+            throw exception(IOT_ERROR, result.getMsg());
+        }
+    }
+
+    /**
+     * 审核预订取消
+     *
+     * @return
+     */
+    public Boolean auditYD(IotGroupPayAuditYDReqVO reqVO) {
+        IotResult<Boolean> result = iotGroupPayClient.auditYD(reqVO, clientId, secret);
+        if (result.getCode().intValue() == 0) {
+            return result.getData();
+        } else {
+            throw exception(IOT_ERROR, result.getMsg());
+        }
     }
 }
