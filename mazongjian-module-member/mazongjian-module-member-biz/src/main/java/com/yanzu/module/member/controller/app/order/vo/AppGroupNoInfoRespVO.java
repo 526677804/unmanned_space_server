@@ -7,7 +7,7 @@ import lombok.Data;
 public class AppGroupNoInfoRespVO {
 
     @Schema(description = "团购券名称")
-    private String titile;
+    private String title;
 
     @Schema(description = "包含的小时")
     private Integer hours;

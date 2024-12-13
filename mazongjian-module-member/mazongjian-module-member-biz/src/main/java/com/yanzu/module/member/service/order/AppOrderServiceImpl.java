@@ -2,7 +2,6 @@ package com.yanzu.module.member.service.order;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.HexUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
@@ -48,14 +47,12 @@ import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.enums.AppWxPayTypeEnum;
-import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.douyin.DouyinService;
 import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
 import com.yanzu.module.member.service.iot.IotService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
-import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.user.MemberUserService;
@@ -66,7 +63,6 @@ import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -263,10 +259,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(ORDER_MIN_HOUR_ERROR);
             }
             //下单需要,检查时间有没有超过提前设置的范围
-            long diffHour = (startTime.getTime() - now.getTime()) / 1000 / 60 / 60;
-            if (diffHour > roomInfoDO.getLeadDay() * 24) {
-                throw exception(ORDER_START_TIME_MAX_ERROR);
-            }
+//            long diffHour = (startTime.getTime() - now.getTime()) / 1000 / 60 / 60;
+//            if (diffHour > roomInfoDO.getLeadDay() * 24) {
+//                throw exception(ORDER_START_TIME_MAX_ERROR);
+//            }
             //判断清洁时是否允许下单
             if (!storeInfoDO.getClearOpen()) {
                 if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {
@@ -418,8 +414,10 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             //有限制的房间类型的  就判断房间类型
             if (!ObjectUtils.isEmpty(pkgInfoDO.getRoomType())) {
-                if (!pkgInfoDO.getRoomType().contains(roomType)) {
-                    throw exception(PKG_USE_CHECK_ROOM_TYPE_ERROR);
+                if (!pkgInfoDO.getRoomType().equals("0")) {//兼容旧代码
+                    if (!pkgInfoDO.getRoomType().contains(roomType)) {
+                        throw exception(PKG_USE_CHECK_ROOM_TYPE_ERROR);
+                    }
                 }
             }
 //            if (!ObjectUtils.isEmpty(pkgInfoDO.getRoomType()) && pkgInfoDO.getRoomType().compareTo(0) != 0) {
@@ -910,7 +908,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     case 5://预定
                         //这两种支付方式不需要处理 但是要看是否指定了实际支付价格
                         if (!ObjectUtils.isEmpty(reqVO.getPrice())) {
-                            totalPrice = new BigDecimal(String.valueOf(reqVO.getPrice() / 100.0));
+                            oldPrice = new BigDecimal(String.valueOf(reqVO.getPrice() / 100.0));
                         }
                         break;
                     default:
@@ -970,6 +968,8 @@ public class AppOrderServiceImpl implements AppOrderService {
             //异步发送微信通知
             workWxService.sendOrderMsg(roomInfoDO.getStoreId(), reqVO.getUserId(), roomInfoDO.getRoomName(), totalPrice, couponInfoDO, pkgInfoDO, reqVO.getPayType(), orderInfoDO.getGroupPayType(), orderNo, orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         }
+        //刷新预定库存
+        iotService.updateStock(orderInfoDO.getRoomId());
         checkRepeatOrder(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), roomInfoDO.getRoomName(), reqVO.getStartTime(), reqVO.getEndTime(), reqVO.getUserId());
         return orderInfoDO.getOrderId();
 
@@ -1583,7 +1583,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             } else if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                 deviceService.openRoomDoor(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else {
-                throw exception(CLEAR_OPEN_DOOR_ERROR);
+                throw exception(ORDER_OPEN_DOOR_ERROR);
             }
         } else {
             throw exception(ORDER_NOT_FOUND_ERROR);
@@ -1605,7 +1605,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
                 deviceService.openStoreDoor(orderInfoDO.getUserId(), orderInfoDO.getStoreId(), 1);
             } else {
-                throw exception(CLEAR_OPEN_DOOR_ERROR);
+                throw exception(ORDER_OPEN_DOOR_ERROR);
             }
         } else {
             throw exception(ORDER_NOT_FOUND_ERROR);
@@ -1692,6 +1692,8 @@ public class AppOrderServiceImpl implements AppOrderService {
                     //发送需要保洁的微信通知
                     sendClearMsg(orderInfoDO.getRoomId());
                 }
+                //同步一下预订平台的房间占用信息
+                iotService.updateStock(orderInfoDO.getRoomId());
                 //发送用户提前结束订单通知
                 workWxService.sendCloseOrderMsg(orderInfoDO.getStoreId(), getLoginUserId(), orderInfoDO.getRoomId(), orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
                 deviceService.closeRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
@@ -1712,7 +1714,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         reqVO.setCode(reqVO.getCode().replaceAll(" ", ""));
         IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(reqVO.getStoreId(), reqVO.getCode());
         Integer hours = 0;
-        //todo...计算出团购券包含的hours, 1 从标题读取   2 关联套餐的 从套餐读取
+        //计算出团购券包含的hours, 1 从标题读取   2 关联套餐的 从套餐读取
         //查询是否绑定了套餐
         String shopId = prepare.getShopId();
         PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByCouponId(shopId);
@@ -1721,7 +1723,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         } else {
             hours = getHoursByGroupTitle(prepare.getTicketName());
         }
-        return new AppGroupNoInfoRespVO().setTitile(prepare.getTicketName()).setHours(hours);
+        return new AppGroupNoInfoRespVO().setTitle(prepare.getTicketName()).setHours(hours);
     }
 
     @Override
@@ -1752,7 +1754,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     throw exception(LOCK_NOT_FOUND_ERROR);
                 }
             } else {
-                throw exception(CLEAR_OPEN_DOOR_ERROR);
+                throw exception(ORDER_OPEN_DOOR_ERROR);
             }
         } else {
             throw exception(ORDER_NOT_FOUND_ERROR);

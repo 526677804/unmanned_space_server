@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Service
@@ -648,6 +649,28 @@ public class WorkWxServiceImpl implements WorkWxService {
         sb.append("顾客呼叫服务\n");
         sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
         sb.append(">呼叫内容:<font color=\"warning\">").append(tts).append("</font>\n");
+        sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
+        JSONObject msg = new JSONObject();
+        msg.put("msgtype", "markdown");
+        JSONObject markdown = new JSONObject();
+        markdown.put("content", sb.toString());
+        msg.put("markdown", markdown);
+        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+
+    }
+
+    @Override
+    @Async
+    public void sendProductOrderMsg(Long storeId, Long userId, LocalDateTime createTime) {
+        //查询出webhook的地址
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+            return;
+        }
+        log.info("发送订单消息到配置的企业微信");
+        StringBuffer sb = new StringBuffer();
+        sb.append("顾客购买商品提醒\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
         sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         JSONObject msg = new JSONObject();
         msg.put("msgtype", "markdown");

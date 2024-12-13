@@ -3,19 +3,14 @@ package com.yanzu.module.member.service.iot;
 import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.dtflys.forest.annotation.JSONBody;
 import com.yanzu.framework.tenant.core.aop.TenantIgnore;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
 import com.yanzu.module.member.controller.app.order.vo.OrderSaveReqVO;
-import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
-import com.yanzu.module.member.controller.app.reserve.vo.TimePeriodItemsSub;
 import com.yanzu.module.member.controller.app.reserve.vo.UpdateStockReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppAddLockReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.facerecord.FaceRecordDO;
-import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
-import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.facerecord.FaceRecordMapper;
@@ -26,12 +21,12 @@ import com.yanzu.module.member.forest.IotClient;
 import com.yanzu.module.member.forest.IotDeviceClient;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.iot.device.*;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayOrderInfoVO;
 import com.yanzu.module.member.service.iot.platform.IotPushDataReqVO;
 import com.yanzu.module.member.service.iot.platform.IotRoomListRespVO;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.WorkWxService;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -48,9 +43,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -292,19 +285,21 @@ public class IotService {
         if (!data.containsKey("orderId") || ObjectUtils.isEmpty(data.getString("orderId"))) {
             throw exception(IOT_PARAMS_ERROR);
         }
-        OrderInfoDO orderInfoDO = orderInfoMapper.getByOrderNo(data.getString("orderId"));
-        if (!ObjectUtils.isEmpty(orderInfoDO)) {
+        IotGroupPayOrderInfoVO orderInfo = orderInfoMapper.getInfoByOrderNo(data.getString("orderId"));
+        if (!ObjectUtils.isEmpty(orderInfo)) {
             //因为要新增设备操作记录 所以要模拟租户
-
-            //被取消的订单已开始了  那就触发一下关门
-            if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                deviceService.closeRoomDoor(null, orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 4);
-            }
-            //设置订单状态为取消
-            orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
-            orderInfoMapper.updateById(orderInfoDO);
-            appOrderService.flushRoomStatus(orderInfoDO.getRoomId());
-            workWxService.sendYDOrderCancelMsg(orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), orderInfoDO.getOrderNo());
+            TenantUtils.execute(orderInfo.getTenantId(), () -> {
+                //被取消的订单已开始了  那就触发一下关门
+                if (orderInfo.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
+                    deviceService.closeRoomDoor(null, orderInfo.getStoreId(), orderInfo.getRoomId(), 4);
+                }
+                //设置订单状态为取消
+                orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderInfo.getOrderId()).setStatus(AppEnum.order_status.CANCEL.getValue()));
+                appOrderService.flushRoomStatus(orderInfo.getRoomId());
+                workWxService.sendYDOrderCancelMsg(orderInfo.getStoreId(), orderInfo.getRoomId(), orderInfo.getOrderNo());
+                //还要更新库存
+                updateStock(orderInfo.getRoomId());
+            });
             return null;
         } else {
             throw exception(DATA_NOT_EXISTS);
@@ -326,7 +321,7 @@ public class IotService {
         OrderInfoDO orderInfoDO = orderInfoMapper.getByOrderNo(data.getString("orderId"));
         if (!ObjectUtils.isEmpty(orderInfoDO)) {
             String reason = data.getString("reason");
-            workWxService.sendYDOrderCancelAuthMsg(orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), orderInfoDO.getOrderNo(),reason);
+            workWxService.sendYDOrderCancelAuthMsg(orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), orderInfoDO.getOrderNo(), reason);
             return null;
         } else {
             throw exception(DATA_NOT_EXISTS);
@@ -362,6 +357,7 @@ public class IotService {
 
     /**
      * 用户核销 （开门）
+     *
      * @param data
      * @return
      */
@@ -369,11 +365,13 @@ public class IotService {
         if (!data.containsKey("orderId") || ObjectUtils.isEmpty(data.getString("orderId"))) {
             throw exception(IOT_PARAMS_ERROR);
         }
-        OrderInfoDO orderInfoDO = orderInfoMapper.getByOrderNo(data.getString("orderId"));
-        if (!ObjectUtils.isEmpty(orderInfoDO)) {
+        IotGroupPayOrderInfoVO orderInfoVO = orderInfoMapper.getInfoByOrderNo(data.getString("orderId"));
+        if (!ObjectUtils.isEmpty(orderInfoVO)) {
             //因为要新增设备操作记录 所以要模拟租户
-            appOrderService.openStoreDoor(orderInfoDO.getOrderKey());
-            appOrderService.openRoomDoor(orderInfoDO.getOrderKey());
+            TenantUtils.execute(orderInfoVO.getTenantId(), () -> {
+                appOrderService.openStoreDoor(orderInfoVO.getOrderKey());
+                appOrderService.openRoomDoor(orderInfoVO.getOrderKey());
+            });
             return null;
         } else {
             throw exception(DATA_NOT_EXISTS);
@@ -388,7 +386,7 @@ public class IotService {
      */
     @TenantIgnore
     private JSONObject updateBookingResult(JSONObject data) {
-        //
+        //暂时不需要处理
         return null;
     }
 
@@ -398,7 +396,7 @@ public class IotService {
      * @param data
      * @return
      */
-    @TenantIgnore
+    @TenantIgnore//可以忽略租户
     private JSONObject syncBookingResult(JSONObject data) {
         //主要处理预定失败的情况  把订单给关闭
         if (!data.containsKey("orderId") || ObjectUtils.isEmpty(data.getString("orderId"))) {
@@ -413,7 +411,6 @@ public class IotService {
                 if (orderInfo.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0
                         || orderInfo.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0
                 ) {
-
                     orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderInfo.getOrderId()).setStatus(AppEnum.order_status.CANCEL.getValue()));
                     //刷新房间状态
                     appOrderService.flushRoomStatus(orderInfo.getRoomId());
@@ -664,12 +661,7 @@ public class IotService {
         updateStockReqVo.setTimePeriods(timePeriods);
         //如果房间状态是禁用，那么未来的时间都不能预订
         if (roomInfo.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
-            JSONObject item = new JSONObject();
-            item.put("beginTime", new Date().getTime());
-            item.put("endTime", new Date().getTime() + 1000 * 60 * 60 * 24 * 365);//加1年  一直禁用
-            item.put("beginMinutes", 0);
-            item.put("endMinutes", 24 * 60);//一整天都被占用
-            timePeriods.add(item);
+            timePeriods.addAll(getFutureDisableItem(0));
         } else {
             //查询出该房间所有订单
             List<OrderInfoDO> orderList = orderInfoMapper.getByRoomId(roomId, null);
@@ -679,63 +671,48 @@ public class IotService {
                     item.put("beginTime", x.getStartTime().getTime());
                     item.put("endTime", x.getEndTime().getTime());
                     item.put("beginMinutes", getMinuteByDate(x.getStartTime()));
-                    item.put("endMinutes", getMinuteByDate(x.getEndTime()));
+                    //结束时间多加5分钟 为了避免相邻订单冲突
+                    item.put("endMinutes", getMinuteByDate(x.getEndTime()) + 5);
                     timePeriods.add(item);
                 });
+            } else {
+                //没有订单占用那么从今天起未来都允许预定
             }
-            //处理房间的每日禁用时间
-            // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
-            if (!ObjectUtils.isEmpty(roomInfo.getBanTimeStart()) && !ObjectUtils.isEmpty(roomInfo.getBanTimeStart())) {
-                LocalTime bstart = LocalTime.parse(roomInfo.getBanTimeStart());
-                LocalTime bend = LocalTime.parse(roomInfo.getBanTimeEnd());
-                Integer bStar = convertToMinutes(roomInfo.getBanTimeStart());
-                Integer bEnd = convertToMinutes(roomInfo.getBanTimeEnd());
-                //至少给5天的禁用时间
-                Date currentDay = new Date();
-                currentDay.setHours(0);
-                currentDay.setMinutes(0);
-                currentDay.setSeconds(0);
-                for (int i = 0; i < 5; i++) {
-                    // 兼容处理禁用时间跨越两天的情况
-                    if (bstart.getHour() > bend.getHour()) {
-                        //跨天了 加两段
-                        JSONObject item1 = new JSONObject();
-                        item1.put("beginTime", currentDay.getTime() + bStar * 60 * 1000);
-                        item1.put("endTime", currentDay.getTime() + 1000 * 60 * 60 * 24);//当日结束时间
-                        item1.put("beginMinutes", bStar);
-                        item1.put("endMinutes", 60 * 24);//当日结束时间
-                        timePeriods.add(item1);
-
-                        JSONObject item2 = new JSONObject();
-                        item2.put("beginTime", currentDay.getTime() + 1000 * 60 * 60 * 24);//次日0时开始
-                        item2.put("endTime", currentDay.getTime() + bEnd * 60 * 1000 + 1000 * 60 * 60 * 24);//次日结束时间
-                        item2.put("beginMinutes", 0);
-                        item2.put("endMinutes", bEnd);//次日结束时间
-                        timePeriods.add(item2);
-                    } else {
-                        //没跨天 只加一段
-                        JSONObject item = new JSONObject();
-                        item.put("beginTime", currentDay.getTime() + bStar * 60 * 1000);
-                        item.put("endTime", currentDay.getTime() + bEnd * 60 * 1000);
-                        item.put("beginMinutes", bStar);
-                        item.put("endMinutes", bEnd);
-                        timePeriods.add(item);
-                    }
-                }
-            }
-            //追加当前时间5天后的时间全部禁用
-            JSONObject item = new JSONObject();
-            item.put("beginTime", new Date().getTime() + 1000 * 60 * 60 * 24 * 5);
-            item.put("endTime", new Date().getTime() + 1000 * 60 * 60 * 24 * 365);//加1年  一直禁用
-            item.put("beginMinutes", 0);
-            item.put("endMinutes", 24 * 60);//一整天都被占用
-            timePeriods.add(item);
         }
         IotPushDataReqVO iotPushDataReqVO = new IotPushDataReqVO();
         iotPushDataReqVO.setType("updateRoomInfo");//更新房间库存消息类型
         iotPushDataReqVO.setData(JSON.parseObject(JSON.toJSONString(updateStockReqVo), JSONObject.class));
         pushData(iotPushDataReqVO);
     }
+
+    /**
+     * 获取未来一年禁用时间
+     *
+     * @param setup 起步的天数
+     * @return
+     */
+    private List<JSONObject> getFutureDisableItem(Integer setup) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.DAY_OF_YEAR, setup);
+        //未来30天
+        List<JSONObject> result = new ArrayList<>(30);
+        for (int i = 0; i < 30; i++) {
+            JSONObject item = new JSONObject();
+            //开始时间当日0时0分
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            item.put("beginTime", calendar.getTime());
+            //结束时间次日0时0分
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+            item.put("endTime", calendar.getTime());
+            item.put("beginMinutes", 0);
+            item.put("endMinutes", 24 * 60);//一整天都被占用
+            result.add(item);
+        }
+        return result;
+    }
+
 
     public static Integer convertToMinutes(String timeStr) {
         String[] parts = timeStr.split(":");
@@ -764,6 +741,20 @@ public class IotService {
         iotPushDataReqVO.setType("bookingFinish");//用户到店核销消息类型
         JSONObject data = new JSONObject();
         data.put("orderId", no);
+        iotPushDataReqVO.setData(JSON.parseObject(JSON.toJSONString(data), JSONObject.class));
+        pushData(iotPushDataReqVO);
+    }
+
+    /**
+     * 商家取消订单
+     *
+     * @param orderNo
+     */
+    public void cancelYDOrder(String orderNo) {
+        IotPushDataReqVO iotPushDataReqVO = new IotPushDataReqVO();
+        iotPushDataReqVO.setType("cancelBookingByAdmin");//商家主动取消订单消息类型
+        JSONObject data = new JSONObject();
+        data.put("orderId", orderNo);
         iotPushDataReqVO.setData(JSON.parseObject(JSON.toJSONString(data), JSONObject.class));
         pushData(iotPushDataReqVO);
     }

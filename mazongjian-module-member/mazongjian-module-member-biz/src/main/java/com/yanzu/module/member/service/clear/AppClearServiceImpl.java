@@ -26,7 +26,6 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
@@ -131,7 +130,7 @@ public class AppClearServiceImpl implements AppClearService {
         if (clearInfoDO.getUserId().compareTo(getLoginUserId()) == 0) {
             deviceService.openStoreDoor(getLoginUserId(), clearInfoDO.getStoreId(), 3);
         } else {
-            throw exception(CLEAR_OPEN_DOOR_ERROR);
+            throw exception(ORDER_OPEN_DOOR_ERROR);
         }
     }
 
@@ -143,7 +142,7 @@ public class AppClearServiceImpl implements AppClearService {
         if (clearInfoDO.getUserId().compareTo(getLoginUserId()) == 0 && clearInfoDO.getStatus().compareTo(AppEnum.clear_info_status.START.getValue()) == 0) {
             deviceService.openRoomDoor(getLoginUserId(), clearInfoDO.getStoreId(), clearInfoDO.getRoomId(), 3);
         } else {
-            throw exception(CLEAR_OPEN_DOOR_ERROR);
+            throw exception(ORDER_OPEN_DOOR_ERROR);
         }
     }
 
@@ -226,7 +225,7 @@ public class AppClearServiceImpl implements AppClearService {
                 throw exception(LOCK_NOT_FOUND_ERROR);
             }
         } else {
-            throw exception(CLEAR_OPEN_DOOR_ERROR);
+            throw exception(ORDER_OPEN_DOOR_ERROR);
         }
     }
 

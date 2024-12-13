@@ -3,9 +3,6 @@ package com.yanzu.module.member.service.manager;
 import cn.hutool.core.util.HexUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
-import com.github.binarywang.wxpay.exception.WxPayException;
-import com.github.binarywang.wxpay.service.WxPayService;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.api.user.MemberUserApi;
@@ -26,12 +23,10 @@ import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
-import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.pkguserinfo.PkgUserInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
-import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.dataobject.userwithdrawal.UserWithdrawalDO;
 import com.yanzu.module.member.dal.mysql.clearbill.ClearBillMapper;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
@@ -48,22 +43,18 @@ import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.dal.mysql.userwithdrawal.UserWithdrawalMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
-import com.yanzu.module.member.service.douyin.DouyinService;
-import com.yanzu.module.member.service.douyin.vo.DouyinPrepareRespVO;
 import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.iot.IotService;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayConsumeReqVO;
-import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayAuditYDReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayGetYDCancelAuthListReqVO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayGetYDCancelAuthListRespVO;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
-import com.yanzu.module.member.service.meituan.MeituanService;
-import com.yanzu.module.member.service.meituan.vo.MeituanPrepareRespVO;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.payorder.PayOrderService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.user.MemberUserService;
-import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.member.service.wx.WorkWxService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -463,13 +454,14 @@ public class AppMangerServiceImpl implements AppMangerService {
             return new AppRevenueChartRespVO().setTotalOrder(0).setTotalMoney(BigDecimal.ZERO).setWxTotalMoney(BigDecimal.ZERO).setGroupTotalMoney(BigDecimal.ZERO);
         }
         Integer wxTotalMoney = orderInfoMapper.getWxTotalMoney(storeIds, reqVO.getStoreId());
+        BigDecimal ydMoney = orderInfoMapper.getYdMoney(reqVO);
         BigDecimal wxMoney = new BigDecimal(String.valueOf(wxTotalMoney / 100.0));
         BigDecimal groupTotalMoney = groupPayInfoMapper.getGroupTotalMoney(storeIds, reqVO.getStoreId());
         BigDecimal mtTotalMoney = groupPayInfoMapper.getMtTotalMoney(storeIds, reqVO.getStoreId());
         BigDecimal dyTotalMoney = groupPayInfoMapper.getDyTotalMoney(storeIds, reqVO.getStoreId());
         Integer count = orderInfoMapper.countByStoreIds(storeIds, reqVO.getStoreId());
         AppRevenueChartRespVO respVO = new AppRevenueChartRespVO();
-        respVO.setTotalMoney(wxMoney.add(groupTotalMoney));
+        respVO.setTotalMoney(wxMoney.add(groupTotalMoney).add(ydMoney));
         respVO.setMtTotalMoney(mtTotalMoney);
         respVO.setDyTotalMoney(dyTotalMoney);
         respVO.setTotalOrder(count);
@@ -494,6 +486,8 @@ public class AppMangerServiceImpl implements AppMangerService {
         BigDecimal ksMoney = groupPayInfoMapper.getGroupBusinessStatistics(reqVO.setGroupPayType(AppEnum.member_group_no_type.KUAISHOU.getValue())).setScale(2, BigDecimal.ROUND_HALF_UP);
         //微信支付收入
         BigDecimal money = payOrderMapper.getMoney(reqVO).setScale(2, BigDecimal.ROUND_HALF_UP);
+        //预订收入
+        BigDecimal ydMoney = orderInfoMapper.getYdMoney(reqVO).setScale(2, BigDecimal.ROUND_HALF_UP);
         AppBusinessStatisticsRespVO respVO = new AppBusinessStatisticsRespVO();
         respVO.setOrderCount(orderNum);
         respVO.setUserCount(userNum);
@@ -502,6 +496,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         respVO.setDyMoney(dyMoney);
         respVO.setKsMoney(ksMoney);
         respVO.setMoney(money);
+        respVO.setYdMoney(ydMoney);
         respVO.setTotal(money.add(tgMoney));
         return respVO;
     }
@@ -756,6 +751,8 @@ public class AppMangerServiceImpl implements AppMangerService {
                 payOrderService.refundByOrder(orderInfoDO.getOrderId(), orderInfoDO.getOrderNo(), orderInfoDO.getStoreId());
                 //进行余额退款 （下单或续费的金额）
                 payOrderService.refundBalance(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
+                //如果是预订订单  通知平台进行退款
+                iotService.cancelYDOrder(orderInfoDO.getOrderNo());
             }
             //取消的订单已开始  那就触发一下关门
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
@@ -766,6 +763,8 @@ public class AppMangerServiceImpl implements AppMangerService {
             orderInfoMapper.updateById(orderInfoDO);
             //刷新房间状态
             appOrderService.flushRoomStatus(orderInfoDO.getRoomId());
+            //更新房间库存
+            iotService.updateStock(orderInfoDO.getRoomId());
             //异步发送微信通知
             workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), userId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice()
                     , couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo(), true);
@@ -927,7 +926,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         orderInfoDO.setPayPrice(BigDecimal.ZERO);
         orderInfoDO.setRefundPrice(BigDecimal.ZERO);
         orderInfoDO.setPayType(AppEnum.order_pay_type.WALLET.getValue());
-        orderInfoDO.setStatistics(reqVO.getStatistics());
+//        orderInfoDO.setStatistics(reqVO.getStatistics());
         orderInfoMapper.insert(orderInfoDO);
         //如果房间状态是待清洁，就发送提醒保洁的通知
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {

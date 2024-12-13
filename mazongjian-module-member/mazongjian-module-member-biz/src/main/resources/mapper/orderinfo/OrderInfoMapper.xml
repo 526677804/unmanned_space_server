@@ -209,6 +209,27 @@
         (
         SELECT
         DATE_FORMAT( create_time, '%m-%d' ) `key`,create_time,
+        ifnull( sum( price ), 0 ) `price`
+        FROM
+        member_order_info
+        WHERE
+        deleted = 0 and status!=3 and pay_type=5
+        <if test="null!=startTime and null!=endTime">
+            and to_days(create_time) >= to_days(#{startTime})
+            and to_days(create_time) &lt;= to_days(#{endTime})
+        </if>
+        <if test="null!=storeId and storeId!=''">
+            and store_id=#{storeId}
+        </if>
+        <if test="null==storeId or storeId==''">
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type
+            IN (12,13))
+        </if>
+        GROUP BY
+        DATE_FORMAT( create_time, '%m-%d' )
+        UNION
+        SELECT
+        DATE_FORMAT( create_time, '%m-%d' ) `key`,create_time,
         ifnull( sum( group_pay_price ), 0 ) `price`
         FROM
         member_group_pay_info
@@ -222,10 +243,12 @@
             and store_id=#{storeId}
         </if>
         <if test="null==storeId or storeId==''">
-            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type
+            IN (12,13))
         </if>
         GROUP BY
-        DATE_FORMAT( create_time, '%m-%d' ) UNION
+        DATE_FORMAT( create_time, '%m-%d' )
+        UNION
         SELECT
         DATE_FORMAT( create_time, '%m-%d' ) `key`,create_time,
         ifnull( sum( price / 100.0 ), 0 ) `price`
@@ -243,7 +266,8 @@
             and store_id=#{storeId}
         </if>
         <if test="null==storeId or storeId==''">
-            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type IN (12,13))
+            and store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type
+            IN (12,13))
         </if>
         GROUP BY
         DATE_FORMAT( create_time, '%m-%d' )
@@ -497,6 +521,30 @@
         select t.* from (
         SELECT
         s.store_name,
+        (o.price/100) price,
+        '预订' AS payType,
+        o.create_time
+        FROM
+        member_order_info o
+        LEFT JOIN member_store_info s ON o.store_id = s.store_id
+        WHERE
+        o.deleted = 0
+        AND o.pay_type = 5
+        AND o.status != 3
+        <if test="null!=startTime and null!=endTime">
+            and to_days(o.create_time) >= to_days(#{startTime})
+            and to_days(o.create_time) &lt;= to_days(#{endTime})
+        </if>
+        <if test="null!=storeId and storeId!=''">
+            and o.store_id=#{storeId}
+        </if>
+        <if test="null==storeId or storeId==''">
+            and o.store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type
+            IN (12,13))
+        </if>
+        UNION ALL
+        SELECT
+        s.store_name,
         (p.price/100) price,
         '微信' AS payType,
         p.create_time
@@ -588,6 +636,30 @@
           AND user_id = #{userId}
           AND store_id = #{storeId}
           AND status!=3
+    </select>
+    <select id="getInfoByOrderNo"
+            resultType="com.yanzu.module.member.service.iot.groupPay.IotGroupPayOrderInfoVO">
+        select *
+        from member_order_info
+        where deleted = 0
+          and order_no = #{orderNo}
+    </select>
+    <select id="getYdMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(o.price), 0) money
+        from member_order_info o
+        where o.deleted = 0 and o.status!=3 and o.pay_type=5
+        <if test="null!=startTime and null!=endTime">
+            and to_days(o.create_time) >= to_days(#{startTime})
+            and to_days(o.create_time) &lt;= to_days(#{endTime})
+        </if>
+        <if test="null!=storeId and storeId!=''">
+            and o.store_id=#{storeId}
+        </if>
+        <if test="null==storeId or storeId==''">
+            and o.store_id in (select store_id from member_store_user where deleted = 0 and user_id = #{userId} AND type
+            IN (12,13))
+        </if>
+
     </select>
 
 </mapper>

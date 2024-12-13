@@ -38,6 +38,9 @@ public class AppBusinessStatisticsRespVO {
     @Schema(description = "快手总收入")
     private BigDecimal ksMoney;
 
+    @Schema(description = "预订总收入")
+    private BigDecimal ydMoney;
+
     @Schema(description = "累积订单数")
     private Integer orderCount;
 

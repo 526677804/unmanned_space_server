@@ -74,7 +74,7 @@ public interface ErrorCodeConstants {
     ErrorCode NOT_FINISH_CLEAR_IONF_ERROR = new ErrorCode(1004004062, "该条件下没有可结算的订单！");
     ErrorCode CLEAR_INFO_STATUS_OPRATION_ERROR = new ErrorCode(1004004063, "当前状态不能操作,请确认保洁订单状态！");
     ErrorCode CLEAR_IMAGE_NOT_FOUNT_ERROR = new ErrorCode(1004004064, "请上传清洁完成的图片！");
-    ErrorCode CLEAR_OPEN_DOOR_ERROR = new ErrorCode(1004004065, "当前状态不支持开门！");
+    ErrorCode ORDER_OPEN_DOOR_ERROR = new ErrorCode(1004004065, "订单当前状态不支持开门！");
     ErrorCode DEVICE_IOT_OP_ERROR = new ErrorCode(1004004070, "设备平台操作失败,错误信息:{}");
     ErrorCode STORE_STORE_IS_DISABLE = new ErrorCode(1004004071, "门店当前状态不允许此操作！");
     ErrorCode CLEAR_AND_FINISH_ROOM_STATUS_ERROR = new ErrorCode(1004004072, "房间当前状态不允许执行此操作！");

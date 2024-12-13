@@ -5,6 +5,7 @@ import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public interface WorkWxService {
@@ -50,5 +51,8 @@ public interface WorkWxService {
     void sendOrderSubmitMsg(Long storeId, Long userId, String mobile, String roomName, String orderNo, Date startTime, Date endTime);
 
     void sendCallMsg(Long storeId, String tts);
+
+    void sendProductOrderMsg(Long storeId, Long userId, LocalDateTime createTime);
+
 
 }

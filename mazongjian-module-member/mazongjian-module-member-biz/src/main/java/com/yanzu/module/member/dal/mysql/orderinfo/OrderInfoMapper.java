@@ -13,6 +13,7 @@ import com.yanzu.module.member.controller.app.order.vo.OrderListJobVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
+import com.yanzu.module.member.service.iot.groupPay.IotGroupPayOrderInfoVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -89,4 +90,10 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
     OrderInfoDO getRepeatOrder(@Param("roomId") Long roomId, @Param("startTime") Date startTime);
 
     int countNewUserByStoreId(@Param("userId") Long userId, @Param("storeId") Long storeId);
+
+    IotGroupPayOrderInfoVO getInfoByOrderNo(@Param("orderNo") String orderNo);
+
+    BigDecimal getYdMoney(AppChartDataReqVO reqVO);
+
+
 }

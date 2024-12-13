@@ -65,8 +65,8 @@ public class AppRoomDetailRespVO {
     @Schema(description = "最大提前开始时间")
     private Integer leadHour;
 
-    @Schema(description = "最大提前下单天数")
-    private Integer leadDay;
+//    @Schema(description = "最大提前下单天数")
+//    private Integer leadDay;
 
     @Schema(description = "最小下单时间")
     private Integer minHour;

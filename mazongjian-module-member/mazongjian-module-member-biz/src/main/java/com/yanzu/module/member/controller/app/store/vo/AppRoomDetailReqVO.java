@@ -76,10 +76,10 @@ public class AppRoomDetailReqVO {
     @Max(value = 12, message = "提前开始时间最大12小时！")
     private Integer leadHour;
 
-    @Schema(description = "最大提前下单天数")
-    @Min(value = 1, message = "最大提前下单天数最小1天！")
-    @Max(value = 5, message = "最大提前下单天数最大5天！")
-    private Integer leadDay;
+//    @Schema(description = "最大提前下单天数")
+//    @Min(value = 1, message = "最大提前下单天数最小1天！")
+//    @Max(value = 5, message = "最大提前下单天数最大5天！")
+//    private Integer leadDay;
 
     @Schema(description = "最小下单时间")
     @Min(value = 1, message = "最小下单时间最小1小时！")

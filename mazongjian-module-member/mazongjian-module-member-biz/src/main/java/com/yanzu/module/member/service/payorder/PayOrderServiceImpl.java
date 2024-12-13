@@ -34,6 +34,7 @@ import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.pkg.PkgService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
+import com.yanzu.module.member.service.wx.WorkWxService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -95,6 +96,9 @@ public class PayOrderServiceImpl implements PayOrderService {
     @Resource
     private ProductOrderMapper productOrderMapper;
 
+    @Resource
+    private WorkWxService workWxService;
+
     @Override
     public PayOrderDO getPayOrder(Long id) {
         return payOrderMapper.selectById(id);
@@ -136,7 +140,7 @@ public class PayOrderServiceImpl implements PayOrderService {
         WxPayOrderNotifyResult result = WxPayOrderNotifyResult.fromXML(xmlData);
         // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
         String orderNo = result.getOutTradeNo();
-        if(orderNo.startsWith("SH")){
+        if (orderNo.startsWith("SH")) {
             //商品订单
             return updateProductOrder(result);
         }
@@ -241,11 +245,11 @@ public class PayOrderServiceImpl implements PayOrderService {
             if (redisTemplate.hasKey(redisKey)) {
                 tenantId = (Long) redisTemplate.opsForValue().get(redisKey);
             }
-            if (productOrderDO.getStatus()!=0){
-                throw new ServiceException(-200,"订单重复支付。");
+            if (productOrderDO.getStatus() != 0) {
+                throw new ServiceException(-200, "订单重复支付。");
             }
             if (productOrderDO.getTotalPrice().
-                    compareTo(new BigDecimal(totalFee).divide(BigDecimal.valueOf(100D),2, RoundingMode.UP))!=0){
+                    compareTo(new BigDecimal(totalFee).divide(BigDecimal.valueOf(100D), 2, RoundingMode.UP)) != 0) {
                 throw new RuntimeException("支付金额与订单不一致。");
             }
 
@@ -253,10 +257,12 @@ public class PayOrderServiceImpl implements PayOrderService {
                 productOrderDO.setPayTime(DateUtil.date());
                 productOrderDO.setStatus(1L); // 已支付
                 productOrderMapper.updateById(productOrderDO);
+                //发送企业微信提醒
+                workWxService.sendProductOrderMsg(productOrderDO.getStoreId(), productOrderDO.getUserId(), productOrderDO.getCreateTime());
             });
 
             return WxPayNotifyResponse.success("接收成功!");
-        }catch (ServiceException e){
+        } catch (ServiceException e) {
             e.printStackTrace();
             //模拟租户 处理支付订单
             TenantUtils.execute(tenantId, () -> {
@@ -278,7 +284,7 @@ public class PayOrderServiceImpl implements PayOrderService {
                 productOrderMapper.updateById(productOrderDO);
             });
             return WxPayNotifyResponse.success("接收成功!");
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             e.printStackTrace();
             //模拟租户 处理支付订单
             TenantUtils.execute(tenantId, () -> {
@@ -497,7 +503,7 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     public void refundByOrder(Long orderId, String orderNo, Long storeId) {
-        List<PayOrderDO> payOrderList = payOrderMapper.getByOrder(orderId,orderNo);
+        List<PayOrderDO> payOrderList = payOrderMapper.getByOrder(orderId, orderNo);
         if (!CollectionUtils.isEmpty(payOrderList)) {
             WxPayService wxPayService = myWxService.initWxPay(storeId);
             //退款
