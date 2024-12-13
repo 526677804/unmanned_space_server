@@ -129,35 +129,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.github.core-lib</groupId>
-                <artifactId>xjar-maven-plugin</artifactId>
-                <version>4.0.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <phase>install</phase>
-                        <!-- 或使用
-                        <phase>install</phase>
-                        -->
-                        <configuration>
-                            <password>io.xjar</password>
-                            <includes>
-                                <include>/com/yanzu/module/member/**</include>
-                                <include>/mapper/**/*Mapper.xml</include>
-                            </includes>
-                            <excludes>
-                                <exclude>/static/**/*</exclude>
-                                <exclude>/conf/*</exclude>
-                            </excludes>
-                            <targetJar>mazongjian-server.xjar</targetJar>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
 
