@@ -433,7 +433,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
 
             //判断时间使用限制
-            if (!CollectionUtils.isAnyEmpty(pkgInfoDO.getEnableTime()) || pkgInfoDO.getEnableTime().size() != 24) {
+            if (!CollectionUtils.isAnyEmpty(pkgInfoDO.getEnableTime()) && pkgInfoDO.getEnableTime().size() != 24) {
                 //取开始时间到结束时间所有的小时
                 Set<String> hoursBetween = getHoursBetween(startTime, endTime);
                 if (getElementsNotInSet(pkgInfoDO.getEnableTime(), hoursBetween)) {
@@ -441,7 +441,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
             }
             //判断星期限制
-            if (!CollectionUtils.isAnyEmpty(pkgInfoDO.getEnableWeek()) || pkgInfoDO.getEnableWeek().size() != 7) {
+            if (!CollectionUtils.isAnyEmpty(pkgInfoDO.getEnableWeek()) && pkgInfoDO.getEnableWeek().size() != 7) {
                 //取开始时间到结束时间所有的week
                 Set<String> weeksBetween = getWeeksBetween(startTime, endTime);
 //                if (!CollectionUtils.isAnyEmpty(weeksBetween) && weeksBetween.contains("7")) {
