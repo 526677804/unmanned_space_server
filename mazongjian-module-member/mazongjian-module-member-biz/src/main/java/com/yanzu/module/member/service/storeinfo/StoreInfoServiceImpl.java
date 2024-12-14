@@ -689,13 +689,13 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 if (deviceService.countKongtiao(x.getRoomId()) > 0) {
                     x.setKongtiaoCount(1);
                 }
-//                //找出该房间所有订单
-//                if (orederMap.containsKey(x.getRoomId().toString())) {
-//                    List<OrderInfoDO> sortOrder = orederMap.get(x.getRoomId().toString()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
-//                    //把第一个订单的开始和结束时间 设置给房间
-//                    x.setStartTime(sortOrder.get(0).getStartTime());
-//                    x.setEndTime(sortOrder.get(0).getEndTime());
-//                }
+                //找出该房间所有订单
+                if (orederMap.containsKey(x.getRoomId().toString())) {
+                    List<OrderInfoDO> sortOrder = orederMap.get(x.getRoomId().toString()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
+                    //把第一个订单的开始和结束时间 设置给房间
+                    x.setStartTime(sortOrder.get(0).getStartTime());
+                    x.setEndTime(sortOrder.get(0).getEndTime());
+                }
             });
         }
         return list;

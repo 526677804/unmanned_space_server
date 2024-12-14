@@ -43,7 +43,7 @@ public class PkgInfoDO extends BaseDO {
     /**
      * 房间类型
      */
-    @TableField(typeHandler = IntegerListTypeHandler.class,updateStrategy = FieldStrategy.IGNORED)
+    @TableField(typeHandler = IntegerListTypeHandler.class)
     private List<Integer> roomType;
 
     /**
@@ -64,7 +64,7 @@ public class PkgInfoDO extends BaseDO {
     /**
      * 按照包厢设置
      */
-    @TableField(typeHandler = IntegerListTypeHandler.class,updateStrategy = FieldStrategy.IGNORED)
+    @TableField(typeHandler = IntegerListTypeHandler.class)
     private List<Integer> enableRoom;
 
     /**
