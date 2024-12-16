@@ -1,11 +1,9 @@
 package com.yanzu.module.member.dal.mysql.pkginfo;
 
-import java.util.*;
-
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.yanzu.framework.common.pojo.PageResult;
-import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.yanzu.framework.mybatis.core.query.QueryWrapperX;
 import com.yanzu.module.member.controller.app.pkg.vo.*;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 import org.apache.ibatis.annotations.Mapper;
@@ -29,5 +27,13 @@ public interface PkgInfoMapper extends BaseMapperX<PkgInfoDO> {
 
     PkgInfoDO getFirstPkgByRoomType(@Param("storeId") Long storeId, @Param("roomType") Integer roomType);
 
-    PkgInfoDO getPkgByCouponId(@Param("couponId") String couponId);
+    default PkgInfoDO getPkgByShopId(String shopId){
+        return selectOne(new QueryWrapperX<PkgInfoDO>()
+                .eq("deleted", 0)
+                .eq("enable", 1)
+                .and(wrapper -> wrapper.eq("mt_id", shopId)
+                        .or().eq("dy_id", shopId)
+                        .or().eq("ks_id", shopId))
+        );
+    }
 }

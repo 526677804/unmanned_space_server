@@ -126,6 +126,7 @@ public interface ErrorCodeConstants {
     ErrorCode PKGINFO_MTID_EXIST = new ErrorCode(1004004212, "该美团团购id已与其他套餐绑定,请更换其他团购id!");
     ErrorCode PKGINFO_DYID_EXIST = new ErrorCode(1004004213, "该抖音团购id已与其他套餐绑定,请更换其他团购id!");
     ErrorCode PKGINFO_KSID_EXIST = new ErrorCode(1004004214, "该抖音团购id已与其他套餐绑定,请更换其他团购id!");
+    ErrorCode PKG_USE_CHECK_ROOM_ERROR = new ErrorCode(1004004215, "该套餐可用房间与订单不匹配！");
 
     ErrorCode STORE_WX_PAY_CONFIG_NOT_FOUND = new ErrorCode(1004004999, "该门店暂不支持微信支付！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");
