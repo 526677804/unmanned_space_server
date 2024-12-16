@@ -136,4 +136,5 @@ public interface ErrorCodeConstants {
     ErrorCode IOT_SIGN_ERROR = new ErrorCode(1004005004, "签名不匹配");
     ErrorCode IOT_PARAMS_ERROR = new ErrorCode(1004005005, "参数不符合要求");
 
+
 }
