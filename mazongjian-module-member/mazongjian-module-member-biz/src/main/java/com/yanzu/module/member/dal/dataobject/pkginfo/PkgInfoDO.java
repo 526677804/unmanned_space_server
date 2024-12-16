@@ -42,8 +42,8 @@ public class PkgInfoDO extends BaseDO {
     private Long storeId;
     /**
      * 房间类型
-     */
-    @TableField(typeHandler = IntegerListTypeHandler.class)
+     */                                                     // 当值时null时也对数据库进行修改 为了包厢和房间类型互斥
+    @TableField(typeHandler = IntegerListTypeHandler.class,updateStrategy = FieldStrategy.IGNORED)
     private List<Integer> roomType;
 
     /**
@@ -63,8 +63,8 @@ public class PkgInfoDO extends BaseDO {
 
     /**
      * 按照包厢设置
-     */
-    @TableField(typeHandler = IntegerListTypeHandler.class)
+     */                                                  // 当值时null时也对数据库进行修改 为了包厢和房间类型互斥
+    @TableField(typeHandler = IntegerListTypeHandler.class,updateStrategy = FieldStrategy.IGNORED)
     private List<Integer> enableRoom;
 
     /**
