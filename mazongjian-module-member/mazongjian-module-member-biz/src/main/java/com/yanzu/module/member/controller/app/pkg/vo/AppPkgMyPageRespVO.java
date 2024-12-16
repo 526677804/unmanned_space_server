@@ -43,6 +43,9 @@ public class AppPkgMyPageRespVO {
     @Schema(description = "可用房间id")
     private List<Long> enableRoom;
 
+    @Schema(description = "最大购买数量")
+    private Integer maxNum;
+    
     @Schema(description = "节假日可用")
     private Boolean enableHoliday;
 

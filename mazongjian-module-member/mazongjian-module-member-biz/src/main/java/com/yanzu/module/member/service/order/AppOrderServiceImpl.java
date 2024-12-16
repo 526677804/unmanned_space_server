@@ -428,7 +428,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             // 判断是否在包厢限制里面
             if (!ObjectUtils.isEmpty(pkgInfoDO.getEnableRoom())) {
                 if (!pkgInfoDO.getEnableRoom().contains(roomId)) {
-                    throw exception(PKG_USE_CHECK_ROOM_TYPE_ERROR);
+                    throw exception(PKG_USE_CHECK_ROOM_ERROR);
                 }
             }
 
@@ -817,12 +817,12 @@ public class AppOrderServiceImpl implements AppOrderService {
             IotGroupPayPrepareRespVO prepare = groupPayInfoService.prepare(roomInfoDO.getStoreId(), reqVO.getGroupPayNo());
             //查询是否绑定了套餐
             String shopId = prepare.getShopId();
-            PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByCouponId(shopId);
-            if (!ObjectUtils.isEmpty(pkgByCouponId)) {
+            PkgInfoDO pkgByShopId = pkgInfoMapper.getPkgByShopId(shopId);
+            if (!ObjectUtils.isEmpty(pkgByShopId)) {
                 //订单时长 （分钟）
                 long orderMinutes = Math.abs(ChronoUnit.MINUTES.between(reqVO.getStartTime().toInstant(), reqVO.getEndTime().toInstant()));
                 // 走套餐的校验
-                checkPkgUse(pkgByCouponId, false, roomInfoDO.getType(), roomInfoDO.getStoreId(), reqVO.getStartTime(), reqVO.getEndTime(), orderMinutes, Math.toIntExact(reqVO.getRoomId()));
+                checkPkgUse(pkgByShopId, false, roomInfoDO.getType(), roomInfoDO.getStoreId(), reqVO.getStartTime(), reqVO.getEndTime(), orderMinutes, Math.toIntExact(reqVO.getRoomId()));
             } else {
                 //校验券合法性
                 checkGroupNo(prepare.getTicketName(), reqVO.getStartTime(), reqVO.getEndTime(), roomInfoDO.getType(), reqVO.getNightLong(), storeInfoDO.getTxStartHour(), storeInfoDO.getTxHour());
@@ -1717,7 +1717,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //计算出团购券包含的hours, 1 从标题读取   2 关联套餐的 从套餐读取
         //查询是否绑定了套餐
         String shopId = prepare.getShopId();
-        PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByCouponId(shopId);
+        PkgInfoDO pkgByCouponId = pkgInfoMapper.getPkgByShopId(shopId);
         if (!ObjectUtils.isEmpty(pkgByCouponId)) {
             hours = pkgByCouponId.getHours();
         } else {

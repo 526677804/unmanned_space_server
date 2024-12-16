@@ -219,7 +219,7 @@ public class PayOrderServiceImpl implements PayOrderService {
 //                throw new RuntimeException(ex);
                     log.error("微信支付订单退款失败:{}", orderNo);
                 }
-                payOrderDO.setPayStatus(true);
+                payOrderDO.setPayStatus(false);
                 payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
                 payOrderDO.setRefundPrice(payOrderDO.getPrice());
                 payOrderMapper.updateById(payOrderDO);
@@ -279,9 +279,10 @@ public class PayOrderServiceImpl implements PayOrderService {
                 } catch (WxPayException ex) {
                     log.error("微信支付订单退款失败:{}", orderNo);
                 }
-                productOrderDO.setPayTime(DateUtil.date());
-                productOrderDO.setStatus(1L); // 已支付
-                productOrderMapper.updateById(productOrderDO);
+                // 订单重复支付异常 不需要再次修改状态
+//                productOrderDO.setPayTime(DateUtil.date());
+//                productOrderDO.setStatus(1L); // 已支付
+//                productOrderMapper.updateById(productOrderDO);
             });
             return WxPayNotifyResponse.success("接收成功!");
         } catch (RuntimeException e) {
