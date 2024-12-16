@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.app.pkg.vo;
 
+import com.alibaba.fastjson.JSON;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -25,8 +26,11 @@ public class AppAdminPkgSaveReqVO {
     @NotNull(message = "门店不能为空")
     private Long storeId;
 
+    /**
+     * 为了兼容新旧版本，这里改成Object类型接收
+     */
     @Schema(description = "房间类型 1小包 2中包 3大包 4豪包 5商务包")
-    private List<Integer> roomType;
+    private Object roomType;
 
     @Schema(description = "美团团购id")
     private String mtId;

@@ -1,5 +1,6 @@
 package com.yanzu.module.member.service.pkg;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
@@ -154,16 +155,27 @@ public class PkgServiceImpl implements PkgService {
         if (!ObjectUtils.isEmpty(reqVO.getEnableWeek())) {
             reqVO.setEnableWeek(reqVO.getEnableWeek().stream().sorted().collect(Collectors.toList()));
         }
+        //兼容处理可用房间类型
+        List<Integer> roomTypes = new ArrayList<>();
         if (!ObjectUtils.isEmpty(reqVO.getRoomType())) {
-            reqVO.setRoomType(reqVO.getRoomType().stream().sorted().collect(Collectors.toList()));
+            if (reqVO.getRoomType() instanceof Integer) {
+                log.info("integer");
+                if (((Integer) reqVO.getRoomType()).compareTo(0) != 0) {
+                    roomTypes = new ArrayList<>(1);
+                    roomTypes.add((Integer) reqVO.getRoomType());
+                }
+            } else if (reqVO.getRoomType() instanceof ArrayList) {
+                roomTypes = (List<Integer>) reqVO.getRoomType();
+            } else {
+                //参数不符合要求
+                throw exception(OPRATION_ERROR);
+            }
         }
-//        if (!ObjectUtils.isEmpty(reqVO.getRoomType())) {
-//            reqVO.setRoomType(reqVO.getRoomType().stream().sorted().collect(Collectors.toList()));
-//        }
         if (ObjectUtils.isEmpty(reqVO.getPkgId())) {
             //新增
             PkgInfoDO pkgInfoDO = new PkgInfoDO();
             BeanUtils.copyProperties(reqVO, pkgInfoDO);
+            pkgInfoDO.setRoomType(roomTypes);
             pkgInfoDO.setCreateUserId(getLoginUserId());
             pkgInfoMapper.insert(pkgInfoDO);
         } else {
@@ -172,10 +184,11 @@ public class PkgServiceImpl implements PkgService {
                 throw exception(OPRATION_ERROR);
             }
             BeanUtils.copyProperties(reqVO, pkgInfoDO);
+            pkgInfoDO.setRoomType(roomTypes);
             // 按房间大小 和 包厢限制互斥 , 前端只会传递一个参数回来 判断哪个该设置为null
-            if (!ObjectUtils.isEmpty(reqVO.getEnableRoom())){
+            if (!ObjectUtils.isEmpty(reqVO.getEnableRoom())) {
                 pkgInfoDO.setRoomType(null);
-            }else {
+            } else {
                 pkgInfoDO.setEnableRoom(null);
             }
             pkgInfoMapper.updateById(pkgInfoDO);
@@ -201,7 +214,7 @@ public class PkgServiceImpl implements PkgService {
         pkgInfoMapper.getPkgPage(page, reqVO);
         List<AppPkgPageRespVO> respVOList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(page.getRecords())) {
-            if (!ObjectUtils.isEmpty(reqVO.getStartTime()) && !ObjectUtils.isEmpty(reqVO.getEndTime())){
+            if (!ObjectUtils.isEmpty(reqVO.getStartTime()) && !ObjectUtils.isEmpty(reqVO.getEndTime())) {
                 //订单时长 （分钟）
                 long orderMinutes = Math.abs(ChronoUnit.MINUTES.between(reqVO.getStartTime().toInstant(), reqVO.getEndTime().toInstant()));
                 for (AppPkgPageRespVO x : page.getRecords()) {
@@ -210,9 +223,9 @@ public class PkgServiceImpl implements PkgService {
                         respVOList.add(x);
                     }
                 }
-            }else{
+            } else {
                 //不限制订单时间  就返回所有
-                respVOList=page.getRecords();
+                respVOList = page.getRecords();
             }
         }
         return new PageResult<>(respVOList, page.getTotal());
@@ -267,7 +280,7 @@ public class PkgServiceImpl implements PkgService {
 //                throw new RuntimeException(e);
             throw exception(USER_WEIXIN_PAY_ERROR);
         }
-        payOrderService.create(getLoginUserId(), orderNo, null,pkgInfoDO.getStoreId(), AppEnum.order_pay_type.WEIXIN.getValue(), "套餐购买订单", respVO.getPrice());
+        payOrderService.create(getLoginUserId(), orderNo, null, pkgInfoDO.getStoreId(), AppEnum.order_pay_type.WEIXIN.getValue(), "套餐购买订单", respVO.getPrice());
         //把订单号存到redis 如果已经充值了 就移除这个订单号
         String redisKey = String.format(WX_PAY_ORDER, orderNo);
         Long tenantId = TenantContextHolder.getTenantId();
