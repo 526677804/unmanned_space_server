@@ -219,7 +219,7 @@ public class PayOrderServiceImpl implements PayOrderService {
 //                throw new RuntimeException(ex);
                     log.error("微信支付订单退款失败:{}", orderNo);
                 }
-                payOrderDO.setPayStatus(true);
+                payOrderDO.setPayStatus(false);
                 payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
                 payOrderDO.setRefundPrice(payOrderDO.getPrice());
                 payOrderMapper.updateById(payOrderDO);
