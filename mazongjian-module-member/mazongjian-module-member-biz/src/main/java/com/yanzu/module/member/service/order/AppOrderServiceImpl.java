@@ -1140,6 +1140,9 @@ public class AppOrderServiceImpl implements AppOrderService {
         //如果没有传订单id 就返回该用户最新创建的一笔订单
         OrderInfoAppRespVO orderInfo = null;
         if (StringUtils.isEmpty(orderKey) || "null".equals(orderKey)) {
+            if (ObjectUtils.isEmpty(getLoginUserId())) {
+                throw exception(ORDER_NOT_FOUND_ERROR);
+            }
             //校验权限
             orderInfo = orderInfoMapper.getOrderInfo(orderId, null, getLoginUserId());
         } else {
