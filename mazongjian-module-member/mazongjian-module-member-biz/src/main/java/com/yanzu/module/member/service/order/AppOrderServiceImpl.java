@@ -908,7 +908,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     case 5://预定
                         //这两种支付方式不需要处理 但是要看是否指定了实际支付价格
                         if (!ObjectUtils.isEmpty(reqVO.getPrice())) {
-                            oldPrice = new BigDecimal(String.valueOf(reqVO.getPrice() / 100.0));
+                            totalPrice = new BigDecimal(String.valueOf(reqVO.getPrice() / 100.0));
                         }
                         break;
                     default:
@@ -1248,8 +1248,12 @@ public class AppOrderServiceImpl implements AppOrderService {
                 groupPayInfoMapper.deleteById(groupPayInfoDO.getId());
             } else {
                 orderInfoDO.setRefundPrice(orderInfoDO.getPayPrice());
+                //如果是预订订单  还要通知平台
+                if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.YUDING.getValue()) == 0) {
+                    iotService.cancelYDOrder(orderInfoDO.getOrderNo());
+                }
             }
-            //退还优惠券
+            //退还优惠券(包括续费的)
             if (!ObjectUtils.isEmpty(orderInfoDO.getCouponId())) {
                 couponInfoDO = couponInfoMapper.selectById(orderInfoDO.getCouponId());
                 if (couponInfoDO.getExpriceTime().after(new Date())) {
