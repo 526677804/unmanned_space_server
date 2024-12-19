@@ -159,13 +159,15 @@ public class PkgServiceImpl implements PkgService {
         List<Integer> roomTypes = new ArrayList<>();
         if (!ObjectUtils.isEmpty(reqVO.getRoomType())) {
             if (reqVO.getRoomType() instanceof Integer) {
-                log.info("integer");
                 if (((Integer) reqVO.getRoomType()).compareTo(0) != 0) {
                     roomTypes = new ArrayList<>(1);
                     roomTypes.add((Integer) reqVO.getRoomType());
                 }
             } else if (reqVO.getRoomType() instanceof ArrayList) {
                 roomTypes = (List<Integer>) reqVO.getRoomType();
+            } else if (reqVO.getRoomType() instanceof String && !((String) reqVO.getRoomType()).contains("[")) {
+                roomTypes = new ArrayList<>(1);
+                roomTypes.add((Integer) reqVO.getRoomType());
             } else {
                 //参数不符合要求
                 throw exception(OPRATION_ERROR);
