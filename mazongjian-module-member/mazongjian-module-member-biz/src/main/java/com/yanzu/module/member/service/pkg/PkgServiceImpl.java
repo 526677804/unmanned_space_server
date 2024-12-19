@@ -167,7 +167,7 @@ public class PkgServiceImpl implements PkgService {
                 roomTypes = (List<Integer>) reqVO.getRoomType();
             } else if (reqVO.getRoomType() instanceof String && !((String) reqVO.getRoomType()).contains("[")) {
                 roomTypes = new ArrayList<>(1);
-                roomTypes.add((Integer) reqVO.getRoomType());
+                roomTypes.add(Integer.parseInt((String) reqVO.getRoomType()));
             } else {
                 //参数不符合要求
                 throw exception(OPRATION_ERROR);
