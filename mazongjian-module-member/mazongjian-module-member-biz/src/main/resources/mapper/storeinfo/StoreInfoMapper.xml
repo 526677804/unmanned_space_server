@@ -43,7 +43,7 @@
         from member_room_info
         where deleted = 0
         and store_id = #{store_id}
-        and status IN (1,2)
+        and status IN (1,2,4)
     </select>
 
     <select id="getCityList" resultType="java.lang.String">
