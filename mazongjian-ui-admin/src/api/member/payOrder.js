@@ -13,7 +13,7 @@ export function createPayOrder(data) {
 export function updatePayOrder(data) {
   return request({
     url: '/member/pay-order/update',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

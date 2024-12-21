@@ -3,6 +3,8 @@ package com.yanzu.module.member.dal.mysql.orderinfo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
+import com.yanzu.module.member.controller.admin.orderinfo.vo.OrderInfoPageReqVO;
+import com.yanzu.module.member.controller.admin.orderinfo.vo.OrderInfoRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppChartDataReqVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppIncomeStatisticsRespVO;
 import com.yanzu.module.member.controller.app.chart.vo.AppRechargeStatisticsRespVO;
@@ -95,5 +97,5 @@ public interface OrderInfoMapper extends BaseMapperX<OrderInfoDO> {
 
     BigDecimal getYdMoney(AppChartDataReqVO reqVO);
 
-
+    IPage<OrderInfoRespVO> getOrderInfoPage(@Param("page") IPage<OrderInfoRespVO> page, @Param("reqVO") OrderInfoPageReqVO reqVO);
 }

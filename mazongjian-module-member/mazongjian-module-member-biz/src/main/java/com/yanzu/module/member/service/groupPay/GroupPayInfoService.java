@@ -4,6 +4,7 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoPageReqVO;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoRespVO;
+import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoUpdateReqVO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
 
@@ -58,5 +59,7 @@ public interface GroupPayInfoService {
 
 
     void revoke(Long storeId, Integer groupPayType, String ticketNo, String ticketInfo);
+
+    void update(GroupPayInfoUpdateReqVO reqVO);
 
 }

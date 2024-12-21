@@ -1,5 +1,6 @@
 package com.yanzu.module.member.controller.admin.payorder;
 
+import com.yanzu.module.member.controller.admin.franchiseinfo.vo.FranchiseInfoUpdateReqVO;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -45,6 +46,14 @@ public class PayOrderController {
     public CommonResult<PayOrderRespVO> getPayOrder(@RequestParam("id") Long id) {
         PayOrderDO payOrder = payOrderService.getPayOrder(id);
         return success(PayOrderConvert.INSTANCE.convert(payOrder));
+    }
+
+    @PostMapping("/update")
+    @Operation(summary = "更新支付订单")
+    @PreAuthorize("@ss.hasPermission('member:pay-order:update')")
+    public CommonResult<Boolean> update(@Valid @RequestBody PayOrderUpdateReqVO reqVO) {
+        payOrderService.update(reqVO);
+        return success(true);
     }
 
     @GetMapping("/list")
