@@ -2,9 +2,7 @@ package com.yanzu.module.member.dal.dataobject.facerecord;
 
 import lombok.*;
 import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
+
 import com.baomidou.mybatisplus.annotation.*;
 import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 
@@ -45,6 +43,7 @@ public class FaceRecordDO extends BaseDO {
      * 照片 base64编码
      */
     private String photoUrl;
+
     private String photoData;
     /**
      * 识别时间

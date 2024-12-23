@@ -8,6 +8,7 @@ import com.yanzu.module.member.dal.mysql.faceblacklist.FaceBlacklistMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -36,6 +37,7 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
  */
 @Service
 @Validated
+@Slf4j
 public class FaceRecordServiceImpl implements FaceRecordService {
 
     @Resource
@@ -111,6 +113,7 @@ public class FaceRecordServiceImpl implements FaceRecordService {
     @Override
     @Transactional
     public void moveFaceByRecord(Long id, String remark,boolean isAdmin) {
+        log.info("根据识别记录修改人脸黑名单:{}",id);
         FaceRecordRespVO vo = faceRecordMapper.getById(id);
         if (!ObjectUtils.isEmpty(vo)) {
             //非管理后台操作 需要检查权限
@@ -132,6 +135,7 @@ public class FaceRecordServiceImpl implements FaceRecordService {
                         .setRemark(remark);
                 faceBlacklistMapper.insert(blacklistDO);
                 newGuid = guid;
+                faceRecordMapper.updateBlacklist(vo.getId(), type, newGuid);
             }else{
                 //移出 可能已经移出了
                 FaceBlacklistDO blacklistDO = faceBlacklistMapper.getByStoreAndGuid(vo.getStoreId(), vo.getAdmitGuid());
@@ -142,8 +146,9 @@ public class FaceRecordServiceImpl implements FaceRecordService {
                     deviceService.delUserFace(vo.getStoreId(), vo.getAdmitGuid());
                     faceBlacklistMapper.deleteById(blacklistDO.getBlacklistId());
                 }
+                faceRecordMapper.delGuid(newGuid);
             }
-            faceRecordMapper.updateBlacklist(vo.getId(), type, newGuid);
+
         }
     }
 

@@ -301,7 +301,7 @@ public class AppManagerController {
     }
 
     @PostMapping("/auditYD")
-    @Operation(summary = "获取预订退款待审核列表")
+    @Operation(summary = "管理员审核预订订单")
     @PreAuthenticated
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> auditYD(@RequestBody @Validated IotGroupPayAuditYDReqVO reqVO) {
