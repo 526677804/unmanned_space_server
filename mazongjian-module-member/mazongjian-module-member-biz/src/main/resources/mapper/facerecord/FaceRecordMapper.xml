@@ -8,7 +8,7 @@
     </update>
     <update id="delGuid">
         update member_face_record
-        set admit_guid='STRANGERBABY'
+        set admit_guid='STRANGERBABY',type=2
         where admit_guid = #{admitGuid}
     </update>
 

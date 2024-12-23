@@ -8,6 +8,7 @@ import com.yanzu.module.member.dal.mysql.faceblacklist.FaceBlacklistMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -36,6 +37,7 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
  */
 @Service
 @Validated
+@Slf4j
 public class FaceRecordServiceImpl implements FaceRecordService {
 
     @Resource
@@ -111,6 +113,7 @@ public class FaceRecordServiceImpl implements FaceRecordService {
     @Override
     @Transactional
     public void moveFaceByRecord(Long id, String remark,boolean isAdmin) {
+        log.info("根据识别记录修改人脸黑名单:{}",id);
         FaceRecordRespVO vo = faceRecordMapper.getById(id);
         if (!ObjectUtils.isEmpty(vo)) {
             //非管理后台操作 需要检查权限
@@ -118,9 +121,9 @@ public class FaceRecordServiceImpl implements FaceRecordService {
                 storeInfoService.checkPermisson(vo.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
             }
             //处理完成后 把记录识别的状态取反 并设置新guid
-            Integer type = vo.getType().intValue() == 1 ? 2 : 1;
-            String newGuid = "STRANGERBABY";//默认是陌生人
-            if(newGuid.equals(vo.getAdmitGuid())){
+//            Integer type = vo.getType().intValue() == 1 ? 2 : 1;
+//            String newGuid = "STRANGERBABY";//默认是陌生人
+            if("STRANGERBABY".equals(vo.getAdmitGuid())){
                 //陌生人  加黑名单
                 String guid = deviceService.addUserFace(vo.getStoreId(), vo.getPhotoUrl(), remark);
                 FaceBlacklistDO blacklistDO = new FaceBlacklistDO()
@@ -131,9 +134,9 @@ public class FaceRecordServiceImpl implements FaceRecordService {
                         .setAdmitGuid(guid)
                         .setRemark(remark);
                 faceBlacklistMapper.insert(blacklistDO);
-                newGuid = guid;
+                faceRecordMapper.updateBlacklist(vo.getId(), 1, guid);
             }else{
-                //移出 可能已经移出了
+                //移出黑名单 可能已经移出了
                 FaceBlacklistDO blacklistDO = faceBlacklistMapper.getByStoreAndGuid(vo.getStoreId(), vo.getAdmitGuid());
                 if (ObjectUtils.isEmpty(blacklistDO) ) {
                     //已经移出了  直接变更状态
@@ -142,8 +145,8 @@ public class FaceRecordServiceImpl implements FaceRecordService {
                     deviceService.delUserFace(vo.getStoreId(), vo.getAdmitGuid());
                     faceBlacklistMapper.deleteById(blacklistDO.getBlacklistId());
                 }
+                faceRecordMapper.delGuid(vo.getAdmitGuid());
             }
-            faceRecordMapper.updateBlacklist(vo.getId(), type, newGuid);
         }
     }
 

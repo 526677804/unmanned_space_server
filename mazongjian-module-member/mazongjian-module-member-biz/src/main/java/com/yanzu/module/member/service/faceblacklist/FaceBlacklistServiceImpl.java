@@ -7,6 +7,7 @@ import com.yanzu.module.member.dal.mysql.facerecord.FaceRecordMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -36,6 +37,7 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
  */
 @Service
 @Validated
+@Slf4j
 public class FaceBlacklistServiceImpl implements FaceBlacklistService {
 
     @Resource
@@ -54,6 +56,7 @@ public class FaceBlacklistServiceImpl implements FaceBlacklistService {
     @Override
     @Transactional
     public void deleteFaceBlacklist(Long id) {
+        log.info("删除人脸黑名单:{}",id);
         FaceBlacklistDO faceBlacklistDO = faceBlacklistMapper.selectById(id);
         if (!ObjectUtils.isEmpty(faceBlacklistDO)) {
             // 先远程删除
@@ -79,6 +82,7 @@ public class FaceBlacklistServiceImpl implements FaceBlacklistService {
     @Override
     @Transactional
     public void moveFaceById(Long id) {
+        log.info("移除人脸黑名单:{}",id);
         FaceBlacklistDO faceBlacklistDO = faceBlacklistMapper.selectById(id);
         if (!ObjectUtils.isEmpty(faceBlacklistDO)) {
             //检查权限
