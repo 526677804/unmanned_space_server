@@ -5,6 +5,7 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.excel.core.util.ExcelUtils;
 import com.yanzu.framework.operatelog.core.annotations.OperateLog;
 import com.yanzu.module.member.controller.admin.groupPay.vo.*;
+import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderUpdateReqVO;
 import com.yanzu.module.member.convert.member.GroupPayInfoConvert;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.service.groupPay.GroupPayInfoService;
@@ -42,6 +43,15 @@ public class GroupPayInfoController {
         GroupPayInfoDO groupPayInfo = groupPayInfoService.getGroupPayInfo(id);
         return success(GroupPayInfoConvert.INSTANCE.convert(groupPayInfo));
     }
+
+    @PostMapping("/update")
+    @Operation(summary = "更新团购支付信息")
+    @PreAuthorize("@ss.hasPermission('member:group-pay-info:update')")
+    public CommonResult<Boolean> update(@Valid @RequestBody GroupPayInfoUpdateReqVO reqVO) {
+        groupPayInfoService.update(reqVO);
+        return success(true);
+    }
+
 
     @GetMapping("/list")
     @Operation(summary = "获得团购支付信息列表")

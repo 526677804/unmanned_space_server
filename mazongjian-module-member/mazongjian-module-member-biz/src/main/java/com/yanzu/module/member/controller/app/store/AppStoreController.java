@@ -381,7 +381,7 @@ public class AppStoreController {
 
     @PostMapping("/addLock")
     @Operation(summary = "添加智能锁", description = "设备管理使用")
-    @PreAuthenticated
+//    @PreAuthenticated
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
     public CommonResult<Boolean> addLock(@RequestBody @Valid AppAddLockReqVO reqVO) {
         storeInfoService.addLock(reqVO);

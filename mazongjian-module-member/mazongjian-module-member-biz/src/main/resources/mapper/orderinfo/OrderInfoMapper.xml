@@ -661,5 +661,43 @@
         </if>
 
     </select>
+    <select id="getOrderInfoPage"
+            resultType="com.yanzu.module.member.controller.admin.orderinfo.vo.OrderInfoRespVO">
+        select o.*, s.store_name, r.room_name, u.nickname
+        from member_order_info o
+        left join member_store_info s on s.store_id = o.store_id
+        left join member_room_info r on r.room_id = o.room_id
+        left join member_user u on o.user_id = u.id
+        where o.deleted = 0
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.orderNo and reqVO.orderNo!=''">
+                and locate(#{reqVO.orderNo},o.order_no)>0
+            </if>
+            <if test="null!=reqVO.storeName and reqVO.storeName!=''">
+                and locate(#{reqVO.storeName},s.store_name)>0
+            </if>
+            <if test="null!=reqVO.roomName and reqVO.roomName!=''">
+                and locate(#{reqVO.roomName},r.room_name)>0
+            </if>
+            <if test="null!=reqVO.payType">
+                and o.pay_type=#{reqVO.payType}
+            </if>
+            <if test="null!=reqVO.status">
+                and o.status=#{reqVO.status}
+            </if>
+            <if test="null!=reqVO.startTime">
+                AND (o.start_time>=#{reqVO.startTime[0]}
+                and o.start_time&lt;=#{reqVO.startTime[1]}
+                )
+
+            </if>
+            <if test="null!=reqVO.endTime">
+                AND (o.end_time>=#{reqVO.endTime[0]}
+                and o.end_time&lt;=#{reqVO.endTime[1]}
+                )
+            </if>
+        </if>
+        order by o.order_id desc
+    </select>
 
 </mapper>

@@ -6,6 +6,7 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoExportReqVO;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoPageReqVO;
 import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoRespVO;
+import com.yanzu.module.member.controller.admin.groupPay.vo.GroupPayInfoUpdateReqVO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.mysql.groupPay.GroupPayInfoMapper;
 import com.yanzu.module.member.enums.AppEnum;
@@ -18,8 +19,11 @@ import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareReqVO;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayPrepareRespVO;
 import com.yanzu.module.member.service.meituan.MeituanService;
 import com.yanzu.module.member.service.wx.WorkWxService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -38,6 +42,7 @@ import static com.yanzu.module.member.enums.ErrorCodeConstants.GROUP_NO_CHECK_ER
  */
 @Service
 @Validated
+@Slf4j
 public class GroupPayInfoServiceImpl implements GroupPayInfoService {
 
     @Resource
@@ -212,6 +217,17 @@ public class GroupPayInfoServiceImpl implements GroupPayInfoService {
                 default:
                     throw exception(GROUP_NO_CHECK_ERROR);
             }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void update(GroupPayInfoUpdateReqVO reqVO) {
+        log.info("管理员：{}，修改团购：{}",getLoginUserId(),reqVO);
+        GroupPayInfoDO groupPayInfoDO = groupPayInfoMapper.selectById(reqVO.getId());
+        if (!ObjectUtils.isEmpty(groupPayInfoDO)) {
+            groupPayInfoDO.setGroupPayPrice(new BigDecimal(reqVO.getGroupPayPrice() / 100.0));
+            groupPayInfoMapper.updateById(groupPayInfoDO);
         }
     }
 

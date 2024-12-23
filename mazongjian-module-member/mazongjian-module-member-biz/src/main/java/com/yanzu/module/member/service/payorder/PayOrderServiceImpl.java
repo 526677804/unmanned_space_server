@@ -13,11 +13,13 @@ import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
+import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderUpdateReqVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderSaveReqVO;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
 import com.yanzu.module.member.controller.app.pkg.vo.AppBuyPkgReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppRechargeBalanceReqVO;
+import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.productorder.ProductOrderDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
@@ -57,6 +59,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
 import static com.yanzu.module.member.enums.AppEnum.WX_PRODUCT_PAY_ORDER;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
@@ -529,6 +532,19 @@ public class PayOrderServiceImpl implements PayOrderService {
         }
 
 
+    }
+
+    @Override
+    @Transactional
+    public void update(PayOrderUpdateReqVO reqVO) {
+        log.info("管理员：{}，修改订单：{}",getLoginUserId(),reqVO);
+        PayOrderDO payOrderDO = payOrderMapper.selectById(reqVO.getId());
+        if (!ObjectUtils.isEmpty(payOrderDO)) {
+            if (reqVO.getPrice() != null) {
+                payOrderDO.setPrice(reqVO.getPrice());
+            }
+            payOrderMapper.updateById(payOrderDO);
+        }
     }
 
 }

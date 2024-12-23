@@ -4,6 +4,7 @@ import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderExportReqVO;
 import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderPageReqVO;
+import com.yanzu.module.member.controller.admin.payorder.vo.PayOrderUpdateReqVO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 
 import java.util.Collection;
@@ -72,4 +73,7 @@ public interface PayOrderService {
     void refundBalance(Long storeId,String orderNo,Long userId);
 
     void refundByOrder(Long orderId, String orderNo,Long storeId);
+
+    void update(PayOrderUpdateReqVO reqVO);
+
 }

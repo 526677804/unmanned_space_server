@@ -60,8 +60,8 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <!-- <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" -->
-                     <!-- v-hasPermi="['member:group-pay-info:update']">修改</el-button> -->
+          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
+                     v-hasPermi="['member:group-pay-info:update']">修改</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
                      v-hasPermi="['member:group-pay-info:delete']">删除</el-button>
         </template>
@@ -73,7 +73,10 @@
 
     <!-- 对话框(添加 / 修改) -->
     <el-dialog :title="title" :visible.sync="open" width="500px" v-dialogDrag append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+        <el-form-item label="价格（单位分）" prop="groupPayPrice">
+          <el-input v-model="form.groupPayPrice" placeholder="请输入" />
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -174,9 +177,11 @@ export default {
       this.reset();
       const id = row.id;
       getGroupPayInfo(id).then(response => {
-        this.form = response.data;
+        let data=response.data;
+        data.groupPayPrice=data.groupPayPrice*100;
+        this.form = data;
         this.open = true;
-        this.title = "修改团购支付信息";
+        this.title = "修改团购信息";
       });
     },
     /** 提交按钮 */

@@ -13,7 +13,7 @@ export function createGroupPayInfo(data) {
 export function updateGroupPayInfo(data) {
   return request({
     url: '/member/group-pay-info/update',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

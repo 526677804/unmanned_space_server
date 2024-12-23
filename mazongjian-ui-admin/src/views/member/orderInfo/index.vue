@@ -6,25 +6,32 @@
       <el-form-item label="订单编号" prop="orderNo">
         <el-input v-model="queryParams.orderNo" placeholder="请输入订单编号" clearable @keyup.enter.native="handleQuery"/>
       </el-form-item>
-      <el-form-item label="是否已支付" prop="payStatus">
-        <el-select v-model="queryParams.payStatus" placeholder="请选择是否已支付" clearable size="small">
-          <el-option v-for="dict in this.getDictDatas(DICT_TYPE.INFRA_BOOLEAN_STRING)"
+      <el-form-item label="门店名称" prop="storeName">
+        <el-input v-model="queryParams.storeName" placeholder="请输入门店名称" clearable @keyup.enter.native="handleQuery"/>
+      </el-form-item>
+      <el-form-item label="房间名称" prop="roomName">
+        <el-input v-model="queryParams.roomName" placeholder="请输入房间名称" clearable @keyup.enter.native="handleQuery"/>
+      </el-form-item>
+      <el-form-item label="订单开始时间" prop="startTime">
+        <el-date-picker v-model="queryParams.startTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
+                        range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']" />
+      </el-form-item>
+      <el-form-item label="订单结束时间" prop="endTime">
+        <el-date-picker v-model="queryParams.endTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
+                        range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']" />
+      </el-form-item>
+ 
+      <el-form-item label="支付方式" prop="payType">
+        <el-select v-model="queryParams.payType" placeholder="请选择支付方式" clearable size="small">
+          <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_ORDER_PAY_TYPE)"
                        :key="dict.value" :label="dict.label" :value="dict.value"/>
         </el-select>
       </el-form-item>
-      <el-form-item label="支付订单编号" prop="payOrderNo">
-        <el-input v-model="queryParams.payOrderNo" placeholder="请输入支付订单编号" clearable @keyup.enter.native="handleQuery"/>
-      </el-form-item>
-      <el-form-item label="订单支付时间" prop="payTime">
-        <el-date-picker v-model="queryParams.payTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
-                        range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']" />
-      </el-form-item>
-      <el-form-item label="退款订单编号" prop="payRefundNo">
-        <el-input v-model="queryParams.payRefundNo" placeholder="请输入退款订单编号" clearable @keyup.enter.native="handleQuery"/>
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker v-model="queryParams.createTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
-                        range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']" />
+      <el-form-item label="状态" prop="status">
+        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
+          <el-option v-for="dict in this.getDictDatas(DICT_TYPE.MEMBER_ORDER_STATUS)"
+                       :key="dict.value" :label="dict.label" :value="dict.value"/>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">搜索</el-button>
@@ -32,42 +39,32 @@
       </el-form-item>
     </el-form>
 
-    <!-- 操作工具栏 -->
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
-                   v-hasPermi="['member:pay-order:create']">新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport" :loading="exportLoading"
-                   v-hasPermi="['member:pay-order:export']">导出</el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
     <!-- 列表 -->
     <el-table v-loading="loading" :data="list">
-      <el-table-column label="订单编号" align="center" prop="id" />
-      <el-table-column label="用户编号" align="center" prop="userId" />
       <el-table-column label="订单编号" align="center" prop="orderNo" />
-      <el-table-column label="订单内容" align="center" prop="orderDesc" />
-      <el-table-column label="价格" align="center" prop="price" :formatter="priceFormat"/>
-      <el-table-column label="是否已支付" align="center" prop="payStatus">
+      <el-table-column label="门店名称" align="center" prop="storeName" />
+      <el-table-column label="房间名称" align="center" prop="roomName" />
+      <el-table-column label="用户昵称" align="center" prop="nickname" />
+      <el-table-column label="开始时间" align="center" prop="startTime" width="180">
         <template v-slot="scope">
-          <dict-tag :type="DICT_TYPE.INFRA_BOOLEAN_STRING" :value="scope.row.payStatus" />
+          <span>{{ parseTime(scope.row.startTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="支付订单编号" align="center" prop="payOrderNo" />
-      <el-table-column label="订单支付时间" align="center" prop="payTime" width="180">
+      <el-table-column label="结束时间" align="center" prop="endTime" width="180">
         <template v-slot="scope">
-          <span>{{ parseTime(scope.row.payTime) }}</span>
+          <span>{{ parseTime(scope.row.endTime) }}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column label="退款订单编号" align="center" prop="payRefundNo" /> -->
-      <el-table-column label="退款金额" align="center" prop="refundPrice" :formatter="priceFormat"/>
-      <el-table-column label="退款时间" align="center" prop="refundTime" width="180">
+      <el-table-column label="支付价格(分)" align="center" prop="payPrice" />
+      <el-table-column label="退款价格(分)" align="center" prop="refundPrice" />
+      <el-table-column label="支付方式" align="center" prop="payType">
         <template v-slot="scope">
-          <span>{{ parseTime(scope.row.refundTime) }}</span>
+          <dict-tag :type="DICT_TYPE.MEMBER_ORDER_PAY_TYPE" :value="scope.row.payType" />
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" align="center" prop="status">
+        <template v-slot="scope">
+          <dict-tag :type="DICT_TYPE.MEMBER_ORDER_STATUS" :value="scope.row.status" />
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
@@ -77,10 +74,10 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" v-if="scope.row.payStatus" @click="handleUpdate(scope.row)"
-                     v-hasPermi="['member:pay-order:update']">编辑</el-button>
+          <!-- <el-button size="mini" type="text" icon="el-icon-edit"  @click="handleUpdate(scope.row)"
+                     v-hasPermi="['member:order-info:update']">修改</el-button> -->
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-                     v-hasPermi="['member:pay-order:delete']">删除</el-button>
+                     v-hasPermi="['member:order-info:delete']">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -90,10 +87,7 @@
 
     <!-- 对话框(添加 / 修改) -->
     <el-dialog :title="title" :visible.sync="open" width="500px" v-dialogDrag append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="160px">
-        <el-form-item label="支付价格（单位分）" prop="price">
-          <el-input v-model="form.price" placeholder="请输入" />
-        </el-form-item>
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -104,10 +98,10 @@
 </template>
 
 <script>
-import { createPayOrder, updatePayOrder, deletePayOrder, refundOrder,getPayOrder, getPayOrderPage, exportPayOrderExcel } from "@/api/member/payOrder";
+import { createOrderInfo, updateOrderInfo, deleteOrderInfo, getOrderInfo, getOrderInfoPage, exportOrderInfoExcel } from "@/api/member/orderInfo";
 
 export default {
-  name: "PayOrder",
+  name: "OrderInfo",
   components: {
   },
   data() {
@@ -120,7 +114,7 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 支付订单列表
+      // 订单管理列表
       list: [],
       // 弹出层标题
       title: "",
@@ -131,11 +125,12 @@ export default {
         pageNo: 1,
         pageSize: 10,
         orderNo: null,
-        payStatus: null,
-        payOrderNo: null,
-        payTime: [],
-        payRefundNo: null,
-        createTime: [],
+        storeName: null,
+        roomName: null,
+        startTime: [],
+        endTime: [],
+        payType: null,
+        status: null,
       },
       // 表单参数
       form: {},
@@ -152,7 +147,7 @@ export default {
     getList() {
       this.loading = true;
       // 执行查询
-      getPayOrderPage(this.queryParams).then(response => {
+      getOrderInfoPage(this.queryParams).then(response => {
         this.list = response.data.list;
         this.total = response.data.total;
         this.loading = false;
@@ -183,28 +178,17 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加支付订单";
+      this.title = "添加订单管理";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const id = row.id;
-      getPayOrder(id).then(response => {
+      const orderId = row.orderId;
+      getOrderInfo(orderId).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改支付订单";
+        this.title = "修改订单管理";
       });
-    },
-    /** 退款 */
-    handleRefund(row) {
-      const id = row.id;
-      this.$modal.confirm('是否确认退款订单编号："' + id + '"?').then(function() {
-          return refundOrder(id);
-        }).then(() => {
-          this.getList();
-          this.$modal.msgSuccess("退款成功");
-        }).catch(() => {});
-
     },
     /** 提交按钮 */
     submitForm() {
@@ -213,8 +197,8 @@ export default {
           return;
         }
         // 修改的提交
-        if (this.form.id != null) {
-          updatePayOrder(this.form).then(response => {
+        if (this.form.orderId != null) {
+          updateOrderInfo(this.form).then(response => {
             this.$modal.msgSuccess("修改成功");
             this.open = false;
             this.getList();
@@ -222,7 +206,7 @@ export default {
           return;
         }
         // 添加的提交
-        createPayOrder(this.form).then(response => {
+        createOrderInfo(this.form).then(response => {
           this.$modal.msgSuccess("新增成功");
           this.open = false;
           this.getList();
@@ -231,9 +215,9 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const id = row.id;
-      this.$modal.confirm('是否确认删除支付订单编号为"' + id + '"的数据项?').then(function() {
-          return deletePayOrder(id);
+      const orderId = row.orderId;
+      this.$modal.confirm('删除订单并不会影响数据统计结果，只会删掉订单数据！是否确认删除订单?').then(function() {
+          return deleteOrderInfo(orderId);
         }).then(() => {
           this.getList();
           this.$modal.msgSuccess("删除成功");
@@ -245,18 +229,14 @@ export default {
       let params = {...this.queryParams};
       params.pageNo = undefined;
       params.pageSize = undefined;
-      this.$modal.confirm('是否确认导出所有支付订单数据项?').then(() => {
+      this.$modal.confirm('是否确认导出所有订单管理数据项?').then(() => {
           this.exportLoading = true;
-          return exportPayOrderExcel(params);
+          return exportOrderInfoExcel(params);
         }).then(response => {
-          this.$download.excel(response, '支付订单.xls');
+          this.$download.excel(response, '订单管理.xls');
           this.exportLoading = false;
         }).catch(() => {});
-    },
-    priceFormat(row, column,v) {
-      console.log(v);
-      return v/100.0 +'元';
-    },
+    }
   }
 };
 </script>
