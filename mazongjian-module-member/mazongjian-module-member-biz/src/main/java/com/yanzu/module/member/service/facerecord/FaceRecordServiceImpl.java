@@ -121,9 +121,9 @@ public class FaceRecordServiceImpl implements FaceRecordService {
                 storeInfoService.checkPermisson(vo.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
             }
             //处理完成后 把记录识别的状态取反 并设置新guid
-            Integer type = vo.getType().intValue() == 1 ? 2 : 1;
-            String newGuid = "STRANGERBABY";//默认是陌生人
-            if(newGuid.equals(vo.getAdmitGuid())){
+//            Integer type = vo.getType().intValue() == 1 ? 2 : 1;
+//            String newGuid = "STRANGERBABY";//默认是陌生人
+            if("STRANGERBABY".equals(vo.getAdmitGuid())){
                 //陌生人  加黑名单
                 String guid = deviceService.addUserFace(vo.getStoreId(), vo.getPhotoUrl(), remark);
                 FaceBlacklistDO blacklistDO = new FaceBlacklistDO()
@@ -134,10 +134,9 @@ public class FaceRecordServiceImpl implements FaceRecordService {
                         .setAdmitGuid(guid)
                         .setRemark(remark);
                 faceBlacklistMapper.insert(blacklistDO);
-                newGuid = guid;
-                faceRecordMapper.updateBlacklist(vo.getId(), type, newGuid);
+                faceRecordMapper.updateBlacklist(vo.getId(), 1, guid);
             }else{
-                //移出 可能已经移出了
+                //移出黑名单 可能已经移出了
                 FaceBlacklistDO blacklistDO = faceBlacklistMapper.getByStoreAndGuid(vo.getStoreId(), vo.getAdmitGuid());
                 if (ObjectUtils.isEmpty(blacklistDO) ) {
                     //已经移出了  直接变更状态
@@ -146,9 +145,8 @@ public class FaceRecordServiceImpl implements FaceRecordService {
                     deviceService.delUserFace(vo.getStoreId(), vo.getAdmitGuid());
                     faceBlacklistMapper.deleteById(blacklistDO.getBlacklistId());
                 }
-                faceRecordMapper.delGuid(newGuid);
+                faceRecordMapper.delGuid(vo.getAdmitGuid());
             }
-
         }
     }
 
