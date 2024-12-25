@@ -39,7 +39,7 @@ public class MyWxService {
 
 
     //支付服务商模式的配置
-    @Value("${wx.miniapp.appid}")
+    @Value("${wx.pay.appId}")
     private String appId;
     @Value("${wx.pay.mchId}")
     private String mchId;
