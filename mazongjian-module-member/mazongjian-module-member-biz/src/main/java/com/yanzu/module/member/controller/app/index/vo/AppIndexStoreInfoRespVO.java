@@ -99,4 +99,7 @@ public class AppIndexStoreInfoRespVO  {
 
     @Schema(description = "门店房间类别列表")
     private List<Integer> roomClassList;
+
+    @Schema(description = "svg")
+    private String svg;
 }

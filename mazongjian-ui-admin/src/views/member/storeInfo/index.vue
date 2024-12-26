@@ -144,6 +144,15 @@
         <el-form-item label="美团店铺uuid" prop="meituanOpenShopUuid">
           <el-input v-model="form.meituanOpenShopUuid" placeholder="请输入美团店铺uuid" />
         </el-form-item>
+        <el-form-item label="svg base64代码" prop="svg">
+          <el-input v-model="form.svg" placeholder="请输入svg代码" />
+        </el-form-item>
+        <el-form-item>
+          绘制:https://www.jyshare.com/more/svgeditor/
+        </el-form-item>
+        <el-form-imem>
+          转base64: https://uutool.cn/svg2datauri/
+        </el-form-imem>
         <!--
         <el-form-item label="美团key" prop="meituanKey">
           <el-input v-model="form.meituanKey" placeholder="请输入美团key" />
@@ -302,6 +311,7 @@ export default {
         meituanOpenShopUuid: undefined,
         meituanKey: undefined,
         meituanSecret: undefined,
+        svg:undefined,
       };
       this.resetForm("form");
     },
@@ -364,7 +374,6 @@ export default {
           return;
         }
         this.form.expireTime= undefined;
-        // 修改的提交
         if (this.form.storeId != null) {
           updateStoreInfo(this.form).then(response => {
             this.$modal.msgSuccess("修改成功");

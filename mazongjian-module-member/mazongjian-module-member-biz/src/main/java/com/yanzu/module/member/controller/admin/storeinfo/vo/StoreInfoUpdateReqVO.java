@@ -68,5 +68,8 @@ public class StoreInfoUpdateReqVO extends StoreInfoBaseVO {
     @Schema(description = "抖音poiId")
     private String douyinPoiId;
 
+    @Schema(description = "svg代码")
+    private String svg;
+
 
 }
