@@ -80,4 +80,7 @@ public class StoreInfoRespVO extends StoreInfoBaseVO {
     @JsonFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY, timezone = TIME_ZONE_DEFAULT)
     @DateTimeFormat(pattern = DateUtils.FORMAT_YEAR_MONTH_DAY)
     private Date expireTime;
+
+    @Schema(description = "svg代码")
+    private String svg;
 }

@@ -175,4 +175,8 @@ public class StoreInfoDO extends BaseDO {
     @Schema(description = "过期时间")
     private LocalDateTime expireTime;
 
+
+    @Schema(description = "svg代码")
+    private String svg;
+
 }

@@ -2,6 +2,7 @@ package com.yanzu.module.member.service.storeinfo;
 
 import cn.binarywang.wx.miniapp.api.WxMaQrcodeService;
 import cn.binarywang.wx.miniapp.api.WxMaService;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.IoUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -460,8 +461,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         // 校验存在
         validateStoreInfoExists(updateReqVO.getStoreId());
         // 更新
+        StoreInfoDO bean = BeanUtil.toBean(updateReqVO, StoreInfoDO.class);
         StoreInfoDO updateObj = StoreInfoConvert.INSTANCE.convert(updateReqVO);
-        storeInfoMapper.updateById(updateObj);
+        storeInfoMapper.updateById(bean);
         //更新美团uuid
         if (!StringUtils.isEmpty(updateReqVO.getMeituanOpenShopUuid())) {
             storeMeituanInfoMapper.update(new StoreMeituanInfoDO().setOpenShopUuid(updateReqVO.getMeituanOpenShopUuid()), new LambdaUpdateWrapper<StoreMeituanInfoDO>().eq(StoreMeituanInfoDO::getStoreId, updateReqVO.getStoreId()));
@@ -487,12 +489,13 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public StoreInfoRespVO getStoreInfo(Long id) {
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(id);
-        StoreInfoRespVO convert = StoreInfoConvert.INSTANCE.convert(storeInfoDO);
+        StoreInfoRespVO bean = BeanUtil.toBean(storeInfoDO, StoreInfoRespVO.class);
+//        StoreInfoRespVO convert = StoreInfoConvert.INSTANCE.convert(storeInfoDO);
         StoreMeituanInfoDO meituanInfoDO = storeMeituanInfoMapper.getByStoreId(id);
         if (!ObjectUtils.isEmpty(meituanInfoDO)) {
-            convert.setMeituanOpenShopUuid(meituanInfoDO.getOpenShopUuid());
+            bean.setMeituanOpenShopUuid(meituanInfoDO.getOpenShopUuid());
         }
-        return convert;
+        return bean;
     }
 
     @Override
