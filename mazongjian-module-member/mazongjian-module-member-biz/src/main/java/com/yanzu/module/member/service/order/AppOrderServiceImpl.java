@@ -310,9 +310,9 @@ public class AppOrderServiceImpl implements AppOrderService {
             // 判断是否跨日
             if (bHEnd.isBefore(bHStart)) {
                 //跨日了 这时候要看 开始时间如果小于禁用的截止时间  那么开始时间-1天
-                if(orderStartTime.isBefore(bTEnd)){
-                    bTStart=bTStart.minusDays(1);
-                }else{
+                if (orderStartTime.isBefore(bTEnd)) {
+                    bTStart = bTStart.minusDays(1);
+                } else {
                     //否则结束时间加1天
                     bTEnd = bTEnd.plusDays(1);
                 }
@@ -686,9 +686,9 @@ public class AppOrderServiceImpl implements AppOrderService {
      * @param roomType
      * @param nightLong
      */
-    private void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong, Integer txStartHour, Integer txHour) {
+    private static void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong, Integer txStartHour, Integer txHour) {
         title = title.replaceAll(" ", "");
-        if (nightLong || title.indexOf("通宵") != -1) {
+        if (title.indexOf("通宵") != -1 || nightLong) {
             //团购的通宵场 要求团购券必须包含 “通宵”两个字
             if (title.indexOf("通宵") == -1) {
                 throw exception(GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR);
@@ -697,11 +697,12 @@ public class AppOrderServiceImpl implements AppOrderService {
             if (startTime.getHours() < txStartHour) {
                 throw exception(CHECK_TONGXIAO_TIME_ERROR);
             }
+            return;
         }
         //判断工作日限制情况  标题包含工作日和周一 就视为工作日券
         if (title.indexOf("工作日") != -1 || title.indexOf("周一") != -1 || title.indexOf("周四") != -1 || title.indexOf("闲时") != -1) {
             //仅工作日周一 - 周四可用
-            checkWorkDay(startTime);
+//            checkWorkDay(startTime);
         }
         //判断包间限制情况  标题包含：不限包间
         if (title.indexOf("不限包间") != -1 || title.indexOf("全场通用") != -1 || title.indexOf("全场畅玩") != -1 || title.indexOf("包间通用") != -1 || title.indexOf("任意包间") != -1 || title.indexOf("不分包间") != -1 || title.indexOf("所有包间") != -1 || title.indexOf("全部包间") != -1 || title.indexOf("包间任选") != -1 || title.indexOf("不限房间") != -1 || title.indexOf("任意房间") != -1 || title.indexOf("不分房间") != -1 || title.indexOf("所有房间") != -1 || title.indexOf("全部房间") != -1 || title.indexOf("房间任选") != -1 || title.indexOf("不限球桌") != -1 || title.indexOf("任意球桌") != -1 || title.indexOf("不分球桌") != -1 || title.indexOf("所有球桌") != -1 || title.indexOf("全部球桌") != -1 || title.indexOf("球桌任选") != -1) {
@@ -758,7 +759,11 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             // 取时间
             String timeStr = title.substring(timeIndex - 1, timeIndex);
-            timeHour = Integer.valueOf(timeStr);
+            try {
+                timeHour = Integer.valueOf(timeStr);
+            } catch (NumberFormatException e) {
+                throw exception(CHECK_GROUP_NO_TIME_ERROR);
+            }
         }
         long l = (endTime.getTime() - startTime.getTime()) / 1000 / 60;
         if (l / 60 != timeHour) {
