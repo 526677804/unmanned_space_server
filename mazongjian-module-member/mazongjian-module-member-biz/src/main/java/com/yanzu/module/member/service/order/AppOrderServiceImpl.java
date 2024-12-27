@@ -297,6 +297,8 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
         //再检查是否在禁用时间范围内
         if (!ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart()) && !ObjectUtils.isEmpty(roomInfoDO.getBanTimeStart())) {
+            LocalDateTime orderStartTime = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime orderEndTime = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             // 禁用时间段列表，包含禁用开始时间和结束时间 new TimeRange("02:00", "08:00")
             LocalTime bHStart = LocalTime.parse(roomInfoDO.getBanTimeStart());
             LocalTime bHEnd = LocalTime.parse(roomInfoDO.getBanTimeEnd());
@@ -307,12 +309,16 @@ public class AppOrderServiceImpl implements AppOrderService {
             bTEnd = bTEnd.with(bHEnd);
             // 判断是否跨日
             if (bHEnd.isBefore(bHStart)) {
-                //跨日了
-                bTEnd = bTEnd.plusDays(1);
+                //跨日了 这时候要看 开始时间如果小于禁用的截止时间  那么开始时间-1天
+                if(orderStartTime.isBefore(bTEnd)){
+                    bTStart=bTStart.minusDays(1);
+                }else{
+                    //否则结束时间加1天
+                    bTEnd = bTEnd.plusDays(1);
+                }
             }
-            LocalDateTime orderStartTime = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            LocalDateTime orderEndTime = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            if ((orderStartTime.isBefore(bTStart) && orderEndTime.isBefore(bTStart)) || (orderStartTime.isAfter(bTEnd) && orderEndTime.isAfter(bTEnd))) {
+            if ((orderStartTime.isBefore(bTStart) && orderEndTime.isBefore(bTStart))
+                    || (orderStartTime.isAfter(bTEnd) && orderEndTime.isAfter(bTEnd))) {
                 //时间合法
             } else {
                 throw exception(ORDER_TIME_CHECK_ERROR);
