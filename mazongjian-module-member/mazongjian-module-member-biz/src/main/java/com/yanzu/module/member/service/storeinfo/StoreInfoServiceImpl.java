@@ -2,6 +2,7 @@ package com.yanzu.module.member.service.storeinfo;
 
 import cn.binarywang.wx.miniapp.api.WxMaQrcodeService;
 import cn.binarywang.wx.miniapp.api.WxMaService;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.IoUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -149,15 +150,6 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Value("${iot.groupPay:false}")
     private boolean iotGroupPay;
 
-    @Value("${iot.clientId}")
-    private String clientId;
-    @Value("${iot.secret}")
-    private String secret;
-
-    private static final String CLIENT_ID = "73e6ffc6-d534";
-    private static final String SECRET = "f7f7d8cb-2dbb-47bf-bbce-3242f717ec73";
-
-    private static final String MINIAPP_IMG_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='%s'&secret='%s'";
 
     @Override
     public PageResult<AppStoreAdminRespVO> getPageList(AppStoreAdminReqVO reqVO) {
@@ -207,6 +199,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 String file = fileApi.createFile(bytes);
                 storeInfoMapper.updateById(new StoreInfoDO().setStoreId(storeInfoDO.getStoreId()).setQrCode(file));
             } catch (WxErrorException e) {
+                e.printStackTrace();
 //                throw new RuntimeException(e);
             }
         } else {
@@ -226,6 +219,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                     String file = fileApi.createFile(bytes);
                     storeInfoDO.setQrCode(file);
                 } catch (WxErrorException e) {
+                    e.printStackTrace();
                     //                throw new RuntimeException(e);
                 }
             }
@@ -292,6 +286,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 String file = fileApi.createFile(bytes);
                 roomInfoMapper.updateById(new RoomInfoDO().setRoomId(roomInfoDO.getRoomId()).setQrCode(file));
             } catch (WxErrorException e) {
+                e.printStackTrace();
 //                throw new RuntimeException(e);
             }
             //生成续费码
@@ -302,6 +297,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 String file = fileApi.createFile(bytes);
                 roomInfoMapper.updateById(new RoomInfoDO().setRoomId(roomInfoDO.getRoomId()).setRenewCode(file));
             } catch (WxErrorException e) {
+                e.printStackTrace();
 //                throw new RuntimeException(e);
             }
         } else {
@@ -319,6 +315,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                     String file = fileApi.createFile(bytes);
                     roomInfoMapper.updateById(new RoomInfoDO().setRoomId(roomInfoDO.getRoomId()).setRenewCode(file));
                 } catch (WxErrorException e) {
+                    e.printStackTrace();
 //                throw new RuntimeException(e);
                 }
             }
@@ -332,6 +329,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                     String file = fileApi.createFile(bytes);
                     roomInfoDO.setQrCode(file);
                 } catch (WxErrorException e) {
+                    e.printStackTrace();
 //                throw new RuntimeException(e);
                 }
             }
@@ -460,8 +458,9 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         // 校验存在
         validateStoreInfoExists(updateReqVO.getStoreId());
         // 更新
+        StoreInfoDO bean = BeanUtil.toBean(updateReqVO, StoreInfoDO.class);
         StoreInfoDO updateObj = StoreInfoConvert.INSTANCE.convert(updateReqVO);
-        storeInfoMapper.updateById(updateObj);
+        storeInfoMapper.updateById(bean);
         //更新美团uuid
         if (!StringUtils.isEmpty(updateReqVO.getMeituanOpenShopUuid())) {
             storeMeituanInfoMapper.update(new StoreMeituanInfoDO().setOpenShopUuid(updateReqVO.getMeituanOpenShopUuid()), new LambdaUpdateWrapper<StoreMeituanInfoDO>().eq(StoreMeituanInfoDO::getStoreId, updateReqVO.getStoreId()));
@@ -487,12 +486,13 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     @Override
     public StoreInfoRespVO getStoreInfo(Long id) {
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(id);
-        StoreInfoRespVO convert = StoreInfoConvert.INSTANCE.convert(storeInfoDO);
+        StoreInfoRespVO bean = BeanUtil.toBean(storeInfoDO, StoreInfoRespVO.class);
+//        StoreInfoRespVO convert = StoreInfoConvert.INSTANCE.convert(storeInfoDO);
         StoreMeituanInfoDO meituanInfoDO = storeMeituanInfoMapper.getByStoreId(id);
         if (!ObjectUtils.isEmpty(meituanInfoDO)) {
-            convert.setMeituanOpenShopUuid(meituanInfoDO.getOpenShopUuid());
+            bean.setMeituanOpenShopUuid(meituanInfoDO.getOpenShopUuid());
         }
-        return convert;
+        return bean;
     }
 
     @Override

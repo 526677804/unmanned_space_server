@@ -13,6 +13,16 @@ import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Iterator;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.module.infra.enums.ErrorCodeConstants.FILE_NOT_EXISTS;
@@ -36,9 +46,49 @@ public class FileServiceImpl implements FileService {
         return fileMapper.selectPage(pageReqVO);
     }
 
+    public static byte[] compressImage(byte[] content) throws IOException {
+        final long MAX_SIZE = 256 * 1024; // 256 KB
+
+        // Step 1: Load the image
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(content));
+        if (image == null) {
+            throw new IllegalArgumentException("Invalid image content");
+        }
+
+        // Step 2: Compress the image
+        ByteArrayOutputStream compressedOutput = new ByteArrayOutputStream();
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg");
+        if (!writers.hasNext()) {
+            throw new IllegalStateException("No writers found for JPEG format");
+        }
+        ImageWriter writer = writers.next();
+        ImageWriteParam param = writer.getDefaultWriteParam();
+        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+
+        float quality = 0.9f; // Initial quality setting
+        byte[] result = content;
+
+        do {
+            compressedOutput.reset(); // Clear previous output
+            param.setCompressionQuality(quality);
+
+            try (MemoryCacheImageOutputStream output = new MemoryCacheImageOutputStream(compressedOutput)) {
+                writer.setOutput(output);
+                writer.write(null, new javax.imageio.IIOImage(image, null, null), param);
+            }
+
+            result = compressedOutput.toByteArray();
+            quality -= 0.1f; // Reduce quality step-by-step
+        } while (result.length > MAX_SIZE && quality > 0.1f);
+
+        writer.dispose();
+        return result;
+    }
+
     @Override
     @SneakyThrows
     public String createFile(String name, String path, byte[] content) {
+        content = compressImage(content);
         // 计算默认的 path 名
         String type = FileTypeUtils.getMineType(content, name);
         if (StrUtil.isEmpty(path)) {

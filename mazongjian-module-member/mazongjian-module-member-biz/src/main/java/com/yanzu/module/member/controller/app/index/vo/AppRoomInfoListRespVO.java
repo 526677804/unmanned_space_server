@@ -112,4 +112,10 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "是否预约")
     private Boolean reserve;
 
+    @Schema(description = "svgX轴坐标")
+    private Integer svgX;
+
+    @Schema(description = "svgY轴坐标")
+    private Integer svgY;
+
 }
