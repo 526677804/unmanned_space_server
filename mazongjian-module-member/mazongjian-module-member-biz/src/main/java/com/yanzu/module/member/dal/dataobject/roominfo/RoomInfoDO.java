@@ -126,10 +126,10 @@ public class RoomInfoDO extends BaseDO {
     @Schema(description = "是否预定")
     private Boolean reserve;
 
-    @Schema(description = "svg X轴坐标")
-    private Integer svgX;
-
-    @Schema(description = "svg Y轴坐标")
-    private Integer svgY;
+//    @Schema(description = "svg X轴坐标")
+//    private Integer svgX;
+//
+//    @Schema(description = "svg Y轴坐标")
+//    private Integer svgY;
 
 }
