@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
@@ -87,6 +88,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
     private MemberUserMapper userMapper;
 
     @Override
+    @Transactional
     public WxPayOrderRespVO createOrder(AppSaveOrderReqVo reqVo) {
         Long uid = getLoginUserId();
         MemberUserDO memberUserDO = userMapper.selectById(uid);
@@ -94,7 +96,6 @@ public class ProductOrderServiceImpl implements ProductOrderService {
         ProductOrderDO productOrderDO = new ProductOrderDO();
         productOrderDO.setOrderNo(orderNo);
         productOrderDO.setStoreId(reqVo.getStoreId());
-        productOrderDO.setStoreName(reqVo.getStoreName());
         productOrderDO.setUserId(uid);
         productOrderDO.setUserName(memberUserDO.getNickname());
         productOrderDO.setUserPhone(memberUserDO.getMobile());

@@ -36,9 +36,9 @@ public class ProductOrderDO extends BaseDO {
     private Long storeId;
 
     /**
-     * 门店名称
+     * 房间ID
      */
-    private String storeName;
+    private Long roomId;
 
     /**
      * 用户Id

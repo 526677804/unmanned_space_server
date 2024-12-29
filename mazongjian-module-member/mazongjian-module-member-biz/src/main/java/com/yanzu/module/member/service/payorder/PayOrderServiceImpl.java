@@ -242,11 +242,16 @@ public class PayOrderServiceImpl implements PayOrderService {
         String orderNo = result.getOutTradeNo();
         Integer totalFee = result.getTotalFee();
         ProductOrderDO productOrderDO = productOrderMapper.selectByOrderNo(orderNo);
+        //todo...
+        //这里的租户处理有问题
+        //订单应具备下单房间信息
+        //checkWxOrder
+        //下单成功后发送企业微信提醒 告知是哪个房间购买了多少个商品
         Long tenantId = null;
         try {
             String redisKey = String.format(WX_PRODUCT_PAY_ORDER, orderNo);
             if (redisTemplate.hasKey(redisKey)) {
-                tenantId = (Long) redisTemplate.opsForValue().get(redisKey);
+                tenantId =Long.valueOf(String.valueOf(redisTemplate.opsForValue().get(redisKey)));
             }
             if (productOrderDO.getStatus() != 0) {
                 throw new ServiceException(-200, "订单重复支付。");
