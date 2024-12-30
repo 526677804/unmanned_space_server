@@ -2,6 +2,7 @@ package com.yanzu.module.member.service.wx;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yanzu.framework.common.util.date.DateUtils;
+import com.yanzu.module.member.controller.app.store.vo.AppRoomListVO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
@@ -151,9 +152,10 @@ public class WorkWxServiceImpl implements WorkWxService {
         msg.put("markdown", markdown);
         workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
     }
+
     @Override
     @Async
-    public void sendYDOrderCancelAuthMsg(Long storeId, Long roomId, String orderNo,String reason) {
+    public void sendYDOrderCancelAuthMsg(Long storeId, Long roomId, String orderNo, String reason) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
         if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
@@ -661,23 +663,24 @@ public class WorkWxServiceImpl implements WorkWxService {
 
     @Override
     @Async
-    public void sendProductOrderMsg(Long storeId, Long userId, LocalDateTime createTime) {
+    public void sendProductOrderMsg(Long storeId, Long roomId, Long userId, LocalDateTime createTime) {
         //查询出webhook的地址
-        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+        AppRoomListVO roomInfo = roomInfoMapper.getInfoById(roomId);
+        if (ObjectUtils.isEmpty(roomInfo) || ObjectUtils.isEmpty(roomInfo.getOrderWebhook())) {
             return;
         }
         log.info("发送订单消息到配置的企业微信");
         StringBuffer sb = new StringBuffer();
         sb.append("顾客购买商品提醒\n");
-        sb.append(">门店名称:<font color=\"warning\">").append(storeInfoDO.getStoreName()).append("</font>\n");
+        sb.append(">门店名称:<font color=\"warning\">").append(roomInfo.getStoreName()).append("</font>\n");
+        sb.append(">房间名称:<font color=\"warning\">").append(roomInfo.getRoomName()).append("</font>\n");
         sb.append(">操作时间:<font color=\"warning\">").append(DateUtils.dateToStr(new Date(), DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)).append("</font>");
         JSONObject msg = new JSONObject();
         msg.put("msgtype", "markdown");
         JSONObject markdown = new JSONObject();
         markdown.put("content", sb.toString());
         msg.put("markdown", markdown);
-        workWxClient.sendMDMsg(storeInfoDO.getOrderWebhook(), msg);
+        workWxClient.sendMDMsg(roomInfo.getOrderWebhook(), msg);
 
     }
 

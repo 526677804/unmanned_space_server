@@ -66,7 +66,6 @@ public class IndexController {
 
     @PostMapping("/getRoomInfoList")
     @Operation(summary = "首页获取房间信息列表")
-    @Parameter(name = "storeId")
     public CommonResult<List<AppRoomInfoListRespVO>> getRoomInfoList(@RequestBody @Valid AppRoomListReqVO reqVO) {
         return success(indexService.getRoomInfoList(reqVO));
     }

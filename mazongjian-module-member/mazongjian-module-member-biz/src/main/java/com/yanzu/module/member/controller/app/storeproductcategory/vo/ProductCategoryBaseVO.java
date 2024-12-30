@@ -32,7 +32,7 @@ public class ProductCategoryBaseVO {
     private String name;
 
     @Schema(description = "分类图片", required = true)
-    @NotBlank(message = "分类图片不能为空")
+//    @NotBlank(message = "分类图片不能为空")
     private String picUrl;
 
     @Schema(description = "分类排序", required = true, example = "1")

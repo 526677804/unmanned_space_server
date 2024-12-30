@@ -106,6 +106,8 @@ public interface ErrorCodeConstants {
     ErrorCode COUPON_IS_NOT_ENABLE = new ErrorCode(1004004104, "优惠券状态不允许回收");
     ErrorCode IOT_GROUP_PAY_NOT_SUPPOT = new ErrorCode(1004004105, "未对接团购平台");
 
+    ErrorCode PRODUCT_OUT_OF_STOCK = new ErrorCode(1004004106, "商品库存不足");
+
 
     ErrorCode PKG_BUY_MAX_NUM_ERROR = new ErrorCode(1004004200, "超过购买该套餐的最大数量限制！");
     ErrorCode PKG_BUY_DISABLE_ERROR = new ErrorCode(1004004201, "该套餐不支持购买！");

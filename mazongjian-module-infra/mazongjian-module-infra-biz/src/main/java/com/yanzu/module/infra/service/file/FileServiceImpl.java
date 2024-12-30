@@ -18,6 +18,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -50,12 +51,17 @@ public class FileServiceImpl implements FileService {
         final long MAX_SIZE = 256 * 1024; // 256 KB
 
         // Step 1: Load the image
-        BufferedImage image = ImageIO.read(new ByteArrayInputStream(content));
+        BufferedImage image  = ImageIO.read(new ByteArrayInputStream(content));
         if (image == null) {
             throw new IllegalArgumentException("Invalid image content");
         }
-
-        // Step 2: Compress the image
+        // Step 2: Convert image to standard RGB format (to handle transparency or unsupported color spaces)
+        BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = rgbImage.createGraphics();
+        g.drawImage(image, 0, 0, Color.WHITE, null); // Fill with white if there are transparent areas
+        g.dispose();
+        image = rgbImage;
+        // Step 3: Compress the image
         ByteArrayOutputStream compressedOutput = new ByteArrayOutputStream();
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg");
         if (!writers.hasNext()) {

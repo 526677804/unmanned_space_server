@@ -22,16 +22,22 @@ import com.yanzu.module.member.controller.app.user.vo.AppRechargeBalanceReqVO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
 import com.yanzu.module.member.dal.dataobject.productorder.ProductOrderDO;
+import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
+import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.payorder.PayOrderMapper;
 import com.yanzu.module.member.dal.mysql.productorder.ProductOrderMapper;
+import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.enums.AppWxPayTypeEnum;
+import com.yanzu.module.member.service.deviceinfo.DeviceInfoService;
+import com.yanzu.module.member.service.iot.IotService;
+import com.yanzu.module.member.service.iot.device.IotDeviceRoomInfoVO;
 import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.pkg.PkgService;
 import com.yanzu.module.member.service.user.AppUserService;
@@ -101,6 +107,14 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Resource
     private WorkWxService workWxService;
+
+    @Resource
+    private IotService iotService;
+
+    @Resource
+    private DeviceInfoMapper deviceInfoMapper;
+
+    private RoomInfoMapper roomInfoMapper;
 
     @Override
     public PayOrderDO getPayOrder(Long id) {
@@ -237,38 +251,61 @@ public class PayOrderServiceImpl implements PayOrderService {
     }
 
     @Override
+    @SneakyThrows
+    @Transactional
     public String updateProductOrder(WxPayOrderNotifyResult result) {
         // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
         String orderNo = result.getOutTradeNo();
         Integer totalFee = result.getTotalFee();
+        //忽略租户ID去查询
         ProductOrderDO productOrderDO = productOrderMapper.selectByOrderNo(orderNo);
+        if(ObjectUtils.isEmpty(productOrderDO)){
+            throw exception(DATA_NOT_EXISTS);
+        }
         Long tenantId = null;
-        try {
-            String redisKey = String.format(WX_PRODUCT_PAY_ORDER, orderNo);
-            if (redisTemplate.hasKey(redisKey)) {
-                tenantId = (Long) redisTemplate.opsForValue().get(redisKey);
+        String redisKey = String.format(WX_PRODUCT_PAY_ORDER, orderNo);
+        if (redisTemplate.hasKey(redisKey)) {
+            tenantId = Long.valueOf(String.valueOf(redisTemplate.opsForValue().get(redisKey)));
+        }
+        TenantUtils.execute(tenantId, () -> {
+            log.info("检查商品订单：{}，微信支付状态！", orderNo);
+            //创建微信支付实例
+            WxPayService wxPayService = myWxService.initWxPay(productOrderDO.getStoreId());
+            WxPayOrderQueryResult wxPayOrderQueryResult = null;
+            try {
+                wxPayOrderQueryResult = wxPayService.queryOrder(null, orderNo);
+            } catch (WxPayException e) {
+                throw new RuntimeException(e);
             }
-            if (productOrderDO.getStatus() != 0) {
-                throw new ServiceException(-200, "订单重复支付。");
-            }
-            if (productOrderDO.getTotalPrice().
-                    compareTo(new BigDecimal(totalFee).divide(BigDecimal.valueOf(100D), 2, RoundingMode.UP)) != 0) {
-                throw new RuntimeException("支付金额与订单不一致。");
-            }
-
-            TenantUtils.execute(tenantId, () -> {
+            String tradeNo = wxPayOrderQueryResult.getTransactionId();
+            String tradeState = wxPayOrderQueryResult.getTradeState();
+            String returnCode = wxPayOrderQueryResult.getReturnCode();
+            Integer cashFee = wxPayOrderQueryResult.getTotalFee();//支付金额
+            String resultCode = wxPayOrderQueryResult.getResultCode();
+            log.info("tradeState:{},returnCode:{},resultCode:{},", tradeState, returnCode, resultCode);
+            //判断支付结果
+            boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
+            //对比实际支付的价格 和订单应支付的价格是否一致
+            boolean checkPrice = cashFee >= productOrderDO.getTotalPrice();
+            log.info("订单：{}，微信支付状态为：{},price:{},cashFee:{}", orderNo, flag, productOrderDO.getTotalPrice(), cashFee);
+            if (flag && checkPrice) {
                 productOrderDO.setPayTime(DateUtil.date());
                 productOrderDO.setStatus(1L); // 已支付
+                productOrderDO.setPayPrice(cashFee);//支付金额
+                //下单成功后发送企业微信提醒 告知是哪个房间购买了多少个商品
                 productOrderMapper.updateById(productOrderDO);
                 //发送企业微信提醒
-                workWxService.sendProductOrderMsg(productOrderDO.getStoreId(), productOrderDO.getUserId(), productOrderDO.getCreateTime());
-            });
-
-            return WxPayNotifyResponse.success("接收成功!");
-        } catch (ServiceException e) {
-            e.printStackTrace();
-            //模拟租户 处理支付订单
-            TenantUtils.execute(tenantId, () -> {
+                workWxService.sendProductOrderMsg(productOrderDO.getStoreId(), productOrderDO.getRoomId(), productOrderDO.getUserId(), productOrderDO.getCreateTime());
+                //发送语音提醒
+                List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(productOrderDO.getStoreId());
+                if (!CollectionUtils.isEmpty(storeVoiceList)) {
+                    RoomInfoDO roomInfoDO = roomInfoMapper.selectById(productOrderDO.getRoomId());
+                    String tts = roomInfoDO.getRoomName() + ",顾客已购买商品,请及时处理";
+                    storeVoiceList.forEach(x -> {
+                        iotService.runSound(x.getDeviceSn(), tts);
+                    });
+                }
+            } else {
                 //业务异常 退款
                 WxPayRefundRequest refundRequest = new WxPayRefundRequest();
                 refundRequest.setOutTradeNo(productOrderDO.getOrderNo());
@@ -276,39 +313,14 @@ public class PayOrderServiceImpl implements PayOrderService {
                 refundRequest.setTotalFee(result.getTotalFee());
                 refundRequest.setRefundFee(result.getTotalFee());
                 refundRequest.setRefundDesc("订单支付失败退款");
-                WxPayService wxPayService = myWxService.initWxPay(productOrderDO.getStoreId());
                 try {
                     wxPayService.refundV2(refundRequest);
                 } catch (WxPayException ex) {
                     log.error("微信支付订单退款失败:{}", orderNo);
                 }
-                // 订单重复支付异常 不需要再次修改状态
-//                productOrderDO.setPayTime(DateUtil.date());
-//                productOrderDO.setStatus(1L); // 已支付
-//                productOrderMapper.updateById(productOrderDO);
-            });
-            return WxPayNotifyResponse.success("接收成功!");
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            //模拟租户 处理支付订单
-            TenantUtils.execute(tenantId, () -> {
-                //业务异常 退款
-                WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-                refundRequest.setOutTradeNo(productOrderDO.getOrderNo());
-                refundRequest.setOutRefundNo("TK" + productOrderDO.getOrderNo());
-                refundRequest.setTotalFee(result.getTotalFee());
-                refundRequest.setRefundFee(result.getTotalFee());
-                refundRequest.setRefundDesc("订单支付失败退款");
-                WxPayService wxPayService = myWxService.initWxPay(productOrderDO.getStoreId());
-                try {
-                    wxPayService.refundV2(refundRequest);
-                } catch (WxPayException ex) {
-                    log.error("微信支付订单退款失败:{}", orderNo);
-                }
-            });
-            return WxPayNotifyResponse.success("接收成功!");
-        }
-
+            }
+        });
+        return WxPayNotifyResponse.success("接收成功!");
     }
 
     @Override
@@ -537,7 +549,7 @@ public class PayOrderServiceImpl implements PayOrderService {
     @Override
     @Transactional
     public void update(PayOrderUpdateReqVO reqVO) {
-        log.info("管理员：{}，修改订单：{}",getLoginUserId(),reqVO);
+        log.info("管理员：{}，修改订单：{}", getLoginUserId(), reqVO);
         PayOrderDO payOrderDO = payOrderMapper.selectById(reqVO.getId());
         if (!ObjectUtils.isEmpty(payOrderDO)) {
             if (reqVO.getPrice() != null) {

@@ -32,29 +32,37 @@ public class ProductOrderController {
     @Operation(summary = "订单创建")
     @Transactional(rollbackFor = Exception.class)
     @PreAuthenticated
-    public CommonResult<WxPayOrderRespVO> create(@RequestBody @Valid AppSaveOrderReqVo saveOrderReqVo) {
+    public CommonResult<WxPayOrderRespVO> create(@RequestBody @Valid AppSaveOrderReqVO saveOrderReqVo) {
         return success(productOrderService.createOrder(saveOrderReqVo));
     }
 
     @PostMapping("/cancel")
     @Operation(summary = "订单取消")
     @PreAuthenticated
-    public CommonResult<Boolean> cancelPay(@RequestBody AppCancelPayReqVo reqVo) {
-        productOrderService.cancelPay(reqVo.getOrderNo());
+    public CommonResult<Boolean> cancelPay(@RequestBody AppCancelPayReqVO reqVo) {
+        productOrderService.cancelPay(reqVo, false);
+        return success(true);
+    }
+
+    @PostMapping("/cancelByAdmin")
+    @Operation(summary = "订单取消-管理员")
+    @PreAuthenticated
+    public CommonResult<Boolean> cancelPayByAdmin(@RequestBody AppCancelPayReqVO reqVo) {
+        productOrderService.cancelPay(reqVo, true);
         return success(true);
     }
 
     @PostMapping("/page")
     @Operation(summary = "用户获取订单分页")
     @PreAuthenticated
-    public CommonResult<PageResult<AppUserOrderPageRespVo>> getOrderPage(@RequestBody AppUserOrderPageReqVo reqVo){
+    public CommonResult<PageResult<AppUserOrderPageRespVO>> getOrderPage(@RequestBody AppUserOrderPageReqVO reqVo) {
         return success(productOrderService.userOrderByPage(reqVo));
     }
 
     @GetMapping("/getstore")
     @Operation(summary = "获取在哪些门店下过单")
     @PreAuthenticated
-    public CommonResult<List<AppHaveOrderStoreRespVo>> selectHaveOrderStore(){
+    public CommonResult<List<AppHaveOrderStoreRespVO>> selectHaveOrderStore() {
         return success(productOrderService.selectHaveOrderStore());
     }
 
@@ -68,12 +76,12 @@ public class ProductOrderController {
     @PostMapping("/manage/page")
     @Operation(summary = "管理员获取管理门店下的订单")
     @PreAuthenticated
-    public CommonResult<PageResult<AppUserOrderPageRespVo>> manageProductOrder(@RequestBody AppUserOrderPageReqVo reqVo){
+    public CommonResult<PageResult<AppUserOrderPageRespVO>> manageProductOrder(@RequestBody AppUserOrderPageReqVO reqVo) {
         return success(productOrderService.managerProductOrder(reqVo));
     }
 
     @PostMapping("/finish/{id}")
-    @Operation(summary = "订单取消")
+    @Operation(summary = "订单完成")
     @PreAuthenticated
     public CommonResult<Boolean> cancelPay(@PathVariable Long id) {
         productOrderService.finishOrder(id);
@@ -83,12 +91,12 @@ public class ProductOrderController {
     @PostMapping("/info/{id}")
     @Operation(summary = "获取订单详情")
     @PreAuthenticated
-    public CommonResult<AppUserOrderPageRespVo> orderInfo(@PathVariable Long id) {
+    public CommonResult<AppUserOrderPageRespVO> orderInfo(@PathVariable Long id) {
         return success(productOrderService.orderInfo(id));
     }
 
     @GetMapping("/phone/{orderId}")
-    public CommonResult<String> getPhone(@PathVariable Long orderId){
+    public CommonResult<String> getPhone(@PathVariable Long orderId) {
         return success(productOrderService.getPhone(orderId));
     }
 

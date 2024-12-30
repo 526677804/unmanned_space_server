@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class AppUserOrderPageReqVo extends PageParam {
+public class AppUserOrderPageReqVO extends PageParam {
 
     @Schema(name = "门店id")
     private Long storeId;
