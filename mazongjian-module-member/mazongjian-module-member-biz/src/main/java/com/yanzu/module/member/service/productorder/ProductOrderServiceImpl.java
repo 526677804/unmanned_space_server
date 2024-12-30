@@ -123,7 +123,6 @@ public class ProductOrderServiceImpl implements ProductOrderService {
         productOrderDO.setUserPhone(memberUserDO.getMobile());
         productOrderDO.setMark(reqVo.getMark());
         productOrderDO.setProductInfo(JSON.toJSONString(reqVo.getProductInfo()));
-//        productOrderDO.setTotalPrice(reqVo.getTotalPrice());
         int totalPrice = 0;//待计算
         WxPayOrderRespVO respVO = new WxPayOrderRespVO();
         //需要微信下单  先获取到该用户的openId
@@ -131,22 +130,12 @@ public class ProductOrderServiceImpl implements ProductOrderService {
         if (ObjectUtils.isEmpty(openId)) {
             throw exception(AUTH_USER_BIND_MINIAPP_ERROR);
         }
-        //创建微信支付实例
-        WxPayService wxPayService = myWxService.initWxPay(roomInfo.getStoreId());
-        //生成微信支付的订单
-        try {
-            WxPayMpOrderResult wxPayMpOrderResult = myWxService.createProductOrder(wxPayService, roomInfo.getStoreId(),
-                    orderNo, totalPrice, openId);
-            getWxPayOrderRespVo(respVO, wxPayMpOrderResult, totalPrice, productOrderDO);
-            respVO.setOrderNo(orderNo);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw exception(USER_WEIXIN_PAY_ERROR);
-        }
-        // 生成商品订单
-        productOrderMapper.insert(productOrderDO);
-        // 遍历传递过来的产品  // todo 修改产品数量 和 商品信息有问题
+        // 遍历传递过来的产品
         for (int i = 0; i < reqVo.getProductInfo().size(); i++) {
+            // 计算金额
+            Long number = reqVo.getProductInfo().get(i).getNumber();
+            BigDecimal price = reqVo.getProductInfo().get(i).getPrice();
+            totalPrice = totalPrice + new BigDecimal(number).multiply(price).multiply(BigDecimal.valueOf(100)).intValue();
             // 查到相关产品 以及详细属性
             Map<String, Object> productInfo = productService.getProductInfo(reqVo.getProductInfo().get(i).getId());
             ProductDto productDto = (ProductDto) productInfo.get("productInfo");
@@ -199,6 +188,21 @@ public class ProductOrderServiceImpl implements ProductOrderService {
                 }
             }
         }
+        productOrderDO.setTotalPrice(totalPrice);
+        //创建微信支付实例
+        WxPayService wxPayService = myWxService.initWxPay(roomInfo.getStoreId());
+        //生成微信支付的订单
+        try {
+            WxPayMpOrderResult wxPayMpOrderResult = myWxService.createProductOrder(wxPayService, roomInfo.getStoreId(),
+                    orderNo, totalPrice, openId);
+            getWxPayOrderRespVo(respVO, wxPayMpOrderResult, totalPrice, productOrderDO);
+            respVO.setOrderNo(orderNo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw exception(USER_WEIXIN_PAY_ERROR);
+        }
+        // 生成商品订单
+        productOrderMapper.insert(productOrderDO);
         Long tenantId = TenantContextHolder.getTenantId();
         // 如果获取不到租户编号，则尝试使用登陆用户的租户编号
         if (tenantId == null) {
