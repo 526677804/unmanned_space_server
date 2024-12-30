@@ -14,7 +14,8 @@ public interface WorkWxService {
     void sendOrderCancelMsg(Long storeId, Long userId, Long roomId, BigDecimal price, CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType, String orderNo, boolean isadmin);
 
     void sendYDOrderCancelMsg(Long storeId, Long roomId, String orderNo);
-    void sendYDOrderCancelAuthMsg(Long storeId, Long roomId, String orderNo,String reason);
+
+    void sendYDOrderCancelAuthMsg(Long storeId, Long roomId, String orderNo, String reason);
 
     void sendCloseOrderMsg(Long storeId, Long userId, Long roomId, Integer payType, Integer groupPayType, String orderNo);
 
@@ -22,7 +23,7 @@ public interface WorkWxService {
 
     void sendClearMsg(String webhookUrl, String content);
 
-    void sendRenewMsg(Long storeId, Long userId, String roomName, BigDecimal price, Integer payType, String orderNo, Date endTime, CouponInfoDO couponInfoDO,boolean isAdmin);
+    void sendRenewMsg(Long storeId, Long userId, String roomName, BigDecimal price, Integer payType, String orderNo, Date endTime, CouponInfoDO couponInfoDO, boolean isAdmin);
 
     void sendRechargeMsg(Long storeId, Long userId, BigDecimal price, BigDecimal giftPrice);
 
@@ -52,7 +53,7 @@ public interface WorkWxService {
 
     void sendCallMsg(Long storeId, String tts);
 
-    void sendProductOrderMsg(Long storeId, Long userId, LocalDateTime createTime);
+    void sendProductOrderMsg(Long storeId, Long roomId, Long userId, LocalDateTime createTime);
 
 
 }

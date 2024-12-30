@@ -33,8 +33,8 @@ public class AppUserOrderPageRespVo {
     @Schema(name = "店铺id")
     private Long storeId;
 
-    @Schema(name = "店铺名称")
-    private String storeName;
+    @Schema(name = "房间名称")
+    private String roomName;
 
     @Schema(name = "用户姓名")
     private String userName;

@@ -10,26 +10,26 @@
      -->
 
     <select id="selectByOrderNo" resultType="com.yanzu.module.member.dal.dataobject.productorder.ProductOrderDO" parameterType="String">
-        select * from product_order
+        select * from member_product_order
         where order_no = #{orderNo}
     </select>
 
     <update id="updateByOrderNo" parameterType="String">
-        update product_order
+        update member_product_order
         set status = 3
         where order_no = #{orderNo}
     </update>
 
     <select id="selectHaveOrderStore" parameterType="Long" resultType="com.yanzu.module.member.controller.app.productorder.vo.AppHaveOrderStoreRespVo">
         select distinct s.store_id , s.store_name
-        from product_order o
+        from member_product_order o
         left join member_store_info s on s.store_id = o.store_id
         where o.user_id = #{userId}
     </select>
 
     <select id="getPhone" resultType="String" parameterType="Long">
         select user_phone
-        from product_order
+        from member_product_order
         where deleted = 0
         and order_id = #{orderId}
     </select>

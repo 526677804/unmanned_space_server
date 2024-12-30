@@ -9,8 +9,8 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@TableName("product_order")
-@KeySequence("product_order_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
+@TableName("member_product_order")
+@KeySequence("member_product_order_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -68,12 +68,12 @@ public class ProductOrderDO extends BaseDO {
     /**
      * 订单总价
      */
-    private BigDecimal totalPrice;
+    private Integer totalPrice;
 
     /**
      * 实际支付金额
      */
-    private BigDecimal payPrice;
+    private Integer payPrice;
 
     /**
      * 支付时间

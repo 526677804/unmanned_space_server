@@ -516,21 +516,20 @@ public class IotService {
         String roomName = ObjectUtils.isEmpty(deviceRoomVO.getRoomName()) ? "" : deviceRoomVO.getRoomName();
         String callType = data.getString("callType");
         if (!ObjectUtils.isEmpty(deviceRoomVO)) {
-            //门店有绑定喇叭才处理
+            String tts = getTTSByCallType(callType, roomName);
             //模拟租户
             TenantUtils.execute(deviceRoomVO.getTenantId(), () -> {
                 List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(deviceRoomVO.getStoreId());
                 if (!CollectionUtils.isEmpty(storeVoiceList)) {
-                    String tts = getTTSByCallType(callType, roomName);
                     storeVoiceList.forEach(x -> {
                         //重复三次
                         for (int i = 0; i < 3; i++) {
                             runSound(x.getDeviceSn(), tts);
                         }
                     });
-                    //再异步发送企业微信通知
-                    workWxService.sendCallMsg(deviceRoomVO.getStoreId(), tts);
                 }
+                //再异步发送企业微信通知
+                workWxService.sendCallMsg(deviceRoomVO.getStoreId(), tts);
             });
         }
     }
@@ -593,7 +592,7 @@ public class IotService {
         return tts;
     }
 
-    private void runSound(String sn, String cmd) {
+    public void runSound(String sn, String cmd) {
         IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
         List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
         IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();
