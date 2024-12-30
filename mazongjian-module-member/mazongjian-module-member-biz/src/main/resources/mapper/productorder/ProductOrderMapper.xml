@@ -20,7 +20,7 @@
         where order_no = #{orderNo}
     </update>
 
-    <select id="selectHaveOrderStore" parameterType="Long" resultType="com.yanzu.module.member.controller.app.productorder.vo.AppHaveOrderStoreRespVo">
+    <select id="selectHaveOrderStore" parameterType="Long" resultType="com.yanzu.module.member.controller.app.productorder.vo.AppHaveOrderStoreRespVO">
         select distinct s.store_id , s.store_name
         from member_product_order o
         left join member_store_info s on s.store_id = o.store_id

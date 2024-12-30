@@ -6,7 +6,7 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class AppCancelPayReqVo {
+public class AppCancelPayReqVO {
 
     @NotNull(message = "订单不能为空")
     @Schema(description = "订单id")

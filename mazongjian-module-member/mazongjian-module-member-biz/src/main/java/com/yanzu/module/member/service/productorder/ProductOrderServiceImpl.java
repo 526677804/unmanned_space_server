@@ -37,7 +37,6 @@ import com.yanzu.module.member.service.wx.MyWxService;
 import com.yanzu.module.system.api.social.SocialUserApi;
 import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -56,7 +55,6 @@ import java.util.stream.Collectors;
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
-import static com.yanzu.module.member.enums.AppEnum.WX_PAY_ORDER;
 import static com.yanzu.module.member.enums.AppEnum.WX_PRODUCT_PAY_ORDER;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
@@ -106,7 +104,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
 
     @Override
     @Transactional
-    public WxPayOrderRespVO createOrder(AppSaveOrderReqVo reqVo) {
+    public WxPayOrderRespVO createOrder(AppSaveOrderReqVO reqVo) {
         AppRoomListVO roomInfo = roomInfoMapper.getInfoById(reqVo.getRoomId());
         if (ObjectUtils.isEmpty(roomInfo)) {
             throw exception(DATA_NOT_EXISTS);
@@ -215,7 +213,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
 
     @Override
     @Transactional
-    public void cancelPay(AppCancelPayReqVo reqVo, boolean isAdmin) {
+    public void cancelPay(AppCancelPayReqVO reqVo, boolean isAdmin) {
         ProductOrderDO productOrderDO = productOrderMapper.selectById(reqVo.getOrderId());
         if (ObjectUtils.isEmpty(productOrderDO)) {
             throw exception(DATA_NOT_EXISTS);
@@ -248,7 +246,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
     }
 
     @Override
-    public PageResult<AppUserOrderPageRespVo> userOrderByPage(AppUserOrderPageReqVo reqVo) {
+    public PageResult<AppUserOrderPageRespVO> userOrderByPage(AppUserOrderPageReqVO reqVo) {
 
         LambdaQueryWrapperX<ProductOrderDO> queryWrapper = new LambdaQueryWrapperX<>();
         queryWrapper.eq(ProductOrderDO::getUserId, getLoginUserId())
@@ -260,7 +258,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
     }
 
     @Override
-    public List<AppHaveOrderStoreRespVo> selectHaveOrderStore() {
+    public List<AppHaveOrderStoreRespVO> selectHaveOrderStore() {
         return productOrderMapper.selectHaveOrderStore(getLoginUserId());
     }
 
@@ -291,7 +289,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
 
 
     @Override
-    public PageResult<AppUserOrderPageRespVo> managerProductOrder(AppUserOrderPageReqVo reqVo) {
+    public PageResult<AppUserOrderPageRespVO> managerProductOrder(AppUserOrderPageReqVO reqVo) {
         // 获取自己管理的门店列表
         List<Long> longs = storeUserMapper.selectSelfStoreIds(getLoginUserId());
 
@@ -314,11 +312,11 @@ public class ProductOrderServiceImpl implements ProductOrderService {
     }
 
     @Override
-    public AppUserOrderPageRespVo orderInfo(Long orderId) {
+    public AppUserOrderPageRespVO orderInfo(Long orderId) {
         ProductOrderDO productOrderDO = productOrderMapper.selectById(orderId);
-        AppUserOrderPageRespVo bean = BeanUtil.toBean(productOrderDO, AppUserOrderPageRespVo.class);
+        AppUserOrderPageRespVO bean = BeanUtil.toBean(productOrderDO, AppUserOrderPageRespVO.class);
         bean.setUserPhone(bean.getUserPhone().replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
-        bean.setProductInfoVoList(JSONObject.parseArray(productOrderDO.getProductInfo(), ProductInfoVo.class));
+        bean.setProductInfoVOList(JSONObject.parseArray(productOrderDO.getProductInfo(), ProductInfoVO.class));
         return bean;
     }
 
@@ -327,18 +325,18 @@ public class ProductOrderServiceImpl implements ProductOrderService {
         return productOrderMapper.getPhone(orderId);
     }
 
-    private PageResult<AppUserOrderPageRespVo> getAppUserOrderPageRespVoPageResult(AppUserOrderPageReqVo reqVo, LambdaQueryWrapperX<ProductOrderDO> queryWrapper) {
+    private PageResult<AppUserOrderPageRespVO> getAppUserOrderPageRespVoPageResult(AppUserOrderPageReqVO reqVo, LambdaQueryWrapperX<ProductOrderDO> queryWrapper) {
         PageResult<ProductOrderDO> pageResult = productOrderMapper.selectPage(reqVo, queryWrapper);
 
         return pageResult.getList().stream()
                 .map(item -> {
-                    AppUserOrderPageRespVo bean = BeanUtil.toBean(item, AppUserOrderPageRespVo.class);
+                    AppUserOrderPageRespVO bean = BeanUtil.toBean(item, AppUserOrderPageRespVO.class);
                     bean.setUserPhone(bean.getUserPhone().replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
-                    bean.setProductInfoVoList(JSONObject.parseArray(item.getProductInfo(), ProductInfoVo.class));
+                    bean.setProductInfoVOList(JSONObject.parseArray(item.getProductInfo(), ProductInfoVO.class));
                     return bean;
                 })
                 .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
-                    PageResult<AppUserOrderPageRespVo> result = new PageResult<>();
+                    PageResult<AppUserOrderPageRespVO> result = new PageResult<>();
                     result.setList(list);
                     result.setTotal(pageResult.getTotal());
                     return result;

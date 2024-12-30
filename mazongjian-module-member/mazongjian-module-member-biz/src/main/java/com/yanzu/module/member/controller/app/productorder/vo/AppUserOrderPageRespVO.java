@@ -2,7 +2,6 @@ package com.yanzu.module.member.controller.app.productorder.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yanzu.framework.common.util.date.DateUtils;
-import com.yanzu.framework.mybatis.core.dataobject.BaseDO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,7 +9,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -22,7 +20,7 @@ import static com.yanzu.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class AppUserOrderPageRespVo {
+public class AppUserOrderPageRespVO {
 
     @Schema(name = "商品订单id")
     private Long orderId;
@@ -43,13 +41,13 @@ public class AppUserOrderPageRespVo {
     private String userPhone;
 
     @Schema(name = "商品信息")
-    private List<ProductInfoVo> productInfoVoList;
+    private List<ProductInfoVO> productInfoVOList;
 
     @Schema(name = "订单总价")
-    private BigDecimal totalPrice;
+    private Integer totalPrice;
 
     @Schema(name = "实际支付金额")
-    private BigDecimal payPrice;
+    private Integer payPrice;
 
     @Schema(name = "支付时间")
     private LocalDateTime payTime;

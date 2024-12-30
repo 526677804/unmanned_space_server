@@ -13,23 +13,23 @@ public interface ProductOrderService {
      * @param reqVo reqVo
      * @return map
      */
-    WxPayOrderRespVO createOrder(AppSaveOrderReqVo reqVo);
+    WxPayOrderRespVO createOrder(AppSaveOrderReqVO reqVo);
 
-    void cancelPay(AppCancelPayReqVo reqVo,boolean isAdmin);
+    void cancelPay(AppCancelPayReqVO reqVo, boolean isAdmin);
 
-    PageResult<AppUserOrderPageRespVo> userOrderByPage(AppUserOrderPageReqVo reqVo);
+    PageResult<AppUserOrderPageRespVO> userOrderByPage(AppUserOrderPageReqVO reqVo);
 
-    List<AppHaveOrderStoreRespVo> selectHaveOrderStore();
+    List<AppHaveOrderStoreRespVO> selectHaveOrderStore();
 
     WxPayOrderRespVO pay(Long orderId);
 
     // 商家经营管理调用
-    PageResult<AppUserOrderPageRespVo> managerProductOrder(AppUserOrderPageReqVo reqVo);
+    PageResult<AppUserOrderPageRespVO> managerProductOrder(AppUserOrderPageReqVO reqVo);
 
     // 商家完成订单
     void finishOrder(Long id);
 
-    AppUserOrderPageRespVo orderInfo(Long orderId);
+    AppUserOrderPageRespVO orderInfo(Long orderId);
 
     String getPhone(Long orderId);
 

@@ -252,76 +252,75 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Override
     @SneakyThrows
+    @Transactional
     public String updateProductOrder(WxPayOrderNotifyResult result) {
         // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
         String orderNo = result.getOutTradeNo();
         Integer totalFee = result.getTotalFee();
         //忽略租户ID去查询
         ProductOrderDO productOrderDO = productOrderMapper.selectByOrderNo(orderNo);
-        log.info("检查商品订单：{}，微信支付状态！", orderNo);
-        //创建微信支付实例
-        WxPayService wxPayService = myWxService.initWxPay(productOrderDO.getStoreId());
-        WxPayOrderQueryResult wxPayOrderQueryResult = wxPayService.queryOrder(null, orderNo);
-        String tradeNo = wxPayOrderQueryResult.getTransactionId();
-        String tradeState = wxPayOrderQueryResult.getTradeState();
-        String returnCode = wxPayOrderQueryResult.getReturnCode();
-        Integer cashFee = wxPayOrderQueryResult.getTotalFee();//支付金额
-        String resultCode = wxPayOrderQueryResult.getResultCode();
-        log.info("tradeState:{},returnCode:{},resultCode:{},", tradeState, returnCode, resultCode);
-        //判断支付结果
-        boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
-        //对比实际支付的价格 和订单应支付的价格是否一致
-        boolean checkPrice = cashFee >= productOrderDO.getTotalPrice();
-        log.info("订单：{}，微信支付状态为：{},price:{},cashFee:{}", orderNo, flag, productOrderDO.getTotalPrice(), cashFee);
-        if (flag && checkPrice) {
-            productOrderDO.setPayPrice(cashFee);
-            //下单成功后发送企业微信提醒 告知是哪个房间购买了多少个商品
-            Long tenantId = null;
-            try {
-                String redisKey = String.format(WX_PRODUCT_PAY_ORDER, orderNo);
-                if (redisTemplate.hasKey(redisKey)) {
-                    tenantId = Long.valueOf(String.valueOf(redisTemplate.opsForValue().get(redisKey)));
-                }
-                TenantUtils.execute(tenantId, () -> {
-                    productOrderDO.setPayTime(DateUtil.date());
-                    productOrderDO.setStatus(1L); // 已支付
-                    productOrderDO.setPayPrice(cashFee);//支付金额
-                    productOrderMapper.updateById(productOrderDO);
-                    //发送企业微信提醒
-                    workWxService.sendProductOrderMsg(productOrderDO.getStoreId(), productOrderDO.getRoomId(), productOrderDO.getUserId(), productOrderDO.getCreateTime());
-                    //发送语音提醒
-                    List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(productOrderDO.getStoreId());
-                    if (!CollectionUtils.isEmpty(storeVoiceList)) {
-                        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(productOrderDO.getRoomId());
-                        String tts = roomInfoDO.getRoomName() + ",顾客已购买商品,请及时处理";
-                        storeVoiceList.forEach(x -> {
-                            iotService.runSound(x.getDeviceSn(), tts);
-                        });
-                    }
-                });
-                return WxPayNotifyResponse.success("接收成功!");
-            } catch (Exception e) {
-                e.printStackTrace();
-                //模拟租户 处理支付订单退款
-                TenantUtils.execute(tenantId, () -> {
-                    //业务异常 退款
-                    WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-                    refundRequest.setOutTradeNo(productOrderDO.getOrderNo());
-                    refundRequest.setOutRefundNo("TK" + productOrderDO.getOrderNo());
-                    refundRequest.setTotalFee(result.getTotalFee());
-                    refundRequest.setRefundFee(result.getTotalFee());
-                    refundRequest.setRefundDesc("订单支付失败退款");
-                    try {
-                        wxPayService.refundV2(refundRequest);
-                    } catch (WxPayException ex) {
-                        log.error("微信支付订单退款失败:{}", orderNo);
-                    }
-                });
-                return WxPayNotifyResponse.success("接收成功!");
-            }
-        } else {
-            throw exception(ORDER_WEIXIN_PAY_ERROR);
+        if(ObjectUtils.isEmpty(productOrderDO)){
+            throw exception(DATA_NOT_EXISTS);
         }
+        Long tenantId = null;
+        String redisKey = String.format(WX_PRODUCT_PAY_ORDER, orderNo);
+        if (redisTemplate.hasKey(redisKey)) {
+            tenantId = Long.valueOf(String.valueOf(redisTemplate.opsForValue().get(redisKey)));
+        }
+        TenantUtils.execute(tenantId, () -> {
+            log.info("检查商品订单：{}，微信支付状态！", orderNo);
+            //创建微信支付实例
+            WxPayService wxPayService = myWxService.initWxPay(productOrderDO.getStoreId());
+            WxPayOrderQueryResult wxPayOrderQueryResult = null;
+            try {
+                wxPayOrderQueryResult = wxPayService.queryOrder(null, orderNo);
+            } catch (WxPayException e) {
+                throw new RuntimeException(e);
+            }
+            String tradeNo = wxPayOrderQueryResult.getTransactionId();
+            String tradeState = wxPayOrderQueryResult.getTradeState();
+            String returnCode = wxPayOrderQueryResult.getReturnCode();
+            Integer cashFee = wxPayOrderQueryResult.getTotalFee();//支付金额
+            String resultCode = wxPayOrderQueryResult.getResultCode();
+            log.info("tradeState:{},returnCode:{},resultCode:{},", tradeState, returnCode, resultCode);
+            //判断支付结果
+            boolean flag = tradeState.equals("SUCCESS") && returnCode.equals("SUCCESS") && resultCode.equals("SUCCESS");
+            //对比实际支付的价格 和订单应支付的价格是否一致
+            boolean checkPrice = cashFee >= productOrderDO.getTotalPrice();
+            log.info("订单：{}，微信支付状态为：{},price:{},cashFee:{}", orderNo, flag, productOrderDO.getTotalPrice(), cashFee);
+            if (flag && checkPrice) {
+                productOrderDO.setPayTime(DateUtil.date());
+                productOrderDO.setStatus(1L); // 已支付
+                productOrderDO.setPayPrice(cashFee);//支付金额
+                //下单成功后发送企业微信提醒 告知是哪个房间购买了多少个商品
+                productOrderMapper.updateById(productOrderDO);
+                //发送企业微信提醒
+                workWxService.sendProductOrderMsg(productOrderDO.getStoreId(), productOrderDO.getRoomId(), productOrderDO.getUserId(), productOrderDO.getCreateTime());
+                //发送语音提醒
+                List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(productOrderDO.getStoreId());
+                if (!CollectionUtils.isEmpty(storeVoiceList)) {
+                    RoomInfoDO roomInfoDO = roomInfoMapper.selectById(productOrderDO.getRoomId());
+                    String tts = roomInfoDO.getRoomName() + ",顾客已购买商品,请及时处理";
+                    storeVoiceList.forEach(x -> {
+                        iotService.runSound(x.getDeviceSn(), tts);
+                    });
+                }
+            } else {
+                //业务异常 退款
+                WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+                refundRequest.setOutTradeNo(productOrderDO.getOrderNo());
+                refundRequest.setOutRefundNo("TK" + productOrderDO.getOrderNo());
+                refundRequest.setTotalFee(result.getTotalFee());
+                refundRequest.setRefundFee(result.getTotalFee());
+                refundRequest.setRefundDesc("订单支付失败退款");
+                try {
+                    wxPayService.refundV2(refundRequest);
+                } catch (WxPayException ex) {
+                    log.error("微信支付订单退款失败:{}", orderNo);
+                }
+            }
+        });
+        return WxPayNotifyResponse.success("接收成功!");
     }
 
     @Override
