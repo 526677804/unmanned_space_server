@@ -8,8 +8,6 @@ import javax.validation.constraints.NotNull;
 @Data
 public class AppStoreSoundInfoReqVO {
 
-
-
     @Schema(description = "门店ID")
     @NotNull(message = "门店不能为空")
     private Long storeId;
@@ -23,6 +21,9 @@ public class AppStoreSoundInfoReqVO {
     private String endText5;
     @Schema(description = "深夜消费提示语")
     private String nightText;
+
+    @Schema(description = "自定义提示语")
+    private String customizeText;
 
 
 }
