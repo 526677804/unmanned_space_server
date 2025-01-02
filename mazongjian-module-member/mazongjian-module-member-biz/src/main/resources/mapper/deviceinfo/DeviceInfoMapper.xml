@@ -87,6 +87,7 @@
         from member_device_info
         where deleted = 0
           AND room_id = #{roomId}
+        order by type%5 asc
     </select>
     <select id="countBySN" resultType="java.lang.Integer">
         select count(1)

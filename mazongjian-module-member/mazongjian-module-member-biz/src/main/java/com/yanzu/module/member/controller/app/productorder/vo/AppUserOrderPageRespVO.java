@@ -41,7 +41,7 @@ public class AppUserOrderPageRespVO {
     private String userPhone;
 
     @Schema(name = "商品信息")
-    private List<ProductInfoVO> productInfoVOList;
+    private List<ProductInfoVo> productInfoVoList;
 
     @Schema(name = "订单总价")
     private Integer totalPrice;

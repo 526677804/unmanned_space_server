@@ -201,13 +201,13 @@ public class PkgServiceImpl implements PkgService {
     @Override
     @Transactional
     public void enable(Long pkgId) {
-        // 校验用户类型
-        storeInfoService.checkPermisson(null, null, getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         PkgInfoDO pkgInfoDO = pkgInfoMapper.selectById(pkgId);
         if (ObjectUtils.isEmpty(pkgInfoDO)) {
             throw exception(OPRATION_ERROR);
         }
-        pkgInfoMapper.updateById(new PkgInfoDO().setPkgId(pkgId).setEnable(!pkgInfoDO.getEnable()));
+        // 校验用户权限
+        storeInfoService.checkPermisson(pkgInfoDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        pkgInfoMapper.updateEnable(pkgId,!pkgInfoDO.getEnable());
     }
 
     @Override

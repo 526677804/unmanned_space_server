@@ -17,7 +17,6 @@ import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
-import com.yanzu.module.member.service.iot.device.IotResult;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneReqVO;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneRespVO;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -235,7 +234,7 @@ public class IndexServiceImpl implements IndexService {
                 }
                 respVO.setTimeSlot(timeSlot);
                 //设置第一个可用套餐名称
-                PkgInfoDO firstPkg=pkgInfoMapper.getFirstPkgByRoomType(respVO.getStoreId(),respVO.getType());
+                PkgInfoDO firstPkg=pkgInfoMapper.getFirstPkgByRoomTypeOrRoomId(respVO.getStoreId(),respVO.getType(),respVO.getRoomId());
                 if (!ObjectUtils.isEmpty(firstPkg)){
                     String pkgName = firstPkg.getHours()+"小时套餐:￥"+firstPkg.getPrice()+"元";
                     respVO.setPkgName(pkgName);

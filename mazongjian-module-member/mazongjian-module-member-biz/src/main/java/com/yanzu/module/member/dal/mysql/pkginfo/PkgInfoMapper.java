@@ -2,7 +2,6 @@ package com.yanzu.module.member.dal.mysql.pkginfo;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yanzu.framework.mybatis.core.mapper.BaseMapperX;
-import com.yanzu.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.yanzu.framework.mybatis.core.query.QueryWrapperX;
 import com.yanzu.module.member.controller.app.pkg.vo.*;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
@@ -25,7 +24,7 @@ public interface PkgInfoMapper extends BaseMapperX<PkgInfoDO> {
 
     IPage<AppPkgMyPageRespVO> getMyPkgPage(@Param("page") IPage<AppPkgMyPageRespVO> page, @Param("reqVO") AppMyPkgPageReqVO reqVO, @Param("userId") Long userId);
 
-    PkgInfoDO getFirstPkgByRoomType(@Param("storeId") Long storeId, @Param("roomType") Integer roomType);
+    PkgInfoDO getFirstPkgByRoomTypeOrRoomId(@Param("storeId") Long storeId, @Param("roomType") Integer roomType, @Param("roomId")Long roomId);
 
     default PkgInfoDO getPkgByShopId(String shopId){
         return selectOne(new QueryWrapperX<PkgInfoDO>()
@@ -36,4 +35,6 @@ public interface PkgInfoMapper extends BaseMapperX<PkgInfoDO> {
                         .or().eq("ks_id", shopId))
         );
     }
+
+    int updateEnable(@Param("pkgId") Long pkgId, @Param("enable") boolean enable);
 }

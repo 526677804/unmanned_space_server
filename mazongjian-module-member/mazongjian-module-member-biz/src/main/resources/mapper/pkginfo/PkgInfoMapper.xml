@@ -34,6 +34,9 @@
         <collection property="roomListRespVOList" column="store_id" ofType="list"
                     select="getDoorRoomList"/>
     </resultMap>
+    <update id="updateEnable">
+        update member_pkg_info set enable=#{enable} where pkg_id=#{pkgId}
+    </update>
 
     <select id="getDoorRoomList"
             resultType="com.yanzu.module.member.controller.app.index.vo.AppRoomInfoListRespVO">
@@ -199,15 +202,15 @@
         </if>
         order by pu.expire_date ASC
     </select>
-    <select id="getFirstPkgByRoomType" resultType="com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO">
+    <select id="getFirstPkgByRoomTypeOrRoomId" resultType="com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO">
         select p.*
         from member_pkg_info p
         where p.deleted = 0
           and p.enable = 1
           and p.store_id = #{storeId}
-          and (p.room_type = 0
-            or p.room_type is null
-            or FIND_IN_SET(#{roomType}, p.room_type) > 0
+          and (
+              (p.room_type = 0 or FIND_IN_SET(#{roomType}, p.room_type) > 0)
+              OR (FIND_IN_SET(#{roomId}, p.enable_room) > 0 and p.room_type is null)
             )
         order by p.sort_id asc limit 1
     </select>
