@@ -297,13 +297,18 @@ public class PayOrderServiceImpl implements PayOrderService {
                 //发送企业微信提醒
                 workWxService.sendProductOrderMsg(productOrderDO.getStoreId(), productOrderDO.getRoomId(), productOrderDO.getUserId(), productOrderDO.getCreateTime());
                 //发送语音提醒
-                List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(productOrderDO.getStoreId());
-                if (!CollectionUtils.isEmpty(storeVoiceList)) {
-                    RoomInfoDO roomInfoDO = roomInfoMapper.selectById(productOrderDO.getRoomId());
-                    String tts = roomInfoDO.getRoomName() + ",顾客已购买商品,请及时处理";
-                    storeVoiceList.forEach(x -> {
-                        iotService.runSound(x.getDeviceSn(), tts);
-                    });
+                try {
+                    List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(productOrderDO.getStoreId());
+                    if (!CollectionUtils.isEmpty(storeVoiceList)) {
+                        RoomInfoDO roomInfoDO = roomInfoMapper.selectById(productOrderDO.getRoomId());
+                        String tts = roomInfoDO.getRoomName() + ",顾客已购买商品,请及时处理";
+                        storeVoiceList.forEach(x -> {
+                            iotService.runSound(x.getDeviceSn(), tts);
+                        });
+                    }
+                } catch (Exception e) {
+                    //忽略发送语音提醒失败的错误
+//                    throw new RuntimeException(e);
                 }
             } else {
                 //业务异常 退款
