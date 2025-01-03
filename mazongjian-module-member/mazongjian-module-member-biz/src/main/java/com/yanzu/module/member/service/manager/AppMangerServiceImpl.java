@@ -753,6 +753,11 @@ public class AppMangerServiceImpl implements AppMangerService {
                 payOrderService.refundBalance(orderInfoDO.getStoreId(), orderInfoDO.getOrderNo(), orderInfoDO.getUserId());
                 //如果是预订订单  通知平台进行退款
                 iotService.cancelYDOrder(orderInfoDO.getOrderNo());
+            } else {
+                //如果是预订订单  管理员取消订单，则告知平台到店核销（不退款）
+                if (orderInfoDO.getPayType().compareTo(AppEnum.order_pay_type.YUDING.getValue()) == 0) {
+                    iotService.bookingFinish(orderInfoDO.getOrderNo());
+                }
             }
             //取消的订单已开始  那就触发一下关门
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {

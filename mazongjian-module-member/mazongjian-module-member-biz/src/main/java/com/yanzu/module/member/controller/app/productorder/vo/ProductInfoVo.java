@@ -5,7 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class ProductInfoVO {
+public class ProductInfoVo {
 
     private Long cate_id;
 

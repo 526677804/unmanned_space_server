@@ -11,7 +11,7 @@ import java.util.List;
 public class AppSaveOrderReqVO {
 
     @NotNull(message = "非法操作，商品信息不能为空")
-    private List<ProductInfoVO> productInfo;
+    private List<ProductInfoVo> productInfo;
 
     @NotNull(message = "房间不能为空")
     private Long roomId;

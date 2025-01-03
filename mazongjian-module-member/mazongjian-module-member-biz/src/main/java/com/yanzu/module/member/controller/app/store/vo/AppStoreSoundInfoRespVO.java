@@ -22,5 +22,10 @@ public class AppStoreSoundInfoRespVO {
     @Schema(description = "深夜消费提示语")
     private String nightText;
 
+    @Schema(description = "自定义提示语")
+    private String customizeText;
+
+
+
 
 }

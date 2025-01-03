@@ -316,7 +316,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
         ProductOrderDO productOrderDO = productOrderMapper.selectById(orderId);
         AppUserOrderPageRespVO bean = BeanUtil.toBean(productOrderDO, AppUserOrderPageRespVO.class);
         bean.setUserPhone(bean.getUserPhone().replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
-        bean.setProductInfoVOList(JSONObject.parseArray(productOrderDO.getProductInfo(), ProductInfoVO.class));
+        bean.setProductInfoVoList(JSONObject.parseArray(productOrderDO.getProductInfo(), ProductInfoVo.class));
         return bean;
     }
 
@@ -332,7 +332,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
                 .map(item -> {
                     AppUserOrderPageRespVO bean = BeanUtil.toBean(item, AppUserOrderPageRespVO.class);
                     bean.setUserPhone(bean.getUserPhone().replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
-                    bean.setProductInfoVOList(JSONObject.parseArray(item.getProductInfo(), ProductInfoVO.class));
+                    bean.setProductInfoVoList(JSONObject.parseArray(item.getProductInfo(), ProductInfoVo.class));
                     return bean;
                 })
                 .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
