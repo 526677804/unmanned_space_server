@@ -301,7 +301,11 @@ public class PayOrderServiceImpl implements PayOrderService {
                     List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(productOrderDO.getStoreId());
                     if (!CollectionUtils.isEmpty(storeVoiceList)) {
                         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(productOrderDO.getRoomId());
-                        String tts = roomInfoDO.getRoomName() + ",顾客已购买商品,请及时处理";
+                        String roomName=roomInfoDO.getRoomCallName();
+                        if(ObjectUtils.isEmpty(roomName)){
+                            roomName=roomInfoDO.getRoomName();
+                        }
+                        String tts = roomName + ",顾客已购买商品,请及时处理";
                         storeVoiceList.forEach(x -> {
                             iotService.runSound(x.getDeviceSn(), tts);
                         });
