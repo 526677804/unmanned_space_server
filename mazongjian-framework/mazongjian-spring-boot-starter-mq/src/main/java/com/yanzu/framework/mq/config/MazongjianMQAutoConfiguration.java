@@ -3,7 +3,6 @@ package com.yanzu.framework.mq.config;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.system.SystemUtil;
-import com.yanzu.framework.common.enums.DocumentEnum;
 import com.yanzu.framework.mq.core.RedisMQTemplate;
 import com.yanzu.framework.mq.core.interceptor.RedisMessageInterceptor;
 import com.yanzu.framework.mq.core.pubsub.AbstractChannelMessageListener;
@@ -154,8 +153,7 @@ public class MazongjianMQAutoConfiguration {
         // 校验最低版本必须大于等于 5.0.0
         int majorVersion = Integer.parseInt(StrUtil.subBefore(version, '.', false));
         if (majorVersion < 5) {
-            throw new IllegalStateException(StrUtil.format("您当前的 Redis 版本为 {}，小于最低要求的 5.0.0 版本！" +
-                    "请参考 {} 文档进行安装。", version, DocumentEnum.REDIS_INSTALL.getUrl()));
+            throw new IllegalStateException(StrUtil.format("您当前的 Redis 版本为 {}，小于最低要求的 5.0.0 版本！", version));
         }
     }
 

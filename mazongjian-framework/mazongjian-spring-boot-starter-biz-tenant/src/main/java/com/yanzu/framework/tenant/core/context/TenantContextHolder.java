@@ -1,6 +1,5 @@
 package com.yanzu.framework.tenant.core.context;
 
-import com.yanzu.framework.common.enums.DocumentEnum;
 import com.alibaba.ttl.TransmittableThreadLocal;
 
 /**
