@@ -114,6 +114,7 @@ public class PayOrderServiceImpl implements PayOrderService {
     @Resource
     private DeviceInfoMapper deviceInfoMapper;
 
+    @Resource
     private RoomInfoMapper roomInfoMapper;
 
     @Override
