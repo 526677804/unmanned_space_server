@@ -622,6 +622,14 @@ public class DeviceServiceImpl implements DeviceService {
         List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomIdAndType(roomId, new Integer[]{4, 13});
         if (!CollectionUtils.isEmpty(deviceList)) {
             for (DeviceInfoDO x : deviceList) {
+                //如果该设备是共用设备，必须绑定的所有房间都不存在订单时，才允许关闭
+                if (x.getShare()) {
+                    //先关闭设备  后结束订单  所以如果存在1个订单以上 就直接退出关闭该设备
+                    int i = deviceInfoMapper.countShare(x.getDeviceSn());
+                    if (i > 1) {
+                        return;
+                    }
+                }
                 switch (x.getType()) {
                     case 4:
                         opSwitch(x.getDeviceSn(), "off");
