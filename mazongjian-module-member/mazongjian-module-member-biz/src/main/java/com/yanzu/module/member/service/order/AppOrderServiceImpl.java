@@ -1779,18 +1779,15 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (title.contains("通宵")) {
             return 99;//通宵固定返回99 方便前端处理
         }
-        int timeIndex = title.indexOf("个小时");
-        if (timeIndex == -1) {
-            //没找到 再尝试找一下  “小时”
-            timeIndex = title.indexOf("小时");
-        }
-        //还是没找到  就报错了
-        if (timeIndex == -1) {
+        String regex = "(\\d+)(个小时|小时|时)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(title);
+        if (matcher.find()) {
+            timeHour=Integer.parseInt(matcher.group(1));
+        } else {
             throw exception(CHECK_GROUP_NO_TIME_ERROR);
         }
         // 取时间
-        String timeStr = title.substring(timeIndex - 1, timeIndex);
-        timeHour = Integer.valueOf(timeStr);
         return timeHour;
     }
 
