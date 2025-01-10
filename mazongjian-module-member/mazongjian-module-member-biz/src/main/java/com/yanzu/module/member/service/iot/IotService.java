@@ -543,6 +543,7 @@ public class IotService {
             // 获取图片的字节数据
             if (entity != null) {
                 byte[] imageBytes = EntityUtils.toByteArray(entity);
+                
                 String base64Image = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(imageBytes);
                 return base64Image;
             }

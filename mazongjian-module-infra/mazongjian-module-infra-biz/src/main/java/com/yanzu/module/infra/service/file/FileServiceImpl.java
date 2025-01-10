@@ -94,7 +94,8 @@ public class FileServiceImpl implements FileService {
     @Override
     @SneakyThrows
     public String createFile(String name, String path, byte[] content) {
-        content = compressImage(content);
+        content = ImageCompressor.compressImage(content);
+//        content = compressImage(content);
         // 计算默认的 path 名
         String type = FileTypeUtils.getMineType(content, name);
         if (StrUtil.isEmpty(path)) {

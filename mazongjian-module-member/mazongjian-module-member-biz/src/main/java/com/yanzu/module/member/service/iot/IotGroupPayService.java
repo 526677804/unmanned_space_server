@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -25,6 +26,8 @@ public class IotGroupPayService {
     private String secret;
     @Value("${iot.redirectUrl}")
     private String redirectUrl;
+    @Value("${iot.groupPay:false}")
+    private boolean groupPay;
 
     @Resource
     private IotGroupPayClient iotGroupPayClient;
@@ -102,13 +105,16 @@ public class IotGroupPayService {
      * @return
      */
     public List<IotGroupPaySelectByPhoneRespVO> selectGroupPayByPhone(IotGroupPaySelectByPhoneReqVO reqVO) {
-        IotResult<List<IotGroupPaySelectByPhoneRespVO>> result = iotGroupPayClient.selectGroupPayByPhone(reqVO, clientId, secret);
-        if (result.getCode().intValue() == 0) {
-            return result.getData();
-        } else {
-            throw exception(IOT_ERROR, result.getMsg());
+        if(groupPay){
+            IotResult<List<IotGroupPaySelectByPhoneRespVO>> result = iotGroupPayClient.selectGroupPayByPhone(reqVO, clientId, secret);
+            if (result.getCode().intValue() == 0) {
+                return result.getData();
+            } else {
+                throw exception(IOT_ERROR, result.getMsg());
+            }
+        }else{
+            return new ArrayList<>();
         }
-
     }
 
     /**

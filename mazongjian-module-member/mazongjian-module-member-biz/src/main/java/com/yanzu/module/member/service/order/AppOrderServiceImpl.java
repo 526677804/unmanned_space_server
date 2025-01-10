@@ -83,6 +83,8 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -702,7 +704,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         //判断工作日限制情况  标题包含工作日和周一 就视为工作日券
         if (title.indexOf("工作日") != -1 || title.indexOf("周一") != -1 || title.indexOf("周四") != -1 || title.indexOf("闲时") != -1) {
             //仅工作日周一 - 周四可用
-//            checkWorkDay(startTime);
+            checkWorkDay(startTime);
         }
         //判断包间限制情况  标题包含：不限包间
         if (title.indexOf("不限包间") != -1 || title.indexOf("全场通用") != -1 || title.indexOf("全场畅玩") != -1 || title.indexOf("包间通用") != -1 || title.indexOf("任意包间") != -1 || title.indexOf("不分包间") != -1 || title.indexOf("所有包间") != -1 || title.indexOf("全部包间") != -1 || title.indexOf("包间任选") != -1 || title.indexOf("不限房间") != -1 || title.indexOf("任意房间") != -1 || title.indexOf("不分房间") != -1 || title.indexOf("所有房间") != -1 || title.indexOf("全部房间") != -1 || title.indexOf("房间任选") != -1 || title.indexOf("不限球桌") != -1 || title.indexOf("任意球桌") != -1 || title.indexOf("不分球桌") != -1 || title.indexOf("所有球桌") != -1 || title.indexOf("全部球桌") != -1 || title.indexOf("球桌任选") != -1) {
@@ -748,20 +750,12 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (nightLong) {
             timeHour = txHour;
         } else {
-            int timeIndex = title.indexOf("个小时");
-            if (timeIndex == -1) {
-                //没找到 再尝试找一下  “个小时”
-                timeIndex = title.indexOf("小时");
-            }
-            //还是没找到  就报错了
-            if (timeIndex == -1) {
-                throw exception(CHECK_GROUP_NO_TIME_ERROR);
-            }
-            // 取时间
-            String timeStr = title.substring(timeIndex - 1, timeIndex);
-            try {
-                timeHour = Integer.valueOf(timeStr);
-            } catch (NumberFormatException e) {
+            String regex = "(\\d+)(个小时|小时|时)";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(title);
+            if (matcher.find()) {
+                timeHour=Integer.parseInt(matcher.group(1));
+            } else {
                 throw exception(CHECK_GROUP_NO_TIME_ERROR);
             }
         }
@@ -771,7 +765,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         }
     }
 
-    private void checkWorkDay(Date startTime) {
+    private static void checkWorkDay(Date startTime) {
         Calendar sc = Calendar.getInstance();
         sc.setTime(startTime);
         int scDayOfWeek = sc.get(Calendar.DAY_OF_WEEK);
@@ -1785,18 +1779,15 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (title.contains("通宵")) {
             return 99;//通宵固定返回99 方便前端处理
         }
-        int timeIndex = title.indexOf("个小时");
-        if (timeIndex == -1) {
-            //没找到 再尝试找一下  “小时”
-            timeIndex = title.indexOf("小时");
-        }
-        //还是没找到  就报错了
-        if (timeIndex == -1) {
+        String regex = "(\\d+)(个小时|小时|时)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(title);
+        if (matcher.find()) {
+            timeHour=Integer.parseInt(matcher.group(1));
+        } else {
             throw exception(CHECK_GROUP_NO_TIME_ERROR);
         }
         // 取时间
-        String timeStr = title.substring(timeIndex - 1, timeIndex);
-        timeHour = Integer.valueOf(timeStr);
         return timeHour;
     }
 
