@@ -95,13 +95,9 @@
         <dependency>
             <groupId>com.dtflys.forest</groupId>
             <artifactId>forest-spring-boot-starter</artifactId>
-            <version>1.5.33</version>
+            <version>1.6.3</version>
         </dependency>
-        <dependency>
-            <groupId>com.dtflys.forest</groupId>
-            <artifactId>forest-jaxb</artifactId>
-            <version>1.5.33</version>
-        </dependency>
+
         <!--websocket作为客户端-->
 
         <dependency>
