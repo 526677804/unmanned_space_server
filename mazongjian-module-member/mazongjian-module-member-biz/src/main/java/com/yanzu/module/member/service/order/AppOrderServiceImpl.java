@@ -1693,7 +1693,6 @@ public class AppOrderServiceImpl implements AppOrderService {
         OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
         if (!ObjectUtils.isEmpty(orderInfoDO) && orderInfoDO.getUserId().compareTo(getLoginUserId()) == 0) {
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
-                orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderId).setEndTime(new Date()).setStatus(AppEnum.order_status.FINISH.getValue()));
                 RoomInfoDO roomInfoDO = roomInfoMapper.selectById(orderInfoDO.getRoomId());
                 if (!roomInfoDO.getJumpClear()) {
                     //取消掉这些房间存在的历史保洁订单
@@ -1709,6 +1708,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //发送用户提前结束订单通知
                 workWxService.sendCloseOrderMsg(orderInfoDO.getStoreId(), getLoginUserId(), orderInfoDO.getRoomId(), orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
                 deviceService.closeRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
+                orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderId).setEndTime(new Date()).setStatus(AppEnum.order_status.FINISH.getValue()));
                 flushRoomStatus(orderInfoDO.getRoomId());
             } else {
                 throw exception(ADMIN_ORDER_OPRATION_ERROR);
