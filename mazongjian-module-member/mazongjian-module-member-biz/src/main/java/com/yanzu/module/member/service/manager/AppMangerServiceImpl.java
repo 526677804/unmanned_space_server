@@ -943,6 +943,8 @@ public class AppMangerServiceImpl implements AppMangerService {
             roomInfoDO.setStatus(AppEnum.room_status.PENDING.getValue());
             roomInfoMapper.updateById(roomInfoDO);
         }
+        //更新美团库存
+        iotService.updateStock(roomInfoDO.getRoomId());
         //异步发送微信通知
         workWxService.sendOrderSubmitMsg(roomInfoDO.getStoreId(), getLoginUserId(), reqVO.getMobile(), roomInfoDO.getRoomName(), orderInfoDO.getOrderNo(), orderInfoDO.getStartTime(), orderInfoDO.getEndTime());
         return orderInfoDO.getOrderId();
