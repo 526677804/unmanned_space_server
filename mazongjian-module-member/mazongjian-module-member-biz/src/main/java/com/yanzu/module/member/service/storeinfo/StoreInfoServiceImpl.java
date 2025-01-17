@@ -562,6 +562,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.CLEAR.getValue());
         //只有状态为进行中 或 待清洁，才能处理
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.USED.getValue()) == 0) {
+            //关电
+            deviceService.closeRoomDoor(getLoginUserId(), roomInfoDO.getStoreId(), roomId, 2);
             //使用中  订单结束时间改为当前  房间状态改为空闲
             OrderInfoDO orderInfoDO = orderInfoMapper.getByRoomCurrent(roomId);
             if (!ObjectUtils.isEmpty(orderInfoDO)) {
@@ -572,6 +574,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             }
         } else if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {
             //待清洁  房间状态改为空闲
+            //关电
+            deviceService.closeRoomDoor(getLoginUserId(), roomInfoDO.getStoreId(), roomId, 2);
         } else {
             throw exception(CLEAR_AND_FINISH_ROOM_STATUS_ERROR);
         }
@@ -579,8 +583,6 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         clearInfoMapper.cancelByRoomId(roomId);
         //刷新房间状态
         appOrderService.flushRoomStatus(roomId);
-        //关电
-        deviceService.closeRoomDoor(getLoginUserId(), roomInfoDO.getStoreId(), roomId, 2);
         //发通知
         workWxService.sendClearRoomMsg(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), getLoginUserId(), "设置房间空闲");
     }
