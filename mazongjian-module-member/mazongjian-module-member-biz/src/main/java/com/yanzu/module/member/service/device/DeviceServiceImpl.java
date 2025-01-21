@@ -7,6 +7,7 @@ import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceinfo.DeviceInfoDO;
 import com.yanzu.module.member.dal.dataobject.deviceuseinfo.DeviceUseInfoDO;
 import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
+import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storesound.StoreSoundInfoDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
@@ -517,16 +518,20 @@ public class DeviceServiceImpl implements DeviceService {
             RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
             storeId = roomInfoDO.getStoreId();
         }
+        StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
+        //请注意 这里是关灯，因为有的店是延时关灯，所以这个时候，订单已经结束了  所以判断条件改成>0
+        int c = storeInfoDO.getDelayLight() ? 0:1;
         //1用户关灯 2管理员关灯 3保洁关灯 4系统关灯
         switch (type) {
             case 1://1用户关灯 目前没有用户关灯的情况
                 break;
             case 2:
-            case 3://管理员和保洁关灯
-                closeLight(roomId);
+            case 3://管理员和保洁关灯  可能订单都没有
+                closeLight(roomId,0);
                 break;
             case 4:
-                closeLight(roomId);
+                //系统关灯
+                closeLight(roomId,c);
                 break;
         }
         //增加关灯记录
@@ -617,16 +622,17 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
 
-    private void closeLight(Long roomId) {
+    private void closeLight(Long roomId,int c) {
         //1=门禁 2=空开 3=云喇叭 4=灯具 5=密码锁 6=网关 7=插座 8=锁球器控制器（12V） 9=人脸门禁机  10=智能语音喇叭 11=二维码识别器 12=红外控制器 13=三路控制器
         List<DeviceInfoDO> deviceList = deviceInfoMapper.getByRoomIdAndType(roomId, new Integer[]{4, 13});
         if (!CollectionUtils.isEmpty(deviceList)) {
+            //请注意 这里是关灯，因为有的店是延时关灯，所以这个时候，订单已经结束了  所以判断条件改成>0
             for (DeviceInfoDO x : deviceList) {
                 //如果该设备是共用设备，必须绑定的所有房间都不存在订单时，才允许关闭
                 if (x.getShare()) {
                     //先关闭设备  后结束订单  所以如果存在1个订单以上 就直接退出关闭该设备
                     int i = deviceInfoMapper.countShare(x.getDeviceSn());
-                    if (i > 1) {
+                    if (i > c) {
                         return;
                     }
                 }
