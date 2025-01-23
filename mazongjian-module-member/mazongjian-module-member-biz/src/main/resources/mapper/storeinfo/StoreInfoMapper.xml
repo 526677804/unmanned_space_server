@@ -57,14 +57,15 @@
             resultMap="StorePageList">
         select s.store_id,s.store_name,s.city_name,s.head_img,s.lat,s.lon,s.address,s.status,s.kefu_phone,
         <if test=" null!=reqVO.lat and null!=reqVO.lon">
-            (
-            6371 * ACOS(
-            COS(RADIANS(#{reqVO.lat})) *
-            COS(RADIANS(lat)) *
-            COS(RADIANS(lon) - RADIANS(#{reqVO.lon})) +
-            SIN(RADIANS(#{reqVO.lat})) * SIN(RADIANS(lat))
-            )
-            ) AS distance
+               if(s.lat,(
+                    6371 * ACOS(
+                    COS(RADIANS(#{reqVO.lat})) *
+                    COS(RADIANS(lat)) *
+                    COS(RADIANS(lon) - RADIANS(#{reqVO.lon})) +
+                    SIN(RADIANS(#{reqVO.lat})) * SIN(RADIANS(lat))
+                    )
+                    ),9999)
+             AS distance
         </if>
         <if test=" null==reqVO.lat or null==reqVO.lon">
            9999 AS distance
