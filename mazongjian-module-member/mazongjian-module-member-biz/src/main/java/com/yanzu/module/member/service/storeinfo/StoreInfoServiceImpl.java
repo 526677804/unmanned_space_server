@@ -925,5 +925,17 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         throw exception(LOCK_NOT_FOUND_ERROR);
     }
 
+    @Override
+    @Transactional
+    public void updateRoomLock(AppUpRoomLockReqVO reqVO) {
+        //查出这个房间的密码锁编号
+        String sn = deviceInfoMapper.getSnByRoomIdAndType(reqVO.getRoomId(), AppEnum.device_type.LOCK.getValue());
+        if(!ObjectUtils.isEmpty(sn)) {
+            AppAddLockReqVO addLockReqVO=new AppAddLockReqVO();
+            addLockReqVO.setDeviceSn(sn).setUpData(reqVO.getUpData());
+            iotService.addLock(addLockReqVO);
+        }
+    }
+
 
 }
