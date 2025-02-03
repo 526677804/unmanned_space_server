@@ -1040,7 +1040,11 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (!ObjectUtils.isEmpty(reqVO.getCouponId())) {
             couponInfoDO = couponInfoMapper.selectById(reqVO.getCouponId());
         }
-        WxPayOrderRespVO wxPayOrderRespVO = preOrder(null, userId, null, orderInfoDO.getRoomId(), startTime, endTime, couponInfoDO, null, reqVO.getOrderId(), false, false);
+        PkgInfoDO pkgInfoDO = null;
+        if (!ObjectUtils.isEmpty(reqVO.getPkgId())) {
+            pkgInfoDO = pkgInfoMapper.selectById(reqVO.getPkgId());
+        }
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(null, userId, null, orderInfoDO.getRoomId(), startTime, endTime, couponInfoDO, pkgInfoDO, reqVO.getOrderId(), false, false);
         //订单价格
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPayPrice() / 100.0));
         switch (reqVO.getPayType()) {

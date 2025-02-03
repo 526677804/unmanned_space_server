@@ -141,6 +141,13 @@ public class IndexServiceImpl implements IndexService {
 
     @Override
     public List<AppRoomInfoListRespVO> getRoomInfoList(AppRoomListReqVO reqVO) {
+        //如果roomClass是空 则取第一个roomClass
+        if(ObjectUtils.isEmpty(reqVO.getRoomClass())){
+            List<Integer> classList = roomInfoMapper.getClassList(reqVO.getStoreId());
+            if (!CollectionUtils.isEmpty(classList)) {
+                reqVO.setRoomClass(classList.get(0));
+            }
+        }
         //获取所有房间信息
         List<AppRoomInfoListRespVO> roomInfoList = storeInfoMapper.getRoomInfoList(reqVO);
         if (!CollectionUtils.isEmpty(roomInfoList)) {
