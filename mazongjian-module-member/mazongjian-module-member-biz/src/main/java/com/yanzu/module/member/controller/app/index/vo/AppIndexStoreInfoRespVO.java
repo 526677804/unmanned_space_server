@@ -102,4 +102,9 @@ public class AppIndexStoreInfoRespVO  {
 
     @Schema(description = "svg")
     private String svg;
+
+    @Schema(description = "通宵开始小时")
+    private Integer txStartHour;
+    @Schema(description = "通宵小时时长")
+    private Integer txHour;
 }

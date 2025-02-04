@@ -157,4 +157,6 @@ public interface StoreInfoService {
 
     String getLockPwd(AppGetLockPwdReqVO reqVO);
 
+    void updateRoomLock(AppUpRoomLockReqVO reqVO);
+
 }

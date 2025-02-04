@@ -6,14 +6,11 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class AppAddLockReqVO {
+public class AppUpRoomLockReqVO {
 
-    @Schema(description = "设备编号")
-    @NotNull(message = "设备编号不能为空")
-    private String deviceSn;
-
-    @Schema(description = "门锁数据")
-    private String lockData;
+    @Schema(description = "房间编号")
+    @NotNull(message = "房间编号不能为空")
+    private Long roomId;
 
     @Schema(description = "更新数据")
     private String upData;

@@ -387,6 +387,15 @@ public class AppStoreController {
         storeInfoService.addLock(reqVO);
         return success(true);
     }
+    @PostMapping("/updateRoomLock")
+    @Operation(summary = "校准房间智能锁", description = "设备管理使用")
+//    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> updateRoomLock(@RequestBody @Valid AppUpRoomLockReqVO reqVO) {
+        storeInfoService.updateRoomLock(reqVO);
+        return success(true);
+    }
+
 
     @PostMapping("/getLockPwd")
     @Operation(summary = "获取智能锁随机密码", description = "设备管理使用")

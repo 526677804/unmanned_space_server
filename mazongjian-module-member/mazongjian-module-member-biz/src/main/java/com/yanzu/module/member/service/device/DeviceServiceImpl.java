@@ -239,7 +239,7 @@ public class DeviceServiceImpl implements DeviceService {
                         param.add(new IotDeviceContrlReqVO().setOutlet(0).setCmd("on"));
                         param.add(new IotDeviceContrlReqVO().setOutlet(1).setCmd("on"));
                         //第三路就是门禁用
-                        param.add(new IotDeviceContrlReqVO().setOutlet(2).setCmd(orderDoorOpen ? "on" : "pulse"));
+                        param.add(new IotDeviceContrlReqVO().setOutlet(2).setCmd(orderDoorOpen ? "off" : "pulse"));
                         reqVO.setDeviceSn(x.getDeviceSn()).setParams(param);
                         boolean flag = iotService.control(reqVO);
                         if (!flag) {
@@ -318,7 +318,7 @@ public class DeviceServiceImpl implements DeviceService {
                         IotDeviceBaseVO<IotDeviceContrlReqVO> reqVO = new IotDeviceBaseVO();
                         List<IotDeviceContrlReqVO> param = new ArrayList<>(2);
                         param.add(new IotDeviceContrlReqVO().setOutlet(0).setCmd("off"));
-                        param.add(new IotDeviceContrlReqVO().setOutlet(2).setCmd("off"));
+                        param.add(new IotDeviceContrlReqVO().setOutlet(2).setCmd("on"));
                         reqVO.setDeviceSn(x.getDeviceSn()).setParams(param);
                         boolean flag = iotService.control(reqVO);
                         if (!flag) {
