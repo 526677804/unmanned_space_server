@@ -171,9 +171,9 @@ debug: false
 forest:
   max-retry-count: 5     # 最大请求重试次数，默认为 0 次
   max-retry-interval: 10 # 为最大重试时间间隔, 单位为毫秒，默认为 0 毫秒
-  connect-timeout: 10000
+  connect-timeout: 15000
   max-connections: 500
-  read-timeout: 5000
+  read-timeout: 15000
 
 
 
