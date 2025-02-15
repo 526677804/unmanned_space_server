@@ -32,16 +32,11 @@ public class ImageCompressor {
             throw new IllegalArgumentException("无法解析输入图片内容！");
         }
 
-        // 获取图片格式
-        String formatName = "jpeg"; // 默认使用 JPEG 格式进行压缩
-        String mimeType = getImageMimeType(inputContent); // 获取图片格式
+        // 强制转换为 RGB 格式，确保兼容性
+        BufferedImage rgbImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+        rgbImage.getGraphics().drawImage(originalImage, 0, 0, null);
 
-        if ("image/gif".equals(mimeType)) {
-            formatName = "gif"; // 如果是 GIF 格式，保持为 GIF 格式
-        } else {
-            formatName = "jpeg"; // 其它格式统一压缩为 JPEG 格式
-        }
-
+        String formatName = "jpeg"; // 使用 JPEG 格式进行压缩
         float quality = 1.0f; // 初始质量
 
         // 检查文件大小并调整质量进行压缩
@@ -51,17 +46,14 @@ public class ImageCompressor {
                 ImageWriter writer = ImageIO.getImageWritersByFormatName(formatName).next();
                 writer.setOutput(imageOutputStream);
 
-                if ("jpeg".equals(formatName)) {
-                    // 仅针对 JPEG 格式设置压缩参数
-                    JPEGImageWriteParam writeParam = new JPEGImageWriteParam(null);
-                    writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                    writeParam.setCompressionQuality(quality);
-                    writeParam.setProgressiveMode(ImageWriteParam.MODE_DISABLED); // 禁用渐进式模式
-                    writer.write(null, new javax.imageio.IIOImage(originalImage, null, null), writeParam);
-                } else if ("gif".equals(formatName)) {
-                    // 对于 GIF 图片，不进行压缩，直接保存
-                    writer.write(null, new javax.imageio.IIOImage(originalImage, null, null), null);
-                }
+                // 设置压缩参数
+                JPEGImageWriteParam writeParam = new JPEGImageWriteParam(null);
+                writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                writeParam.setCompressionQuality(quality);
+                writeParam.setProgressiveMode(ImageWriteParam.MODE_DISABLED); // 禁用渐进式模式
+
+                // 写入压缩后的图片
+                writer.write(null, new javax.imageio.IIOImage(rgbImage, null, null), writeParam);
                 writer.dispose();
             }
 
@@ -71,33 +63,11 @@ public class ImageCompressor {
                 return compressedData;
             }
 
-            // 如果文件仍然过大，降低质量（仅对 JPEG 格式有效）
-            if ("jpeg".equals(formatName)) {
-                quality -= 0.1f;
-                if (quality < 0.3f) {
-                    return compressedData;
-                }
+            // 如果文件仍然过大，降低质量
+            quality -= 0.1f;
+            if (quality < 0.3f) {
+                return compressedData;
             }
         }
     }
-
-    // 获取图片格式的函数
-    private static String getImageMimeType(byte[] imageData) throws IOException {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageData);
-        String mimeType = null;
-        try {
-            BufferedImage bufferedImage = ImageIO.read(byteArrayInputStream);
-            if (bufferedImage != null) {
-                mimeType = ImageIO.getImageReadersByFormatName("gif").hasNext() ? "image/gif" : "image/jpeg";
-                if (ImageIO.getImageReadersByFormatName("png").hasNext()) {
-                    mimeType = "image/png";
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return mimeType;
-    }
-
-
 }
