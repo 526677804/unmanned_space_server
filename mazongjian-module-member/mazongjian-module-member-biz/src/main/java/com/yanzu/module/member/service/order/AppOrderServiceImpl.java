@@ -63,6 +63,7 @@ import com.yanzu.module.system.enums.social.SocialTypeEnum;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -186,6 +187,10 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     @Autowired
     private PlatformTransactionManager transactionManager;
+
+
+    @Value("${iot.groupPay:false}")
+    private boolean iotGroupPay;
 
     /**
      * @param roomId        房间id
@@ -1568,22 +1573,23 @@ public class AppOrderServiceImpl implements AppOrderService {
 //    @Synchronized
     @Transactional
     public void executeMeituanRefreshTokenJob() {
-        log.info("==========     开始执行美团授权定时刷新任务     ==========");
-        LocalDateTime now = LocalDateTime.now();
-        now = now.plusDays(1);//加一天  用来判断过期
-        List<StoreMeituanInfoDO> list = storeMeituanInfoMapper.selectList();
-        for (StoreMeituanInfoDO infoDO : list) {
-            if (infoDO.getExpiresIn().isBefore(now)) {
-                //需要刷新
-                meituanService.refreshToken(infoDO.getStoreId(), infoDO.getRefreshToken());
-                if (infoDO.getRemainRefreshCount() == 1) {
-                    //提醒授权更新
-                    workWxService.sendMeiTuanScopeMsg(infoDO.getStoreId());
+        if(!iotGroupPay){
+            log.info("==========     开始执行美团授权定时刷新任务     ==========");
+            LocalDateTime now = LocalDateTime.now();
+            now = now.plusDays(1);//加一天  用来判断过期
+            List<StoreMeituanInfoDO> list = storeMeituanInfoMapper.selectList();
+            for (StoreMeituanInfoDO infoDO : list) {
+                if (infoDO.getExpiresIn().isBefore(now)) {
+                    //需要刷新
+                    meituanService.refreshToken(infoDO.getStoreId(), infoDO.getRefreshToken());
+                    if (infoDO.getRemainRefreshCount() == 1) {
+                        //提醒授权更新
+                        workWxService.sendMeiTuanScopeMsg(infoDO.getStoreId());
+                    }
                 }
             }
+            log.info("==========    美团/硬件平台授权定时刷新任务结束     ==========");
         }
-        log.info("==========    美团/硬件平台授权定时刷新任务结束     ==========");
-
     }
 
     @Override
