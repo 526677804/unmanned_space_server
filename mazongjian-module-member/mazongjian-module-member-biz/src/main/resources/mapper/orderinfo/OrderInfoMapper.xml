@@ -521,7 +521,7 @@
         select t.* from (
         SELECT
         s.store_name,
-        (o.price) price,
+        (o.pay_price) price,
         '预订' AS payType,
         o.create_time
         FROM

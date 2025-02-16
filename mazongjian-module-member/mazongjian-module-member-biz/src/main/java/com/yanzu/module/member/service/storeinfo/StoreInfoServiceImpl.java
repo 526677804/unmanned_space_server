@@ -571,6 +571,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 orderInfoDO.setEndTime(now);
                 orderInfoDO.setStatus(AppEnum.order_status.FINISH.getValue());
                 orderInfoMapper.updateById(orderInfoDO);
+                //同步一下预订平台的房间占用信息
+                iotService.updateStock(roomId);
             }
         } else if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {
             //待清洁  房间状态改为空闲
