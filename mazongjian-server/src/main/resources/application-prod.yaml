@@ -44,14 +44,14 @@ spring:
       datasource:
         #修改为自己创建的mysql信息 支持5.7或8.0
         master:
-          url: jdbc:mysql://182.44.14.243:8306/malaoban?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&connectTimeout=30000&socketTimeout=60000 # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://172.18.0.2:3306/malaoban?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&connectTimeout=30000&socketTimeout=60000 # MySQL Connector/J 8.X 连接的示例
           username: malaoban
           password: FR7n6tW5xbzHmS3r
 
   # Redis 配置
   redis:
-    host: 182.44.14.243 # 地址
-    port: 8379 # 端口
+    host: 172.18.0.3 # 地址
+    port: 6379 # 端口
     database: 15
     # 数据库索引
     password: redis_YM8kZT # 密码，建议生产环境开启
@@ -60,7 +60,7 @@ spring:
 wx:
   pay:
     #支付回调通知地址
-    returnUrl: https://wq.scyanzu.com/app-api/callback/wxpay/update
+    returnUrl: https://malaoban.scyanzu.com/app-api/callback/wxpay/update
     ################################以下内容为微信支付服务商模式以及分账配置############################################
     appId: wx9727cb1c69b545a7 #微信支付服务商的小程序APPID
     mchId: 1660250968 #微信支付服务商的商户号  如果不是服务商模式，这里就不填
@@ -87,6 +87,6 @@ douyin:
 iot:
   clientId: 5d3cf1ed-d534
   secret: 5942a5b9-292b-4be5-b00e-59f4f636dc4a
-  redirectUrl: https://wq.scyanzu.com/app-api/callback/iotCallback
+  redirectUrl: https://malaoban.scyanzu.com/app-api/callback/iotCallback
   groupPay: true #是否启用统一团购功能
 
