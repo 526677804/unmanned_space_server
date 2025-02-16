@@ -63,7 +63,7 @@
           <span>{{ parseTime(scope.row.expireTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="绑定域名" align="center" prop="domain" width="180" />
+      <!-- <el-table-column label="绑定域名" align="center" prop="domain" width="180" /> -->
       <el-table-column label="租户状态" align="center" prop="status">
         <template v-slot="scope">
           <dict-tag :type="DICT_TYPE.COMMON_STATUS" :value="scope.row.status"/>
@@ -110,6 +110,10 @@
         <el-form-item v-if="form.id === undefined" label="用户密码" prop="password">
           <el-input v-model="form.password" placeholder="请输入用户密码" type="password" show-password />
         </el-form-item>
+        <el-form-item v-if="form.id != undefined" label="修改密码" prop="uppassword">
+          <el-input v-model="form.uppassword" placeholder="留空则不修改" type="uppassword" show-password />
+          注意：需要时修改密码再输入，留空则不会修改密码
+        </el-form-item>
         <el-form-item label="账号额度" prop="accountCount">
           <el-input-number v-model="form.accountCount" placeholder="请输入账号额度" controls-position="right" :min="0" />
         </el-form-item>
@@ -117,9 +121,9 @@
           <el-date-picker clearable size="small" v-model="form.expireTime" type="date"
                           value-format="timestamp" placeholder="请选择过期时间" />
         </el-form-item>
-        <el-form-item label="绑定域名" prop="domain">
+        <!-- <el-form-item label="绑定域名" prop="domain">
           <el-input v-model="form.domain" placeholder="请输入绑定域名" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="租户状态" prop="status">
           <el-radio-group v-model="form.status">
             <el-radio v-for="dict in this.getDictDatas(DICT_TYPE.COMMON_STATUS)"

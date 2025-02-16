@@ -8,6 +8,7 @@ import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.common.util.date.DateUtils;
 import com.yanzu.framework.tenant.config.TenantProperties;
+import com.yanzu.framework.tenant.core.aop.TenantIgnore;
 import com.yanzu.framework.tenant.core.context.TenantContextHolder;
 import com.yanzu.framework.tenant.core.util.TenantUtils;
 import com.yanzu.module.system.controller.admin.permission.vo.role.RoleCreateReqVO;
@@ -32,8 +33,10 @@ import com.yanzu.module.system.service.user.AdminUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -73,6 +76,9 @@ public class TenantServiceImpl implements TenantService {
     private MenuService menuService;
     @Resource
     private PermissionService permissionService;
+
+    @Resource
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public List<Long> getTenantIdList() {
@@ -150,14 +156,27 @@ public class TenantServiceImpl implements TenantService {
         validTenantNameDuplicate(updateReqVO.getName(), updateReqVO.getId());
         // 校验套餐被禁用
         TenantPackageDO tenantPackage = tenantPackageService.validTenantPackage(updateReqVO.getPackageId());
-
         // 更新租户
         TenantDO updateObj = TenantConvert.INSTANCE.convert(updateReqVO);
         tenantMapper.updateById(updateObj);
+        if (!ObjectUtils.isEmpty(updateReqVO.getUppassword()) && !ObjectUtils.isEmpty(tenant.getContactUserId())) {
+
+            userService.updateUserPassword(tenant.getContactUserId(), updateReqVO.getUppassword());
+        }
         // 如果套餐发生变化，则修改其角色的权限
         if (ObjectUtil.notEqual(tenant.getPackageId(), updateReqVO.getPackageId())) {
             updateTenantRoleMenu(tenant.getId(), tenantPackage.getMenuIds());
         }
+    }
+
+    /**
+     * 对密码进行加密
+     *
+     * @param password 密码
+     * @return 加密后的密码
+     */
+    private String encodePassword(String password) {
+        return passwordEncoder.encode(password);
     }
 
     private void validTenantNameDuplicate(String name, Long id) {
