@@ -266,6 +266,11 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //任意一个为空都不行
             throw exception(ROOM_BAN_TIME_ERROR);
         }
+        if (!ObjectUtils.isEmpty(reqVO.getPrePrice())) {
+            if (ObjectUtils.isEmpty(reqVO.getPreUnit()) || ObjectUtils.isEmpty(reqVO.getMinCharge())) {
+                throw exception(ROOM_PRE_CONFIG_ERROR);
+            }
+        }
 
         if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //新增
@@ -932,8 +937,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     public void updateRoomLock(AppUpRoomLockReqVO reqVO) {
         //查出这个房间的密码锁编号
         String sn = deviceInfoMapper.getSnByRoomIdAndType(reqVO.getRoomId(), AppEnum.device_type.LOCK.getValue());
-        if(!ObjectUtils.isEmpty(sn)) {
-            AppAddLockReqVO addLockReqVO=new AppAddLockReqVO();
+        if (!ObjectUtils.isEmpty(sn)) {
+            AppAddLockReqVO addLockReqVO = new AppAddLockReqVO();
             addLockReqVO.setDeviceSn(sn).setUpData(reqVO.getUpData());
             iotService.addLock(addLockReqVO);
         }

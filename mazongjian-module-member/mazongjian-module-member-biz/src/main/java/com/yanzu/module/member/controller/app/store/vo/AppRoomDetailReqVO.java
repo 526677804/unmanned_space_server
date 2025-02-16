@@ -89,6 +89,20 @@ public class AppRoomDetailReqVO {
     @Schema(description = "跳过清洁")
     private Boolean jumpClear;
 
-    @Schema(description = "是否预约")
+    @Schema(description = "是否可预约")
     private Boolean reserve;
+
+    @Schema(description = "预付费价格")
+    @Min(value = 1,message = "预付费价格最小为1元")
+    @Max(value = 1000,message = "预付费价格最大为1000元")
+    private BigDecimal prePrice;
+
+    @Schema(description = "预付费计价分钟")
+    @Min(value = 1,message = "预付费计价分钟最小为1分钟")
+    @Max(value = 60,message = "预付费计价分钟最大为60分钟")
+    private Integer preUnit;
+
+    @Schema(description = "最低消费价格")
+    @Min(value = 0,message = "最低消费价格最小为0元")
+    private BigDecimal minCharge;
 }

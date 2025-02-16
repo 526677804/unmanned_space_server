@@ -64,4 +64,7 @@ public class OrderPreReqVO implements Serializable {
     @Schema(description = "是否通宵局", example = "false")
     private boolean nightLong;
 
+
+    @Schema(description = "是否预付费下单")
+    private boolean preSubmit;
 }

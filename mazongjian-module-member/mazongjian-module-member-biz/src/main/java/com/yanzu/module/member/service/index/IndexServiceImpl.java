@@ -117,7 +117,7 @@ public class IndexServiceImpl implements IndexService {
             storeInfo.setRoomClassList(roomInfoMapper.getClassList(storeId));
             if (!ObjectUtils.isEmpty(storeInfo.getDistance())) {
                 storeInfo.setDistance(storeInfo.getDistance().setScale(2, BigDecimal.ROUND_CEILING));
-            }else {
+            } else {
                 storeInfo.setDistance(new BigDecimal(9999));
             }
         }
@@ -142,7 +142,7 @@ public class IndexServiceImpl implements IndexService {
     @Override
     public List<AppRoomInfoListRespVO> getRoomInfoList(AppRoomListReqVO reqVO) {
         //如果roomClass是空 则取第一个roomClass
-        if(ObjectUtils.isEmpty(reqVO.getRoomClass())){
+        if (ObjectUtils.isEmpty(reqVO.getRoomClass())) {
             List<Integer> classList = roomInfoMapper.getClassList(reqVO.getStoreId());
             if (!CollectionUtils.isEmpty(classList)) {
                 reqVO.setRoomClass(classList.get(0));
@@ -180,13 +180,13 @@ public class IndexServiceImpl implements IndexService {
                 //找出该房间所有订单
                 if (orederMap.containsKey(respVO.getRoomId().toString())) {
                     List<OrderInfoDO> sortOrder = orederMap.get(respVO.getRoomId().toString()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
-                    List<AppOrderTimeVO> orderTimeVOList=new ArrayList<>(sortOrder.size());
+                    List<AppOrderTimeVO> orderTimeVOList = new ArrayList<>(sortOrder.size());
                     //把第一个订单的开始和结束时间 设置给房间
                     respVO.setStartTime(sortOrder.get(0).getStartTime());
                     respVO.setEndTime(sortOrder.get(0).getEndTime());
                     sortOrder.forEach(x -> {
                         bookings.add(new AppOrderTimeVO(x.getStartTime(), x.getEndTime()));
-                        orderTimeVOList.add(new AppOrderTimeVO(x.getStartTime(),x.getEndTime()));
+                        orderTimeVOList.add(new AppOrderTimeVO(x.getStartTime(), x.getEndTime()));
                     });
                     respVO.setOrderTimeList(orderTimeVOList);
                 }
@@ -241,9 +241,9 @@ public class IndexServiceImpl implements IndexService {
                 }
                 respVO.setTimeSlot(timeSlot);
                 //设置第一个可用套餐名称
-                PkgInfoDO firstPkg=pkgInfoMapper.getFirstPkgByRoomTypeOrRoomId(respVO.getStoreId(),respVO.getType(),respVO.getRoomId());
-                if (!ObjectUtils.isEmpty(firstPkg)){
-                    String pkgName = firstPkg.getHours()+"小时套餐:￥"+firstPkg.getPrice()+"元";
+                PkgInfoDO firstPkg = pkgInfoMapper.getFirstPkgByRoomTypeOrRoomId(respVO.getStoreId(), respVO.getType(), respVO.getRoomId());
+                if (!ObjectUtils.isEmpty(firstPkg)) {
+                    String pkgName = firstPkg.getHours() + "小时套餐:￥" + firstPkg.getPrice() + "元";
                     respVO.setPkgName(pkgName);
                 }
             }
@@ -254,6 +254,16 @@ public class IndexServiceImpl implements IndexService {
     @Override
     public AppRoomInfoListRespVO getRoomInfo(Long roomId) {
         AppRoomInfoListRespVO respVO = storeInfoMapper.getRoomInfo(roomId);
+        if (ObjectUtils.isEmpty(respVO)) {
+            return null;
+        }
+        if (!ObjectUtils.isEmpty(respVO.getPrePrice())) {
+            //单价/60 得到每分钟价格
+            BigDecimal minutePrice = respVO.getPrice().divide(new BigDecimal(60.0));
+            //每分钟价格 * 计费区间 = 区间价格
+            BigDecimal unitPrice = minutePrice.multiply(new BigDecimal(respVO.getPreUnit()).setScale(4, BigDecimal.ROUND_CEILING));
+            respVO.setPreUnitPrice(unitPrice);
+        }
         //找出所有房间的订单
         List<OrderInfoDO> orderList = orderInfoMapper.getByRoomId(roomId, null);
         //把订单按照房间id分组
@@ -276,10 +286,10 @@ public class IndexServiceImpl implements IndexService {
         //找出该房间所有订单
         if (orederMap.containsKey(respVO.getRoomId())) {
             List<OrderInfoDO> sortOrder = orederMap.get(respVO.getRoomId()).stream().sorted(Comparator.comparing(OrderInfoDO::getStartTime)).collect(Collectors.toList());
-            List<AppOrderTimeVO> orderTimeVOList=new ArrayList<>(sortOrder.size());
+            List<AppOrderTimeVO> orderTimeVOList = new ArrayList<>(sortOrder.size());
             sortOrder.forEach(x -> {
                 bookings.add(new AppOrderTimeVO(x.getStartTime(), x.getEndTime()));
-                orderTimeVOList.add(new AppOrderTimeVO(x.getStartTime(),x.getEndTime()));
+                orderTimeVOList.add(new AppOrderTimeVO(x.getStartTime(), x.getEndTime()));
             });
             respVO.setOrderTimeList(orderTimeVOList);
         }

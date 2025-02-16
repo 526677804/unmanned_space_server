@@ -204,7 +204,7 @@ public class AppOrderServiceImpl implements AppOrderService {
      * @return
      */
     @Override
-    public WxPayOrderRespVO preOrder(String orderNo, Long userId, Integer payType, Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO, Long ignoreOrderId, boolean nightLong, boolean wxpay) {
+    public WxPayOrderRespVO preOrder(String orderNo, Long userId, Integer payType, Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO, Long ignoreOrderId, boolean nightLong, boolean preSubmit, boolean wxpay) {
         //秒位处理为0
         startTime.setSeconds(0);
         endTime.setSeconds(0);
@@ -213,7 +213,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         Date oldEndTime = new Date(endTime.getTime());
         //参数校验
         //开始时间不能小于结束时间
-        if (startTime.after(endTime)) {
+        if (startTime.after(endTime) && !preSubmit) {
             throw exception(ORDER_START_TIME_GT_END_ERROR);
         }
         if (ObjectUtils.isEmpty(ignoreOrderId) && startTime.before(now)) {
@@ -238,6 +238,10 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (storeInfoDO.getStatus().compareTo(AppEnum.store_status.ENABLE.getValue()) != 0) {
             throw exception(STORE_STORE_IS_DISABLE);
         }
+        if (preSubmit) {
+            //如果是预付费下单的  根据房间单价和实际支付的金额，计算出实际的结束时间
+            endTime = calculateEndTime(roomInfoDO.getPrice(), roomInfoDO.getPrePrice(), roomInfoDO.getPreUnit(), startTime);
+        }
         //如果是通宵场  开始时间必须大于设置的通宵起始时间
         if (nightLong) {
             if (startTime.getHours() < storeInfoDO.getTxStartHour() && startTime.getHours() > 4) {
@@ -253,7 +257,13 @@ public class AppOrderServiceImpl implements AppOrderService {
         //检查套餐是否允许使用
         checkPkgUse(pkgInfoDO, nightLong, roomInfoDO.getType(), roomInfoDO.getStoreId(), startTime, endTime, orderMinutes, Math.toIntExact(roomId));
         //计算订单价格
-        BigDecimal mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getDeposit(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO, pkgInfoDO);
+        BigDecimal mathPrice;
+        if (preSubmit) {
+            //预付费
+            mathPrice = roomInfoDO.getPrePrice();
+        } else {
+            mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getDeposit(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO, pkgInfoDO);
+        }
         if (ObjectUtils.isEmpty(ignoreOrderId)) {
             //下单
             appWxPayTypeEnum = AppWxPayTypeEnum.ORDER;
@@ -262,7 +272,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 endTime = new Date(endTime.getTime() + 1000 * 60 * 60 * couponInfoDO.getPrice().intValue());
             }
             //检查订单时间 是否符合最小下单时间要求
-            if ((orderMinutes) < roomInfoDO.getMinHour() * 60) {
+            if (!preSubmit && (orderMinutes) < roomInfoDO.getMinHour() * 60) {
                 throw exception(ORDER_MIN_HOUR_ERROR);
             }
             //下单需要,检查时间有没有超过提前设置的范围
@@ -392,12 +402,39 @@ public class AppOrderServiceImpl implements AppOrderService {
                     tenantId = user.getTenantId();
                 }
                 //把这个信息存储到redis，在回调处验证后删除 最长1天过期
-                WxPayOrderInfo wxPayOrderInfo = new WxPayOrderInfo(appWxPayTypeEnum, orderNo, getLoginUserId(), tenantId, roomInfoDO.getStoreId(), roomId, oldStartTime, oldEndTime, ObjectUtils.isEmpty(couponInfoDO) ? null : couponInfoDO.getCouponId(), ObjectUtils.isEmpty(pkgInfoDO) ? null : pkgInfoDO.getPkgId(), ignoreOrderId, payPrice, nightLong);
+                WxPayOrderInfo wxPayOrderInfo = new WxPayOrderInfo(appWxPayTypeEnum, orderNo, getLoginUserId(), tenantId, roomInfoDO.getStoreId(), roomId, oldStartTime, oldEndTime, ObjectUtils.isEmpty(couponInfoDO) ? null : couponInfoDO.getCouponId(), ObjectUtils.isEmpty(pkgInfoDO) ? null : pkgInfoDO.getPkgId(), ignoreOrderId, payPrice, nightLong, preSubmit);
                 redisTemplate.opsForValue().set(String.format(WX_PAY_ORDER, orderNo), wxPayOrderInfo, 1, TimeUnit.DAYS);
             }
         }
         log.info("预下单:{}", respVO);
         return respVO;
+    }
+
+    public Date calculateEndTime(BigDecimal price, BigDecimal prePrice, int preUnit, Date startTime) {
+        // 计算每个计价区间的费用: price * (preUnit / 60)
+        BigDecimal intervalPrice = price.multiply(new BigDecimal(preUnit)).divide(new BigDecimal("60"), 2, BigDecimal.ROUND_DOWN);
+
+        // 计算最大完整的计价区间数
+        BigDecimal maxFullUnits = prePrice.divide(intervalPrice, 0, BigDecimal.ROUND_DOWN);
+
+        // 计算完整计价区间所消耗的金额
+        BigDecimal usedPrice = maxFullUnits.multiply(intervalPrice);
+
+        // 计算剩余金额
+        BigDecimal remainingPrice = prePrice.subtract(usedPrice);
+
+        // 计算剩余金额所能购买的时间（分钟）
+        BigDecimal extraMinutes = remainingPrice.multiply(new BigDecimal("60")).divide(price, 0, BigDecimal.ROUND_DOWN);
+
+        // 计算总时长 (完整区间时长 + 剩余金额换算的时长)
+        BigDecimal totalDuration = maxFullUnits.multiply(new BigDecimal(preUnit)).add(extraMinutes);
+
+        // 计算最大结束时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startTime);
+        calendar.add(Calendar.MINUTE, totalDuration.intValue());
+
+        return calendar.getTime();
     }
 
 
@@ -759,7 +796,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(title);
             if (matcher.find()) {
-                timeHour=Integer.parseInt(matcher.group(1));
+                timeHour = Integer.parseInt(matcher.group(1));
             } else {
                 throw exception(CHECK_GROUP_NO_TIME_ERROR);
             }
@@ -810,7 +847,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             pkgInfoDO = pkgInfoMapper.selectById(reqVO.getPkgId());
         }
         //下单之前仍然再检查一遍 并计算出应付总金额
-        WxPayOrderRespVO wxPayOrderRespVO = preOrder(null, reqVO.getUserId(), reqVO.getPayType(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, pkgInfoDO, null, reqVO.getNightLong(), false);
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(null, reqVO.getUserId(), reqVO.getPayType(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), couponInfoDO, pkgInfoDO, null, reqVO.getNightLong(), false, false);
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPayPrice() / 100.0));
         BigDecimal oldPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPayPrice() / 100.0));
         //判断是否有填团购券
@@ -1049,7 +1086,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         if (!ObjectUtils.isEmpty(reqVO.getPkgId())) {
             pkgInfoDO = pkgInfoMapper.selectById(reqVO.getPkgId());
         }
-        WxPayOrderRespVO wxPayOrderRespVO = preOrder(null, userId, null, orderInfoDO.getRoomId(), startTime, endTime, couponInfoDO, pkgInfoDO, reqVO.getOrderId(), false, false);
+        WxPayOrderRespVO wxPayOrderRespVO = preOrder(null, userId, null, orderInfoDO.getRoomId(), startTime, endTime, couponInfoDO, pkgInfoDO, reqVO.getOrderId(), false, false, false);
         //订单价格
         BigDecimal totalPrice = new BigDecimal(String.valueOf(wxPayOrderRespVO.getPayPrice() / 100.0));
         switch (reqVO.getPayType()) {
@@ -1217,7 +1254,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     throw exception(ORDER_CHANGE_ROOM_ERROR);
                 }
                 //检查是否可用
-                preOrder(null, loginUserId, null, roomId, orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), null, null, null, false, false);
+                preOrder(null, loginUserId, null, roomId, orderInfoDO.getStartTime(), orderInfoDO.getEndTime(), null, null, null, false, false, false);
                 //开始更换
                 orderInfoDO.setRoomId(roomId);
                 orderInfoMapper.updateById(orderInfoDO);
@@ -1337,7 +1374,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                     log.info("订单：{}，提前开始消费！", orderInfoDO.getOrderNo());
                     orderInfoDO.setStartTime(now);
                     //校验时间冲突
-                    preOrder(null, loginUserId, null, orderInfoDO.getRoomId(), now, orderInfoDO.getEndTime(), null, null, orderId, false, false);
+                    preOrder(null, loginUserId, null, orderInfoDO.getRoomId(), now, orderInfoDO.getEndTime(), null, null, orderId, false, false, false);
                 }
             }
             //开始订单
@@ -1573,7 +1610,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 //    @Synchronized
     @Transactional
     public void executeMeituanRefreshTokenJob() {
-        if(!iotGroupPay){
+        if (!iotGroupPay) {
             log.info("==========     开始执行美团授权定时刷新任务     ==========");
             LocalDateTime now = LocalDateTime.now();
             now = now.plusDays(1);//加一天  用来判断过期
@@ -1793,7 +1830,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(title);
         if (matcher.find()) {
-            timeHour=Integer.parseInt(matcher.group(1));
+            timeHour = Integer.parseInt(matcher.group(1));
         } else {
             throw exception(CHECK_GROUP_NO_TIME_ERROR);
         }

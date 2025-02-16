@@ -74,7 +74,18 @@ public class AppRoomDetailRespVO {
     @Schema(description = "跳过清洁")
     private Boolean jumpClear;
 
-    @Schema(description = "是否预约")
+    @Schema(description = "是否可预约")
     private Boolean reserve;
+
+    @Schema(description = "预付费价格")
+    private BigDecimal prePrice;
+
+    @Schema(description = "预付费计价分钟")
+    private Integer preUnit;
+
+    @Schema(description = "最低消费价格")
+    private BigDecimal minCharge;
+
+
 
 }

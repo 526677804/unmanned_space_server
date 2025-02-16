@@ -108,6 +108,7 @@ public interface ErrorCodeConstants {
 
     ErrorCode PRODUCT_OUT_OF_STOCK = new ErrorCode(1004004106, "商品库存不足");
 
+    ErrorCode ROOM_PRE_CONFIG_ERROR = new ErrorCode(1004004107, "预付费配置参数不完整");
 
     ErrorCode PKG_BUY_MAX_NUM_ERROR = new ErrorCode(1004004200, "超过购买该套餐的最大数量限制！");
     ErrorCode PKG_BUY_DISABLE_ERROR = new ErrorCode(1004004201, "该套餐不支持购买！");
