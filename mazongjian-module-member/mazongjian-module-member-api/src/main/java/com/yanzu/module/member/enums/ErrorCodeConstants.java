@@ -131,6 +131,9 @@ public interface ErrorCodeConstants {
     ErrorCode PKGINFO_KSID_EXIST = new ErrorCode(1004004214, "该抖音团购id已与其他套餐绑定,请更换其他团购id!");
     ErrorCode PKG_USE_CHECK_ROOM_ERROR = new ErrorCode(1004004215, "该套餐可用房间与订单不匹配！");
 
+    ErrorCode STORE_VIP_CONFIG_SCORE_ERROR = new ErrorCode(1004004230, "存在重复的积分门槛！");
+    ErrorCode STORE_VIP_CONFIG_MAX_ERROR = new ErrorCode(1004004231, "最多支持设置三个会员等级！");
+
     ErrorCode STORE_WX_PAY_CONFIG_NOT_FOUND = new ErrorCode(1004004999, "该门店暂不支持微信支付！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");
     ErrorCode DATA_EXISTS_ERROR = new ErrorCode(1004005001, "数据已存在，请不要重复保存！");

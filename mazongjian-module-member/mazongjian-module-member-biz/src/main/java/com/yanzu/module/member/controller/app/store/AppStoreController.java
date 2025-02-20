@@ -15,6 +15,7 @@ import com.yanzu.module.member.service.device.DeviceService;
 import com.yanzu.module.member.service.faceblacklist.FaceBlacklistService;
 import com.yanzu.module.member.service.facerecord.FaceRecordService;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
+import com.yanzu.module.member.service.storevipconfig.StoreVipConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,6 +52,9 @@ public class AppStoreController {
 
     @Resource
     private FaceBlacklistService faceBlacklistService;
+
+    @Resource
+    private StoreVipConfigService storeVipConfigService;
 
     @PostMapping("/getPageList")
     @Operation(summary = "获取门店列表")
@@ -387,6 +391,7 @@ public class AppStoreController {
         storeInfoService.addLock(reqVO);
         return success(true);
     }
+
     @PostMapping("/updateRoomLock")
     @Operation(summary = "校准房间智能锁", description = "设备管理使用")
 //    @PreAuthenticated
@@ -429,5 +434,33 @@ public class AppStoreController {
         storeInfoService.removeBlackList(id);
         return success(true);
     }
+
+
+    @PostMapping("/getVipConfig/{storeId}")
+    @Operation(summary = "获取会员配置")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<List<AppStoreVipConfigListRespVO>> getVipConfig(@PathVariable Long storeId) {
+        return success(storeVipConfigService.getVipConfig(storeId));
+    }
+
+    @PostMapping("/saveVipConfig/{storeId}")
+    @Operation(summary = "保存会员配置")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> saveVipConfig(@RequestBody @Valid List<AppStoreVipConfigSaveReqVO> reqVO,@PathVariable Long storeId) {
+        storeVipConfigService.saveVipConfig(reqVO,storeId);
+        return success(true);
+    }
+
+    @PostMapping("/editMemberVip")
+    @Operation(summary = "修改用户会员信息")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> editMemberVip(@RequestBody @Valid AppEditMemberVipReqVO reqVO) {
+        storeVipConfigService.editMemberVip(reqVO);
+        return success(true);
+    }
+
 
 }

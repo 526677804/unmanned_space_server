@@ -66,4 +66,9 @@ public class StoreUserDO extends BaseDO {
      */
     private Integer status;
 
+    /**
+     * 会员等级
+     */
+    private Byte vipLevel;
+
 }
