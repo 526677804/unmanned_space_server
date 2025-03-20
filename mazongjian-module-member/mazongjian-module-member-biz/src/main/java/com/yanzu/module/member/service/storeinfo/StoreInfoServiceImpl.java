@@ -944,5 +944,35 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         }
     }
 
+    @Override
+    public AppRoomPrePayConfigRespVO getPrePayConfig(Long roomId) {
+        AppRoomListVO appRoomListVO = roomInfoMapper.getInfoById(roomId);
+        if (ObjectUtils.isEmpty(appRoomListVO)) {
+            throw exception(DATA_NOT_EXISTS);
+        }
+        //校验门店权限
+        checkPermisson(appRoomListVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+        AppRoomPrePayConfigRespVO respVO = new AppRoomPrePayConfigRespVO();
+        BeanUtils.copyProperties(appRoomListVO, respVO);
+        return respVO;
+    }
+
+    @Override
+    @Transactional
+    public void setPrePayConfig(AppRoomPrePayConfigRespVO reqVO) {
+        AppRoomListVO appRoomListVO = roomInfoMapper.getInfoById(reqVO.getRoomId());
+        if (ObjectUtils.isEmpty(appRoomListVO)) {
+            throw exception(DATA_NOT_EXISTS);
+        }
+        //校验门店权限
+        checkPermisson(appRoomListVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+        RoomInfoDO updateDO=new RoomInfoDO()
+                .setRoomId(reqVO.getRoomId())
+                .setPrePrice(reqVO.getPrePrice())
+                .setPreUnit(reqVO.getPreUnit())
+                .setMinCharge(reqVO.getMinCharge());
+        roomInfoMapper.updateById(updateDO);
+    }
+
 
 }

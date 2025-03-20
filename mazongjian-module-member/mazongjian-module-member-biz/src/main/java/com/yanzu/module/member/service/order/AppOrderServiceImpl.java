@@ -77,6 +77,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -412,7 +413,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 
     public Date calculateEndTime(BigDecimal price, BigDecimal prePrice, int preUnit, Date startTime) {
         // 计算每个计价区间的费用: price * (preUnit / 60)
-        BigDecimal intervalPrice = price.multiply(new BigDecimal(preUnit)).divide(new BigDecimal("60"), 2, BigDecimal.ROUND_DOWN);
+        BigDecimal intervalPrice = price.multiply(new BigDecimal(preUnit)).divide(new BigDecimal("60"), 4, RoundingMode.HALF_UP);
 
         // 计算最大完整的计价区间数
         BigDecimal maxFullUnits = prePrice.divide(intervalPrice, 0, BigDecimal.ROUND_DOWN);

@@ -16,7 +16,7 @@ public interface StoreVipConfigService {
 
     List<AppStoreVipConfigListRespVO> getVipConfig(Long storeId);
 
-    void saveVipConfig(List<AppStoreVipConfigSaveReqVO> reqVO,Long storeId);
+    void saveVipConfig(AppStoreVipConfigSaveReqVO reqVO);
 
     void editMemberVip(AppEditMemberVipReqVO reqVO);
 

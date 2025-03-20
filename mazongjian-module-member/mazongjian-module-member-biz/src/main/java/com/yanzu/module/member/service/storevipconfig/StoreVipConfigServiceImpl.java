@@ -8,6 +8,7 @@ import com.yanzu.module.member.dal.dataobject.storevipconfig.StoreVipConfigDO;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +29,7 @@ import java.util.stream.Collectors;
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.STORE_VIP_CONFIG_MAX_ERROR;
-import static com.yanzu.module.member.enums.ErrorCodeConstants.STORE_VIP_CONFIG_SCORE_ERROR;
+import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
 
 /**
  * 门店会员配置 Service 实现类
@@ -59,40 +59,47 @@ public class StoreVipConfigServiceImpl implements StoreVipConfigService {
 
     @Override
     @Transactional
-    public void saveVipConfig(List<AppStoreVipConfigSaveReqVO> reqVO, Long storeId) {
+    public void saveVipConfig(AppStoreVipConfigSaveReqVO reqVO) {
         //权限检查
-        storeInfoService.checkPermisson(storeId, getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
-        //暂时只支持最多三个等级
-        if (reqVO.size() > 3) {
-            throw exception(STORE_VIP_CONFIG_MAX_ERROR);
-        }
-        //检查参数  不能存在相同的积分门槛
-        boolean hasDuplicate = reqVO.stream()
-                .map(AppStoreVipConfigSaveReqVO::getScore) // 获取每个对象的 score 属性
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting())) // 根据 score 计数
-                .values().stream() // 取出所有计数
-                .anyMatch(count -> count > 1); // 如果有任何一个值的计数大于1，说明有重复
-        if (hasDuplicate) {
-            throw exception(STORE_VIP_CONFIG_SCORE_ERROR);
-        }
-        reqVO.sort((o1, o2) -> {
-            return o1.getScore().compareTo(o2.getScore());
-        });
-        List<StoreVipConfigDO> saveList = new ArrayList<>(reqVO.size());
-        for (byte i = 1; i <= reqVO.size(); i++) {
-            StoreVipConfigDO vipConfigDO = new StoreVipConfigDO()
-                    .setStoreId(storeId)
-                    .setVipLevel(i)
-                    .setVipDiscount(reqVO.get(i).getVipDiscount())
-                    .setVipName(reqVO.get(i).getVipName())
-                    .setScore(reqVO.get(i).getScore());
-            saveList.add(vipConfigDO);
-        }
-        if (!CollectionUtils.isEmpty(saveList)) {
-            //先删除
-            storeVipConfigMapper.deleteByStoreId(storeId);
-            //再新增
-            storeVipConfigMapper.insertBatch(saveList);
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+        //判断新增还是修改
+        StoreVipConfigDO storeVipConfigDO = null;
+        List<StoreVipConfigDO> list = storeVipConfigMapper.selectbyStoreId(reqVO.getStoreId());
+        if (!ObjectUtils.isEmpty(reqVO.getVipId())) {
+            //修改
+            storeVipConfigDO = storeVipConfigMapper.selectById(reqVO.getVipId());
+            if (ObjectUtils.isEmpty(storeVipConfigDO) || storeVipConfigDO.getStoreId().compareTo(reqVO.getStoreId()) != 0) {
+                throw exception(OPRATION_ERROR);
+            }
+            //检查参数  不能存在相同的积分门槛
+            list.forEach(x -> {
+                if (x.getScore().compareTo(reqVO.getScore()) == 0 && x.getVipId().compareTo(reqVO.getVipId()) != 0) {
+                    throw exception(STORE_VIP_CONFIG_SCORE_ERROR);
+                }
+            });
+            BeanUtils.copyProperties(reqVO, storeVipConfigDO);
+            storeVipConfigMapper.updateById(storeVipConfigDO);
+        } else {
+            //新增
+            storeVipConfigDO = new StoreVipConfigDO();
+            BeanUtils.copyProperties(reqVO, storeVipConfigDO);
+            int count = 0;
+            if (!CollectionUtils.isEmpty(list)) {
+                count = list.size();
+            }
+            //暂时只支持最多三个等级
+            if (count >= 3) {
+                throw exception(STORE_VIP_CONFIG_MAX_ERROR);
+            }
+            //检查参数  不能存在相同的积分门槛
+            list.forEach(x -> {
+                if (x.getScore().compareTo(reqVO.getScore()) == 0) {
+                    throw exception(STORE_VIP_CONFIG_SCORE_ERROR);
+                }
+            });
+            count++;//会员等级是从1开始
+            storeVipConfigDO.setVipLevel(Byte.valueOf(count + ""));
+            storeVipConfigMapper.insert(storeVipConfigDO);
         }
     }
 
@@ -103,15 +110,15 @@ public class StoreVipConfigServiceImpl implements StoreVipConfigService {
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         //先查出用户
         StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(reqVO.getUserId(), reqVO.getStoreId());
-        if(ObjectUtils.isEmpty(storeUserDO)){
+        if (ObjectUtils.isEmpty(storeUserDO)) {
             //直接新增
-            storeUserDO =new StoreUserDO()
+            storeUserDO = new StoreUserDO()
                     .setStoreId(reqVO.getStoreId())
                     .setUserId(reqVO.getUserId())
                     .setType(AppEnum.member_user_type.MEMBER.getValue())
                     .setVipLevel(reqVO.getVipLevel());
             storeUserMapper.insert(storeUserDO);
-        }else{
+        } else {
             //修改
             storeUserDO.setVipLevel(reqVO.getVipLevel());
             storeUserMapper.updateById(storeUserDO);

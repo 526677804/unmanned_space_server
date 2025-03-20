@@ -435,6 +435,23 @@ public class AppStoreController {
         return success(true);
     }
 
+    @PostMapping("/getPrePayConfig/{roomId}")
+    @Operation(summary = "获取预付费配置")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<AppRoomPrePayConfigRespVO> getPrePayConfig(@PathVariable Long roomId) {
+        return success(storeInfoService.getPrePayConfig(roomId));
+    }
+
+    @PostMapping("/setPrePayConfig")
+    @Operation(summary = "保存预付费配置")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> setPrePayConfig(@RequestBody @Valid AppRoomPrePayConfigRespVO reqVO) {
+        storeInfoService.setPrePayConfig(reqVO);
+        return success(true);
+    }
+
 
     @PostMapping("/getVipConfig/{storeId}")
     @Operation(summary = "获取会员配置")
@@ -444,12 +461,12 @@ public class AppStoreController {
         return success(storeVipConfigService.getVipConfig(storeId));
     }
 
-    @PostMapping("/saveVipConfig/{storeId}")
+    @PostMapping("/saveVipConfig")
     @Operation(summary = "保存会员配置")
     @PreAuthenticated
     @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
-    public CommonResult<Boolean> saveVipConfig(@RequestBody @Valid List<AppStoreVipConfigSaveReqVO> reqVO,@PathVariable Long storeId) {
-        storeVipConfigService.saveVipConfig(reqVO,storeId);
+    public CommonResult<Boolean> saveVipConfig(@RequestBody @Valid AppStoreVipConfigSaveReqVO reqVO) {
+        storeVipConfigService.saveVipConfig(reqVO);
         return success(true);
     }
 

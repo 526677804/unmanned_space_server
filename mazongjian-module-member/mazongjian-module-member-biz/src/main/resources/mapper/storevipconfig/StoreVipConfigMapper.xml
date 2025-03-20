@@ -22,4 +22,6 @@
         and store_id=#{storeId}
         order by vip_level asc
     </select>
+    <select id="selectbyStoreId"
+            resultType="com.yanzu.module.member.dal.dataobject.storevipconfig.StoreVipConfigDO"></select>
 </mapper>

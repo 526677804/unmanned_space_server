@@ -11,6 +11,9 @@ import javax.validation.constraints.NotNull;
 @Data
 public class AppStoreVipConfigSaveReqVO {
 
+    @Schema(description = "配置ID")
+    private Long vipId;
+
     @Schema(description = "门店")
     @NotNull(message = "门店不能为空")
     private Long storeId;

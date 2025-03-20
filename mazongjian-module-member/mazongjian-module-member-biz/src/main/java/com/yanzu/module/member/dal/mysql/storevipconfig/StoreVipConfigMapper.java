@@ -22,4 +22,7 @@ public interface StoreVipConfigMapper extends BaseMapperX<StoreVipConfigDO> {
 
     int deleteByStoreId(Long storeId);
 
+    default List<StoreVipConfigDO> selectbyStoreId(Long storeId) {
+        return selectList(StoreVipConfigDO::getStoreId, storeId);
+    }
 }

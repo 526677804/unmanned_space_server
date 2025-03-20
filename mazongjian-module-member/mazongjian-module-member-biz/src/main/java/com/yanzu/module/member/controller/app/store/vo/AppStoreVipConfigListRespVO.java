@@ -6,6 +6,9 @@ import lombok.Data;
 @Data
 public class AppStoreVipConfigListRespVO {
 
+    @Schema(description = "vipId")
+    private Long vipId;
+
     @Schema(description = "门店")
     private Long storeId;
 

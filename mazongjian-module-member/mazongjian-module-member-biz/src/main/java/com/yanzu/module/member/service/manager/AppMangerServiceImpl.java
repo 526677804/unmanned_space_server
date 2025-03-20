@@ -15,9 +15,7 @@ import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
-import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
-import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
-import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
+import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.dal.dataobject.clearbill.ClearBillDO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
@@ -1025,5 +1023,12 @@ public class AppMangerServiceImpl implements AppMangerService {
             throw exception(IOT_GROUP_PAY_NOT_SUPPOT);
         }
         iotGroupPayService.auditYD(reqVO);
+    }
+
+    @Override
+    public PageResult<AppVipPageRespVO> getVipPage(AppVipPageReqVO reqVO) {
+        IPage<AppVipPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        appUserMapper.getVipPage(page, reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 }

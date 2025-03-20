@@ -10,9 +10,7 @@ import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
-import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
-import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
-import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
+import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayAuditYDReqVO;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayGetYDCancelAuthListRespVO;
 
@@ -98,5 +96,7 @@ public interface AppMangerService {
 
 
     void auditYD(IotGroupPayAuditYDReqVO reqVO);
+
+    PageResult<AppVipPageRespVO> getVipPage(AppVipPageReqVO reqVO);
 
 }

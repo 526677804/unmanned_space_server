@@ -27,6 +27,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -259,9 +260,9 @@ public class IndexServiceImpl implements IndexService {
         }
         if (!ObjectUtils.isEmpty(respVO.getPrePrice())) {
             //单价/60 得到每分钟价格
-            BigDecimal minutePrice = respVO.getPrice().divide(new BigDecimal(60.0));
+            BigDecimal minutePrice = respVO.getPrice().divide(new BigDecimal("60"), 4, RoundingMode.HALF_UP);
             //每分钟价格 * 计费区间 = 区间价格
-            BigDecimal unitPrice = minutePrice.multiply(new BigDecimal(respVO.getPreUnit()).setScale(4, BigDecimal.ROUND_CEILING));
+            BigDecimal unitPrice = minutePrice.multiply(new BigDecimal(respVO.getPreUnit()).setScale(4,RoundingMode.HALF_UP));
             respVO.setPreUnitPrice(unitPrice);
         }
         //找出所有房间的订单

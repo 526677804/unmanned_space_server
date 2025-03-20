@@ -108,7 +108,7 @@ public class PkgServiceImpl implements PkgService {
         storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
         // 判断美团团购id 是否 已经重复
         if (!ObjectUtils.isEmpty(reqVO.getMtId())) {
-            PkgInfoDO mtPkgInfo = pkgInfoMapper.selectOne(PkgInfoDO::getMtId, reqVO.getMtId());
+            PkgInfoDO mtPkgInfo = pkgInfoMapper.selectOne(PkgInfoDO::getMtId, reqVO.getMtId(), PkgInfoDO::getStoreId, reqVO.getStoreId());
             if (mtPkgInfo != null) {
                 // 新增套餐 传递的美团团购id已经存在则抛出异常
                 if (reqVO.getPkgId() == null) {
@@ -207,7 +207,7 @@ public class PkgServiceImpl implements PkgService {
         }
         // 校验用户权限
         storeInfoService.checkPermisson(pkgInfoDO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
-        pkgInfoMapper.updateEnable(pkgId,!pkgInfoDO.getEnable());
+        pkgInfoMapper.updateEnable(pkgId, !pkgInfoDO.getEnable());
     }
 
     @Override
