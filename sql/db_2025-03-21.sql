@@ -11,7 +11,7 @@
  Target Server Version : 80024
  File Encoding         : 65001
 
- Date: 30/12/2024 14:16:41
+ Date: 20/03/2025 22:00:24
 */
 
 SET NAMES utf8mb4;
@@ -176,7 +176,7 @@ CREATE TABLE `infra_config`  (
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '参数配置表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '参数配置表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of infra_config
@@ -187,7 +187,7 @@ INSERT INTO `infra_config` VALUES (8, 'url', 2, 'SkyWalking 监控的地址', 'u
 INSERT INTO `infra_config` VALUES (9, 'url', 2, 'Spring Boot Admin 监控的地址', 'url.spring-boot-admin', '', b'1', '', '1', '2023-04-07 13:41:16', '1', '2023-04-07 14:52:07', b'0');
 INSERT INTO `infra_config` VALUES (10, 'url', 2, 'Swagger 接口文档的地址', 'url.swagger', '', b'1', '', '1', '2023-04-07 13:41:16', '1', '2023-04-07 14:59:00', b'0');
 INSERT INTO `infra_config` VALUES (19, 'biz', 2, '用户管理-默认头像', 'sys.user.init-avatar', 'https://images.scyanzu.com/icon_avatar.png', b'1', NULL, '1', '2024-03-06 15:40:57', '1', '2024-03-06 15:40:57', b'0');
-INSERT INTO `infra_config` VALUES (20, 'app', 2, '小程序版本', 'app.version', '24.12.13', b'1', NULL, '1', '2024-10-21 11:15:56', '1', '2024-10-21 11:15:56', b'0');
+INSERT INTO `infra_config` VALUES (20, 'app', 2, '小程序版本', 'app.version', '24.10.21', b'1', NULL, '1', '2024-10-21 11:15:56', '1', '2024-10-21 11:15:56', b'0');
 
 -- ----------------------------
 -- Table structure for infra_data_source_config
@@ -447,11 +447,11 @@ CREATE TABLE `member_clear_info`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`clear_id`) USING BTREE,
-  INDEX `user_id`(`user_id`, `status`, `deleted`) USING BTREE,
-  INDEX `status`(`status`) USING BTREE,
-  INDEX `user_id_2`(`user_id`) USING BTREE,
-  INDEX `deleted`(`deleted`) USING BTREE,
-  INDEX `tenant_id`(`tenant_id`) USING BTREE
+  INDEX `user_id`(`user_id` ASC, `status` ASC, `deleted` ASC) USING BTREE,
+  INDEX `status`(`status` ASC) USING BTREE,
+  INDEX `user_id_2`(`user_id` ASC) USING BTREE,
+  INDEX `deleted`(`deleted` ASC) USING BTREE,
+  INDEX `tenant_id`(`tenant_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '保洁信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -481,8 +481,8 @@ CREATE TABLE `member_coupon_info`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`coupon_id`) USING BTREE,
-  INDEX `user_id`(`user_id`) USING BTREE,
-  INDEX `user_id_2`(`user_id`, `status`) USING BTREE
+  INDEX `user_id`(`user_id` ASC) USING BTREE,
+  INDEX `user_id_2`(`user_id` ASC, `status` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '优惠券信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -573,7 +573,7 @@ CREATE TABLE `member_face_blacklist`  (
   `user_id` bigint NOT NULL COMMENT '用户id',
   `store_id` bigint NULL DEFAULT NULL COMMENT '门店id',
   `photo_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '照片 url',
-  `photo_data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '照片 base64编码',
+  `photo_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '照片 base64编码',
   `admit_guid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '人员guid',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
   `creator` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '创建者',
@@ -599,7 +599,7 @@ CREATE TABLE `member_face_record`  (
   `device_sn` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '设备编号',
   `admit_guid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '人员guid',
   `photo_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '照片url',
-  `photo_data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '照片 base64编码',
+  `photo_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '照片 base64编码',
   `show_time` timestamp NULL DEFAULT NULL COMMENT '识别记录时间戳',
   `type` int UNSIGNED NOT NULL COMMENT '人员比对结果,1:比对成功 2:比对失败',
   `store_id` bigint NOT NULL COMMENT '门店Id',
@@ -610,10 +610,10 @@ CREATE TABLE `member_face_record`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `device_sn`(`device_sn`) USING BTREE,
-  INDEX `tenant_id`(`tenant_id`) USING BTREE,
-  INDEX `store_id`(`store_id`) USING BTREE,
-  INDEX `type`(`type`) USING BTREE
+  INDEX `device_sn`(`device_sn` ASC) USING BTREE,
+  INDEX `tenant_id`(`tenant_id` ASC) USING BTREE,
+  INDEX `store_id`(`store_id` ASC) USING BTREE,
+  INDEX `type`(`type` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '人脸识别记录表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -748,10 +748,10 @@ CREATE TABLE `member_order_info`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`order_id`) USING BTREE,
-  INDEX `store_id`(`store_id`) USING BTREE,
-  INDEX `room_id`(`room_id`) USING BTREE,
-  INDEX `user_id`(`user_id`) USING BTREE,
-  INDEX `status`(`status`, `deleted`, `tenant_id`) USING BTREE
+  INDEX `store_id`(`store_id` ASC) USING BTREE,
+  INDEX `room_id`(`room_id` ASC) USING BTREE,
+  INDEX `user_id`(`user_id` ASC) USING BTREE,
+  INDEX `status`(`status` ASC, `deleted` ASC, `tenant_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '订单信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -880,11 +880,11 @@ CREATE TABLE `member_product_order`  (
   `updater` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '更新者',
   `tenant_id` bigint NULL DEFAULT NULL COMMENT '租户编号',
   PRIMARY KEY (`order_id`) USING BTREE,
-  INDEX `store_id`(`store_id`) USING BTREE,
-  INDEX `room_id`(`room_id`) USING BTREE,
-  INDEX `order_no`(`order_no`) USING BTREE,
-  INDEX `user_id`(`user_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '商品购买订单表' ROW_FORMAT = DYNAMIC;
+  INDEX `store_id`(`store_id` ASC) USING BTREE,
+  INDEX `room_id`(`room_id` ASC) USING BTREE,
+  INDEX `order_no`(`order_no` ASC) USING BTREE,
+  INDEX `user_id`(`user_id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '商品购买订单表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of member_product_order
@@ -923,6 +923,9 @@ CREATE TABLE `member_room_info`  (
   `status` tinyint UNSIGNED NULL DEFAULT 0 COMMENT '状态 0禁用 1空闲 2待清洁 3使用中 4已预约 ',
   `svg_x` int NULL DEFAULT NULL COMMENT 'svg x轴坐标',
   `svg_y` int NULL DEFAULT NULL COMMENT 'svg y轴坐标',
+  `pre_price` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '预付费价格',
+  `pre_unit` int NULL DEFAULT 1 COMMENT '预付费单位',
+  `min_charge` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '最低消费价格',
   `creator` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '创建者',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updater` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '更新者',
@@ -935,11 +938,11 @@ CREATE TABLE `member_room_info`  (
 -- ----------------------------
 -- Records of member_room_info
 -- ----------------------------
-INSERT INTO `member_room_info` VALUES (20, '测试房间', NULL, 0, NULL, NULL, 12, 1, 0.01, 0.00, 0.01, 0.01, '60玉石麻将,WIFI,落地窗,舒适座椅,空调', 'https://images.scyanzu.com/f1134b356a1716f8236db36e962c6be2af8602ac62821ffd1b19d09d3a745648.jpg', 0, 2, '', '', 0, 0.00, 4, 3, 5, b'0', b'1', 1, NULL, NULL, '250', '2024-04-05 14:18:54', '250', '2024-04-09 09:15:26', b'0', 150);
-INSERT INTO `member_room_info` VALUES (21, '测试房间', NULL, 0, NULL, NULL, 13, 1, 0.01, 0.00, 0.01, 0.01, '沙发,落地窗,内窗,独立卫生间,舒适座椅', 'https://images.scyanzu.com/2b506458a945ddb67fb90c678828f23b0838da5062350954bece94024225429b.jpg', 0, 1, '', '', 0, 0.00, 4, 6, 5, b'0', b'1', 1, NULL, NULL, '250', '2024-04-05 14:23:04', '250', '2024-04-09 09:15:26', b'0', 150);
-INSERT INTO `member_room_info` VALUES (22, '测试房间', NULL, 0, NULL, NULL, 14, 1, 0.01, 0.00, 0.01, 0.01, '60玉石麻将,新风,有窗', 'https://images.scyanzu.com/f1134b356a1716f8236db36e962c6be2af8602ac62821ffd1b19d09d3a745648.jpg', 1, 1, '', '', 0, 0.00, 1, 1, 5, b'0', b'1', 1, NULL, NULL, '250', '2024-04-05 14:23:49', '250', '2024-04-09 09:15:26', b'0', 150);
-INSERT INTO `member_room_info` VALUES (23, '测试房间', NULL, 0, NULL, NULL, 15, 1, 0.01, 0.00, 0.01, 0.01, '落地窗,独立卫生间,新风,每日特价,空调,有窗', 'https://images.scyanzu.com/f1134b356a1716f8236db36e962c6be2af8602ac62821ffd1b19d09d3a745648.jpg', 1, 1, '', '', 0, 0.00, 1, 4, 5, b'0', b'1', 1, NULL, NULL, '250', '2024-04-05 14:24:20', '250', '2024-04-09 09:15:26', b'0', 150);
-INSERT INTO `member_room_info` VALUES (24, '测试房间', NULL, 0, NULL, NULL, 16, 1, 0.01, 0.00, 0.01, 0.01, '60玉石麻将,沙发,内窗,新风,每日特价', 'https://images.scyanzu.com/f1134b356a1716f8236db36e962c6be2af8602ac62821ffd1b19d09d3a745648.jpg', 0, 1, '', '', 0, 0.00, 2, 2, 5, b'0', b'1', 1, NULL, NULL, '250', '2024-04-05 23:13:45', '250', '2024-04-09 09:15:26', b'0', 150);
+INSERT INTO `member_room_info` VALUES (20, '测试房间', NULL, 0, NULL, NULL, 12, 1, 0.01, 0.00, 0.01, 0.01, '60玉石麻将,WIFI,落地窗,舒适座椅,空调', 'https://images.scyanzu.com/f1134b356a1716f8236db36e962c6be2af8602ac62821ffd1b19d09d3a745648.jpg', 0, 2, '', '', 0, 0.00, 4, 3, 5, b'0', b'1', 1, NULL, NULL, 0.00, 1, 0.00, '250', '2024-04-05 14:18:54', '250', '2024-04-09 09:15:26', b'0', 150);
+INSERT INTO `member_room_info` VALUES (21, '测试房间', NULL, 0, NULL, NULL, 13, 1, 0.01, 0.00, 0.01, 0.01, '沙发,落地窗,内窗,独立卫生间,舒适座椅', 'https://images.scyanzu.com/2b506458a945ddb67fb90c678828f23b0838da5062350954bece94024225429b.jpg', 0, 1, '', '', 0, 0.00, 4, 6, 5, b'0', b'1', 1, NULL, NULL, 0.00, 1, 0.00, '250', '2024-04-05 14:23:04', '250', '2024-04-09 09:15:26', b'0', 150);
+INSERT INTO `member_room_info` VALUES (22, '测试房间', NULL, 0, NULL, NULL, 14, 1, 0.01, 0.00, 0.01, 0.01, '60玉石麻将,新风,有窗', 'https://images.scyanzu.com/f1134b356a1716f8236db36e962c6be2af8602ac62821ffd1b19d09d3a745648.jpg', 1, 1, '', '', 0, 0.00, 1, 1, 5, b'0', b'1', 1, NULL, NULL, 0.00, 1, 0.00, '250', '2024-04-05 14:23:49', '250', '2024-04-09 09:15:26', b'0', 150);
+INSERT INTO `member_room_info` VALUES (23, '测试房间', NULL, 0, NULL, NULL, 15, 1, 0.01, 0.00, 0.01, 0.01, '落地窗,独立卫生间,新风,每日特价,空调,有窗', 'https://images.scyanzu.com/f1134b356a1716f8236db36e962c6be2af8602ac62821ffd1b19d09d3a745648.jpg', 1, 1, '', '', 0, 0.00, 1, 4, 5, b'0', b'1', 1, NULL, NULL, 0.00, 1, 0.00, '250', '2024-04-05 14:24:20', '250', '2024-04-09 09:15:26', b'0', 150);
+INSERT INTO `member_room_info` VALUES (24, '测试房间', NULL, 0, NULL, NULL, 16, 1, 0.01, 0.00, 0.01, 0.01, '60玉石麻将,沙发,内窗,新风,每日特价', 'https://images.scyanzu.com/f1134b356a1716f8236db36e962c6be2af8602ac62821ffd1b19d09d3a745648.jpg', 0, 1, '', '', 0, 0.00, 2, 2, 5, b'0', b'1', 1, NULL, NULL, 0.00, 1, 0.00, '250', '2024-04-05 23:13:45', '250', '2024-04-09 09:15:26', b'0', 150);
 
 -- ----------------------------
 -- Table structure for member_store_info
@@ -1025,7 +1028,7 @@ CREATE TABLE `member_store_meituan_info`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `store_id`(`store_id`, `tenant_id`) USING BTREE
+  INDEX `store_id`(`store_id` ASC, `tenant_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '门店美团平台信息' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -1052,7 +1055,7 @@ CREATE TABLE `member_store_sound_info`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`sound_id`) USING BTREE,
-  INDEX `store_id`(`store_id`) USING BTREE
+  INDEX `store_id`(`store_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '门店播放语音信息' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -1074,6 +1077,8 @@ CREATE TABLE `member_store_user`  (
   `gift_balance` decimal(10, 2) UNSIGNED NULL DEFAULT 0.00 COMMENT '赠送余额',
   `vip_blacklist` bit(1) NULL DEFAULT b'0' COMMENT '是否黑名单 0否 1是',
   `add_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加拉黑时间',
+  `total_score` int NULL DEFAULT 0 COMMENT '总积分',
+  `vip_level` int NULL DEFAULT 0 COMMENT 'vip等级',
   `creator` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '创建者',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updater` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '更新者',
@@ -1081,21 +1086,47 @@ CREATE TABLE `member_store_user`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `user_id`(`user_id`) USING BTREE,
-  INDEX `store_id`(`store_id`, `user_id`) USING BTREE,
-  INDEX `store_id_2`(`store_id`, `status`, `create_time`, `deleted`) USING BTREE,
-  INDEX `status`(`status`) USING BTREE,
-  INDEX `status_2`(`status`, `deleted`) USING BTREE
+  INDEX `user_id`(`user_id` ASC) USING BTREE,
+  INDEX `store_id`(`store_id` ASC, `user_id` ASC) USING BTREE,
+  INDEX `store_id_2`(`store_id` ASC, `status` ASC, `create_time` ASC, `deleted` ASC) USING BTREE,
+  INDEX `status`(`status` ASC) USING BTREE,
+  INDEX `status_2`(`status` ASC, `deleted` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 54 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '门店用户关系表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of member_store_user
 -- ----------------------------
-INSERT INTO `member_store_user` VALUES (49, 12, 247, NULL, 12, 0, 999.00, 0.00, b'0', '2024-12-13 17:26:45', '450', '2024-04-04 22:27:39', '450', '2024-04-09 09:16:26', b'0', 150);
-INSERT INTO `member_store_user` VALUES (50, 13, 247, NULL, 12, 0, 999.00, 0.00, b'0', '2024-12-13 17:26:45', '450', '2024-04-04 23:34:29', '450', '2024-04-09 09:16:26', b'0', 150);
-INSERT INTO `member_store_user` VALUES (51, 14, 247, NULL, 12, 0, 999.00, 0.00, b'0', '2024-12-13 17:26:45', '450', '2024-04-05 12:22:18', '450', '2024-04-09 09:16:26', b'0', 150);
-INSERT INTO `member_store_user` VALUES (52, 15, 247, NULL, 12, 0, 999.00, 0.00, b'0', '2024-12-13 17:26:45', '450', '2024-04-05 14:11:46', '450', '2024-04-09 09:16:26', b'0', 150);
-INSERT INTO `member_store_user` VALUES (53, 16, 247, NULL, 12, 0, 999.00, 0.00, b'0', '2024-12-13 17:26:45', '450', '2024-04-05 23:12:08', '450', '2024-04-09 09:16:26', b'0', 150);
+INSERT INTO `member_store_user` VALUES (49, 12, 247, NULL, 12, 0, 999.00, 0.00, b'0', '2024-12-13 17:26:45', 0, 0, '450', '2024-04-04 22:27:39', '450', '2024-04-09 09:16:26', b'0', 150);
+INSERT INTO `member_store_user` VALUES (50, 13, 247, NULL, 12, 0, 999.00, 0.00, b'0', '2024-12-13 17:26:45', 0, 0, '450', '2024-04-04 23:34:29', '450', '2024-04-09 09:16:26', b'0', 150);
+INSERT INTO `member_store_user` VALUES (51, 14, 247, NULL, 12, 0, 999.00, 0.00, b'0', '2024-12-13 17:26:45', 0, 0, '450', '2024-04-05 12:22:18', '450', '2024-04-09 09:16:26', b'0', 150);
+INSERT INTO `member_store_user` VALUES (52, 15, 247, NULL, 12, 0, 999.00, 0.00, b'0', '2024-12-13 17:26:45', 0, 0, '450', '2024-04-05 14:11:46', '450', '2024-04-09 09:16:26', b'0', 150);
+INSERT INTO `member_store_user` VALUES (53, 16, 247, NULL, 12, 0, 999.00, 0.00, b'0', '2024-12-13 17:26:45', 0, 0, '450', '2024-04-05 23:12:08', '450', '2024-04-09 09:16:26', b'0', 150);
+
+-- ----------------------------
+-- Table structure for member_store_vip_config
+-- ----------------------------
+DROP TABLE IF EXISTS `member_store_vip_config`;
+CREATE TABLE `member_store_vip_config`  (
+  `vip_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `store_id` bigint NOT NULL COMMENT '门店ID',
+  `vip_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '会员名称',
+  `vip_level` tinyint NOT NULL COMMENT '等级 从0开始',
+  `vip_discount` tinyint UNSIGNED NOT NULL DEFAULT 99 COMMENT '折扣 88=8.8折',
+  `score` int UNSIGNED NOT NULL COMMENT '积分门槛',
+  `creator` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '创建者',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updater` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '更新者',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
+  `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
+  PRIMARY KEY (`vip_id`) USING BTREE,
+  INDEX `store_id`(`store_id` ASC) USING BTREE,
+  INDEX `store_id_2`(`store_id` ASC, `vip_level` ASC, `deleted` ASC, `tenant_id` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '门店会员配置表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of member_store_vip_config
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for member_store_wxpay_config
@@ -1150,7 +1181,7 @@ CREATE TABLE `member_user`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uk_mobile`(`mobile`, `tenant_id`, `deleted`) USING BTREE COMMENT '手机号'
+  UNIQUE INDEX `uk_mobile`(`mobile` ASC, `tenant_id` ASC, `deleted` ASC) USING BTREE COMMENT '手机号'
 ) ENGINE = InnoDB AUTO_INCREMENT = 445 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -1219,7 +1250,7 @@ CREATE TABLE `qrtz_blob_triggers`  (
   `TRIGGER_GROUP` varchar(190) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `BLOB_DATA` blob NULL,
   PRIMARY KEY (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`) USING BTREE,
-  INDEX `SCHED_NAME`(`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`) USING BTREE,
+  INDEX `SCHED_NAME`(`SCHED_NAME` ASC, `TRIGGER_NAME` ASC, `TRIGGER_GROUP` ASC) USING BTREE,
   CONSTRAINT `qrtz_blob_triggers_ibfk_1` FOREIGN KEY (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`) REFERENCES `qrtz_triggers` (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
@@ -1287,12 +1318,12 @@ CREATE TABLE `qrtz_fired_triggers`  (
   `IS_NONCONCURRENT` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   `REQUESTS_RECOVERY` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   PRIMARY KEY (`SCHED_NAME`, `ENTRY_ID`) USING BTREE,
-  INDEX `IDX_QRTZ_FT_TRIG_INST_NAME`(`SCHED_NAME`, `INSTANCE_NAME`) USING BTREE,
-  INDEX `IDX_QRTZ_FT_INST_JOB_REQ_RCVRY`(`SCHED_NAME`, `INSTANCE_NAME`, `REQUESTS_RECOVERY`) USING BTREE,
-  INDEX `IDX_QRTZ_FT_J_G`(`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`) USING BTREE,
-  INDEX `IDX_QRTZ_FT_JG`(`SCHED_NAME`, `JOB_GROUP`) USING BTREE,
-  INDEX `IDX_QRTZ_FT_T_G`(`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`) USING BTREE,
-  INDEX `IDX_QRTZ_FT_TG`(`SCHED_NAME`, `TRIGGER_GROUP`) USING BTREE
+  INDEX `IDX_QRTZ_FT_TRIG_INST_NAME`(`SCHED_NAME` ASC, `INSTANCE_NAME` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_FT_INST_JOB_REQ_RCVRY`(`SCHED_NAME` ASC, `INSTANCE_NAME` ASC, `REQUESTS_RECOVERY` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_FT_J_G`(`SCHED_NAME` ASC, `JOB_NAME` ASC, `JOB_GROUP` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_FT_JG`(`SCHED_NAME` ASC, `JOB_GROUP` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_FT_T_G`(`SCHED_NAME` ASC, `TRIGGER_NAME` ASC, `TRIGGER_GROUP` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_FT_TG`(`SCHED_NAME` ASC, `TRIGGER_GROUP` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -1315,8 +1346,8 @@ CREATE TABLE `qrtz_job_details`  (
   `REQUESTS_RECOVERY` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `JOB_DATA` blob NULL,
   PRIMARY KEY (`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`) USING BTREE,
-  INDEX `IDX_QRTZ_J_REQ_RECOVERY`(`SCHED_NAME`, `REQUESTS_RECOVERY`) USING BTREE,
-  INDEX `IDX_QRTZ_J_GRP`(`SCHED_NAME`, `JOB_GROUP`) USING BTREE
+  INDEX `IDX_QRTZ_J_REQ_RECOVERY`(`SCHED_NAME` ASC, `REQUESTS_RECOVERY` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_J_GRP`(`SCHED_NAME` ASC, `JOB_GROUP` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -1447,18 +1478,18 @@ CREATE TABLE `qrtz_triggers`  (
   `MISFIRE_INSTR` smallint NULL DEFAULT NULL,
   `JOB_DATA` blob NULL,
   PRIMARY KEY (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`) USING BTREE,
-  INDEX `IDX_QRTZ_T_J`(`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`) USING BTREE,
-  INDEX `IDX_QRTZ_T_JG`(`SCHED_NAME`, `JOB_GROUP`) USING BTREE,
-  INDEX `IDX_QRTZ_T_C`(`SCHED_NAME`, `CALENDAR_NAME`) USING BTREE,
-  INDEX `IDX_QRTZ_T_G`(`SCHED_NAME`, `TRIGGER_GROUP`) USING BTREE,
-  INDEX `IDX_QRTZ_T_STATE`(`SCHED_NAME`, `TRIGGER_STATE`) USING BTREE,
-  INDEX `IDX_QRTZ_T_N_STATE`(`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`, `TRIGGER_STATE`) USING BTREE,
-  INDEX `IDX_QRTZ_T_N_G_STATE`(`SCHED_NAME`, `TRIGGER_GROUP`, `TRIGGER_STATE`) USING BTREE,
-  INDEX `IDX_QRTZ_T_NEXT_FIRE_TIME`(`SCHED_NAME`, `NEXT_FIRE_TIME`) USING BTREE,
-  INDEX `IDX_QRTZ_T_NFT_ST`(`SCHED_NAME`, `TRIGGER_STATE`, `NEXT_FIRE_TIME`) USING BTREE,
-  INDEX `IDX_QRTZ_T_NFT_MISFIRE`(`SCHED_NAME`, `MISFIRE_INSTR`, `NEXT_FIRE_TIME`) USING BTREE,
-  INDEX `IDX_QRTZ_T_NFT_ST_MISFIRE`(`SCHED_NAME`, `MISFIRE_INSTR`, `NEXT_FIRE_TIME`, `TRIGGER_STATE`) USING BTREE,
-  INDEX `IDX_QRTZ_T_NFT_ST_MISFIRE_GRP`(`SCHED_NAME`, `MISFIRE_INSTR`, `NEXT_FIRE_TIME`, `TRIGGER_GROUP`, `TRIGGER_STATE`) USING BTREE,
+  INDEX `IDX_QRTZ_T_J`(`SCHED_NAME` ASC, `JOB_NAME` ASC, `JOB_GROUP` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_JG`(`SCHED_NAME` ASC, `JOB_GROUP` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_C`(`SCHED_NAME` ASC, `CALENDAR_NAME` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_G`(`SCHED_NAME` ASC, `TRIGGER_GROUP` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_STATE`(`SCHED_NAME` ASC, `TRIGGER_STATE` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_N_STATE`(`SCHED_NAME` ASC, `TRIGGER_NAME` ASC, `TRIGGER_GROUP` ASC, `TRIGGER_STATE` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_N_G_STATE`(`SCHED_NAME` ASC, `TRIGGER_GROUP` ASC, `TRIGGER_STATE` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_NEXT_FIRE_TIME`(`SCHED_NAME` ASC, `NEXT_FIRE_TIME` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_NFT_ST`(`SCHED_NAME` ASC, `TRIGGER_STATE` ASC, `NEXT_FIRE_TIME` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_NFT_MISFIRE`(`SCHED_NAME` ASC, `MISFIRE_INSTR` ASC, `NEXT_FIRE_TIME` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_NFT_ST_MISFIRE`(`SCHED_NAME` ASC, `MISFIRE_INSTR` ASC, `NEXT_FIRE_TIME` ASC, `TRIGGER_STATE` ASC) USING BTREE,
+  INDEX `IDX_QRTZ_T_NFT_ST_MISFIRE_GRP`(`SCHED_NAME` ASC, `MISFIRE_INSTR` ASC, `NEXT_FIRE_TIME` ASC, `TRIGGER_GROUP` ASC, `TRIGGER_STATE` ASC) USING BTREE,
   CONSTRAINT `qrtz_triggers_ibfk_1` FOREIGN KEY (`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`) REFERENCES `qrtz_job_details` (`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
@@ -1855,7 +1886,7 @@ CREATE TABLE `system_dict_type`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `deleted_time` datetime NULL DEFAULT NULL COMMENT '删除时间',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `dict_type`(`type`) USING BTREE
+  UNIQUE INDEX `dict_type`(`type` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 210 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '字典类型表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -1979,7 +2010,7 @@ CREATE TABLE `system_login_log`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '系统访问记录' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '系统访问记录' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of system_login_log
@@ -2488,7 +2519,7 @@ CREATE TABLE `system_oauth2_access_token`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'OAuth2 访问令牌' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'OAuth2 访问令牌' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of system_oauth2_access_token
@@ -2599,7 +2630,7 @@ CREATE TABLE `system_oauth2_refresh_token`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'OAuth2 刷新令牌' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'OAuth2 刷新令牌' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of system_oauth2_refresh_token
@@ -3885,7 +3916,7 @@ CREATE TABLE `system_sms_code`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_mobile`(`mobile`) USING BTREE COMMENT '手机号'
+  INDEX `idx_mobile`(`mobile` ASC) USING BTREE COMMENT '手机号'
 ) ENGINE = InnoDB AUTO_INCREMENT = 485 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '手机验证码' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -3994,7 +4025,7 @@ CREATE TABLE `system_social_user`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社交用户表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社交用户表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of system_social_user
@@ -4017,7 +4048,7 @@ CREATE TABLE `system_social_user_bind`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社交绑定表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社交绑定表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of system_social_user_bind
@@ -4154,7 +4185,7 @@ CREATE TABLE `system_users`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `idx_username`(`username`, `update_time`, `tenant_id`) USING BTREE
+  UNIQUE INDEX `idx_username`(`username` ASC, `update_time` ASC, `tenant_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 128 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '用户信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -4215,18 +4246,18 @@ CREATE TABLE `yshop_store_product`  (
   `integral` int NULL DEFAULT 0 COMMENT '需要多少积分兑换 只在开启积分兑换时生效',
   `tenant_id` bigint NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `is_hot`(`is_hot`) USING BTREE,
-  INDEX `is_benefit`(`is_benefit`) USING BTREE,
-  INDEX `is_best`(`is_best`) USING BTREE,
-  INDEX `is_new`(`is_new`) USING BTREE,
-  INDEX `toggle_on_sale, is_del`(`deleted`) USING BTREE,
-  INDEX `price`(`price`) USING BTREE,
-  INDEX `is_show`(`is_show`) USING BTREE,
-  INDEX `sort`(`sort`) USING BTREE,
-  INDEX `sales`(`sales`) USING BTREE,
-  INDEX `add_time`(`create_time`) USING BTREE,
-  INDEX `is_postage`(`is_postage`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品表' ROW_FORMAT = DYNAMIC;
+  INDEX `is_hot`(`is_hot` ASC) USING BTREE,
+  INDEX `is_benefit`(`is_benefit` ASC) USING BTREE,
+  INDEX `is_best`(`is_best` ASC) USING BTREE,
+  INDEX `is_new`(`is_new` ASC) USING BTREE,
+  INDEX `toggle_on_sale, is_del`(`deleted` ASC) USING BTREE,
+  INDEX `price`(`price` ASC) USING BTREE,
+  INDEX `is_show`(`is_show` ASC) USING BTREE,
+  INDEX `sort`(`sort` ASC) USING BTREE,
+  INDEX `sales`(`sales` ASC) USING BTREE,
+  INDEX `add_time`(`create_time` ASC) USING BTREE,
+  INDEX `is_postage`(`is_postage` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of yshop_store_product
@@ -4243,8 +4274,8 @@ CREATE TABLE `yshop_store_product_attr`  (
   `attr_values` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '属性值',
   `tenant_id` bigint NULL DEFAULT NULL COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `store_id`(`product_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品属性表' ROW_FORMAT = DYNAMIC;
+  INDEX `store_id`(`product_id` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品属性表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of yshop_store_product_attr
@@ -4261,8 +4292,8 @@ CREATE TABLE `yshop_store_product_attr_result`  (
   `change_time` datetime NOT NULL COMMENT '上次修改时间',
   `tenant_id` bigint NULL DEFAULT NULL COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `product_id`(`product_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品属性详情表' ROW_FORMAT = DYNAMIC;
+  INDEX `product_id`(`product_id` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品属性详情表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of yshop_store_product_attr_result
@@ -4295,9 +4326,9 @@ CREATE TABLE `yshop_store_product_attr_value`  (
   `integral` int(10) UNSIGNED ZEROFILL NULL DEFAULT 0000000000 COMMENT '需要多少积分兑换',
   `tenant_id` bigint NULL DEFAULT NULL COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `unique`(`unique`, `sku`) USING BTREE,
-  INDEX `store_id`(`product_id`, `sku`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品属性值表' ROW_FORMAT = DYNAMIC;
+  UNIQUE INDEX `unique`(`unique` ASC, `sku` ASC) USING BTREE,
+  INDEX `store_id`(`product_id` ASC, `sku` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品属性值表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of yshop_store_product_attr_value
@@ -4321,7 +4352,7 @@ CREATE TABLE `yshop_store_product_brand`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '商品品牌' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '商品品牌' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of yshop_store_product_brand
@@ -4348,7 +4379,7 @@ CREATE TABLE `yshop_store_product_category`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `tenant_id` bigint NOT NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '商品分类' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '商品分类' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of yshop_store_product_category
@@ -4371,10 +4402,10 @@ CREATE TABLE `yshop_store_product_relation`  (
   `deleted` bit(1) NULL DEFAULT b'0' COMMENT '删除',
   `tenant_id` bigint NULL DEFAULT NULL COMMENT '租户ID',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uid`(`uid`, `product_id`, `type`, `category`) USING BTREE,
-  INDEX `type`(`type`) USING BTREE,
-  INDEX `category`(`category`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品点赞和收藏表' ROW_FORMAT = DYNAMIC;
+  UNIQUE INDEX `uid`(`uid` ASC, `product_id` ASC, `type` ASC, `category` ASC) USING BTREE,
+  INDEX `type`(`type` ASC) USING BTREE,
+  INDEX `category`(`category` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品点赞和收藏表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of yshop_store_product_relation
@@ -4426,7 +4457,7 @@ CREATE TABLE `yshop_store_product_rule`  (
   `deleted` bit(1) NULL DEFAULT b'0' COMMENT '删除',
   `tenant_id` bigint NULL DEFAULT 0 COMMENT '租户编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品规则值(规格)表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品规则值(规格)表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of yshop_store_product_rule
