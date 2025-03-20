@@ -268,7 +268,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //预付费
             mathPrice = roomInfoDO.getPrePrice();
         } else {
-            mathPrice = mathPrice(roomInfoDO.getStoreId(), roomInfoDO.getPrice(), roomInfoDO.getDeposit(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO, pkgInfoDO);
+            mathPrice = mathPrice(roomInfoDO.getStoreId(), userId, roomInfoDO.getPrice(), roomInfoDO.getDeposit(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO, pkgInfoDO);
         }
         if (ObjectUtils.isEmpty(ignoreOrderId)) {
             //下单
@@ -632,7 +632,7 @@ public class AppOrderServiceImpl implements AppOrderService {
 
 
     @Override
-    public BigDecimal mathPrice(Long storeId, BigDecimal price, BigDecimal deposit, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO) {
+    public BigDecimal mathPrice(Long storeId, Long userId, BigDecimal price, BigDecimal deposit, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO) {
         BigDecimal totalPrice = BigDecimal.ZERO;
         if (!ObjectUtils.isEmpty(pkgInfoDO)) {
             //选了套餐  直接返回套餐的售价
@@ -656,7 +656,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //先看门店有没有VIP价格配置  以及此用户是不是会员
             List<StoreVipConfigDO> vipConfigDOS = storeVipConfigMapper.selectbyStoreId(storeId);
             if (!CollectionUtils.isAnyEmpty(vipConfigDOS)) {
-                StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(getLoginUserId(), storeId);
+                StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, storeId);
                 if (!ObjectUtils.isEmpty(storeUserDO) && storeUserDO.getVipLevel().compareTo(Byte.parseByte("0")) != 0) {
                     //找出折扣
                     for (StoreVipConfigDO x : vipConfigDOS) {
@@ -844,7 +844,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Override
     @Transactional
     public Long save(OrderSaveReqVO reqVO) {
-
+        log.info("订单创建:{}",reqVO);
         //说明一下  只有不存在微信付款时，才直接调用此接口
         //如果是微信付款的  那么是由支付回调来调用的此接口
         if (ObjectUtils.isEmpty(reqVO.getUserId())) {

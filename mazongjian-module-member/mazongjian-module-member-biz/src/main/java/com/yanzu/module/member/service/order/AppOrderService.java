@@ -17,7 +17,7 @@ public interface AppOrderService {
 
     WxPayOrderRespVO preOrder(String orderNo, Long userId, Integer payType, Long roomId, Date startTime, Date endTime, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO, Long ignoreOrderId, boolean tongxiao, boolean preSubmit, boolean wxpay);
 
-    BigDecimal mathPrice(Long storeId,BigDecimal price, BigDecimal deposit, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO);
+    BigDecimal mathPrice(Long storeId, Long userId,BigDecimal price, BigDecimal deposit, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO);
 
     Long save(OrderSaveReqVO reqVO);
 
