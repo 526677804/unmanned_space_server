@@ -11,9 +11,7 @@ import com.yanzu.module.member.controller.app.manager.vo.*;
 import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
-import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
-import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
-import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
+import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayAuditYDReqVO;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPayGetYDCancelAuthListRespVO;
 import com.yanzu.module.member.service.manager.AppMangerService;
@@ -64,10 +62,17 @@ public class AppManagerController {
     }
 
     @PostMapping("/getMemberPage")
-    @Operation(summary = "获取会员分页列表")
+    @Operation(summary = "获取用户分页列表")
     @PreAuthenticated
     public CommonResult<PageResult<AppMemberPageRespVO>> getMemberPage(@RequestBody @Valid AppMemberPageReqVO reqVO) {
         return success(appMangerService.getMemberPage(reqVO));
+    }
+
+    @PostMapping("/getVipPage")
+    @Operation(summary = "获取会员分页列表")
+    @PreAuthenticated
+    public CommonResult<PageResult<AppVipPageRespVO>> getVipPage(@RequestBody @Valid AppVipPageReqVO reqVO) {
+        return success(appMangerService.getVipPage(reqVO));
     }
 
 

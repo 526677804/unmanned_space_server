@@ -123,7 +123,7 @@ public class RoomInfoDO extends BaseDO {
     @Schema(description = "跳过清洁")
     private Boolean jumpClear;
 
-    @Schema(description = "是否预定")
+    @Schema(description = "是否可预定")
     private Boolean reserve;
 
     @Schema(description = "svg X轴坐标")
@@ -131,5 +131,16 @@ public class RoomInfoDO extends BaseDO {
 
     @Schema(description = "svg Y轴坐标")
     private Integer svgY;
+
+    @Schema(description = "预付费价格")
+    private BigDecimal prePrice;
+
+    @Schema(description = "预付费计价分钟")
+    private Integer preUnit;
+
+    @Schema(description = "最低消费价格")
+    private BigDecimal minCharge;
+
+
 
 }

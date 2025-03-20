@@ -120,7 +120,8 @@
 
     </select>
     <select id="getInfoById" resultType="com.yanzu.module.member.controller.app.store.vo.AppRoomListVO">
-        select r.room_id, r.room_name, r.store_id,r.status, s.store_name,s.order_webhook,r.ban_time_start,r.ban_time_end,r.tenant_id
+        select r.room_id, r.room_name, r.store_id,r.status, s.store_name,s.order_webhook,r.ban_time_start,r.ban_time_end,r.tenant_id,
+               r.pre_price,r.pre_unit,r.min_charge
         from member_room_info r
                  left join member_store_info s ON s.store_id = r.store_id
         where r.deleted = 0

@@ -266,6 +266,11 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //任意一个为空都不行
             throw exception(ROOM_BAN_TIME_ERROR);
         }
+        if (!ObjectUtils.isEmpty(reqVO.getPrePrice())) {
+            if (ObjectUtils.isEmpty(reqVO.getPreUnit()) || ObjectUtils.isEmpty(reqVO.getMinCharge())) {
+                throw exception(ROOM_PRE_CONFIG_ERROR);
+            }
+        }
 
         if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //新增
@@ -571,6 +576,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
                 orderInfoDO.setEndTime(now);
                 orderInfoDO.setStatus(AppEnum.order_status.FINISH.getValue());
                 orderInfoMapper.updateById(orderInfoDO);
+                //同步一下预订平台的房间占用信息
+                iotService.updateStock(roomId);
             }
         } else if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.CLEAR.getValue()) == 0) {
             //待清洁  房间状态改为空闲
@@ -930,11 +937,41 @@ public class StoreInfoServiceImpl implements StoreInfoService {
     public void updateRoomLock(AppUpRoomLockReqVO reqVO) {
         //查出这个房间的密码锁编号
         String sn = deviceInfoMapper.getSnByRoomIdAndType(reqVO.getRoomId(), AppEnum.device_type.LOCK.getValue());
-        if(!ObjectUtils.isEmpty(sn)) {
-            AppAddLockReqVO addLockReqVO=new AppAddLockReqVO();
+        if (!ObjectUtils.isEmpty(sn)) {
+            AppAddLockReqVO addLockReqVO = new AppAddLockReqVO();
             addLockReqVO.setDeviceSn(sn).setUpData(reqVO.getUpData());
             iotService.addLock(addLockReqVO);
         }
+    }
+
+    @Override
+    public AppRoomPrePayConfigRespVO getPrePayConfig(Long roomId) {
+        AppRoomListVO appRoomListVO = roomInfoMapper.getInfoById(roomId);
+        if (ObjectUtils.isEmpty(appRoomListVO)) {
+            throw exception(DATA_NOT_EXISTS);
+        }
+        //校验门店权限
+        checkPermisson(appRoomListVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+        AppRoomPrePayConfigRespVO respVO = new AppRoomPrePayConfigRespVO();
+        BeanUtils.copyProperties(appRoomListVO, respVO);
+        return respVO;
+    }
+
+    @Override
+    @Transactional
+    public void setPrePayConfig(AppRoomPrePayConfigRespVO reqVO) {
+        AppRoomListVO appRoomListVO = roomInfoMapper.getInfoById(reqVO.getRoomId());
+        if (ObjectUtils.isEmpty(appRoomListVO)) {
+            throw exception(DATA_NOT_EXISTS);
+        }
+        //校验门店权限
+        checkPermisson(appRoomListVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+        RoomInfoDO updateDO=new RoomInfoDO()
+                .setRoomId(reqVO.getRoomId())
+                .setPrePrice(reqVO.getPrePrice())
+                .setPreUnit(reqVO.getPreUnit())
+                .setMinCharge(reqVO.getMinCharge());
+        roomInfoMapper.updateById(updateDO);
     }
 
 

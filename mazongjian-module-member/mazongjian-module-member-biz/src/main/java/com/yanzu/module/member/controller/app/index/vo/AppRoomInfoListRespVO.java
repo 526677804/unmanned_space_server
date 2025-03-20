@@ -118,4 +118,18 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "svgY轴坐标")
     private Integer svgY;
 
+    @Schema(description = "预付费价格")
+    private BigDecimal prePrice;
+
+    @Schema(description = "预付费计价分钟")
+    private Integer preUnit;
+
+    @Schema(description = "最低消费价格")
+    private BigDecimal minCharge;
+
+    @Schema(description = "预付费单位价格")
+    private BigDecimal preUnitPrice;
+
+    private List<AppRoomVipPriceRespVO> vipPriceList;
+
 }

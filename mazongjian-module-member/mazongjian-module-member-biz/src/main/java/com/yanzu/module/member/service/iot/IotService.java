@@ -453,7 +453,7 @@ public class IotService {
             String orderId = data.getString("orderId");
             Date beginTime = data.getDate("beginTime");
             Date endTime = data.getDate("endTime");
-            appOrderService.preOrder(orderId, user.getId(), AppEnum.order_pay_type.YUDING.getValue(), roomId, beginTime, endTime, null, null, null, false, false);
+            appOrderService.preOrder(orderId, user.getId(), AppEnum.order_pay_type.YUDING.getValue(), roomId, beginTime, endTime, null, null, null, false, false, false);
             //校验通过后创建订单
             OrderSaveReqVO reqVO = new OrderSaveReqVO();
             reqVO.setUserId(user.getId())
@@ -543,7 +543,7 @@ public class IotService {
             // 获取图片的字节数据
             if (entity != null) {
                 byte[] imageBytes = EntityUtils.toByteArray(entity);
-                
+
                 String base64Image = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(imageBytes);
                 return base64Image;
             }

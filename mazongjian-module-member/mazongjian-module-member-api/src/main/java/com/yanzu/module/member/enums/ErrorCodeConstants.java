@@ -36,7 +36,7 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_START_TIME_ERROR = new ErrorCode(1004004005, "订单开始时间不能小于当前时间！");
     ErrorCode ORDER_START_TIME_GT_END_ERROR = new ErrorCode(1004004006, "订单开始时间不能小于结束时间！");
     ErrorCode ORDER_START_TIME_MAX_ERROR = new ErrorCode(1004004007, "订单开始时间超过允许提前下单的时间！");
-    ErrorCode ORDER_TIME_CHECK_ERROR = new ErrorCode(1004004008, "您选择的时间段该房间不可用，请修改时间或更换房间！");
+    ErrorCode ORDER_TIME_CHECK_ERROR = new ErrorCode(1004004008, "您选择的时间段该场地不可用，请修改时间！");
     ErrorCode TIME_UNIT_ERROR = new ErrorCode(1004004009, "时间单位错误，必须以0.5小时/30分钟为一个单位！");
     ErrorCode PAY_TYPE_ERROR = new ErrorCode(1004004010, "支付方式选择错误！");
     ErrorCode ORDER_TIME_MIN_ERROR = new ErrorCode(1004004011, "选择的时长不能低于4个小时！");
@@ -108,6 +108,7 @@ public interface ErrorCodeConstants {
 
     ErrorCode PRODUCT_OUT_OF_STOCK = new ErrorCode(1004004106, "商品库存不足");
 
+    ErrorCode ROOM_PRE_CONFIG_ERROR = new ErrorCode(1004004107, "预付费配置参数不完整");
 
     ErrorCode PKG_BUY_MAX_NUM_ERROR = new ErrorCode(1004004200, "超过购买该套餐的最大数量限制！");
     ErrorCode PKG_BUY_DISABLE_ERROR = new ErrorCode(1004004201, "该套餐不支持购买！");
@@ -115,7 +116,7 @@ public interface ErrorCodeConstants {
     ErrorCode PKG_USE_STORE_ERROR = new ErrorCode(1004004203, "该套餐不能在当前门店使用！");
 
     ErrorCode PKG_USE_CHECK_TIME_ERROR = new ErrorCode(1004004204, "该套餐可用时间段与订单时间段不匹配！");
-    ErrorCode PKG_USE_CHECK_ROOM_TYPE_ERROR = new ErrorCode(1004004205, "该套餐可用房间类型与订单不匹配！");
+    ErrorCode PKG_USE_CHECK_ROOM_TYPE_ERROR = new ErrorCode(1004004205, "该套餐可用场地类型与订单不匹配！");
     ErrorCode PKG_USE_CHECK_WEEK_ERROR = new ErrorCode(1004004206, "该套餐可用星期与订单不匹配！");
     ErrorCode PKG_USE_CHECK_HOLIDAY_ERROR = new ErrorCode(1004004207, "该套餐节假日不可使用！");
     ErrorCode PKG_USE_CHECK_HOUR_ERROR = new ErrorCode(1004004208, "该套餐的抵扣时长与选择的订单时长不匹配！");
@@ -129,6 +130,9 @@ public interface ErrorCodeConstants {
     ErrorCode PKGINFO_DYID_EXIST = new ErrorCode(1004004213, "该抖音团购id已与其他套餐绑定,请更换其他团购id!");
     ErrorCode PKGINFO_KSID_EXIST = new ErrorCode(1004004214, "该抖音团购id已与其他套餐绑定,请更换其他团购id!");
     ErrorCode PKG_USE_CHECK_ROOM_ERROR = new ErrorCode(1004004215, "该套餐可用房间与订单不匹配！");
+
+    ErrorCode STORE_VIP_CONFIG_SCORE_ERROR = new ErrorCode(1004004230, "存在重复的积分门槛！");
+    ErrorCode STORE_VIP_CONFIG_MAX_ERROR = new ErrorCode(1004004231, "最多支持设置三个会员等级！");
 
     ErrorCode STORE_WX_PAY_CONFIG_NOT_FOUND = new ErrorCode(1004004999, "该门店暂不支持微信支付！");
     ErrorCode DATA_NOT_EXISTS = new ErrorCode(1004005000, "数据不存在");

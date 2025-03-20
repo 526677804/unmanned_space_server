@@ -37,6 +37,8 @@ public class WxPayOrderInfo implements Serializable {
     private int price;
     //是否通宵
     private Boolean nightLong;
+    //是否预付费
+    private Boolean preSubmit;
     //回调消息类型 1=下单 2=续费 3=充值 4=套餐购买
     private AppWxPayTypeEnum wxPayTypeEnum;
 
@@ -58,7 +60,6 @@ public class WxPayOrderInfo implements Serializable {
     }
 
     /**
-     *
      * @param wxPayTypeEnum
      * @param orderNo
      * @param userId
@@ -67,7 +68,7 @@ public class WxPayOrderInfo implements Serializable {
      * @param price
      * @param pkgId
      */
-    public WxPayOrderInfo(AppWxPayTypeEnum wxPayTypeEnum,String orderNo, Long userId, Long tenantId, Long storeId, int price, Long pkgId) {
+    public WxPayOrderInfo(AppWxPayTypeEnum wxPayTypeEnum, String orderNo, Long userId, Long tenantId, Long storeId, int price, Long pkgId) {
         this.wxPayTypeEnum = wxPayTypeEnum;
         this.orderNo = orderNo;
         this.userId = userId;
@@ -91,7 +92,7 @@ public class WxPayOrderInfo implements Serializable {
      * @param price
      * @param nightLong
      */
-    public WxPayOrderInfo(AppWxPayTypeEnum wxPayTypeEnum,String orderNo, Long userId, Long tenantId, Long storeId, Long roomId, Date startTime, Date endTime, Long couponId,Long pkgId, Long ignoreOrderId, int price, Boolean nightLong) {
+    public WxPayOrderInfo(AppWxPayTypeEnum wxPayTypeEnum, String orderNo, Long userId, Long tenantId, Long storeId, Long roomId, Date startTime, Date endTime, Long couponId, Long pkgId, Long ignoreOrderId, int price, Boolean nightLong, Boolean preSubmit) {
         this.wxPayTypeEnum = wxPayTypeEnum;
         this.orderNo = orderNo;
         this.userId = userId;
@@ -105,6 +106,7 @@ public class WxPayOrderInfo implements Serializable {
         this.ignoreOrderId = ignoreOrderId;
         this.price = price;
         this.nightLong = nightLong;
+        this.preSubmit = preSubmit;
     }
 }
 

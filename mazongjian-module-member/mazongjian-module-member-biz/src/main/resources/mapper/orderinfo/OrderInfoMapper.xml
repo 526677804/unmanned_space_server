@@ -429,8 +429,8 @@
     <select id="countByRoomCurrent" resultType="java.lang.Integer">
         select count(1)
         from member_order_info
-        where deleted = 0
-        and status = 1
+        where deleted = 0 and status!=3
+        and start_time&lt;=now() and end_time>=now()
         and room_id = #{roomId}
         <if test="null!=ignoreOrderId and ignoreOrderId!=''">
             and order_id !=#{ignoreOrderId}
@@ -521,7 +521,7 @@
         select t.* from (
         SELECT
         s.store_name,
-        (o.price) price,
+        (o.pay_price) price,
         '预订' AS payType,
         o.create_time
         FROM

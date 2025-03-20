@@ -159,4 +159,8 @@ public interface StoreInfoService {
 
     void updateRoomLock(AppUpRoomLockReqVO reqVO);
 
+    AppRoomPrePayConfigRespVO getPrePayConfig(Long roomId);
+
+    void setPrePayConfig(AppRoomPrePayConfigRespVO reqVO);
+
 }

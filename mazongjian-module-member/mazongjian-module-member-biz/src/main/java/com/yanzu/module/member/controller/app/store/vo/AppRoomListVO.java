@@ -3,6 +3,8 @@ package com.yanzu.module.member.controller.app.store.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @PACKAGE_NAME: com.yanzu.module.member.controller.app.store.vo
  * @DESCRIPTION:
@@ -41,6 +43,15 @@ public class AppRoomListVO {
      * 租户ID
      */
     private Long tenantId;
+
+    @Schema(description = "预付费价格")
+    private BigDecimal prePrice;
+
+    @Schema(description = "预付费计价分钟")
+    private Integer preUnit;
+
+    @Schema(description = "最低消费价格")
+    private BigDecimal minCharge;
 
 
 

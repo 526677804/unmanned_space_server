@@ -65,4 +65,25 @@
         from member_user
         where mobile=#{mobile} and tenant_id = #{tenantId} and status=0
     </select>
+    <select id="getVipPage" resultType="com.yanzu.module.member.controller.app.user.vo.AppVipPageRespVO">
+        select m.id,
+        m.nickname,
+        m.avatar,
+        REPLACE(m.mobile, SUBSTRING(m.mobile, 4, 4), '****') mobile,
+        m.create_time,
+        vip.vip_name,
+        su.vip_level,
+        su.total_score score
+        from member_user m
+        left join member_store_user su ON su.user_id = m.id
+        left join member_store_vip_config vip ON vip.vip_level = su.vip_level
+        where m.deleted=0 and su.deleted = 0
+          and su.store_id=#{reqVO.storeId} and su.vip_level>0
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.name and reqVO.name!=''">
+                and ( locate(#{reqVO.name},m.nickname)>0 OR locate(#{reqVO.name},m.mobile)>0 )
+            </if>
+        </if>
+        order by su.vip_level desc
+    </select>
 </mapper>

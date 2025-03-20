@@ -85,4 +85,6 @@ public class PayOrderDO extends BaseDO {
      */
     private LocalDateTime refundTime;
 
+    private Long tenantId;
+
 }

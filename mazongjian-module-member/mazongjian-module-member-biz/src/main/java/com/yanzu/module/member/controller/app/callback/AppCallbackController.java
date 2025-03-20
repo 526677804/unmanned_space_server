@@ -56,9 +56,8 @@ public class AppCallbackController {
     @Operation(summary = "微信退款回调")
     @PermitAll // 无需登录
     @OperateLog(enable = false) // 禁用操作日志，因为没有操作人
-    public String updateOrderRefunded(@RequestParam(required = false) Map<String, String> params,
-                                      @RequestBody(required = false) String body) {
-        return payOrderService.updateOrderRefunded(params, body);
+    public String updateOrderRefunded(@RequestBody String xmlData) {
+        return payOrderService.updateOrderRefunded(xmlData);
     }
 
     @RequestMapping(value = "/meituan", method = {RequestMethod.GET, RequestMethod.HEAD})

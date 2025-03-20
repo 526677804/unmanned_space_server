@@ -9,6 +9,8 @@ import com.yanzu.module.member.controller.admin.user.vo.AppUserPageReqVO;
 import com.yanzu.module.member.controller.app.game.vo.AppGameUserListRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
 import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
+import com.yanzu.module.member.controller.app.user.vo.AppVipPageReqVO;
+import com.yanzu.module.member.controller.app.user.vo.AppVipPageRespVO;
 import com.yanzu.module.member.dal.dataobject.user.AppUserDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -56,4 +58,7 @@ public interface AppUserMapper extends BaseMapperX<AppUserDO> {
     IPage<AppMemberPageRespVO> getMemberPage(@Param("page") IPage<AppMemberPageRespVO> page, @Param("reqVO") AppMemberPageReqVO reqVO);
 
     String getNameById(Long userId);
+
+    IPage<AppVipPageRespVO> getVipPage(@Param("page") IPage<AppVipPageRespVO> page, @Param("reqVO") AppVipPageReqVO reqVO);
+
 }

@@ -15,9 +15,7 @@ import com.yanzu.module.member.controller.app.order.vo.OrderListRespVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderPageReqVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderRespVO;
-import com.yanzu.module.member.controller.app.user.vo.AppCouponPageRespVO;
-import com.yanzu.module.member.controller.app.user.vo.AppMemberPageReqVO;
-import com.yanzu.module.member.controller.app.user.vo.AppMemberPageRespVO;
+import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.dal.dataobject.clearbill.ClearBillDO;
 import com.yanzu.module.member.dal.dataobject.clearinfo.ClearInfoDO;
 import com.yanzu.module.member.dal.dataobject.couponinfo.CouponInfoDO;
@@ -684,7 +682,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         if (orderInfoDO.getEndTime().before(reqVO.getEndTime())) {
             //增加时间
             //管理员续费  不需要算钱了，但是要校验时间冲突
-            appOrderService.preOrder(null, userId, null, orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), false, false);
+            appOrderService.preOrder(null, userId, null, orderInfoDO.getRoomId(), orderInfoDO.getEndTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), false, false, false);
             //如果状态是已完成  则状态改成进行中 并触发一次通电 还要清除保洁订单信息
             if (orderInfoDO.getStatus().compareTo(AppEnum.order_status.FINISH.getValue()) == 0 && reqVO.getEndTime().after(new Date())) {
                 orderInfoDO.setStatus(AppEnum.order_status.START.getValue());
@@ -836,7 +834,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         flag = orderInfoDO.getStatus().compareTo(AppEnum.order_status.PENDING.getValue()) == 0 || orderInfoDO.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0;
         if (flag) {
             //检查目标房间的时间是否占用
-            appOrderService.preOrder(null, orderInfoDO.getUserId(), null, reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false);
+            appOrderService.preOrder(null, orderInfoDO.getUserId(), null, reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, reqVO.getOrderId(), orderInfoDO.getNightLong(), false, false);
             //开始修改
             //改时间
             orderInfoDO.setStartTime(reqVO.getStartTime());
@@ -917,7 +915,7 @@ public class AppMangerServiceImpl implements AppMangerService {
         //定义一些参数 备用
         OrderInfoDO orderInfoDO = new OrderInfoDO();
         //下单检查一遍可用时间
-        WxPayOrderRespVO wxPayOrderRespVO = appOrderService.preOrder(null, user.getId(), null, reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, null, false, false);
+        WxPayOrderRespVO wxPayOrderRespVO = appOrderService.preOrder(null, user.getId(), null, reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(), null, null, null, false, false, false);
         //生成订单，并修改房间状态
         orderInfoDO.setOrderNo(getOrderNo());
         orderInfoDO.setOrderKey(HexUtil.encodeHexStr(orderInfoDO.getOrderNo() + UUID.randomUUID().toString()));
@@ -1025,5 +1023,12 @@ public class AppMangerServiceImpl implements AppMangerService {
             throw exception(IOT_GROUP_PAY_NOT_SUPPOT);
         }
         iotGroupPayService.auditYD(reqVO);
+    }
+
+    @Override
+    public PageResult<AppVipPageRespVO> getVipPage(AppVipPageReqVO reqVO) {
+        IPage<AppVipPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        appUserMapper.getVipPage(page, reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 }

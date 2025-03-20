@@ -59,22 +59,20 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
             }
         }
         //有的设备每个房间只能存在一个
-        if (!ObjectUtils.isEmpty(createReqVO.getRoomId())) {
-            switch (createReqVO.getType()) {
-                case 1:
-                case 3:
-                case 5:
-                case 9:
-                case 10:
-                case 11:
-                case 12:
-                case 13:
-                    int c = deviceInfoMapper.countByTypeAndRoomId(createReqVO.getType(), createReqVO.getRoomId());
-                    if (c > 0) {
-                        throw exception(DEVICE_ADD_MAX_NUM_ERROR);
-                    }
-                    break;
-            }
+        switch (createReqVO.getType()) {
+            case 1:
+            case 3:
+            case 5:
+            case 9:
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+                int c = deviceInfoMapper.countByTypeAndRoomId(createReqVO.getType(), createReqVO.getRoomId());
+                if (c > 0) {
+                    throw exception(DEVICE_ADD_MAX_NUM_ERROR);
+                }
+                break;
         }
         //先在iot平台绑定设备
         String data = iotService.bind(createReqVO.getDeviceSn());
@@ -196,7 +194,7 @@ public class DeviceInfoServiceImpl implements DeviceInfoService {
     public void control(DeviceControlReqVO reqVO) {
         DeviceInfoDO deviceInfoDO = deviceInfoMapper.selectById(reqVO.getDeviceId());
         //只能操作自己的设备
-        if (!ObjectUtils.isEmpty(deviceInfoDO) && deviceInfoDO.getCreator().equals(String.valueOf(getLoginUserId()))) {
+        if (!ObjectUtils.isEmpty(deviceInfoDO)) {
             IotDeviceBaseVO<IotDeviceContrlReqVO> vo = new IotDeviceBaseVO();
             List<IotDeviceContrlReqVO> param = new ArrayList<>(1);
             IotDeviceContrlReqVO iotDeviceContrlReqVO = new IotDeviceContrlReqVO();

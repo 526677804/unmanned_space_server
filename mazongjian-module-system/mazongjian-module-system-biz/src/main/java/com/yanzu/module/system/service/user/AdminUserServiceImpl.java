@@ -9,6 +9,7 @@ import com.yanzu.framework.common.exception.ServiceException;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.framework.common.util.collection.CollectionUtils;
 import com.yanzu.framework.datapermission.core.util.DataPermissionUtils;
+import com.yanzu.framework.tenant.core.aop.TenantIgnore;
 import com.yanzu.module.infra.api.file.FileApi;
 import com.yanzu.module.system.controller.admin.user.vo.profile.UserProfileUpdatePasswordReqVO;
 import com.yanzu.module.system.controller.admin.user.vo.profile.UserProfileUpdateReqVO;
@@ -169,6 +170,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     @Override
+    @TenantIgnore
     public void updateUserPassword(Long id, String password) {
         // 校验用户存在
         validateUserExists(id);
