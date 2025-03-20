@@ -67,7 +67,7 @@ public class OrderController {
             pkgInfoDO = pkgInfoMapper.selectById(reqVO.getPkgId());
         }
         return success(appOrderService.preOrder(null, getLoginUserId(), reqVO.getPayType(), reqVO.getRoomId(), reqVO.getStartTime(), reqVO.getEndTime(),
-                couponInfoDO, pkgInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), reqVO.isPreSubmit(), true));
+                couponInfoDO, pkgInfoDO, reqVO.getOrderId(), reqVO.isNightLong(), reqVO.isPreSubmit(), reqVO.isWxPay()));
     }
 
 

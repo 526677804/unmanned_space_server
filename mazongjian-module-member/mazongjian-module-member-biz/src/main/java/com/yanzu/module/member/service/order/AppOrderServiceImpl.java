@@ -27,6 +27,7 @@ import com.yanzu.module.member.dal.dataobject.roominfo.RoomInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeinfo.StoreInfoDO;
 import com.yanzu.module.member.dal.dataobject.storemeituaninfo.StoreMeituanInfoDO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
+import com.yanzu.module.member.dal.dataobject.storevipconfig.StoreVipConfigDO;
 import com.yanzu.module.member.dal.dataobject.usermoneybill.UserMoneyBillDO;
 import com.yanzu.module.member.dal.mysql.clearinfo.ClearInfoMapper;
 import com.yanzu.module.member.dal.mysql.couponinfo.CouponInfoMapper;
@@ -42,6 +43,7 @@ import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storemeituaninfo.StoreMeituanInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
+import com.yanzu.module.member.dal.mysql.storevipconfig.StoreVipConfigMapper;
 import com.yanzu.module.member.dal.mysql.user.AppUserMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
@@ -189,6 +191,9 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Autowired
     private PlatformTransactionManager transactionManager;
 
+    @Resource
+    private StoreVipConfigMapper storeVipConfigMapper;
+
 
     @Value("${iot.groupPay:false}")
     private boolean iotGroupPay;
@@ -263,7 +268,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //预付费
             mathPrice = roomInfoDO.getPrePrice();
         } else {
-            mathPrice = mathPrice(roomInfoDO.getPrice(), roomInfoDO.getDeposit(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO, pkgInfoDO);
+            mathPrice = mathPrice(roomInfoDO.getStoreId(), roomInfoDO.getPrice(), roomInfoDO.getDeposit(), roomInfoDO.getWorkPrice(), storeInfoDO.getWorkPrice(), roomInfoDO.getTongxiaoPrice(), storeInfoDO.getTxHour(), startTime, endTime, nightLong, couponInfoDO, pkgInfoDO);
         }
         if (ObjectUtils.isEmpty(ignoreOrderId)) {
             //下单
@@ -627,38 +632,54 @@ public class AppOrderServiceImpl implements AppOrderService {
 
 
     @Override
-    public BigDecimal mathPrice(BigDecimal price, BigDecimal deposit, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO) {
+    public BigDecimal mathPrice(Long storeId, BigDecimal price, BigDecimal deposit, BigDecimal workPrice, Boolean enableWorkPrice, BigDecimal tongxiaoPrice, Integer txHour, Date startTime, Date endTime, Boolean nightLong, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO) {
         BigDecimal totalPrice = BigDecimal.ZERO;
         if (!ObjectUtils.isEmpty(pkgInfoDO)) {
             //选了套餐  直接返回套餐的售价
             totalPrice = pkgInfoDO.getPrice();
         } else {
-            if (enableWorkPrice) {
-                //以订单开始时间算，如果开始时间在周一至周四，那么就按工作日价格计算
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(startTime);
-                int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-                if (dayOfWeek >= Calendar.MONDAY && dayOfWeek <= Calendar.THURSDAY) {
-                    //工作日
-                    price = workPrice;
-                }
-            }
+            //目前已经取消工作日价格
+//            if (enableWorkPrice) {
+//                //以订单开始时间算，如果开始时间在周一至周四，那么就按工作日价格计算
+//                Calendar calendar = Calendar.getInstance();
+//                calendar.setTime(startTime);
+//                int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+//                if (dayOfWeek >= Calendar.MONDAY && dayOfWeek <= Calendar.THURSDAY) {
+//                    //工作日
+//                    price = workPrice;
+//                }
+//            }
             // 计算两个日期的小时差 精确到小数点后两位
             BigDecimal hours = new BigDecimal(String.valueOf((endTime.getTime() - startTime.getTime()) / 1000.0 / 60 / 60)).setScale(2, BigDecimal.ROUND_HALF_UP);
             //计算价格 单价*时长
+            int discount = 100; //折扣
+            //先看门店有没有VIP价格配置  以及此用户是不是会员
+            List<StoreVipConfigDO> vipConfigDOS = storeVipConfigMapper.selectbyStoreId(storeId);
+            if (!CollectionUtils.isAnyEmpty(vipConfigDOS)) {
+                StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(getLoginUserId(), storeId);
+                if (!ObjectUtils.isEmpty(storeUserDO) && storeUserDO.getVipLevel().compareTo(Byte.parseByte("0")) != 0) {
+                    //找出折扣
+                    for (StoreVipConfigDO x : vipConfigDOS) {
+                        if (x.getVipLevel().compareTo(storeUserDO.getVipLevel()) == 0) {
+                            discount = x.getVipDiscount().intValue();
+                            break;
+                        }
+                    }
+                }
+            }
             //如果是通宵场 要考虑通宵场的价格
             if (nightLong) {
                 //如果小于等于设置的通宵场时间   就按通宵场价格
                 if (hours.compareTo(new BigDecimal(txHour)) <= 0) {
-                    totalPrice = tongxiaoPrice;
+                    totalPrice = tongxiaoPrice.multiply(new BigDecimal(discount)).divide(new BigDecimal(100));
                 } else {
                     //大于 要用多于的时间*单价 再加上通宵场的价格
                     BigDecimal addPrice = hours.subtract(new BigDecimal(txHour)).multiply(price);
-                    totalPrice = tongxiaoPrice.add(addPrice);
+                    totalPrice = tongxiaoPrice.add(addPrice).multiply(new BigDecimal(discount)).divide(new BigDecimal(100));
                 }
             } else {
                 //否则就是单价*时长
-                totalPrice = price.multiply(hours);
+                totalPrice = price.multiply(hours).multiply(new BigDecimal(discount)).divide(new BigDecimal(100));
             }
             //判断使用优惠券的情况
             if (!ObjectUtils.isEmpty(couponInfoDO)) {
@@ -675,7 +696,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                             totalPrice = BigDecimal.ZERO;
                         } else {
                             hours = hours.subtract(couponInfoDO.getPrice());
-                            totalPrice = price.multiply(hours);
+                            totalPrice = price.multiply(hours).multiply(new BigDecimal(discount)).divide(new BigDecimal(100));
                         }
                         break;
                     case 2://2满减券
@@ -688,7 +709,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                             //直接抵扣完，价格设置为0
                             totalPrice = BigDecimal.ZERO;
                         } else {
-                            totalPrice = totalPrice.subtract(couponInfoDO.getPrice());
+                            totalPrice = totalPrice.subtract(couponInfoDO.getPrice()).multiply(new BigDecimal(discount)).divide(new BigDecimal(100));
                         }
                         break;
                     case 3: //3加时券

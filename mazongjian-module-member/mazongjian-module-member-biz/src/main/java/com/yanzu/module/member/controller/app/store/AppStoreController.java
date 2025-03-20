@@ -479,5 +479,14 @@ public class AppStoreController {
         return success(true);
     }
 
+    @PostMapping("/addMemberVip")
+    @Operation(summary = "添加用户会员信息")
+    @PreAuthenticated
+    @Idempotent(timeout = 3, timeUnit = TimeUnit.SECONDS, message = "你的点击太快啦~")
+    public CommonResult<Boolean> addMemberVip(@RequestBody @Valid AppAddMemberVipReqVO reqVO) {
+        storeVipConfigService.addMemberVip(reqVO);
+        return success(true);
+    }
+
 
 }

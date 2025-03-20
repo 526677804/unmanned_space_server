@@ -67,4 +67,7 @@ public class OrderPreReqVO implements Serializable {
 
     @Schema(description = "是否预付费下单")
     private boolean preSubmit;
+
+    @Schema(description = "是否微信支付下单")
+    private boolean wxPay = true;
 }

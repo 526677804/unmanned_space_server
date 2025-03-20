@@ -1,13 +1,16 @@
 package com.yanzu.module.member.service.storevipconfig;
 
+import com.yanzu.module.member.controller.app.store.vo.AppAddMemberVipReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppEditMemberVipReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppStoreVipConfigListRespVO;
 import com.yanzu.module.member.controller.app.store.vo.AppStoreVipConfigSaveReqVO;
 import com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO;
 import com.yanzu.module.member.dal.dataobject.storevipconfig.StoreVipConfigDO;
+import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.service.storeinfo.StoreInfoService;
+import com.yanzu.module.member.service.user.AppUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yanzu.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.yanzu.framework.common.util.servlet.ServletUtils.getClientIP;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static com.yanzu.framework.web.core.util.WebFrameworkUtils.getLoginUserType;
 import static com.yanzu.module.member.enums.ErrorCodeConstants.*;
@@ -45,6 +49,10 @@ public class StoreVipConfigServiceImpl implements StoreVipConfigService {
 
     @Resource
     private StoreUserMapper storeUserMapper;
+
+    @Resource
+    @Lazy
+    private AppUserService appUserService;
 
     @Resource
     @Lazy//避免循环依赖报错
@@ -115,6 +123,34 @@ public class StoreVipConfigServiceImpl implements StoreVipConfigService {
             storeUserDO = new StoreUserDO()
                     .setStoreId(reqVO.getStoreId())
                     .setUserId(reqVO.getUserId())
+                    .setType(AppEnum.member_user_type.MEMBER.getValue())
+                    .setVipLevel(reqVO.getVipLevel());
+            storeUserMapper.insert(storeUserDO);
+        } else {
+            //修改
+            storeUserDO.setVipLevel(reqVO.getVipLevel());
+            storeUserMapper.updateById(storeUserDO);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void addMemberVip(AppAddMemberVipReqVO reqVO) {
+        //权限检查
+        storeInfoService.checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.ADMIN.getValue());
+        //先查出用户
+        MemberUserDO userByMobile = appUserService.getUserByMobile(reqVO.getMobile().trim());
+        if (ObjectUtils.isEmpty(userByMobile)) {
+            //新增用户
+            userByMobile = appUserService.createUserIfAbsent(reqVO.getMobile().trim(), getClientIP());
+        }
+        //先查出用户
+        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userByMobile.getId(), reqVO.getStoreId());
+        if (ObjectUtils.isEmpty(storeUserDO)) {
+            //直接新增
+            storeUserDO = new StoreUserDO()
+                    .setStoreId(reqVO.getStoreId())
+                    .setUserId(userByMobile.getId())
                     .setType(AppEnum.member_user_type.MEMBER.getValue())
                     .setVipLevel(reqVO.getVipLevel());
             storeUserMapper.insert(storeUserDO);

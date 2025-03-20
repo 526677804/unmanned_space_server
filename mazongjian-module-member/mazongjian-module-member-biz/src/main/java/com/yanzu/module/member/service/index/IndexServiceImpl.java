@@ -6,6 +6,7 @@ import com.yanzu.framework.common.core.KeyValue;
 import com.yanzu.framework.common.pojo.PageResult;
 import com.yanzu.module.infra.api.config.ConfigApi;
 import com.yanzu.module.member.controller.app.index.vo.*;
+import com.yanzu.module.member.controller.app.store.vo.AppStoreVipConfigListRespVO;
 import com.yanzu.module.member.dal.dataobject.orderinfo.OrderInfoDO;
 import com.yanzu.module.member.dal.dataobject.pkginfo.PkgInfoDO;
 import com.yanzu.module.member.dal.dataobject.user.MemberUserDO;
@@ -15,6 +16,7 @@ import com.yanzu.module.member.dal.mysql.orderinfo.OrderInfoMapper;
 import com.yanzu.module.member.dal.mysql.pkginfo.PkgInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.dal.mysql.storevipconfig.StoreVipConfigMapper;
 import com.yanzu.module.member.dal.mysql.user.MemberUserMapper;
 import com.yanzu.module.member.service.iot.IotGroupPayService;
 import com.yanzu.module.member.service.iot.groupPay.IotGroupPaySelectByPhoneReqVO;
@@ -76,6 +78,9 @@ public class IndexServiceImpl implements IndexService {
     private PkgInfoMapper pkgInfoMapper;
     @Resource
     private ConfigApi configApi;
+
+    @Resource
+    private StoreVipConfigMapper storeVipConfigMapper;
 
     @Override
     public List<String> getCityList() {
@@ -152,6 +157,8 @@ public class IndexServiceImpl implements IndexService {
         //获取所有房间信息
         List<AppRoomInfoListRespVO> roomInfoList = storeInfoMapper.getRoomInfoList(reqVO);
         if (!CollectionUtils.isEmpty(roomInfoList)) {
+            //查询会员配置
+            List<AppStoreVipConfigListRespVO> vipConfig = storeVipConfigMapper.getVipConfig(reqVO.getStoreId());
             //找出所有房间的订单
             List<OrderInfoDO> orderList = orderInfoMapper.getByRoomIds(roomInfoList.stream().map(x -> x.getRoomId()).collect(Collectors.toList()));
             //把订单按照房间id分组
@@ -247,6 +254,17 @@ public class IndexServiceImpl implements IndexService {
                     String pkgName = firstPkg.getHours() + "小时套餐:￥" + firstPkg.getPrice() + "元";
                     respVO.setPkgName(pkgName);
                 }
+                //处理会员价格
+                if (!CollectionUtils.isEmpty(vipConfig)) {
+                    respVO.setVipPriceList(vipConfig.stream().map(x -> new AppRoomVipPriceRespVO()
+                                    .setVipName(x.getVipName())
+                                    .setPrice(
+                                            respVO.getPrice().multiply(new BigDecimal(x.getVipDiscount())
+                                                            .divide(new BigDecimal(100))
+
+                                    )))
+                            .collect(Collectors.toList()));
+                }
             }
         }
         return roomInfoList;
@@ -262,7 +280,7 @@ public class IndexServiceImpl implements IndexService {
             //单价/60 得到每分钟价格
             BigDecimal minutePrice = respVO.getPrice().divide(new BigDecimal("60"), 4, RoundingMode.HALF_UP);
             //每分钟价格 * 计费区间 = 区间价格
-            BigDecimal unitPrice = minutePrice.multiply(new BigDecimal(respVO.getPreUnit()).setScale(4,RoundingMode.HALF_UP));
+            BigDecimal unitPrice = minutePrice.multiply(new BigDecimal(respVO.getPreUnit()).setScale(4, RoundingMode.HALF_UP));
             respVO.setPreUnitPrice(unitPrice);
         }
         //找出所有房间的订单
@@ -344,6 +362,19 @@ public class IndexServiceImpl implements IndexService {
             timeSlot.set(i, slotRespVO);
         }
         respVO.setTimeSlot(timeSlot);
+        //查询会员配置
+        List<AppStoreVipConfigListRespVO> vipConfig = storeVipConfigMapper.getVipConfig(respVO.getStoreId());
+        //处理会员价格
+        if (!CollectionUtils.isEmpty(vipConfig)) {
+            respVO.setVipPriceList(vipConfig.stream().map(x -> new AppRoomVipPriceRespVO()
+                            .setVipName(x.getVipName())
+                            .setPrice(
+                                    respVO.getPrice().multiply(new BigDecimal(x.getVipDiscount())
+                                            .divide(new BigDecimal(100))
+
+                                    )))
+                    .collect(Collectors.toList()));
+        }
         return respVO;
     }
 

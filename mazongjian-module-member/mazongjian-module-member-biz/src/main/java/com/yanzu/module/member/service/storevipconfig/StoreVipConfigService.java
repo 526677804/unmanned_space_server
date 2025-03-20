@@ -1,6 +1,7 @@
 package com.yanzu.module.member.service.storevipconfig;
 
 
+import com.yanzu.module.member.controller.app.store.vo.AppAddMemberVipReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppEditMemberVipReqVO;
 import com.yanzu.module.member.controller.app.store.vo.AppStoreVipConfigListRespVO;
 import com.yanzu.module.member.controller.app.store.vo.AppStoreVipConfigSaveReqVO;
@@ -20,5 +21,7 @@ public interface StoreVipConfigService {
 
     void editMemberVip(AppEditMemberVipReqVO reqVO);
 
+
+    void addMemberVip(AppAddMemberVipReqVO reqVO);
 
 }

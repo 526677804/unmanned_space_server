@@ -130,4 +130,6 @@ public class AppRoomInfoListRespVO {
     @Schema(description = "预付费单位价格")
     private BigDecimal preUnitPrice;
 
+    private List<AppRoomVipPriceRespVO> vipPriceList;
+
 }
