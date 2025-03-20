@@ -71,4 +71,9 @@ public class StoreUserDO extends BaseDO {
      */
     private Byte vipLevel;
 
+    /**
+     * 总积分
+     */
+    private Integer totalScore;
+
 }

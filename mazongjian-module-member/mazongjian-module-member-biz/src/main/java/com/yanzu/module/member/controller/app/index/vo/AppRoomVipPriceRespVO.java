@@ -11,4 +11,5 @@ public class AppRoomVipPriceRespVO {
 
     private BigDecimal price;
 
+    private Byte vipLevel;
 }

@@ -258,6 +258,7 @@ public class IndexServiceImpl implements IndexService {
                 if (!CollectionUtils.isEmpty(vipConfig)) {
                     respVO.setVipPriceList(vipConfig.stream().map(x -> new AppRoomVipPriceRespVO()
                                     .setVipName(x.getVipName())
+                                    .setVipLevel(x.getVipLevel())
                                     .setPrice(
                                             respVO.getPrice().multiply(new BigDecimal(x.getVipDiscount())
                                                             .divide(new BigDecimal(100))
@@ -368,6 +369,7 @@ public class IndexServiceImpl implements IndexService {
         if (!CollectionUtils.isEmpty(vipConfig)) {
             respVO.setVipPriceList(vipConfig.stream().map(x -> new AppRoomVipPriceRespVO()
                             .setVipName(x.getVipName())
+                            .setVipLevel(x.getVipLevel())
                             .setPrice(
                                     respVO.getPrice().multiply(new BigDecimal(x.getVipDiscount())
                                             .divide(new BigDecimal(100))

@@ -3,6 +3,7 @@ package com.yanzu.module.member.service.payorder;
 import cn.hutool.core.date.DateUtil;
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
+import com.github.binarywang.wxpay.bean.notify.WxPayRefundNotifyResult;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
@@ -18,6 +19,7 @@ import com.yanzu.module.member.controller.app.order.vo.OrderRenewalReqVO;
 import com.yanzu.module.member.controller.app.order.vo.OrderSaveReqVO;
 import com.yanzu.module.member.controller.app.order.vo.WxPayOrderInfo;
 import com.yanzu.module.member.controller.app.pkg.vo.AppBuyPkgReqVO;
+import com.yanzu.module.member.controller.app.store.vo.AppStoreVipConfigListRespVO;
 import com.yanzu.module.member.controller.app.user.vo.AppRechargeBalanceReqVO;
 import com.yanzu.module.member.dal.dataobject.groupPay.GroupPayInfoDO;
 import com.yanzu.module.member.dal.dataobject.payorder.PayOrderDO;
@@ -32,6 +34,7 @@ import com.yanzu.module.member.dal.mysql.productorder.ProductOrderMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeuser.StoreUserMapper;
+import com.yanzu.module.member.dal.mysql.storevipconfig.StoreVipConfigMapper;
 import com.yanzu.module.member.dal.mysql.usermoneybill.UserMoneyBillMapper;
 import com.yanzu.module.member.enums.AppEnum;
 import com.yanzu.module.member.enums.AppWxPayTypeEnum;
@@ -47,6 +50,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -116,6 +120,14 @@ public class PayOrderServiceImpl implements PayOrderService {
 
     @Resource
     private RoomInfoMapper roomInfoMapper;
+
+    @Resource
+    private StoreVipConfigMapper storeVipConfigMapper;
+
+    //支付回调地址
+    @Value("${wx.pay.returnUrl}")
+    private String returnUrl;
+
 
     @Override
     public PayOrderDO getPayOrder(Long id) {
@@ -218,6 +230,36 @@ public class PayOrderServiceImpl implements PayOrderService {
                     });
                 }
             }
+            //增加积分 这里要考虑押金造成的积分增加问题
+            //模拟租户
+            TenantUtils.execute(tenantId, () -> {
+                StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(payOrderDO.getUserId(), payOrderDO.getStoreId());
+                if (ObjectUtils.isEmpty(storeUserDO)) {
+                    storeUserDO = new StoreUserDO()
+                            .setStoreId(payOrderDO.getStoreId())
+                            .setUserId(payOrderDO.getUserId())
+                            .setType(AppEnum.member_user_type.MEMBER.getValue())
+                            .setTotalScore(payOrderDO.getPrice() / 100);
+                    storeUserMapper.insert(storeUserDO);
+                } else {
+                    storeUserDO.setTotalScore(storeUserDO.getTotalScore() + (payOrderDO.getPrice() / 100));
+                    storeUserMapper.updateById(storeUserDO);
+                }
+                //当用户到达积分门槛后  就升级VIP等级
+                List<AppStoreVipConfigListRespVO> vipConfig = storeVipConfigMapper.getVipConfig(payOrderDO.getStoreId());
+                if (!CollectionUtils.isEmpty(vipConfig)) {
+                    for (AppStoreVipConfigListRespVO vip : vipConfig) {
+                        if (storeUserDO.getTotalScore().intValue() >= vip.getScore().intValue()
+                        && storeUserDO.getVipLevel().intValue() < vip.getVipLevel().intValue()) {
+                            //如果当前就已经是那个等级了  就不用升级
+                            storeUserDO.setVipLevel(vip.getVipLevel());
+                            storeUserMapper.updateById(storeUserDO);
+                            break;
+                        }
+                    }
+
+                }
+            });
             return WxPayNotifyResponse.success("接收成功!");
         } catch (ServiceException e) {
             e.printStackTrace();
@@ -230,9 +272,11 @@ public class PayOrderServiceImpl implements PayOrderService {
                 refundRequest.setTotalFee(payOrderDO.getPrice());
                 refundRequest.setRefundFee(payOrderDO.getPrice());
                 refundRequest.setRefundDesc("订单支付失败退款");
+//                refundRequest.setNotifyUrl(returnUrl.replace("/wxpay/update", "/wxpay/urefunded"));
                 WxPayService wxPayService = myWxService.initWxPay(payOrderDO.getStoreId());
                 try {
                     wxPayService.refundV2(refundRequest);
+                    refundedScore(payOrderDO.getPrice(),payOrderDO.getUserId(), payOrderDO.getStoreId());
                 } catch (WxPayException ex) {
 //                throw new RuntimeException(ex);
                     log.error("微信支付订单退款失败:{}", orderNo);
@@ -260,7 +304,7 @@ public class PayOrderServiceImpl implements PayOrderService {
         Integer totalFee = result.getTotalFee();
         //忽略租户ID去查询
         ProductOrderDO productOrderDO = productOrderMapper.selectByOrderNo(orderNo);
-        if(ObjectUtils.isEmpty(productOrderDO)){
+        if (ObjectUtils.isEmpty(productOrderDO)) {
             throw exception(DATA_NOT_EXISTS);
         }
         Long tenantId = null;
@@ -302,9 +346,9 @@ public class PayOrderServiceImpl implements PayOrderService {
                     List<IotDeviceRoomInfoVO> storeVoiceList = deviceInfoMapper.getStoreVoice(productOrderDO.getStoreId());
                     if (!CollectionUtils.isEmpty(storeVoiceList)) {
                         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(productOrderDO.getRoomId());
-                        String roomName=roomInfoDO.getRoomCallName();
-                        if(ObjectUtils.isEmpty(roomName)){
-                            roomName=roomInfoDO.getRoomName();
+                        String roomName = roomInfoDO.getRoomCallName();
+                        if (ObjectUtils.isEmpty(roomName)) {
+                            roomName = roomInfoDO.getRoomName();
                         }
                         String tts = roomName + ",顾客已购买商品,请及时处理";
                         storeVoiceList.forEach(x -> {
@@ -319,7 +363,7 @@ public class PayOrderServiceImpl implements PayOrderService {
                 //业务异常 退款
                 WxPayRefundRequest refundRequest = new WxPayRefundRequest();
                 refundRequest.setOutTradeNo(productOrderDO.getOrderNo());
-                refundRequest.setOutRefundNo("TK" + productOrderDO.getOrderNo());
+                refundRequest.setOutRefundNo("STK" + productOrderDO.getOrderNo());
                 refundRequest.setTotalFee(result.getTotalFee());
                 refundRequest.setRefundFee(result.getTotalFee());
                 refundRequest.setRefundDesc("订单支付失败退款");
@@ -333,12 +377,21 @@ public class PayOrderServiceImpl implements PayOrderService {
         return WxPayNotifyResponse.success("接收成功!");
     }
 
+    private void refundedScore(Integer totalFee,Long userId, Long storeId) {
+        StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, storeId);
+        if (ObjectUtils.isEmpty(storeUserDO)) {
+            //账户都没有 就不管了
+            return;
+        } else {
+            storeUserDO.setTotalScore(storeUserDO.getTotalScore() - (totalFee / 100));
+            storeUserMapper.updateById(storeUserDO);
+            //todo...收回积分后，还要考虑会员降级的问题，暂不处理，因为不是什么重要的东西
+        }
+    }
+
     @Override
-    public String updateOrderRefunded(Map<String, String> params, String body) {
-        log.info("收到微信支付退款回调body：{}", body);
-        log.info("收到微信支付退款回调params：{}", params);
-
-
+    public String updateOrderRefunded(String xmlData) {
+//        log.info("收到微信支付退款回调body：{}", xmlData);
         return WxPayNotifyResponse.success("接收成功!");
     }
 
@@ -422,6 +475,7 @@ public class PayOrderServiceImpl implements PayOrderService {
                 refundRequest.setTotalFee(payOrderDO.getPrice());
                 refundRequest.setRefundFee(payOrderDO.getPrice());
                 refundRequest.setRefundDesc("管理员退款");
+//                refundRequest.setNotifyUrl(returnUrl.replace("/wxpay/update", "/wxpay/urefunded"));
                 WxPayService wxPayService = myWxService.initWxPay(payOrderDO.getStoreId());
                 try {
                     wxPayService.refundV2(refundRequest);
@@ -429,6 +483,7 @@ public class PayOrderServiceImpl implements PayOrderService {
                     payOrderDO.setRefundPrice(payOrderDO.getPrice());
                     payOrderDO.setRefundTime(LocalDateTime.now());
                     payOrderMapper.updateById(payOrderDO);
+                    refundedScore(payOrderDO.getPrice(),payOrderDO.getUserId(), payOrderDO.getStoreId());
                 } catch (WxPayException ex) {
 //                throw new RuntimeException(ex);
 //                    log.error("微信支付订单:{}，退款失败！", orderNo);
@@ -454,7 +509,7 @@ public class PayOrderServiceImpl implements PayOrderService {
             if (payOrderDO.getPayStatus() && payOrderDO.getRefundPrice() == 0) {
                 WxPayRefundRequest refundRequest = new WxPayRefundRequest();
                 refundRequest.setOutTradeNo(payOrderDO.getOrderNo());
-                refundRequest.setOutRefundNo("TK" + payOrderDO.getOrderNo());
+                refundRequest.setOutRefundNo("YTK" + payOrderDO.getOrderNo());
                 refundRequest.setTotalFee(payOrderDO.getPrice());
                 refundRequest.setRefundFee(price);
                 refundRequest.setRefundDesc("押金退款");
@@ -540,12 +595,14 @@ public class PayOrderServiceImpl implements PayOrderService {
                 refundRequest.setTotalFee(payOrderDO.getPrice());
                 refundRequest.setRefundFee(payOrderDO.getPrice());
                 refundRequest.setRefundDesc("退款");
+//                refundRequest.setNotifyUrl(returnUrl.replace("/wxpay/update", "/wxpay/urefunded"));
                 try {
                     wxPayService.refundV2(refundRequest);
                     payOrderDO.setPayRefundNo(refundRequest.getOutRefundNo());
                     payOrderDO.setRefundPrice(payOrderDO.getPrice());
                     payOrderDO.setRefundTime(LocalDateTime.now());
                     payOrderMapper.updateById(payOrderDO);
+                    refundedScore(payOrderDO.getPrice(),payOrderDO.getUserId(), payOrderDO.getStoreId());
                 } catch (WxPayException ex) {
 //                throw new RuntimeException(ex);
                     log.error("微信支付订单:{}，退款失败！原因：{}", payOrderDO.getOrderNo(), ex.getMessage());

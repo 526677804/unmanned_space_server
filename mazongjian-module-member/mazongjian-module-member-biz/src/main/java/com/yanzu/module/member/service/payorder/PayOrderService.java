@@ -58,7 +58,7 @@ public interface PayOrderService {
 
     String updateProductOrder(WxPayOrderNotifyResult result);
 
-    String updateOrderRefunded(Map<String, String> params, String body);
+    String updateOrderRefunded(String xmlData);
 
     void create(Long userId, String orderNo,Long orderId, Long storeId, Integer payType, String orderDesc, Integer price);
 

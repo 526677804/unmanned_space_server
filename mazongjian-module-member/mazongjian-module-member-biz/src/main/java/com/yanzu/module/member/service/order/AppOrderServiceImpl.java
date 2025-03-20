@@ -470,7 +470,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             }
             //有限制的房间类型的  就判断房间类型
             if (!ObjectUtils.isEmpty(pkgInfoDO.getRoomType())) {
-                if (!pkgInfoDO.getRoomType().equals("0")) {//兼容旧代码
+                if (!pkgInfoDO.getRoomType().toString().equals("0")) {//兼容旧代码
                     if (!pkgInfoDO.getRoomType().contains(roomType)) {
                         throw exception(PKG_USE_CHECK_ROOM_TYPE_ERROR);
                     }
@@ -1120,6 +1120,12 @@ public class AppOrderServiceImpl implements AppOrderService {
                 }
                 break;
             case 2://余额
+                if (!ObjectUtils.isEmpty(reqVO.getPkgId())) {
+                    //检查套餐是否支持余额支付
+                    if (!pkgInfoDO.getBalanceBuy()) {
+                        throw exception(PKG_ORDER_PAY_TYPE_ERROR);
+                    }
+                }
                 StoreUserDO storeUserDO = storeUserMapper.getByUserIdAndStoreId(userId, roomInfoDO.getStoreId());
                 if (ObjectUtils.isEmpty(storeUserDO)) {
                     //没有余额 报错余额不足
@@ -1427,14 +1433,13 @@ public class AppOrderServiceImpl implements AppOrderService {
      * 订单处理的定时任务，每分钟执行一次， 用于到时间开始订单 或者 结束订单
      */
     @Override
-    @Synchronized
+//    @Synchronized
     public void executeOrderJob() {
         log.info("==========     开始执行订单定时检查任务     ==========");
         Date now = new Date();
         now.setSeconds(0);
         log.info("当前时间:{}", DateUtils.dateToStr(now, FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND));
         boolean night = now.getHours() < 8 && now.getMinutes() == 0;//是否深夜
-        log.info("night:{}", night);
         //取出所有需要处理的订单
         List<OrderListJobVO> orderList = orderInfoMapper.getListByJob();
         if (!CollectionUtils.isAnyEmpty(orderList)) {
@@ -1475,7 +1480,6 @@ public class AppOrderServiceImpl implements AppOrderService {
                             }
                         } else if (x.getStatus().compareTo(AppEnum.order_status.START.getValue()) == 0) {
                             //进行中 主要是完成订单，和关电
-
                             if (x.getEndTime().before(now)) {
                                 //关电
                                 deviceService.closeRoomDoor(null, x.getStoreId(), x.getRoomId(), 4);
@@ -1544,6 +1548,20 @@ public class AppOrderServiceImpl implements AppOrderService {
             // 手动提交事务
             TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
             try {
+                if (!CollectionUtils.isAnyEmpty(clearRoomIds)) {
+                    //批量修改房间状态为待清洁
+                    roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), clearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    //取消掉这些房间存在的历史保洁订单
+                    clearInfoMapper.cancelByRoomIds(clearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                }
+                if (!CollectionUtils.isAnyEmpty(endOrderIds)) {
+                    //批量修改订单状态为已完成
+                    orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), endOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    //然后再新增本次的保洁订单
+                    clearInfoMapper.insertBatch(clearInfoDOList);
+                    //发送订单结束的微信通知
+                    sendClearMsg(endRoomIds);
+                }
                 if (!CollectionUtils.isAnyEmpty(startRoomIds)) {
                     //批量修改房间状态为进行中
                     roomInfoMapper.updateStatusByIds(AppEnum.room_status.USED.getValue(), startRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
@@ -1559,20 +1577,6 @@ public class AppOrderServiceImpl implements AppOrderService {
                 if (!CollectionUtils.isAnyEmpty(jumpClearRoomIds)) {
                     //批量修改房间状态为空闲
                     roomInfoMapper.updateStatusByIds(AppEnum.room_status.ENABLE.getValue(), jumpClearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-                }
-                if (!CollectionUtils.isAnyEmpty(clearRoomIds)) {
-                    //批量修改房间状态为待清洁
-                    roomInfoMapper.updateStatusByIds(AppEnum.room_status.CLEAR.getValue(), clearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-                    //取消掉这些房间存在的历史保洁订单
-                    clearInfoMapper.cancelByRoomIds(clearRoomIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-                }
-                if (!CollectionUtils.isAnyEmpty(endOrderIds)) {
-                    //批量修改订单状态为已完成
-                    orderInfoMapper.updateStatusByIds(AppEnum.order_status.FINISH.getValue(), endOrderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-                    //然后再新增本次的保洁订单
-                    clearInfoMapper.insertBatch(clearInfoDOList);
-                    //发送订单结束的微信通知
-                    sendClearMsg(endRoomIds);
                 }
                 transactionManager.commit(transaction);
             } catch (Exception e) {

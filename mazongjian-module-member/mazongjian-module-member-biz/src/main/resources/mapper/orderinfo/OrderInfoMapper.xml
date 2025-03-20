@@ -429,7 +429,7 @@
     <select id="countByRoomCurrent" resultType="java.lang.Integer">
         select count(1)
         from member_order_info
-        where deleted = 0
+        where deleted = 0 and status!=3
         and start_time&lt;=now() and end_time>=now()
         and room_id = #{roomId}
         <if test="null!=ignoreOrderId and ignoreOrderId!=''">

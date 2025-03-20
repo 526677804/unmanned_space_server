@@ -49,7 +49,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendOrderMsg(Long storeId, Long userId, String roomName, BigDecimal price, CouponInfoDO couponInfoDO, PkgInfoDO pkgInfoDO, Integer payType, Integer groupPayType, String orderNo, Date startTime, Date endTime) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")) {
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -95,7 +95,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendOrderCancelMsg(Long storeId, Long userId, Long roomId, BigDecimal price, CouponInfoDO couponInfoDO, Integer payType, Integer groupPayType, String orderNo, boolean isadmin) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -134,7 +134,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendYDOrderCancelMsg(Long storeId, Long roomId, String orderNo) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         String roomName = roomInfoMapper.getNameById(roomId);
@@ -158,7 +158,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendYDOrderCancelAuthMsg(Long storeId, Long roomId, String orderNo, String reason) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         String roomName = roomInfoMapper.getNameById(roomId);
@@ -184,7 +184,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendCloseOrderMsg(Long storeId, Long userId, Long roomId, Integer payType, Integer groupPayType, String orderNo) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -259,7 +259,7 @@ public class WorkWxServiceImpl implements WorkWxService {
 //        String storeName=storeInfoMapper.getNameById(storeId);
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         String userName = appUserMapper.getNameById(userId);
@@ -297,7 +297,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendRechargeMsg(Long storeId, Long userId, BigDecimal price, BigDecimal giftPrice) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -323,7 +323,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendAdminRechargeMsg(Long storeId, Long userId, Long adminUserId, BigDecimal giftPrice) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -350,7 +350,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendGiftCouponMsg(Long storeId, Long userId, String couponName, Integer roomType) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -376,7 +376,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendMeiTuanScopeMsg(Long storeId) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         //异步发送微信通知
@@ -397,7 +397,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendChangeRoomMsg(Long storeId, String orderNo, Date startTime, Date endTime, String oldRoomName, String newRoomName, Long userId) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -426,7 +426,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendOrderChangeUserMsg(Long storeId, String orderNo, Long roomId, Date startTime, Date endTime, Long userId) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -455,7 +455,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendUseGroupNoMsg(GroupPayInfoDO groupPayInfoDO, Long userId) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(groupPayInfoDO.getStoreId());
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -482,7 +482,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendClearRoomMsg(Long storeId, Long roomId, Long userId, String type) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -507,7 +507,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendChangeMsg(Long storeId, String orderNo, Date startTime, Date endTime, Long oldRoom, Long newRoom, Long userId) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -542,7 +542,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendClearFinishMsg(Long storeId, Long roomId, Long userId, String type) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -567,7 +567,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendRepeatOrderMsg(Long storeId, String roomName, Date startTime, Date endTime, Long userId) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -592,7 +592,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendOrderClearMsg(Long storeId, String roomName, Date startTime, Date endTime) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         log.info("发送订单消息到配置的企业微信");
@@ -615,7 +615,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendOrderSubmitMsg(Long storeId, Long userId, String mobile, String roomName, String orderNo, Date startTime, Date endTime) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         MemberUserDO memberUserDO = memberUserMapper.selectById(userId);
@@ -643,7 +643,7 @@ public class WorkWxServiceImpl implements WorkWxService {
     public void sendCallMsg(Long storeId, String tts) {
         //查询出webhook的地址
         StoreInfoDO storeInfoDO = storeInfoMapper.selectById(storeId);
-        if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook())) {
+       if (ObjectUtils.isEmpty(storeInfoDO) || ObjectUtils.isEmpty(storeInfoDO.getOrderWebhook()) || !storeInfoDO.getOrderWebhook().startsWith("https://qyapi.weixin.qq.com")){
             return;
         }
         log.info("发送订单消息到配置的企业微信");
