@@ -1780,9 +1780,9 @@ public class AppOrderServiceImpl implements AppOrderService {
                 iotService.updateStock(orderInfoDO.getRoomId());
                 //发送用户提前结束订单通知
                 workWxService.sendCloseOrderMsg(orderInfoDO.getStoreId(), getLoginUserId(), orderInfoDO.getRoomId(), orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
-                deviceService.closeRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
                 orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderId).setEndTime(new Date()).setStatus(AppEnum.order_status.FINISH.getValue()));
                 flushRoomStatus(orderInfoDO.getRoomId());
+                deviceService.closeRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else {
                 throw exception(ADMIN_ORDER_OPRATION_ERROR);
             }
