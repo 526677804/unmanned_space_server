@@ -589,7 +589,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         //取消掉该房间 未完成的所有保洁订单
         clearInfoMapper.cancelByRoomId(roomId);
         //刷新房间状态
-        appOrderService.flushRoomStatus(roomId);
+        appOrderService.flushRoomStatus(roomId, null);
         //发通知
         workWxService.sendClearRoomMsg(roomInfoDO.getStoreId(), roomInfoDO.getRoomId(), getLoginUserId(), "设置房间空闲");
     }
@@ -966,7 +966,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         }
         //校验门店权限
         checkPermisson(appRoomListVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
-        RoomInfoDO updateDO=new RoomInfoDO()
+        RoomInfoDO updateDO = new RoomInfoDO()
                 .setRoomId(reqVO.getRoomId())
                 .setPrePrice(reqVO.getPrePrice())
                 .setPreUnit(reqVO.getPreUnit())

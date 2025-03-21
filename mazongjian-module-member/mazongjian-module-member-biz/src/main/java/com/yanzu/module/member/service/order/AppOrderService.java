@@ -53,7 +53,7 @@ public interface AppOrderService {
     void lockWxOrder(OrderPreReqVO reqVO);
 
 
-    void flushRoomStatus(Long roomId);
+    void flushRoomStatus(Long roomId,Long ignoreOrderId);
 
     int countNewUserByStoreId(Long userId, Long storeId);
 
