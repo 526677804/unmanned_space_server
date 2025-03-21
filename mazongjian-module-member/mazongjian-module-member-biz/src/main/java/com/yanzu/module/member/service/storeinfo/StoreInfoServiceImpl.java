@@ -266,11 +266,11 @@ public class StoreInfoServiceImpl implements StoreInfoService {
             //任意一个为空都不行
             throw exception(ROOM_BAN_TIME_ERROR);
         }
-        if (!ObjectUtils.isEmpty(reqVO.getPrePrice())) {
-            if (ObjectUtils.isEmpty(reqVO.getPreUnit()) || ObjectUtils.isEmpty(reqVO.getMinCharge())) {
-                throw exception(ROOM_PRE_CONFIG_ERROR);
-            }
-        }
+//        if (!ObjectUtils.isEmpty(reqVO.getPrePrice())) {
+//            if (ObjectUtils.isEmpty(reqVO.getPreUnit()) || ObjectUtils.isEmpty(reqVO.getMinCharge())) {
+//                throw exception(ROOM_PRE_CONFIG_ERROR);
+//            }
+//        }
 
         if (ObjectUtils.isEmpty(reqVO.getRoomId())) {
             //新增
