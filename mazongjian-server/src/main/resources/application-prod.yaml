@@ -56,6 +56,23 @@ spring:
     # 数据库索引
     password: redis_YM8kZT # 密码，建议生产环境开启
 
+# 日志文件配置
+logging:
+  file:
+    name: ${user.home}/logs/${spring.application.name}.log # 日志文件名，全路径
+  level:
+    # 配置自己写的 MyBatis Mapper 打印日志
+    com.yanzu.module.bpm.dal.mysql: INFO
+    com.yanzu.module.infra.dal.mysql: INFO
+    com.yanzu.module.infra.dal.mysql.job.JobLogMapper: INFO # 配置 JobLogMapper 的日志级别为 info
+    com.yanzu.module.pay.dal.mysql: INFO
+    com.yanzu.module.pay.dal.mysql.notify.PayNotifyTaskMapper: INFO # 配置 JobLogMapper 的日志级别为 info
+    com.yanzu.module.system.dal.mysql: INFO
+    com.yanzu.module.tool.dal.mysql: INFO
+    com.yanzu.module.member.dal.mysql: INFO
+    com.yanzu.module.trade.dal.mysql: INFO
+    com.yanzu.module.promotion.dal.mysql: INFO
+
 # 微信支付回调
 wx:
   pay:

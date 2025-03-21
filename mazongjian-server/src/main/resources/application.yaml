@@ -183,7 +183,7 @@ forest:
 # Quartz 配置项，对应 QuartzProperties 配置类
 spring:
   quartz:
-    auto-startup: true # 本地开发环境，尽量不要开启 Job
+    auto-startup: false # 本地开发环境，尽量不要开启 Job
     scheduler-name: schedulerName # Scheduler 名字。默认为 schedulerName
     job-store-type: jdbc # Job 存储器类型。默认为 memory 表示内存，可选 jdbc 使用数据库。
     wait-for-jobs-to-complete-on-shutdown: true # 应用关闭时，是否等待定时任务执行完成。默认为 false ，建议设置为 true
@@ -248,22 +248,7 @@ spring:
       # Spring Boot Admin Server 服务端的相关配置
       context-path: /admin # 配置 Spring
 
-# 日志文件配置
-logging:
-  file:
-    name: ${user.home}/logs/${spring.application.name}.log # 日志文件名，全路径
-  level:
-    # 配置自己写的 MyBatis Mapper 打印日志
-    com.yanzu.module.bpm.dal.mysql: INFO
-    com.yanzu.module.infra.dal.mysql: INFO
-    com.yanzu.module.infra.dal.mysql.job.JobLogMapper: INFO # 配置 JobLogMapper 的日志级别为 info
-    com.yanzu.module.pay.dal.mysql: INFO
-    com.yanzu.module.pay.dal.mysql.notify.PayNotifyTaskMapper: INFO # 配置 JobLogMapper 的日志级别为 info
-    com.yanzu.module.system.dal.mysql: INFO
-    com.yanzu.module.tool.dal.mysql: INFO
-    com.yanzu.module.member.dal.mysql: INFO
-    com.yanzu.module.trade.dal.mysql: INFO
-    com.yanzu.module.promotion.dal.mysql: INFO
+
 
 debug: false
 
@@ -299,10 +284,10 @@ mazongjian:
 
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
     path: /v3/api-docs
   swagger-ui:
-    enabled: false
+    enabled: true
     path: /swagger-ui
 
 justauth:
