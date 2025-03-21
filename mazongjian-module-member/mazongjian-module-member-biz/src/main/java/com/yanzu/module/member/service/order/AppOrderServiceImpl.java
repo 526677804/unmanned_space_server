@@ -1287,10 +1287,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                 orderInfoDO.setRoomId(roomId);
                 orderInfoMapper.updateById(orderInfoDO);
                 //改新房间的状态
-                flushRoomStatus(roomId);
+                flushRoomStatus(roomId,orderInfoDO.getOrderId());
                 //改旧房间的状态
                 Long oldRoomId = oldRoomInfo.getRoomId();
-                flushRoomStatus(oldRoomId);
+                flushRoomStatus(oldRoomId,orderInfoDO.getOrderId());
                 //同步一下预订平台的房间占用信息
                 iotService.updateStock(roomId);
                 iotService.updateStock(oldRoomId);
@@ -1356,7 +1356,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
             orderInfoMapper.updateById(orderInfoDO);
-            flushRoomStatus(orderInfoDO.getRoomId());
+            flushRoomStatus(orderInfoDO.getRoomId(),orderInfoDO.getOrderId());
             //异步发送微信通知
             workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo(), false);
         } else {
@@ -1723,14 +1723,14 @@ public class AppOrderServiceImpl implements AppOrderService {
     }
 
     @Override
-    public void flushRoomStatus(Long roomId) {
-        if (orderInfoMapper.countByRoomCurrent(roomId, null) > 0) {
+    public void flushRoomStatus(Long roomId, Long ignoreOrderId) {
+        if (orderInfoMapper.countByRoomCurrent(roomId, ignoreOrderId) > 0) {
             // 如果房间当前有订单进行 就改成进行中
             roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomId);
         } else if (clearInfoMapper.countCurrentByRoomId(roomId) > 0) {
             //如果有未完成的保洁订单 状态就是待保洁
             roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), roomId);
-        } else if (orderInfoMapper.countByRoomId(roomId, null) > 0) {
+        } else if (orderInfoMapper.countByRoomId(roomId, ignoreOrderId) > 0) {
             // 如果后面还有预约 就改成已预定
             roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), roomId);
         } else {
@@ -1781,7 +1781,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //发送用户提前结束订单通知
                 workWxService.sendCloseOrderMsg(orderInfoDO.getStoreId(), getLoginUserId(), orderInfoDO.getRoomId(), orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
                 orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderId).setEndTime(new Date()).setStatus(AppEnum.order_status.FINISH.getValue()));
-                flushRoomStatus(orderInfoDO.getRoomId());
+                flushRoomStatus(orderInfoDO.getRoomId(),orderInfoDO.getOrderId());
                 deviceService.closeRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else {
                 throw exception(ADMIN_ORDER_OPRATION_ERROR);
