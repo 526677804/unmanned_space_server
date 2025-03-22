@@ -295,7 +295,7 @@ public class IotService {
                 }
                 //设置订单状态为取消
                 orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderInfo.getOrderId()).setStatus(AppEnum.order_status.CANCEL.getValue()));
-                appOrderService.flushRoomStatus(orderInfo.getRoomId(),orderInfo.getOrderId());
+                appOrderService.flushRoomStatus(orderInfo.getRoomId(),null);
                 workWxService.sendYDOrderCancelMsg(orderInfo.getStoreId(), orderInfo.getRoomId(), orderInfo.getOrderNo());
                 //还要更新库存
                 updateStock(orderInfo.getRoomId());
@@ -413,7 +413,7 @@ public class IotService {
                 ) {
                     orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderInfo.getOrderId()).setStatus(AppEnum.order_status.CANCEL.getValue()));
                     //刷新房间状态
-                    appOrderService.flushRoomStatus(orderInfo.getRoomId(),orderInfo.getOrderId());
+                    appOrderService.flushRoomStatus(orderInfo.getRoomId(),null);
                     //异步发送微信通知
                     workWxService.sendYDOrderCancelMsg(orderInfo.getStoreId(), orderInfo.getRoomId(), orderInfo.getOrderNo());
                 }

@@ -1287,10 +1287,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                 orderInfoDO.setRoomId(roomId);
                 orderInfoMapper.updateById(orderInfoDO);
                 //改新房间的状态
-                flushRoomStatus(roomId,orderInfoDO.getOrderId());
+                flushRoomStatus(roomId,null);
                 //改旧房间的状态
                 Long oldRoomId = oldRoomInfo.getRoomId();
-                flushRoomStatus(oldRoomId,orderInfoDO.getOrderId());
+                flushRoomStatus(oldRoomId,null);
                 //同步一下预订平台的房间占用信息
                 iotService.updateStock(roomId);
                 iotService.updateStock(oldRoomId);
@@ -1356,7 +1356,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
             orderInfoMapper.updateById(orderInfoDO);
-            flushRoomStatus(orderInfoDO.getRoomId(),orderInfoDO.getOrderId());
+            flushRoomStatus(orderInfoDO.getRoomId(),null);
             //异步发送微信通知
             workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo(), false);
         } else {
@@ -1730,7 +1730,7 @@ public class AppOrderServiceImpl implements AppOrderService {
         } else if (clearInfoMapper.countCurrentByRoomId(roomId) > 0) {
             //如果有未完成的保洁订单 状态就是待保洁
             roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), roomId);
-        } else if (orderInfoMapper.countByRoomId(roomId, ignoreOrderId) > 0) {
+        } else if (orderInfoMapper.countPendingByRoomId(roomId, ignoreOrderId) > 0) {
             // 如果后面还有预约 就改成已预定
             roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), roomId);
         } else {
@@ -1781,7 +1781,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //发送用户提前结束订单通知
                 workWxService.sendCloseOrderMsg(orderInfoDO.getStoreId(), getLoginUserId(), orderInfoDO.getRoomId(), orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
                 orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderId).setEndTime(new Date()).setStatus(AppEnum.order_status.FINISH.getValue()));
-                flushRoomStatus(orderInfoDO.getRoomId(),orderInfoDO.getOrderId());
+                flushRoomStatus(orderInfoDO.getRoomId(),null);
                 deviceService.closeRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else {
                 throw exception(ADMIN_ORDER_OPRATION_ERROR);
