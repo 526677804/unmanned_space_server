@@ -620,20 +620,8 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         RoomInfoDO roomInfoDO = roomInfoMapper.selectById(roomId);
         checkPermisson(roomInfoDO.getStoreId(), getLoginUserId(), null, AppEnum.member_user_type.ADMIN.getValue());
         if (roomInfoDO.getStatus().compareTo(AppEnum.room_status.DISABLE.getValue()) == 0) {
-            //改成空闲
-            if (orderInfoMapper.countByRoomCurrent(roomId, null) > 0) {
-                // 如果房间当前有订单进行 就改成进行中
-                roomInfoMapper.updateStatusById(AppEnum.room_status.USED.getValue(), roomId);
-            } else if (clearInfoMapper.countCurrentByRoomId(roomId) > 0) {
-                //如果有未完成的保洁订单 状态就是待保洁
-                roomInfoMapper.updateStatusById(AppEnum.room_status.CLEAR.getValue(), roomId);
-            } else if (orderInfoMapper.countByRoomId(roomId, null) > 0) {
-                // 如果后面还有预约 就改成已预定
-                roomInfoMapper.updateStatusById(AppEnum.room_status.PENDING.getValue(), roomId);
-            } else {
-                // 否则 改成空闲
-                roomInfoMapper.updateStatusById(AppEnum.room_status.ENABLE.getValue(), roomId);
-            }
+            //改成正常
+            appOrderService.flushRoomStatus(roomId, null);
         } else {
             //改成禁用
             roomInfoMapper.updateStatusById(AppEnum.room_status.DISABLE.getValue(), roomId);

@@ -765,7 +765,7 @@ public class AppMangerServiceImpl implements AppMangerService {
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
             orderInfoMapper.updateById(orderInfoDO);
             //刷新房间状态
-            appOrderService.flushRoomStatus(orderInfoDO.getRoomId(),orderInfoDO.getOrderId());
+            appOrderService.flushRoomStatus(orderInfoDO.getRoomId(),null);
             //更新房间库存
             iotService.updateStock(orderInfoDO.getRoomId());
             //异步发送微信通知
@@ -856,13 +856,13 @@ public class AppMangerServiceImpl implements AppMangerService {
             if (!ObjectUtils.isEmpty(reqVO.getRoomId())) {
                 if (reqVO.getRoomId().compareTo(oldRoomId) != 0) {
                     //刷新 新房间的状态
-                    appOrderService.flushRoomStatus(reqVO.getRoomId(),orderInfoDO.getOrderId());
+                    appOrderService.flushRoomStatus(reqVO.getRoomId(),null);
                     //同步一下预订平台的房间占用信息
                     iotService.updateStock(reqVO.getRoomId());
                 }
             }
             //刷新 旧房间的状态
-            appOrderService.flushRoomStatus(oldRoomId,orderInfoDO.getOrderId());
+            appOrderService.flushRoomStatus(oldRoomId,null);
             //同步一下预订平台的房间占用信息
             iotService.updateStock(oldRoomId);
             //发送消息到企业微信
