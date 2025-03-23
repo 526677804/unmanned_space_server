@@ -205,7 +205,7 @@ public class StoreInfoServiceImpl implements StoreInfoService {
         } else {
             //修改
             //校验门店权限
-//            checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
+            checkPermisson(reqVO.getStoreId(), getLoginUserId(), getLoginUserType(), AppEnum.member_user_type.BOSS.getValue());
             StoreInfoDO storeInfoDO = StoreInfoConvert.INSTANCE.convert3(reqVO);
             StoreInfoDO infoDO = storeInfoMapper.selectById(reqVO.getStoreId());
             if (ObjectUtils.isEmpty(infoDO.getQrCode())) {

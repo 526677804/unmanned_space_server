@@ -1851,7 +1851,7 @@ INSERT INTO `system_dict_data` VALUES (1437, 4, '灯具', '4', 'member_device_ty
 INSERT INTO `system_dict_data` VALUES (1438, 5, '密码锁', '5', 'member_device_type', 0, 'default', '', NULL, '1', '2024-03-24 20:10:56', '1', '2024-03-24 20:10:56', b'0');
 INSERT INTO `system_dict_data` VALUES (1439, 0, '棋牌', '0', 'member_room_class', 0, 'default', '', NULL, '1', '2024-03-24 20:11:55', '1', '2024-03-24 20:11:55', b'0');
 INSERT INTO `system_dict_data` VALUES (1440, 1, '台球', '1', 'member_room_class', 0, 'default', '', NULL, '1', '2024-03-24 20:11:59', '1', '2024-03-24 20:11:59', b'0');
-INSERT INTO `system_dict_data` VALUES (1441, 2, '自习室', '2', 'member_room_class', 0, 'default', '', NULL, '1', '2024-03-24 20:14:02', '1', '2024-03-24 20:14:02', b'0');
+INSERT INTO `system_dict_data` VALUES (1441, 2, 'KTV', '2', 'member_room_class', 0, 'default', '', NULL, '1', '2024-03-24 20:14:02', '1', '2024-03-24 20:14:02', b'0');
 INSERT INTO `system_dict_data` VALUES (1442, 6, '网关', '6', 'member_device_type', 0, 'default', '', NULL, '1', '2024-03-24 20:16:32', '1', '2024-03-24 20:16:41', b'0');
 INSERT INTO `system_dict_data` VALUES (1443, 3, '加时券', '3', 'member_coupon_type', 0, 'default', '', NULL, '1', '2024-04-27 13:18:08', '1', '2024-04-27 13:18:08', b'0');
 INSERT INTO `system_dict_data` VALUES (1444, 7, '插座', '7', 'member_device_type', 0, 'default', '', NULL, '1', '2024-05-12 19:23:38', '1', '2024-05-12 19:23:38', b'0');
