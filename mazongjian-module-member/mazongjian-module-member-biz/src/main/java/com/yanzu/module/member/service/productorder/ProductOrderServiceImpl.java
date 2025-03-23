@@ -242,6 +242,7 @@ public class ProductOrderServiceImpl implements ProductOrderService {
             productOrderMapper.updateById(productOrderDO);
         } catch (WxPayException ex) {
             log.error("商品购买微信支付订单退款失败:{}", productOrderDO.getOrderNo());
+            throw exception(PRODUCT_REFOUND_ERROR, ex.getMessage());
         }
     }
 
