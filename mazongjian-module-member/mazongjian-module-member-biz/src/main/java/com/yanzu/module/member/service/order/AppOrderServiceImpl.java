@@ -752,7 +752,8 @@ public class AppOrderServiceImpl implements AppOrderService {
      * @param roomType
      * @param nightLong
      */
-    private static void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong, Integer txStartHour, Integer txHour) {
+    @Override
+    public void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong, Integer txStartHour, Integer txHour) {
         title = title.replaceAll(" ", "");
         if (title.indexOf("通宵") != -1 || nightLong) {
             //团购的通宵场 要求团购券必须包含 “通宵”两个字
@@ -760,53 +761,53 @@ public class AppOrderServiceImpl implements AppOrderService {
                 throw exception(GOURP_NO_PAY_TIME_HOUR_CHECK_ERROR);
             }
             //再判断通宵的开始时间是不是在设置的规则范围内  因为团购的通宵 只能到时间后开始
-            if (startTime.getHours() < txStartHour) {
+            if (startTime.getHours() < txStartHour && startTime.getHours() >= 4) {
                 throw exception(CHECK_TONGXIAO_TIME_ERROR);
             }
-            return;
-        }
-        //判断工作日限制情况  标题包含工作日和周一 就视为工作日券
-        if (title.indexOf("工作日") != -1 || title.indexOf("周一") != -1 || title.indexOf("周四") != -1 || title.indexOf("闲时") != -1) {
-            //仅工作日周一 - 周四可用
-            checkWorkDay(startTime);
-        }
-        //判断包间限制情况  标题包含：不限包间
-        if (title.indexOf("不限包间") != -1 || title.indexOf("全场通用") != -1 || title.indexOf("全场畅玩") != -1 || title.indexOf("包间通用") != -1 || title.indexOf("任意包间") != -1 || title.indexOf("不分包间") != -1 || title.indexOf("所有包间") != -1 || title.indexOf("全部包间") != -1 || title.indexOf("包间任选") != -1 || title.indexOf("不限房间") != -1 || title.indexOf("任意房间") != -1 || title.indexOf("不分房间") != -1 || title.indexOf("所有房间") != -1 || title.indexOf("全部房间") != -1 || title.indexOf("房间任选") != -1 || title.indexOf("不限球桌") != -1 || title.indexOf("任意球桌") != -1 || title.indexOf("不分球桌") != -1 || title.indexOf("所有球桌") != -1 || title.indexOf("全部球桌") != -1 || title.indexOf("球桌任选") != -1) {
-            //不校验
-        } else {
-            Integer checkRoomType = 0;
-            if (title.indexOf("美式") != -1) {
-                //美式球桌
-                checkRoomType = AppEnum.room_type.MS.getValue();
-            } else if (title.indexOf("黑八") != -1) {
-                //商务包
-                checkRoomType = AppEnum.room_type.HB.getValue();
-            } else if (title.indexOf("斯洛克") != -1) {
-                //商务包
-                checkRoomType = AppEnum.room_type.SLK.getValue();
-            } else if (title.indexOf("商务包") != -1) {
-                //商务包
-                checkRoomType = AppEnum.room_type.SW.getValue();
-            } else if (title.indexOf("豪包") != -1) {
-                //豪包
-                checkRoomType = AppEnum.room_type.HAO.getValue();
-            } else if (title.indexOf("大包") != -1) {
-                //大包
-                checkRoomType = AppEnum.room_type.DA.getValue();
-            } else if (title.indexOf("中包") != -1) {
-                //中包
-                checkRoomType = AppEnum.room_type.ZHONG.getValue();
-            } else if (title.indexOf("小包") != -1) {
-                //小包
-                checkRoomType = AppEnum.room_type.XIAO.getValue();
-            } else {
-                //一个都没匹配上  那就默认小包  但是通宵场不写 就默认所有
-                if (!nightLong) {
-                    checkRoomType = AppEnum.room_type.XIAO.getValue();
-                }
+        }else{
+            //判断工作日限制情况  标题包含工作日和周一 就视为工作日券
+            if (title.indexOf("工作日") != -1 || title.indexOf("周一") != -1 || title.indexOf("周四") != -1 || title.indexOf("闲时") != -1) {
+                //仅工作日周一 - 周四可用
+                checkWorkDay(startTime);
             }
-            if (checkRoomType != 0 && roomType.compareTo(checkRoomType) != 0) {
-                throw exception(GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR);
+            //判断包间限制情况  标题包含：不限包间
+            if (title.indexOf("不限包间") != -1 || title.indexOf("全场通用") != -1 || title.indexOf("全场畅玩") != -1 || title.indexOf("包间通用") != -1 || title.indexOf("任意包间") != -1 || title.indexOf("不分包间") != -1 || title.indexOf("所有包间") != -1 || title.indexOf("全部包间") != -1 || title.indexOf("包间任选") != -1 || title.indexOf("不限房间") != -1 || title.indexOf("任意房间") != -1 || title.indexOf("不分房间") != -1 || title.indexOf("所有房间") != -1 || title.indexOf("全部房间") != -1 || title.indexOf("房间任选") != -1 || title.indexOf("不限球桌") != -1 || title.indexOf("任意球桌") != -1 || title.indexOf("不分球桌") != -1 || title.indexOf("所有球桌") != -1 || title.indexOf("全部球桌") != -1 || title.indexOf("球桌任选") != -1) {
+                //不校验
+            } else {
+                Integer checkRoomType = 0;
+                if (title.indexOf("美式") != -1) {
+                    //美式球桌
+                    checkRoomType = AppEnum.room_type.MS.getValue();
+                } else if (title.indexOf("黑八") != -1) {
+                    //商务包
+                    checkRoomType = AppEnum.room_type.HB.getValue();
+                } else if (title.indexOf("斯洛克") != -1) {
+                    //商务包
+                    checkRoomType = AppEnum.room_type.SLK.getValue();
+                } else if (title.indexOf("商务包") != -1) {
+                    //商务包
+                    checkRoomType = AppEnum.room_type.SW.getValue();
+                } else if (title.indexOf("豪包") != -1) {
+                    //豪包
+                    checkRoomType = AppEnum.room_type.HAO.getValue();
+                } else if (title.indexOf("大包") != -1) {
+                    //大包
+                    checkRoomType = AppEnum.room_type.DA.getValue();
+                } else if (title.indexOf("中包") != -1) {
+                    //中包
+                    checkRoomType = AppEnum.room_type.ZHONG.getValue();
+                } else if (title.indexOf("小包") != -1) {
+                    //小包
+                    checkRoomType = AppEnum.room_type.XIAO.getValue();
+                } else {
+                    //一个都没匹配上  那就默认小包  但是通宵场不写 就默认所有
+                    if (!nightLong) {
+                        checkRoomType = AppEnum.room_type.XIAO.getValue();
+                    }
+                }
+                if (checkRoomType != 0 && roomType.compareTo(checkRoomType) != 0) {
+                    throw exception(GOURP_NO_PAY_ROOM_TYPE_CHECK_ERROR);
+                }
             }
         }
         int timeHour = 0;
@@ -844,7 +845,7 @@ public class AppOrderServiceImpl implements AppOrderService {
     @Override
     @Transactional
     public Long save(OrderSaveReqVO reqVO) {
-        log.info("订单创建:{}",reqVO);
+        log.info("订单创建:{}", reqVO);
         //说明一下  只有不存在微信付款时，才直接调用此接口
         //如果是微信付款的  那么是由支付回调来调用的此接口
         if (ObjectUtils.isEmpty(reqVO.getUserId())) {
@@ -1287,10 +1288,10 @@ public class AppOrderServiceImpl implements AppOrderService {
                 orderInfoDO.setRoomId(roomId);
                 orderInfoMapper.updateById(orderInfoDO);
                 //改新房间的状态
-                flushRoomStatus(roomId,null);
+                flushRoomStatus(roomId, null);
                 //改旧房间的状态
                 Long oldRoomId = oldRoomInfo.getRoomId();
-                flushRoomStatus(oldRoomId,null);
+                flushRoomStatus(oldRoomId, null);
                 //同步一下预订平台的房间占用信息
                 iotService.updateStock(roomId);
                 iotService.updateStock(oldRoomId);
@@ -1356,7 +1357,7 @@ public class AppOrderServiceImpl implements AppOrderService {
             //设置订单状态为取消
             orderInfoDO.setStatus(AppEnum.order_status.CANCEL.getValue());
             orderInfoMapper.updateById(orderInfoDO);
-            flushRoomStatus(orderInfoDO.getRoomId(),null);
+            flushRoomStatus(orderInfoDO.getRoomId(), null);
             //异步发送微信通知
             workWxService.sendOrderCancelMsg(orderInfoDO.getStoreId(), loginUserId, orderInfoDO.getRoomId(), orderInfoDO.getPayPrice(), couponInfoDO, orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo(), false);
         } else {
@@ -1781,7 +1782,7 @@ public class AppOrderServiceImpl implements AppOrderService {
                 //发送用户提前结束订单通知
                 workWxService.sendCloseOrderMsg(orderInfoDO.getStoreId(), getLoginUserId(), orderInfoDO.getRoomId(), orderInfoDO.getPayType(), orderInfoDO.getGroupPayType(), orderInfoDO.getOrderNo());
                 orderInfoMapper.updateById(new OrderInfoDO().setOrderId(orderId).setEndTime(new Date()).setStatus(AppEnum.order_status.FINISH.getValue()));
-                flushRoomStatus(orderInfoDO.getRoomId(),null);
+                flushRoomStatus(orderInfoDO.getRoomId(), null);
                 deviceService.closeRoomDoor(getLoginUserId(), orderInfoDO.getStoreId(), orderInfoDO.getRoomId(), 1);
             } else {
                 throw exception(ADMIN_ORDER_OPRATION_ERROR);

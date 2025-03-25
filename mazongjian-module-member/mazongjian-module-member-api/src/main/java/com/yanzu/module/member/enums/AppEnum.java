@@ -310,11 +310,11 @@ public class AppEnum {
     public enum room_class {
         //棋牌	0
         //台球	1
-        //自习室	2
+        //KTV	2
 
         QIPAI(0),
         TAIQIU(1),
-        ZIXISHI(2);
+        KTV(2);
 
         private final Integer value;
     }

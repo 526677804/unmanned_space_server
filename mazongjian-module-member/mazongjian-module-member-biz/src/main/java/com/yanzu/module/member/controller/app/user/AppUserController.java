@@ -10,6 +10,7 @@ import com.yanzu.module.member.controller.app.user.vo.*;
 import com.yanzu.module.member.dal.mysql.deviceinfo.DeviceInfoMapper;
 import com.yanzu.module.member.dal.mysql.roominfo.RoomInfoMapper;
 import com.yanzu.module.member.dal.mysql.storeinfo.StoreInfoMapper;
+import com.yanzu.module.member.service.order.AppOrderService;
 import com.yanzu.module.member.service.user.AppUserService;
 import com.yanzu.module.member.service.wx.MyWxService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +24,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -191,9 +193,19 @@ public class AppUserController {
 
     @Resource
     private DeviceInfoMapper deviceInfoMapper;
+
+//    @Resource
+//    private AppOrderService appOrderService;
     @GetMapping("/test")
     @Operation(summary = "test")
     public CommonResult<String> test() throws Exception {
+
+//        Date start = new Date();
+//        start.setHours(0);
+//        Date end = new Date();
+////        end.setHours(10);
+//        appOrderService.checkGroupNo("通宵10个小时",start,end,1,true,23,9);
+
 //        WxMaService wxMaService = myWxService.initWxMa();
 //        List<RoomInfoDO> roomInfoDOS = roomInfoMapper.selectList();
 //        roomInfoDOS.forEach(x->{

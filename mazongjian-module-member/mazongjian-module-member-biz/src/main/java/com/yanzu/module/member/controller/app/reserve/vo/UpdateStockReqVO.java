@@ -9,18 +9,18 @@ import java.util.List;
 @Data
 public class UpdateStockReqVO {
 
-    @Schema(name = "门店id")
+     @Schema(description = "门店id")
     private Long storeId;
 
-    @Schema(name = "门店名称")
+     @Schema(description = "门店名称")
     private String storeName;
 
-    @Schema(name = "房间ID")
+     @Schema(description = "房间ID")
     private Long roomId;
 
-    @Schema(name = "房间名称")
+     @Schema(description = "房间名称")
     private String roomName;
 
-    @Schema(name = "时段库存信息")
+     @Schema(description = "时段库存信息")
     private List<JSONObject> timePeriods;
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class CancelReserveRespVo {
 
-    @Schema(name = "订单id")
+     @Schema(description = "订单id")
     private String orderId;
 
 }
