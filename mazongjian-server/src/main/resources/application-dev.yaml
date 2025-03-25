@@ -44,22 +44,22 @@ spring:
       datasource:
         #修改为自己创建的mysql信息 支持5.7或8.0
         master:
-          url: jdbc:mysql://127.0.0.1:3306/mazongjian?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&connectTimeout=30000&socketTimeout=60000 # MySQL Connector/J 8.X 连接的示例
-          username: xxxxxxx
-          password: xxxxxxx
+          url: jdbc:mysql://124.221.78.191:3306/mazongjian?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&connectTimeout=30000&socketTimeout=60000 # MySQL Connector/J 8.X 连接的示例
+          username: mazongjian
+          password: HeKtECBse5jKEbjd
 
   # Redis 配置
   redis:
-    host: 127.0.0.1 # 地址
+    host: 124.221.78.191 # 地址
     port: 6379 # 端口
     database: 0 # 数据库索引
-    password: xxxxxxx # 密码，建议生产环境开启
+    password: cT@19940411 # 密码，建议生产环境开启
 
 # 微信支付回调
 wx:
   pay:
     #支付回调通知地址
-    returnUrl: https://api.xxxxxxx.com/app-api/callback/wxpay/update
+    returnUrl: https://api.xiahuyukeji.online.com/app-api/callback/wxpay/update
     ################################以下内容为微信支付服务商模式以及分账配置############################################
     appId:  #微信支付服务商的小程序APPID
     mchId:  #微信支付服务商的商户号
