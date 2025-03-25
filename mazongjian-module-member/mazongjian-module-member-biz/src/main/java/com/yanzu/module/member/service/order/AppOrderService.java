@@ -31,6 +31,7 @@ public interface AppOrderService {
 
     void changeRoom(Long orderId, Long roomId);
 
+    void checkGroupNo(String title, Date startTime, Date endTime, Integer roomType, boolean nightLong, Integer txStartHour, Integer txHour);
 
     void cancelOrder(Long orderId);
 
