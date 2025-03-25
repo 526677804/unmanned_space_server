@@ -2,7 +2,7 @@
   "name": "mazongjian-ui-admin",
   "version": "1.7.3-snapshot",
   "description": "无人自助管理系统",
-  "author": "四川彦祖科技有限公司",
+  "author": "虾虎鱼科技工作室",
   "license": "MIT",
   "scripts": {
     "local": "vue-cli-service serve --mode local",
