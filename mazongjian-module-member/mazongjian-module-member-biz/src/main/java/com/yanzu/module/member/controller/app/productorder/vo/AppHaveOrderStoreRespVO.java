@@ -6,10 +6,10 @@ import lombok.Data;
 @Data
 public class AppHaveOrderStoreRespVO {
 
-    @Schema(name = "店铺Id")
+     @Schema(description = "店铺Id")
     private Long storeId;
 
 
-    @Schema(name = "店铺名称")
+     @Schema(description = "店铺名称")
     private String storeName;
 }

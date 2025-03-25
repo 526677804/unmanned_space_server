@@ -33,4 +33,53 @@
         where deleted = 0
         and order_id = #{orderId}
     </select>
+    <resultMap id="OrderPageResultMap" type="com.yanzu.module.member.controller.app.productorder.vo.AppUserOrderPageRespVO">
+        <result column="order_id" property="orderId"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="store_id" property="storeId"/>
+        <result column="total_price" property="totalPrice"/>
+        <result column="pay_price" property="payPrice"/>
+        <result column="pay_time" property="payTime"/>
+        <result column="status" property="status"/>
+        <result column="product_info" property="productInfoJson"/>
+        <result column="mark" property="mark"/>
+        <result column="pay_type" property="payType"/>
+        <result column="create_time" property="createTime"/>
+
+        <!--        <result column="room_name" property="roomName"/>-->
+        <!--        <result column="nickname" property="userName"/>-->
+        <!--        <result column="mobile" property="userPhone"/>-->
+    </resultMap>
+    <select id="userOrderByPage"
+           resultType="com.yanzu.module.member.controller.app.productorder.vo.AppUserOrderPageRespVO">
+        select
+        o.order_id,
+        o.order_no,
+        o.store_id,
+        o.total_price,
+        o.pay_price,
+        o.pay_time,
+        o.status,
+        o.product_info  productInfoJson,
+        o.mark,
+        o.pay_type,
+        r.room_name,
+        u.nickname userName,
+        u.mobile userPhone,
+        o.create_time
+        from member_product_order o
+        left join member_room_info r ON r.room_id = o.room_id
+        left join member_user u ON u.id = o.user_id
+        where o.deleted = 0
+        AND o.user_id=#{userId}
+        <if test="null!=reqVO">
+            <if test="null!=reqVO.storeId and ''!=reqVO.storeId">
+                o.store_id=#{reqVO.storeId}
+            </if>
+            <if test="null!=reqVO.status and ''!=reqVO.status">
+                o.status=#{reqVO.status}
+            </if>
+        </if>
+        order by o.create_time desc
+    </select>
 </mapper>

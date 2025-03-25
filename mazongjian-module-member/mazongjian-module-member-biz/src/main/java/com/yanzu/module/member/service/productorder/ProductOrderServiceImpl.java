@@ -2,7 +2,10 @@ package com.yanzu.module.member.service.productorder;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.exception.WxPayException;
@@ -41,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
@@ -227,35 +231,43 @@ public class ProductOrderServiceImpl implements ProductOrderService {
                 throw exception(OPRATION_ERROR);
             }
         }
-        WxPayService wxPayService = myWxService.initWxPay(productOrderDO.getStoreId());
-        //微信退款
-        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-        refundRequest.setOutTradeNo(productOrderDO.getOrderNo());
-        refundRequest.setOutRefundNo("TK" + productOrderDO.getOrderNo());
-        refundRequest.setTotalFee(productOrderDO.getPayPrice());
-        refundRequest.setRefundFee(productOrderDO.getPayPrice());
-        refundRequest.setRefundDesc("取消商品订单退款");
-        try {
-            wxPayService.refundV2(refundRequest);
+        if (productOrderDO.getPayPrice().intValue() > 0) {
+            WxPayService wxPayService = myWxService.initWxPay(productOrderDO.getStoreId());
+            //微信退款
+            WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+            refundRequest.setOutTradeNo(productOrderDO.getOrderNo());
+            refundRequest.setOutRefundNo("TK" + productOrderDO.getOrderNo());
+            refundRequest.setTotalFee(productOrderDO.getPayPrice());
+            refundRequest.setRefundFee(productOrderDO.getPayPrice());
+            refundRequest.setRefundDesc("取消商品订单退款");
+            try {
+                wxPayService.refundV2(refundRequest);
+                //状态改成取消
+                productOrderDO.setStatus(3L);
+                productOrderMapper.updateById(productOrderDO);
+            } catch (WxPayException ex) {
+                log.error("商品购买微信支付订单退款失败:{}", productOrderDO.getOrderNo());
+                throw exception(PRODUCT_REFOUND_ERROR, ex.getMessage());
+            }
+        } else {
             //状态改成取消
             productOrderDO.setStatus(3L);
             productOrderMapper.updateById(productOrderDO);
-        } catch (WxPayException ex) {
-            log.error("商品购买微信支付订单退款失败:{}", productOrderDO.getOrderNo());
-            throw exception(PRODUCT_REFOUND_ERROR, ex.getMessage());
         }
     }
 
     @Override
-    public PageResult<AppUserOrderPageRespVO> userOrderByPage(AppUserOrderPageReqVO reqVo) {
-
-        LambdaQueryWrapperX<ProductOrderDO> queryWrapper = new LambdaQueryWrapperX<>();
-        queryWrapper.eq(ProductOrderDO::getUserId, getLoginUserId())
-                .eqIfPresent(ProductOrderDO::getStoreId, reqVo.getStoreId())
-                .eqIfPresent(ProductOrderDO::getStatus, reqVo.getStatus())
-                .orderByDesc(ProductOrderDO::getCreateTime);
-
-        return getAppUserOrderPageRespVoPageResult(reqVo, queryWrapper);
+    public PageResult<AppUserOrderPageRespVO> userOrderByPage(AppUserOrderPageReqVO reqVO) {
+        IPage<AppUserOrderPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        productOrderMapper.userOrderByPage(page, reqVO, getLoginUserId(), null);
+        if (!CollectionUtils.isEmpty(page.getRecords())) {
+            page.getRecords().forEach(x -> {
+                if (!ObjectUtils.isEmpty(x.getProductInfoJson())) {
+                    x.setProductInfoVoList(JSONArray.parseArray(x.getProductInfoJson(), ProductInfoVo.class));
+                }
+            });
+        }
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -290,17 +302,19 @@ public class ProductOrderServiceImpl implements ProductOrderService {
 
 
     @Override
-    public PageResult<AppUserOrderPageRespVO> managerProductOrder(AppUserOrderPageReqVO reqVo) {
+    public PageResult<AppUserOrderPageRespVO> managerProductOrder(AppUserOrderPageReqVO reqVO) {
         // 获取自己管理的门店列表
-        List<Long> longs = storeUserMapper.selectSelfStoreIds(getLoginUserId());
-
-        LambdaQueryWrapperX<ProductOrderDO> queryWrapper = new LambdaQueryWrapperX<>();
-        queryWrapper.in(ProductOrderDO::getStoreId, longs)
-                .eqIfPresent(ProductOrderDO::getStoreId, reqVo.getStoreId())
-                .eqIfPresent(ProductOrderDO::getStatus, reqVo.getStatus())
-                .orderByDesc(ProductOrderDO::getCreateTime);
-
-        return getAppUserOrderPageRespVoPageResult(reqVo, queryWrapper);
+        List<String> storeIds = storeUserMapper.getIdsByUserIdAndAdmin(getLoginUserId());
+        IPage<AppUserOrderPageRespVO> page = new Page<>(reqVO.getPageNo(), reqVO.getPageSize());
+        productOrderMapper.userOrderByPage(page, reqVO, getLoginUserId(), storeIds);
+        if (!CollectionUtils.isEmpty(page.getRecords())) {
+            page.getRecords().forEach(x -> {
+                if (!ObjectUtils.isEmpty(x.getProductInfoJson())) {
+                    x.setProductInfoVoList(JSONArray.parseArray(x.getProductInfoJson(), ProductInfoVo.class));
+                }
+            });
+        }
+        return new PageResult<>(page.getRecords(), page.getTotal());
     }
 
     @Override
@@ -324,24 +338,6 @@ public class ProductOrderServiceImpl implements ProductOrderService {
     @Override
     public String getPhone(Long orderId) {
         return productOrderMapper.getPhone(orderId);
-    }
-
-    private PageResult<AppUserOrderPageRespVO> getAppUserOrderPageRespVoPageResult(AppUserOrderPageReqVO reqVo, LambdaQueryWrapperX<ProductOrderDO> queryWrapper) {
-        PageResult<ProductOrderDO> pageResult = productOrderMapper.selectPage(reqVo, queryWrapper);
-
-        return pageResult.getList().stream()
-                .map(item -> {
-                    AppUserOrderPageRespVO bean = BeanUtil.toBean(item, AppUserOrderPageRespVO.class);
-                    bean.setUserPhone(bean.getUserPhone().replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
-                    bean.setProductInfoVoList(JSONObject.parseArray(item.getProductInfo(), ProductInfoVo.class));
-                    return bean;
-                })
-                .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
-                    PageResult<AppUserOrderPageRespVO> result = new PageResult<>();
-                    result.setList(list);
-                    result.setTotal(pageResult.getTotal());
-                    return result;
-                }));
     }
 
     private void getWxPayOrderRespVo(WxPayOrderRespVO respVO, WxPayMpOrderResult wxPayMpOrderResult, Integer totalPrice, ProductOrderDO productOrderDO) {

@@ -7,10 +7,10 @@ import lombok.Data;
 @Data
 public class AppUserOrderPageReqVO extends PageParam {
 
-    @Schema(name = "门店id")
+     @Schema(description = "门店id")
     private Long storeId;
 
-    @Schema(name = "商品订单状态")
+     @Schema(description = "商品订单状态")
     private Long status;
 
 }

@@ -6,13 +6,13 @@ import lombok.Data;
 @Data
 public class StartBookingRespVo {
 
-    @Schema(name = "订单ID")
+     @Schema(description = "订单ID")
     private String orderId;
 
-    @Schema(name = "第三方的订单号")
+     @Schema(description = "第三方的订单号")
     private String appOrderId;
 
-    @Schema(name = "预订手机号")
+     @Schema(description = "预订手机号")
     private String mobile;
 
 }

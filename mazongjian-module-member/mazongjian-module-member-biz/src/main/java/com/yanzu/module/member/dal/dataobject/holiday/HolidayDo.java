@@ -13,13 +13,13 @@ import lombok.*;
 @AllArgsConstructor
 public class HolidayDo {
 
-    @Schema(name = "时间")
+     @Schema(description = "时间")
     private String dateTime;
 
-    @Schema(name = "类型 0工作日期 1周末 2节假日")
+     @Schema(description = "类型 0工作日期 1周末 2节假日")
     private String type;
 
-    @Schema(name = "备注")
+     @Schema(description = "备注")
     private String remark;
 
 }

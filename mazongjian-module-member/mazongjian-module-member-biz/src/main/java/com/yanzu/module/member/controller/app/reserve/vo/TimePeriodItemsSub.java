@@ -6,15 +6,15 @@ import lombok.Data;
 @Data
 public class TimePeriodItemsSub {
 
-    @Schema(name = "开始时间（从0:00开始至开始时间的分钟数，如8:00开始即为 480 【8*60】）")
+     @Schema(description = "开始时间（从0:00开始至开始时间的分钟数，如8:00开始即为 480 【8*60】）")
     private Integer beginMinutes;
 
-    @Schema(name = "结束时间（从0:00开始至结束的分钟数）")
+     @Schema(description = "结束时间（从0:00开始至结束的分钟数）")
     private Integer endMinutes;
 
-    @Schema(name = "开始日期（时间戳毫秒数）")
+     @Schema(description = "开始日期（时间戳毫秒数）")
     private Long beginTime;
 
-    @Schema(name = "结束日期（时间戳毫秒数）")
+     @Schema(description = "结束日期（时间戳毫秒数）")
     private Long endTime;
 }

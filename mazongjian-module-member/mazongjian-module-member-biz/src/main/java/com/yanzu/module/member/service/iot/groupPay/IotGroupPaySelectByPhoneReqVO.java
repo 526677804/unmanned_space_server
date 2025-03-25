@@ -10,10 +10,10 @@ import javax.validation.constraints.NotNull;
 @Valid
 public class IotGroupPaySelectByPhoneReqVO {
 
-    @Schema(name = "手机号")
+     @Schema(description = "手机号")
     private String mobile;
 
-    @Schema(name = "店铺id")
+     @Schema(description = "店铺id")
     @NotNull(message = "店铺id不能为空")
     private Long storeId;
 

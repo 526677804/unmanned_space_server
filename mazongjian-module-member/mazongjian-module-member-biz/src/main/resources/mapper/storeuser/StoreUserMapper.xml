@@ -186,14 +186,6 @@
         and msu.store_id = #{storeId}
         order by msu.id
     </select>
-    
-    <select id="selectSelfStoreIds" parameterType="Long"  resultType="Long">
-        select store_id
-        from member_store_user
-        where deleted = 0
-          and type in (12,13)
-          and user_id = #{userId}
-    </select>
 
     <select id="isInBlack" resultType="com.yanzu.module.member.dal.dataobject.storeuser.StoreUserDO">
         select *

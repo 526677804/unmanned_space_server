@@ -53,8 +53,6 @@ public interface StoreUserMapper extends BaseMapperX<StoreUserDO> {
 
     StoreUserDO getTotalBalance(Long userId);
 
-    List<Long> selectSelfStoreIds(Long userId);
-
     StoreUserDO isInBlack(@Param("storeId") Long storeId,@Param("userId") Long userId);
 
 }

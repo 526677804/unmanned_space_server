@@ -6,10 +6,10 @@ import lombok.Data;
 @Data
 public class VerificationStatusRespVo {
 
-    @Schema(name = "1.未核销 2.已核销 3.未知状态")
+     @Schema(description = "1.未核销 2.已核销 3.未知状态")
     private Integer consumeStatus;
 
-    @Schema(name = "订单id")
+     @Schema(description = "订单id")
     private String orderId;
 
 }
